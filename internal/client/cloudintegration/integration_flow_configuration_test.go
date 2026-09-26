@@ -95,3 +95,30 @@ func TestClient_SaveIntegrationFlowAsVersion_DocumentedRequest(t *testing.T) {
 		t.Errorf("Version = %q, want 1.0.3", flow.Version)
 	}
 }
+
+// A tenant answered SaveAsVersion with 200 and no body (September 2026);
+// the saved version is then read from the active artifact.
+func TestClient_SaveIntegrationFlowAsVersion_EmptyBodyReadsBack(t *testing.T) {
+	var requests []string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests = append(requests, r.Method+" "+r.URL.Path)
+		if r.Method == http.MethodPost {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		_, _ = w.Write([]byte(`{"d": {"Id": "Order_Flow", "Version": "1.0.5", "Name": "Order Flow", "PackageId": "P"}}`))
+	}))
+	defer server.Close()
+
+	flow, err := New(http.DefaultClient, server.URL).SaveIntegrationFlowAsVersion(context.Background(), "Order_Flow", "1.0.5")
+	if err != nil {
+		t.Fatalf("SaveIntegrationFlowAsVersion() error: %v", err)
+	}
+	if flow.Version != "1.0.5" {
+		t.Errorf("Version = %q, want 1.0.5 from the read-back", flow.Version)
+	}
+	want := "GET /api/v1/IntegrationDesigntimeArtifacts(Id='Order_Flow',Version='active')"
+	if len(requests) != 2 || requests[1] != want {
+		t.Errorf("requests = %v, want the POST followed by %q", requests, want)
+	}
+}

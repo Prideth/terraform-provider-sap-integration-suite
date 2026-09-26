@@ -113,6 +113,11 @@ All notable changes to this project are documented in this file.
   and an update additionally sends `update=true`. Listing a certificate in
   the configuration is therefore the decision to trust it; compare
   `certificate_sha256` with the fingerprint you expect.
+- `save_as_version` on integration flows, message mappings and script
+  collections failed on a real tenant after SAP had saved the version: SAP
+  answers `...SaveAsVersion` with `200` and an empty body, although the
+  `$metadata` declares the artifact as its result. The provider now reads
+  the active version back when the body is empty.
 
 ### Added
 
