@@ -77,13 +77,13 @@ func (c *Client) CreateScriptCollection(ctx context.Context, packageID, scriptCo
 }
 
 // UpdateScriptCollection uploads new content for an existing script
-// collection, creating a new design-time version under the same ID via
-// PUT against the keyed (Id, Version) entity.
+// collection with a PUT against the keyed (Id, Version) entity. As for
+// flows and message mappings, the PUT keeps the version.
 //
 // PUT here rests on the same entity-specific evidence that decided
 // UpdateMessageMapping: ScriptCollectionDesigntimeArtifacts shares
 // IntegrationDesigntimeArtifacts' (Id, Version) key shape and confirmed
-// version-creating PUT behavior, and the same independent third-party
+// PUT-based update, and the same independent third-party
 // OData client that explicitly disables generic update for
 // ValueMappingDesigntimeArtifacts explicitly enables it here, matching
 // IntegrationDesigntimeArtifacts and MessageMappingDesigntimeArtifacts. No

@@ -166,8 +166,8 @@ elsewhere, it confirms names, keys and types but not which operations SAP accept
   (`MessageMappingDesigntimeArtifacts`), not the inline/local message mapping step configurable
   directly inside an integration flow. See `docs/resource-design.md` for the distinction.
 - **Entity sets / actions**: `MessageMappingDesigntimeArtifacts`,
-  `MessageMappingDesigntimeArtifactSaveAsVersion` (action, confirmed to exist, not used by this
-  provider — see Update below), `IntegrationRuntimeArtifacts` (the same shared runtime-artifacts
+  `MessageMappingDesigntimeArtifactSaveAsVersion` (action, used by `save_as_version` — see Update
+  below), `IntegrationRuntimeArtifacts` (the same shared runtime-artifacts
   entity `sapintegrationsuite_integration_flow_deployment` and
   `sapintegrationsuite_value_mapping_deployment` use), `DeployMessageMappingDesigntimeArtifact`
   (action; singular form, matching the sibling actions for the other design-time artifact types)
@@ -193,7 +193,7 @@ elsewhere, it confirms names, keys and types but not which operations SAP accept
   `sapintegrationsuite_value_mapping` (which has no in-place update — see that resource's entry
   below), this phase found positive evidence supporting `PUT` specifically for
   `MessageMappingDesigntimeArtifacts`: it shares `IntegrationDesigntimeArtifacts`' exact
-  `(Id, Version)` key shape and confirmed version-creating `PUT` behavior; the same third-party
+  `(Id, Version)` key shape and confirmed `PUT`-based update; the same third-party
   OData client that explicitly disables generic update for `ValueMappingDesigntimeArtifacts`
   explicitly *enables* it for `MessageMappingDesigntimeArtifacts` (matching
   `IntegrationDesigntimeArtifacts` and `ScriptCollectionDesigntimeArtifacts`); and no SAP KBA or
@@ -202,13 +202,18 @@ elsewhere, it confirms names, keys and types but not which operations SAP accept
   this phase's research clarified that `SaveAsVersion` is a universal action across this whole
   API family (confirmed to exist for `IntegrationDesigntimeArtifacts` as well, coexisting with
   its confirmed `PUT`), not evidence against `PUT` by itself — see `docs/resource-design.md` for
-  the full reasoning. This provider does not use `SaveAsVersion` since it does not ask users to
-  manage an explicit version string.
+  the full reasoning. A tenant test (September 2026) showed that a `PUT` keeps the artifact's
+  version, and that the `PUT` must carry only `Name` and `ArtifactContent`: with empty `Id` and
+  `PackageId` in the body SAP answered 500 "Update of PackageId and Id are not allowed". A
+  successful `PUT` answers 200 without a body. `save_as_version` calls `SaveAsVersion` to set a
+  version explicitly (202 or 200, also without a body, so the provider reads the version back).
 - **Delete — unverified scope, same open item as Value Mapping**: `DeleteMessageMapping` deletes
   via `(Id, Version='active')`, the same key used for reads. Whether this removes only the
   active version or every version of the artifact was not confirmed against a primary source.
 - **Deployment — `IntegrationRuntimeArtifacts`, not `BuildAndDeployStatus`**: investigated both
-  per this phase's instructions. `BuildAndDeployStatus(TaskId='…')` is documented in the context
+  per this phase's instructions. On a tenant (September 2026) `DeployMessageMappingDesigntimeArtifact`
+  answered 202 without a body, so there is no task ID to follow; the runtime status moved from
+  `STARTING` to `STARTED` within seconds in one run and after about two minutes in another. `BuildAndDeployStatus(TaskId='…')` is documented in the context
   of a different artifact family's build-then-deploy pipeline (OData API artifacts, keyed by a
   `TaskId` a build operation returns), not `MessageMappingDesigntimeArtifacts`. SAP's Runtime
   Status API documentation and secondary sources both describe message mappings as deployed
@@ -1785,6 +1790,18 @@ contract gaps and confirmed the Partner Directory writes:
 | `OAuth2ClientCredentials` | `PUT` update with the secret resent: `202`. |
 | `Partners` | Read by key: `400` "Reading of single partner entitities is not supported"; collection and `$filter=Pid eq '<pid>'`: `200`. `DELETE Partners('<pid>')` after the partner's last entry was deleted: `404` "Partner not found". |
 | `StringParameters`, `BinaryParameters`, `AlternativePartners` (hex key), `AuthorizedUsers`, `UserCredentialParameters` | Create `201`, read `200`, `PUT` update (for credential parameters a second `POST`) `204`/`201`, delete `204`; repointing an alternative partner or authorized user to another Pid with `PUT {Pid}` works. |
+
+Content write tests (September 2026) with a test package, an integration flow from a UI export,
+a message mapping from SAP's public samples and a value mapping with made-up entries:
+
+| Entity set or action | Finding |
+|---|---|
+| `IntegrationDesigntimeArtifacts`, `MessageMappingDesigntimeArtifacts` | Create with a ZIP whose `Bundle-SymbolicName` differs from the artifact ID: `201`, and SAP writes the artifact ID into `Bundle-SymbolicName` and the name into `Bundle-Name`. A later `PUT` with a different `Bundle-SymbolicName`: flow `400` "Could not update artifact of the package; due to change in the Bundle-symbolicName", mapping `500` "BUNDLE_SYMBOLIC_NAME_CANNOT_BE_UPDATED"; with a matching one `200`, no body. The version stays the same after a `PUT`. |
+| `…SaveAsVersion` | Flow `200`, mapping `202`, both without a body; the version reads back as requested. |
+| `DeployIntegrationDesigntimeArtifact` | `202` with the task ID as plain text (not OData JSON). `BuildAndDeployStatus(TaskId='…')` then answers `{"TaskId": …, "Status": "SUCCESS"}`. |
+| `Configurations` of a flow | Contained only `SAP_ProfileId` = `integrationcell` (`xsd:string`) for a flow uploaded from a ZIP without parameters. Deployed like that, the task reported `SUCCESS` but no `IntegrationRuntimeArtifacts` entry appeared; after `PUT …/$links/Configurations('SAP_ProfileId')` with `iflmap` the flow was `STARTED` on the first poll. |
+| `IntegrationRuntimeArtifacts` | Read by key returns `ErrorInformation` as a `__deferred` link, as the `$metadata` declares. Message mappings and value mappings sometimes stayed `STARTING` for several minutes. `DELETE` answers `202`, then `404`. |
+| `ValueMappingDesigntimeArtifacts` | Create `201`; the version comes from the ZIP's `Bundle-Version`. `DeployValueMappingDesigntimeArtifact` answered `202` without a body. |
 
 On the API portal, a key with `APIPortal.Administrator` read `APIProviders`, `APIProxies`,
 `APIProducts`, `CertificateStoreReferences`, `GenericKeyMapEntries` and `VirtualHosts` (200),

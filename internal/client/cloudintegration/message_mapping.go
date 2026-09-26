@@ -80,14 +80,14 @@ func (c *Client) CreateMessageMapping(ctx context.Context, packageID, mappingID,
 }
 
 // UpdateMessageMapping uploads new content for an existing message mapping,
-// creating a new design-time version under the same mapping ID via PUT
-// against the keyed (Id, Version) entity.
+// with a PUT against the keyed (Id, Version) entity. The PUT keeps the
+// version (tenant test, September 2026); SaveMessageMappingAsVersion moves it.
 //
 // Unlike UpdateValueMapping (removed after this project found evidence
 // against a working generic PUT for that specific entity set), PUT here
 // rests on positive, entity-specific evidence: MessageMappingDesigntimeArtifacts
 // shares IntegrationDesigntimeArtifacts' exact (Id, Version) key shape and
-// confirmed version-creating PUT behavior; an independent third-party OData
+// confirmed PUT-based update; an independent third-party OData
 // client built against this same API (github.com/lemaiwo/ci-mcp-server)
 // explicitly enables generic update for this entity set, the same as it
 // does for IntegrationDesigntimeArtifacts and ScriptCollectionDesigntimeArtifacts

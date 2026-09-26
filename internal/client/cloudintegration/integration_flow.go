@@ -73,12 +73,10 @@ func (c *Client) CreateIntegrationFlow(ctx context.Context, packageID, flowID, n
 }
 
 // UpdateIntegrationFlow uploads new content for an existing integration
-// flow, creating a new design-time version under the same flow ID (SAP's
-// design-time API is version-based, not in-place, which is why the flow's
-// identity — packageID/flowID — never changes on update). Unlike creating a
-// brand new flow, this targets the existing (Id, Version) entity with PUT
-// rather than POSTing to the collection again, which is how OData V2
-// distinguishes "create a new entity" from "update this one".
+// flow with a PUT on the keyed (Id, Version='active') entity; the flow's
+// identity (packageID/flowID) never changes. A tenant test in September
+// 2026 showed that the PUT keeps the version; SaveIntegrationFlowAsVersion
+// moves it. See updateDesigntimeArtifact for the request body.
 func (c *Client) UpdateIntegrationFlow(ctx context.Context, flowID, name string, content []byte) (*IntegrationFlow, error) {
 	return updateDesigntimeArtifact(ctx, c, integrationDesigntimeArtifactsEntitySet, flowID, name, content,
 		func() (*IntegrationFlow, error) { return c.GetIntegrationFlow(ctx, "", flowID) })

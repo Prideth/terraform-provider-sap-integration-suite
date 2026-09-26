@@ -393,11 +393,11 @@ by, anything the flows that reference it do.
 |---|---|---|
 | `MessageMappingDesigntimeArtifacts` | GET | Read artifact metadata (`Id`, `Version`, `Name`, `PackageId`), navigable from `IntegrationPackages` |
 | `MessageMappingDesigntimeArtifacts` | POST | Create a new message mapping artifact from uploaded content |
-| `MessageMappingDesigntimeArtifacts(Id=…,Version=…)` | PUT | Update an existing artifact's content, creating a new design-time version — see Update below |
+| `MessageMappingDesigntimeArtifacts(Id=…,Version=…)` | PUT | Update an existing artifact's content; the version stays the same (tenant test, September 2026) — see Update below |
 | `MessageMappingDesigntimeArtifacts(Id=…,Version=…)` | DELETE | Delete the artifact — see Delete below for what "delete" actually removes |
 | `DeployMessageMappingDesigntimeArtifact?Id='…'&Version='…'` | POST | Deploy a specific version to the runtime (singular action name, matching the sibling actions for integration flows and value mappings) |
 | `IntegrationRuntimeArtifacts(Id=…)` | GET / DELETE | Read deployment status / undeploy — the same shared runtime-artifacts entity already used by `sapintegrationsuite_integration_flow_deployment` and `sapintegrationsuite_value_mapping_deployment`, confirmed applicable here too (see the deployment resource entry below) |
-| `MessageMappingDesigntimeArtifactSaveAsVersion?Id='…'&SaveAsVersion='…'` | POST | Save the current content under an explicit, caller-supplied version string, as a named milestone alongside the version SAP assigns automatically on every `PUT` — not used by this provider (see Update below) |
+| `MessageMappingDesigntimeArtifactSaveAsVersion?Id='…'&SaveAsVersion='…'` | POST | Save the current content under an explicit, caller-supplied version string; used by `save_as_version`, since a `PUT` does not change the version |
 | Required roles | — | `WorkspacePackagesConfigure`, `WorkspacePackagesEdit`, `WorkspaceArtifactsDeploy` (same Integration Content API roles already required for integration flows and value mappings) |
 
 **`SaveAsVersion` is a universal action across this API family, not a Value-Mapping-specific
@@ -409,8 +409,8 @@ phase's research shows the actual shape of `SaveAsVersion` more clearly: it exis
 `IntegrationDesigntimeArtifactSaveAsVersion?Id='…'&SaveAsVersion='…'` for integration flows too
 — an entity set where `PUT`-based update is independently confirmed and already implemented — so
 `PUT` and `SaveAsVersion` are evidently not mutually exclusive alternatives in general; they
-coexist, with `SaveAsVersion` letting a caller pin an explicit version string as a named
-milestone on top of whatever version `PUT` assigns automatically. This does not change any
+coexist. A tenant test in September 2026 settled their roles: a `PUT` replaces the content and
+keeps the version, and `SaveAsVersion` is the only way to move the version. This does not change any
 conclusion this project reached about Value Mapping specifically (that remains governed by its
 own entity-specific evidence, documented in `docs/sap-api-references.md`), but it does mean the
 mere existence of a `SaveAsVersion` action for Message Mapping is not, by itself, a reason to
@@ -439,7 +439,7 @@ evidence for *this* entity set — see Update below.
   Mapping, this phase found positive, entity-specific evidence that `PUT` is the right mechanism
   here, not just an analogy with integration flows:
   - `MessageMappingDesigntimeArtifacts` shares the exact same `(Id, Version)` composite-key
-    shape as `IntegrationDesigntimeArtifacts`, whose `PUT`-based, version-creating update is
+    shape as `IntegrationDesigntimeArtifacts`, whose `PUT`-based update is
     independently confirmed and already implemented.
   - An independent third-party OData client built directly against this API
     (`github.com/lemaiwo/ci-mcp-server`, the same one whose configuration was used as
@@ -452,21 +452,23 @@ evidence for *this* entity set — see Update below.
   - No SAP Knowledge Base Article or other evidence of a documented problem with changing a
     message mapping's version via `PUT` was found (unlike Value Mapping, where KBA 3502529
     documents exactly that problem for that entity set specifically).
-  - Following SAP's own `IntegrationDesigntimeArtifacts` behavior, `PUT` here creates a new
-    design-time version of the same artifact ID; this provider treats that as a normal Terraform
-    Update (no replace), because identity (`package_id`/`mapping_id`) does not change — the
-    same design already proven for `sapintegrationsuite_integration_flow`.
-  - `MessageMappingDesigntimeArtifactSaveAsVersion` exists (see the API model above) but is not
-    used: this provider does not ask the user to manage an explicit version string, so there is
-    nothing for it to do here that `PUT`'s automatic versioning does not already cover.
+  - `PUT` replaces the content of the same artifact ID; this provider treats that as a normal
+    Terraform Update (no replace), because identity (`package_id`/`mapping_id`) does not
+    change — the same design as `sapintegrationsuite_integration_flow`. An earlier version of
+    this document said the `PUT` creates a new version; a tenant test in September 2026 showed
+    that it keeps the version, answers 200 without a body, and must carry only `Name` and
+    `ArtifactContent` (empty `Id` and `PackageId` were rejected with a 500).
+  - `MessageMappingDesigntimeArtifactSaveAsVersion` backs the optional `save_as_version`
+    attribute: it is the only way to move the version, which a deployment needs to notice new
+    content unless `redeploy_triggers` is used.
 - **Delete**: `DELETE MessageMappingDesigntimeArtifacts(Id='{mapping_id}',Version='active')`.
   Whether this removes only the active version or every version of the artifact was not
   confirmed against a primary source (the same open question already flagged for
   `sapintegrationsuite_value_mapping`'s Delete) — documented as an open item rather than
   asserted as "removes all versions".
-- **Version**: Computed only. SAP assigns it on every `PUT`; Terraform never asks the user to
-  manage a version string, which is also what keeps a `terraform apply` with unchanged content
-  from producing a new version (idempotent apply — see Terraform version semantics below).
+- **Version**: Computed. On create it comes from `Bundle-Version` in the ZIP; a `PUT` keeps it;
+  only `save_as_version` changes it. An apply with unchanged content does not touch the
+  artifact at all (idempotent apply — see Terraform version semantics below).
 - **Import**: `terraform import sapintegrationsuite_message_mapping.example UTILITIES/customer-mapping`.
 - **Drift detection**: `Read` re-fetches metadata on every refresh. `content`/`content_hash`
   follow the exact same explicit, user-supplied, `RequiresReplace`-free pattern already
@@ -491,7 +493,7 @@ produced) over:
 - Model B (an explicit `desired_version` Terraform input) — rejected because nothing in the
   confirmed API contract requires or even exposes a caller-chosen version number for a normal
   content update; `SaveAsVersion`'s caller-supplied version string is an optional, separate
-  action this provider does not use (see Update above), not a required part of the update path.
+  step (`save_as_version`, added later), not a required part of the update path.
 - Model C (draft vs. published version as separate resource concerns) — rejected because no
   SAP documentation surfaced a draft/published distinction for message mapping artifacts
   independent of the same `Version='active'` alias already used uniformly across this API
@@ -526,7 +528,10 @@ Terraform itself never treats a version-string mismatch as configuration drift.
   would; it follows the same fire-and-poll-`IntegrationRuntimeArtifacts` shape already
   implemented for integration flows and value mappings. `runtime_artifact.go` and
   `runtime_deployment.go` are reused unmodified, since the semantics genuinely match — the same
-  standard already applied when this abstraction was reviewed for value mapping.
+  standard already applied when this abstraction was reviewed for value mapping. A tenant test
+  (September 2026) confirmed it: the mapping deploy answered 202 without a body. Integration
+  flows are different: their deploy returns a task ID, and `BuildAndDeployStatus` reports it
+  (`SUCCESS`), so the flow deployment reads that task while the runtime artifact is missing.
 - **Schema and lifecycle**: identical shape to `sapintegrationsuite_value_mapping_deployment` —
   a required `mapping_version` input (normally wired to
   `sapintegrationsuite_message_mapping.<name>.version`) that both triggers redeployment when the
@@ -572,7 +577,7 @@ inventing constraints SAP does not document.
 |---|---|---|
 | `ScriptCollectionDesigntimeArtifacts` | GET | Read artifact metadata (`Id`, `Version`, `Name`, `PackageId`) |
 | `ScriptCollectionDesigntimeArtifacts` | POST | Create a new script collection artifact from uploaded content |
-| `ScriptCollectionDesigntimeArtifacts(Id=…,Version=…)` | PUT | Update an existing artifact's content, creating a new design-time version |
+| `ScriptCollectionDesigntimeArtifacts(Id=…,Version=…)` | PUT | Update an existing artifact's content; the version stays the same (tenant test, September 2026) |
 | `ScriptCollectionDesigntimeArtifacts(Id=…,Version=…)` | DELETE | Delete the artifact — scope unconfirmed, same open item as every other design-time artifact in this family |
 | `DeployScriptCollectionDesigntimeArtifact?Id='…'&Version='…'` | POST | Deploy a specific version to the runtime (singular action name, confirmed via SAP's own documentation, matching the sibling actions for every other design-time artifact type) |
 | `IntegrationRuntimeArtifacts(Id=…)` | GET / DELETE | Read deployment status / undeploy — the same shared runtime-artifacts entity already used by every other `*_deployment` resource in this provider; script collections are documented as existing as runtime artifacts alongside integration flows, value mappings, and message mappings inside the same deployed runtime packages |
@@ -580,7 +585,7 @@ inventing constraints SAP does not document.
 
 **Update — implemented via `PUT`, same grounds as Message Mapping.** `ScriptCollectionDesigntimeArtifacts`
 shares the exact `(Id, Version)` composite-key shape as `IntegrationDesigntimeArtifacts` and
-`MessageMappingDesigntimeArtifacts`, both of which have confirmed, version-creating `PUT`
+`MessageMappingDesigntimeArtifacts`, both of which have confirmed `PUT`-based update
 behavior. The same independent third-party OData client (`github.com/lemaiwo/ci-mcp-server`)
 referenced when Message Mapping's Update model was decided explicitly enables generic update for
 `ScriptCollectionDesigntimeArtifacts` too — the same as `IntegrationDesigntimeArtifacts` and
@@ -619,8 +624,8 @@ the other file-based resources.
 - **Delete**: `DELETE ScriptCollectionDesigntimeArtifacts(Id='{script_collection_id}',Version='active')`.
   Whether this removes only the active version or every version of the artifact is unconfirmed
   against a primary source, the same open item already flagged for every sibling resource.
-- **Version**: Computed only. SAP assigns it on every `PUT`; an unchanged `terraform apply` does
-  not produce a new version, for the same reason already established for the other file-based
+- **Version**: Computed. It comes from `Bundle-Version` on create, a `PUT` keeps it, and
+  `save_as_version` changes it; an unchanged `terraform apply` does not touch the artifact, for the same reason already established for the other file-based
   resources (content-hash comparison decides whether Update is even called).
 - **Import**: `terraform import sapintegrationsuite_script_collection.example UTILITIES/shared-scripts`.
 - **Drift detection**: `Read` re-fetches metadata on every refresh; `content`/`content_hash`
