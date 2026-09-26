@@ -1604,45 +1604,46 @@ is genuinely "is this the right shape for a Terraform resource," not "does an AP
 14. **Resource / Data Source / unsupported / out of scope**: **Resource + Data Source, `partial`
     (`unsafe_terraform_lifecycle`)** — unencrypted maps only, no Update.
 
-### API Proxy — no resource (this phase)
+### API Proxy — resource, experimental
 
-1. **Who creates it**: a practitioner, as a ZIP-bundled design-time artifact.
-2. **Configuration vs. runtime state**: configuration (design-time content), with a separate
-   confirmed-to-exist-conceptually runtime deployment state (see API Proxy Deployment below).
-3. **Identity**: `name`, confirmed as the OData key from a directly-referenced worked `GET`/
-   `DELETE` example.
-4. **Create public**: **the bundle's shape is confirmed** (SAP's own public sample repository
-   shows the exact ZIP structure field-for-field), but **the wire mechanism for submitting that
-   ZIP through a Create/Update REST call is not confirmed** from any reachable primary source.
-   This is a genuinely different kind of gap than Current API Management's family above: there,
-   no API existed at all; here, a real API is confirmed to exist and even partially documented,
-   but one specific, essential detail (how the binary content actually gets uploaded) could not
-   be pinned down despite substantial effort (the official user guide, a dedicated sample
-   repository, and several web searches).
-5–7. **Read / Update / Delete public**: Read and Delete confirmed by direct reference in SAP's
-   own documentation; Update's shape is unconfirmed for the same reason as Create.
-14. **Resource / Data Source / unsupported / out of scope**: **unsupported,
-    `public_api_incomplete`** — distinct from `no_public_api`: the gap here is one unconfirmed
-    detail of an otherwise well-evidenced API, not an absent one. Revisit this the moment a
-    primary source shows a worked Create/Update request for this entity.
+1. **Who creates it**: a practitioner, as a ZIP-bundled design-time artifact exported from the
+   API portal or built by hand.
+2. **Configuration vs. runtime state**: configuration. SAP documents that an imported proxy is
+   deployed by default, so the runtime state follows the import and is shown as `state`.
+3. **Identity**: `name`, the OData key of `Management.svc/APIProxies`, confirmed by `$metadata`
+   and SAP's worked `GET`/`DELETE` references. SAP takes it from the bundle's
+   `APIProxy/<name>.xml` descriptor; the provider checks that it equals the configured name
+   before uploading.
+4. **Create public**: yes, through the Transport API. SAP's API Management Client SDK 3.0.6 (official
+   tooling, published 2026-09-24) posts the raw ZIP as `application/octet-stream` to
+   `/apiportal/api/1.0/Transport.svc/APIProxies`; the provider sends the same request. The Hub
+   lists "API Portal - Transport (CF)" as the official API; its specification needs an SAP login.
+5. **Read public**: yes, `Management.svc/APIProxies('<name>')` (GET returned 200 on a tenant).
+6. **Update public**: not confirmed. Nothing public says whether importing a changed bundle over an
+   existing proxy replaces it cleanly, so the provider never does it: a new `content_hash`
+   replaces the resource (delete, then import).
+7. **Delete public**: yes, `DELETE Management.svc/APIProxies('<name>')`, as SAP's documentation
+   references it.
+8. **Import**: by name. SAP does not return the bundle file, so the first apply after an import
+   only records `content` and `content_hash`.
+14. **Resource / Data Source / unsupported / out of scope**: **Resource, `experimental`
+    (`public_api_incomplete`)** until `TestAccAPIProxy_sample` passes on a tenant; the open
+    point is the update semantics, which the replace-only design avoids.
 
-### API Proxy Deployment — no resource (depends on API Proxy)
+### API Proxy Deployment — no separate resource
 
-Not reached as an independent question: without a confirmed Create for API Proxy itself, there is
-nothing to attach a deployment resource to. One data point worth recording for whenever this is
-revisited: SAP's own documentation states a transported/exported proxy "by default gets imported
-to the target in the deployed state," suggesting deployment may turn out to be a Create-time
-side effect rather than an independent action — the opposite of the design-time/runtime split
-this provider uses for every other Cloud Integration artifact type, and worth checking carefully
-rather than assuming symmetry.
+SAP's own documentation states a transported or exported proxy "by default gets imported to the
+target in the deployed state", and no public call deploys or undeploys an existing proxy on its
+own. Deployment is therefore a side effect of `sapintegrationsuite_api_proxy`'s create, the
+opposite of the design-time/runtime split this provider uses for Cloud Integration artifacts.
 
 ### Policy — no resource, folded into API Proxy's opaque content
 
 SAP's own sample repository confirms policies are XML files referenced by a `<policies>` element
 in the proxy's root XML, not an independently addressable OData entity. Per this provider's
 established pattern for opaque, nested design-time content (matching how Cloud Integration
-artifact ZIP content is already treated), policies would be managed as part of
-`sapintegrationsuite_api_proxy`'s own content once that resource exists, never as a separate
+artifact ZIP content is already treated), policies are managed as part of
+`sapintegrationsuite_api_proxy`'s content, never as a separate
 `sapintegrationsuite_api_proxy_policy` resource reproducing SAP's policy schema catalog.
 
 ## Migration Assessment — suitability check

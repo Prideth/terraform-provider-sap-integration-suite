@@ -176,6 +176,20 @@ All notable changes to this project are documented in this file.
   `docs/api-discovery-report.md` is generated from that. Make targets:
   `api-metadata-diff`, `api-discovery`, `api-metadata-refresh`,
   `api-discovery-report`, `testacc-metadata`.
+- `sapintegrationsuite_api_proxy` (experimental): a Classic API Management API
+  proxy managed as its bundle ZIP. The bundle is uploaded the way SAP's API
+  Management Client SDK 3.0.6 does it (`POST Transport.svc/APIProxies` with the
+  raw ZIP), read and deleted through `Management.svc/APIProxies`. A different
+  `content_hash` replaces the proxy, because SAP does not document what an
+  import over an existing proxy does. The provider checks that the bundle's
+  `APIProxy/<name>.xml` names the same proxy as `name`. It stays experimental
+  until `TestAccAPIProxy_sample` passes on a tenant.
+- Acceptance tests for the business data graph lifecycle
+  (`TestAccBusinessDataGraph_basic`, needs
+  `SAP_INTEGRATION_SUITE_ACC_GRAPH_DESTINATION`) and for Edge Integration Cell
+  targeting (`TestAccEdgeIntegrationCell_securityAndPartnerDirectory`, needs
+  `SAP_INTEGRATION_SUITE_RUNTIME_LOCATION_ID`). Both resources keep their
+  status until these pass on a tenant.
 - Capability gates for acceptance tests. A test now runs only with
   `TF_ACC=1` and either `SAP_INTEGRATION_SUITE_ACC_ALL=1` or its capability
   gate (for example `SAP_INTEGRATION_SUITE_ACC_CLOUD_INTEGRATION=1`), and

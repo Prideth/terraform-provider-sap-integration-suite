@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/apimanagementclassic"
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/cloudintegration"
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/testutil/samples"
 )
@@ -29,6 +30,9 @@ func TestCatalog(t *testing.T) {
 				checkExport(t, data)
 			case samples.KindAPIProxy:
 				requireEntry(t, data, "APIProxy/")
+				if _, err := apimanagementclassic.APIProxyBundleName(data); err != nil {
+					t.Error(err)
+				}
 			case samples.KindPolicyTemplate:
 				requireEntry(t, data, "PolicyTemplateContainer/")
 			default:
@@ -156,5 +160,31 @@ func TestAlignBundleID_Samples(t *testing.T) {
 		if len(before) != len(after) {
 			t.Errorf("input %d: %d entries became %d", i, len(before), len(after))
 		}
+	}
+}
+
+// A renamed proxy bundle declares the new name, uses the new base path and
+// keeps every other file.
+func TestWithAPIProxyName_Sample(t *testing.T) {
+	original := samples.Get(t, "codejam-api-proxy")
+	renamed, err := samples.WithAPIProxyName(original, "tfaccproxy", "/tfacc/tfaccproxy")
+	if err != nil {
+		t.Fatal(err)
+	}
+	name, err := apimanagementclassic.APIProxyBundleName(renamed)
+	if err != nil || name != "tfaccproxy" {
+		t.Fatalf("renamed bundle declares %q, %v", name, err)
+	}
+	before, _ := samples.FileNames(original)
+	after, _ := samples.FileNames(renamed)
+	if len(before) != len(after) || !slices.Contains(after, "APIProxy/tfaccproxy.xml") {
+		t.Errorf("files before %v, after %v", before, after)
+	}
+	endpoint, err := samples.ReadFile(renamed, "APIProxy/APIProxyEndPoint/default.xml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(endpoint), "<base_path>/tfacc/tfaccproxy</base_path>") {
+		t.Errorf("base path not replaced:\n%s", endpoint)
 	}
 }

@@ -83,8 +83,8 @@ func (r *apiProductResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			"not supported on APIProduct entity\". Every attribute therefore forces a new product: " +
 			"Terraform deletes the product and creates it again. Applications subscribed to the old " +
 			"product lose that subscription, so review any plan that replaces a product.\n\n" +
-			"SAP requires at least one linked API proxy. The proxies must already exist; this " +
-			"provider does not manage API proxies.",
+			"SAP requires at least one linked API proxy. The proxies must already exist, for " +
+			"example managed with sapintegrationsuite_api_proxy (experimental).",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:      true,

@@ -31,6 +31,9 @@ type HTTPDoer interface {
 // Client is the Classic API Management (API Portal) client.
 type Client struct {
 	odata *v2.Client
+	// transport addresses Transport.svc, the API portal's import and export
+	// service for API proxy bundles, next to Management.svc.
+	transport *v2.Client
 }
 
 // New builds a Classic API Management client. host is the API Portal
@@ -39,6 +42,7 @@ type Client struct {
 // the service's "/apiportal/api/1.0/Management.svc" path is appended
 // automatically.
 func New(httpClient HTTPDoer, host string) *Client {
-	baseURL := strings.TrimRight(host, "/") + "/apiportal/api/1.0/Management.svc"
-	return &Client{odata: v2.New(httpClient, baseURL)}
+	root := strings.TrimRight(host, "/") + "/apiportal/api/1.0"
+	odata := v2.New(httpClient, root+"/Management.svc")
+	return &Client{odata: odata, transport: odata.WithBaseURL(root + "/Transport.svc")}
 }

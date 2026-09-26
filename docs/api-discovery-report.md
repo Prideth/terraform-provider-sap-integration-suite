@@ -23,7 +23,7 @@ SAP documentation, official SAP tooling, or a safe verification on a tenant
 | Service | Protocol | Snapshot | Entity sets | Operations | Used | Candidates | Excluded |
 |---|---|---|---:|---:|---:|---:|---:|
 | [cloud-integration](#cloud-integration) | OData V2 | 2026-09-26 | 131 | 35 | 38 | 36 | 92 |
-| [classic-api-management](#classic-api-management) | OData V2 | 2026-09-26 | 61 | 1 | 6 | 20 | 36 |
+| [classic-api-management](#classic-api-management) | OData V2 | 2026-09-26 | 61 | 1 | 7 | 19 | 36 |
 | [classic-api-management-transport](#classic-api-management-transport) | OData V2 | none yet | | | | | |
 | [edge-integration-cell](#edge-integration-cell) | OData V2 | none yet | | | | | |
 | [api-composition-configuration](#api-composition-configuration) | OData V4 | none yet | | | | | |
@@ -174,23 +174,23 @@ Classic API Management, API portal Management.svc.
 - Snapshot: `testdata/api-metadata/classic-api-management.json`, captured 2026-09-26 from local document
 - Contract: 61 entity sets, 0 singletons, 61 entity types, 5 complex types, 0 enum types, 1 operations; 66 types reachable from the entity sets and operations, 0 unreachable, 0 unresolved references
 
-### Used by the provider (6)
+### Used by the provider (7)
 
 | Name | Kind | Type or method | Client packages |
 |---|---|---|---|
 | APIProductAdditionalProperties | entity set | APIProductAdditionalProperty | `apimanagementclassic` |
 | APIProducts | entity set | APIProduct | `apimanagementclassic` |
 | APIProviders | entity set | APIProvider | `apimanagementclassic` |
+| APIProxies | entity set | APIProxy | `apimanagementclassic` |
 | CertificateStoreReferences | entity set | CertificateStoreReference | `apimanagementclassic` |
 | GenericKeyMapEntries | entity set | GenericKeyMapEntry | `apimanagementclassic` |
 | GenericKeyMapEntryValues | entity set | GenericKeyMapEntryValue | `apimanagementclassic` |
 
-### Candidates (20)
+### Candidates (19)
 
 | Name | Kind | Catalog entry | Catalog status | Note |
 |---|---|---|---|---|
 | APIProviderAdditionalPropertys | entity set | `api_management.classic.api_provider` | partial | Custom attributes of an API provider. |
-| APIProxies | entity set | `api_management.classic.api_proxy` | unsupported | Create and update go through the Transport.svc ZIP import (Client SDK); Management.svc alone is research. |
 | APIProxyDeployments | entity set | `api_management.classic.api_proxy_deployment` | unsupported |  |
 | AgentAdditionalPropertys | entity set | `api_management.classic.application` | unsupported |  |
 | Agents | entity set | `api_management.classic.application` | unsupported | Application-shaped (app key and secret, products); its role is not documented yet. |

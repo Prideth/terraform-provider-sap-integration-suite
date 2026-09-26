@@ -10,6 +10,7 @@ var Contract = apimeta.Contract{
 	Package: "apimanagementclassic",
 	Reads: []apimeta.StructUse{
 		{EntitySet: apiProvidersEntitySet, Value: APIProvider{}},
+		{EntitySet: apiProxiesEntitySet, Value: APIProxy{}},
 		{EntitySet: apiProductsEntitySet, Value: APIProduct{}},
 		{EntitySet: apiProductsEntitySet, Value: apiProductReadWire{}},
 		{EntitySet: apiProductAdditionalPropertiesEntity, Value: APIProductAdditionalProperty{}},
@@ -25,6 +26,7 @@ var Contract = apimeta.Contract{
 	},
 	Keys: []apimeta.KeyUse{
 		apimeta.Key(apiProvidersEntitySet, "name", "Edm.String"),
+		apimeta.Key(apiProxiesEntitySet, "name", "Edm.String"),
 		apimeta.Key(apiProductsEntitySet, "name", "Edm.String"),
 		apimeta.Key(apiProductAdditionalPropertiesEntity, "entityId", "Edm.String", "name", "Edm.String"),
 		apimeta.Key(certificateStoreReferencesEntitySet, "name", "Edm.String"),

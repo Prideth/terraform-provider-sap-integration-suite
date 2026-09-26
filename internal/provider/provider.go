@@ -429,6 +429,7 @@ func (p *sapIntegrationSuiteProvider) Resources(_ context.Context) []func() reso
 		NewKeyPairResource,
 		NewAPIProviderResource,
 		NewAPIProductResource,
+		NewAPIProxyResource,
 		NewAPIManagementCertificateStoreReferenceResource,
 		NewAPIKeyValueMapResource,
 		NewBusinessDataGraphResource,

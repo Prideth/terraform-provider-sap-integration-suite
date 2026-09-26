@@ -1209,36 +1209,36 @@ var Catalog = []Feature{
 		Name:   "API Proxy (classic API Management)",
 		Description: "A classic API Management API proxy definition: the ZIP-bundled design-time " +
 			"content (proxy endpoint, target endpoint, policies, resources) deployed as a callable API.",
-		SupportStatus: StatusUnsupported,
-		SupportReason: ReasonPublicAPIIncomplete,
-		PublicAPI:     true,
-		APIProtocol:   "OData V2 (Management.svc/APIProxies)",
-		Planned:       true,
+		SupportStatus:   StatusExperimental,
+		SupportReason:   ReasonPublicAPIIncomplete,
+		ResourceTypes:   []string{"sapintegrationsuite_api_proxy"},
+		DataSourceTypes: []string{},
+		PublicAPI:       true,
+		APIProtocol:     "REST (Transport.svc) for upload, OData V2 (Management.svc/APIProxies) for read and delete",
+		Planned:         true,
 		Limitations: []string{
+			"Experimental until the acceptance test (TestAccAPIProxy_sample) passes on a tenant. " +
+				"Upload follows SAP's API Management Client SDK 3.0.6 (published 2026-09-24) byte for " +
+				"byte: POST /apiportal/api/1.0/Transport.svc/APIProxies with the SDK's own query and " +
+				"the raw ZIP as application/octet-stream. The Business Accelerator Hub lists \"API " +
+				"Portal - Transport (CF)\" (\"Export and Import API Proxy via zip bundle\") as the " +
+				"official API; its specification needs an SAP login.",
 			"The APIProxy entity is confirmed by the Management.svc $metadata (key name; " +
-				"provider_name, state, status_code, version, revisionID, isPublished and navigations to " +
-				"endpoints, policies, resources and the API provider). Its GET returned 200 on a tenant.",
-			"The APIProxies entity set, its GET, and its DELETE are confirmed (SAP's own " +
-				"documentation and worked examples reference \"Management.svc/APIProxies\" and " +
-				"\"APIProxies('<name>')\" directly), and the proxy content bundle's ZIP structure is " +
-				"confirmed field-for-field from SAP's own public sample repository " +
-				"(SAP/apibusinesshub-api-recipes).",
-			"Upload is still not settled (re-audited September 2026). SAP's API Management Client SDK " +
-				"3.0.6 imports a proxy with POST /apiportal/api/1.0/Transport.svc/APIProxies and the raw " +
-				"ZIP as application/octet-stream, and exports with GET " +
-				"Transport.svc/APIProxies?name=<name>. A community description of the same endpoint " +
-				"sends a base64 string and a virtualhost GUID instead. SAP Help documents only UI " +
-				"import/export and SAP Cloud Transport Management, but the Business Accelerator Hub " +
-				"lists \"API Portal - Transport (CF)\" (REST, \"Export and Import API Proxy via zip " +
-				"bundle\") and \"Content Archive Transport (CF)\" as official APIs; their specifications " +
-				"need an SAP login. Nothing public says whether an import overwrites an existing proxy " +
-				"or deploys it. " +
-				"The SDK's JSON create path (/api/1.0/apis/ with isFromCli) is an internal endpoint and " +
-				"not a candidate.",
-			"Depends on api_management.classic.api_provider already existing: SAP's own sample " +
-				"repository documents that importing a proxy fails if the API Provider it references " +
-				"does not already exist on the target tenant by name.",
+				"provider_name, state, status_code, version, isPublished and navigations to endpoints, " +
+				"policies, resources and the API provider), and its GET returned 200 on a tenant. The " +
+				"read and delete paths Management.svc/APIProxies('<name>') are the ones SAP's " +
+				"documentation and worked examples use.",
+			"Replace-only: nothing public says whether importing a changed bundle over an existing " +
+				"proxy replaces it cleanly, so a different content_hash deletes the proxy and imports " +
+				"it again. SAP's documentation says an imported proxy is deployed by default, so there " +
+				"is no separate deployment step (see api_management.classic.api_proxy_deployment).",
+			"API providers a bundle's target endpoint references must already exist on the tenant: " +
+				"SAP's sample repository documents that the import fails otherwise. Bundles with a " +
+				"target URL (provider_id NONE) have no such dependency.",
+			"The SDK's JSON create path (/api/1.0/apis/ with isFromCli) is an internal endpoint and " +
+				"not used.",
 		},
+		Operations: Operations{Create: true, Read: true, Delete: true, Import: true},
 	},
 	{
 		Key:    "api_management.classic.api_proxy_deployment",
@@ -1250,12 +1250,11 @@ var Catalog = []Feature{
 		SupportReason: ReasonPublicAPIIncomplete,
 		PublicAPI:     true,
 		Limitations: []string{
-			"Depends on api_management.classic.api_proxy, which this provider does not implement in " +
-				"this phase — see that entry. SAP's own documentation states that a proxy transported " +
-				"or exported, individually or as part of a product, \"by default gets imported to the " +
-				"target in the deployed state,\" suggesting deployment may be a Create-time side effect " +
-				"rather than an independent action, but this was not confirmed further given the " +
-				"unconfirmed Create mechanism itself.",
+			"SAP's own documentation states that a proxy transported or exported, individually or " +
+				"as part of a product, \"by default gets imported to the target in the deployed " +
+				"state\", so sapintegrationsuite_api_proxy (experimental) deploys by importing and " +
+				"exposes the resulting state. No documented API deploys or undeploys an existing proxy " +
+				"on its own, so there is no separate deployment resource.",
 		},
 	},
 	{

@@ -63,6 +63,13 @@ func (c *Client) PutRaw(ctx context.Context, path, contentType string, body []by
 	return c.doRaw(ctx, http.MethodPut, path, contentType, body)
 }
 
+// PostRaw issues a POST request with a raw, non-JSON body and an explicit
+// Content-Type, for upload endpoints that take a file (for example an API
+// proxy ZIP bundle) instead of a JSON entity.
+func (c *Client) PostRaw(ctx context.Context, path, contentType string, body []byte) ([]byte, error) {
+	return c.doRaw(ctx, http.MethodPost, path, contentType, body)
+}
+
 // Patch issues a PATCH request with a JSON body. SAP's OData V2 services on
 // Cloud Foundry/BTP accept PATCH as the modern equivalent of the legacy
 // OData MERGE verb: only the fields present in body are changed, and every

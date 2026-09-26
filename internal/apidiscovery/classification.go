@@ -290,7 +290,6 @@ const (
 
 var classicAPIManagementClassification = concat(
 	[]rule{
-		candidate("APIProxies", "api_management.classic.api_proxy", "Create and update go through the Transport.svc ZIP import (Client SDK); Management.svc alone is research."),
 		candidate("APIProxyDeployments", "api_management.classic.api_proxy_deployment", ""),
 		candidate("Policies", "api_management.classic.policy", "Policies are also part of the proxy bundle."),
 		candidate("VirtualHosts", "api_management.classic.virtual_host", ""),

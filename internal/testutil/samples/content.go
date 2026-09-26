@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"path"
 	"regexp"
 	"strings"
 )
@@ -159,6 +160,19 @@ func FileNames(content []byte) ([]string, error) {
 	return names, nil
 }
 
+// ReadFile returns one entry of a ZIP archive.
+func ReadFile(content []byte, name string) ([]byte, error) {
+	files, err := zipFiles(content)
+	if err != nil {
+		return nil, err
+	}
+	data, ok := files[name]
+	if !ok {
+		return nil, fmt.Errorf("samples: no %s in the archive", name)
+	}
+	return data, nil
+}
+
 func readZipFile(f *zip.File) ([]byte, error) {
 	rc, err := f.Open()
 	if err != nil {
@@ -166,4 +180,63 @@ func readZipFile(f *zip.File) ([]byte, error) {
 	}
 	defer func() { _ = rc.Close() }()
 	return io.ReadAll(io.LimitReader(rc, maxBytes))
+}
+
+var (
+	proxyNameElement = regexp.MustCompile(`<name>[^<]*</name>`)
+	proxyBasePath    = regexp.MustCompile(`<base_path>[^<]*</base_path>`)
+)
+
+// WithAPIProxyName returns a copy of an API proxy bundle renamed to name:
+// the APIProxy/<old>.xml descriptor becomes APIProxy/<name>.xml with <name>
+// set, and every proxy endpoint gets basePath, so the copy can be imported
+// next to the original without colliding on name or base path.
+func WithAPIProxyName(bundle []byte, name, basePath string) ([]byte, error) {
+	reader, err := zip.NewReader(bytes.NewReader(bundle), int64(len(bundle)))
+	if err != nil {
+		return nil, err
+	}
+	var out bytes.Buffer
+	writer := zip.NewWriter(&out)
+	renamed := false
+	for _, f := range reader.File {
+		if f.FileInfo().IsDir() {
+			continue
+		}
+		data, err := readZipFile(f)
+		if err != nil {
+			return nil, err
+		}
+		entry := f.Name
+		dir, file := path.Split(f.Name)
+		switch {
+		case dir == "APIProxy/" && strings.HasSuffix(file, ".xml"):
+			if renamed {
+				return nil, fmt.Errorf("samples: %s is a second proxy descriptor", f.Name)
+			}
+			entry, renamed = "APIProxy/"+name+".xml", true
+			// The first <name> is the proxy's own; later ones belong to nested elements.
+			loc := proxyNameElement.FindIndex(data)
+			if loc == nil {
+				return nil, fmt.Errorf("samples: %s has no <name>", f.Name)
+			}
+			data = append(append(append([]byte{}, data[:loc[0]]...), []byte("<name>"+name+"</name>")...), data[loc[1]:]...)
+		case dir == "APIProxy/APIProxyEndPoint/":
+			data = proxyBasePath.ReplaceAll(data, []byte("<base_path>"+basePath+"</base_path>"))
+		}
+		w, err := writer.Create(entry)
+		if err != nil {
+			return nil, err
+		}
+		if _, err := w.Write(data); err != nil {
+			return nil, err
+		}
+	}
+	if !renamed {
+		return nil, fmt.Errorf("samples: no APIProxy/<name>.xml descriptor in the bundle")
+	}
+	if err := writer.Close(); err != nil {
+		return nil, err
+	}
+	return out.Bytes(), nil
 }

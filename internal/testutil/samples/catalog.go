@@ -95,7 +95,7 @@ var Catalog = []Sample{
 		Path:   "exercises/06-expose-integration-flow-api-management/assets/api-management/Request_Employee_Dependants_v1_BeforePolicies.zip",
 		SHA256: "15a2f4469fecf3c3a71adcd34556234a0c7c5dc208eba9b047e02c1b82e842b9",
 		Kind:   KindAPIProxy,
-		Notes:  "API proxy bundle for a future API proxy resource.",
+		Notes:  "API proxy bundle with a target URL (no API provider), imported by TestAccAPIProxy_sample under a tfacc name and base path.",
 	},
 	{
 		Name: "policy-template-performance", Repo: "integration-suite-learning-journey",

@@ -5,7 +5,7 @@ subcategory: ""
 description: |-
   Manages a Classic API Management API product (APIProducts): a bundle of one or more API proxies that application developers subscribe to.
   An API product cannot be changed after it is created. A tenant test in September 2026 answered PUT, PATCH and MERGE on an existing product with 405 "UPDATE operation not supported on APIProduct entity". Every attribute therefore forces a new product: Terraform deletes the product and creates it again. Applications subscribed to the old product lose that subscription, so review any plan that replaces a product.
-  SAP requires at least one linked API proxy. The proxies must already exist; this provider does not manage API proxies.
+  SAP requires at least one linked API proxy. The proxies must already exist, for example managed with sapintegrationsuite_api_proxy (experimental).
 ---
 
 # sapintegrationsuite_api_product (Resource)
@@ -14,14 +14,15 @@ Manages a Classic API Management API product (APIProducts): a bundle of one or m
 
 An API product cannot be changed after it is created. A tenant test in September 2026 answered PUT, PATCH and MERGE on an existing product with 405 "UPDATE operation not supported on APIProduct entity". Every attribute therefore forces a new product: Terraform deletes the product and creates it again. Applications subscribed to the old product lose that subscription, so review any plan that replaces a product.
 
-SAP requires at least one linked API proxy. The proxies must already exist; this provider does not manage API proxies.
+SAP requires at least one linked API proxy. The proxies must already exist, for example managed with sapintegrationsuite_api_proxy (experimental).
 
 ## Example Usage
 
 ```terraform
 # Requires provider.api_management to be configured. The proxies in
-# api_proxy_names must already exist; create them in the SAP Integration
-# Suite UI. SAP cannot change a product after it is created, so changing any
+# api_proxy_names must already exist: manage them with
+# sapintegrationsuite_api_proxy or create them in the SAP Integration Suite UI.
+# SAP cannot change a product after it is created, so changing any
 # argument here makes Terraform delete the product and create a new one.
 # Applications subscribed to the old product lose their subscription.
 resource "sapintegrationsuite_api_product" "sample" {

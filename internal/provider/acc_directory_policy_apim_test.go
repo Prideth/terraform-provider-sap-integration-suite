@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/testutil/accgate"
+	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/testutil/samples"
 )
 
 // Partner Directory: every entry belongs to a partner ID of its own
@@ -167,6 +168,63 @@ resource "sapintegrationsuite_api_product" "test" {
 				),
 			},
 			{ResourceName: "sapintegrationsuite_api_product.test", ImportState: true, ImportStateVerify: true},
+		},
+	})
+}
+
+// An API proxy imported from SAP's sample bundle under a unique name and base
+// path (its target is a URL, so no API provider is needed), read back,
+// imported, then replaced by a bundle with a different hash and destroyed.
+// Until this passes on a tenant, sapintegrationsuite_api_proxy stays
+// experimental.
+func TestAccAPIProxy_sample(t *testing.T) {
+	accgate.Require(t, accgate.APIManagementClassic)
+	name := testAccName()
+	original := samples.Get(t, "codejam-api-proxy")
+	bundle := func(file, basePath string) string {
+		renamed, err := samples.WithAPIProxyName(original, name, basePath)
+		if err != nil {
+			t.Fatal(err)
+		}
+		p := filepath.Join(t.TempDir(), file)
+		if err := os.WriteFile(p, renamed, 0o600); err != nil {
+			t.Fatal(err)
+		}
+		return filepath.ToSlash(p)
+	}
+	first := bundle(name+".zip", "/tfacc/"+name)
+	second := bundle(name+"-2.zip", "/tfacc/"+name+"/v2")
+	config := func(path string) string {
+		return fmt.Sprintf(`
+resource "sapintegrationsuite_api_proxy" "test" {
+  name         = %[1]q
+  content      = %[2]q
+  content_hash = filesha256(%[2]q)
+}
+`, name, path)
+	}
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: config(first),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sapintegrationsuite_api_proxy.test", "id", name),
+					resource.TestCheckResourceAttr("sapintegrationsuite_api_proxy.test", "service_code", "REST"),
+					resource.TestCheckResourceAttrSet("sapintegrationsuite_api_proxy.test", "state"),
+				),
+			},
+			{
+				ResourceName:            "sapintegrationsuite_api_proxy.test",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"content", "content_hash", "timeouts"},
+			},
+			{
+				// A different bundle replaces the proxy.
+				Config: config(second),
+				Check:  resource.TestCheckResourceAttr("sapintegrationsuite_api_proxy.test", "content", second),
+			},
 		},
 	})
 }
