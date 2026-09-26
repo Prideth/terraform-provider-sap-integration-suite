@@ -125,6 +125,8 @@ removes the resource from state and prints a warning that the values stay as the
 
 ## Related
 
+- The [Integration Content and Deployments guide](integration-content.md) for uploading content,
+  versions, deploy timeouts and the bundle ID.
 - [`sapintegrationsuite_integration_flow`](../resources/integration_flow.md) for the content.
 - [`sapintegrationsuite_integration_flow_deployment`](../resources/integration_flow_deployment.md)
   for the runtime deployment.
