@@ -33,6 +33,7 @@ type scriptCollectionDeploymentModel struct {
 	ScriptCollectionVersion types.String   `tfsdk:"script_collection_version"`
 	Status                  types.String   `tfsdk:"status"`
 	Timeouts                timeouts.Value `tfsdk:"timeouts"`
+	RedeployTriggers        types.Map      `tfsdk:"redeploy_triggers"`
 	RuntimeLocationID       types.String   `tfsdk:"runtime_location_id"`
 }
 
@@ -78,6 +79,14 @@ func (r *scriptCollectionDeploymentResource) Schema(_ context.Context, _ resourc
 					"the script collection. After refresh this also reflects whatever version SAP " +
 					"reports as actually deployed, so a redeploy performed outside Terraform (or a " +
 					"failed/stale deployment) shows up as drift on the next plan.",
+			},
+			"redeploy_triggers": schema.MapAttribute{
+				Optional:    true,
+				ElementType: types.StringType,
+				Description: "Arbitrary values that redeploy the script collection in place whenever they change, for " +
+					"example its content_hash. Uploading new content does not change the script collection's " +
+					"version (tenant test, September 2026), so without this or a new script_collection_version the " +
+					"runtime keeps the previously deployed content.",
 			},
 			"status": schema.StringAttribute{
 				Computed:    true,
@@ -140,6 +149,7 @@ func (r *scriptCollectionDeploymentResource) Create(ctx context.Context, req res
 	}
 
 	m := scriptCollectionDeploymentToModel(plan.PackageID.ValueString(), artifact, plan.Timeouts)
+	m.RedeployTriggers = plan.RedeployTriggers
 	m.RuntimeLocationID = plan.RuntimeLocationID
 	resp.Diagnostics.Append(resp.State.Set(ctx, m)...)
 }
@@ -173,6 +183,7 @@ func (r *scriptCollectionDeploymentResource) Read(ctx context.Context, req resou
 	// Required, non-Computed attribute) is what makes that visible as
 	// drift on the next plan.
 	m := scriptCollectionDeploymentToModel(state.PackageID.ValueString(), artifact, state.Timeouts)
+	m.RedeployTriggers = state.RedeployTriggers
 	m.RuntimeLocationID = state.RuntimeLocationID
 	resp.Diagnostics.Append(resp.State.Set(ctx, m)...)
 }
@@ -208,6 +219,7 @@ func (r *scriptCollectionDeploymentResource) Update(ctx context.Context, req res
 	}
 
 	m := scriptCollectionDeploymentToModel(plan.PackageID.ValueString(), artifact, plan.Timeouts)
+	m.RedeployTriggers = plan.RedeployTriggers
 	m.RuntimeLocationID = plan.RuntimeLocationID
 	resp.Diagnostics.Append(resp.State.Set(ctx, m)...)
 }

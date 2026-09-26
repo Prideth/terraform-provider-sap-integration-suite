@@ -33,6 +33,7 @@ type messageMappingDeploymentModel struct {
 	MappingVersion    types.String   `tfsdk:"mapping_version"`
 	Status            types.String   `tfsdk:"status"`
 	Timeouts          timeouts.Value `tfsdk:"timeouts"`
+	RedeployTriggers  types.Map      `tfsdk:"redeploy_triggers"`
 	RuntimeLocationID types.String   `tfsdk:"runtime_location_id"`
 }
 
@@ -79,6 +80,14 @@ func (r *messageMappingDeploymentResource) Schema(_ context.Context, _ resource.
 					"message mapping. After refresh this also reflects whatever version SAP reports " +
 					"as actually deployed, so a redeploy performed outside Terraform (or a " +
 					"failed/stale deployment) shows up as drift on the next plan.",
+			},
+			"redeploy_triggers": schema.MapAttribute{
+				Optional:    true,
+				ElementType: types.StringType,
+				Description: "Arbitrary values that redeploy the message mapping in place whenever they change, for " +
+					"example its content_hash. Uploading new content does not change the message mapping's " +
+					"version (tenant test, September 2026), so without this or a new mapping_version the " +
+					"runtime keeps the previously deployed content.",
 			},
 			"status": schema.StringAttribute{
 				Computed:    true,
@@ -141,6 +150,7 @@ func (r *messageMappingDeploymentResource) Create(ctx context.Context, req resou
 	}
 
 	m := messageMappingDeploymentToModel(plan.PackageID.ValueString(), artifact, plan.Timeouts)
+	m.RedeployTriggers = plan.RedeployTriggers
 	m.RuntimeLocationID = plan.RuntimeLocationID
 	resp.Diagnostics.Append(resp.State.Set(ctx, m)...)
 }
@@ -173,6 +183,7 @@ func (r *messageMappingDeploymentResource) Read(ctx context.Context, req resourc
 	// part-way. Writing it into mapping_version (a Required, non-Computed
 	// attribute) is what makes that visible as drift on the next plan.
 	m := messageMappingDeploymentToModel(state.PackageID.ValueString(), artifact, state.Timeouts)
+	m.RedeployTriggers = state.RedeployTriggers
 	m.RuntimeLocationID = state.RuntimeLocationID
 	resp.Diagnostics.Append(resp.State.Set(ctx, m)...)
 }
@@ -208,6 +219,7 @@ func (r *messageMappingDeploymentResource) Update(ctx context.Context, req resou
 	}
 
 	m := messageMappingDeploymentToModel(plan.PackageID.ValueString(), artifact, plan.Timeouts)
+	m.RedeployTriggers = plan.RedeployTriggers
 	m.RuntimeLocationID = plan.RuntimeLocationID
 	resp.Diagnostics.Append(resp.State.Set(ctx, m)...)
 }

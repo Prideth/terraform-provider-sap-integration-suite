@@ -92,8 +92,8 @@ only if something moves the version or triggers a redeploy:
   current content under the version you name, for example `"1.0.4"`. Raise it together with
   the content; a version is saved only when this value changes. This is the clearest option,
   since the version in the UI then matches your release.
-- **`redeploy_triggers`** on `sapintegrationsuite_integration_flow_deployment` redeploys in
-  place whenever the map changes. Passing the content hash redeploys on every content change:
+- **`redeploy_triggers`**, which every deployment resource has, redeploys in place whenever the
+  map changes. Passing the content hash redeploys on every content change:
 
   ```terraform
   redeploy_triggers = {
@@ -103,7 +103,8 @@ only if something moves the version or triggers a redeploy:
 
 - **Value mappings** have no `save_as_version`, and changing their content replaces the
   artifact. Their version comes from `Bundle-Version` in the ZIP (a value mapping created from a
-  ZIP with `Bundle-Version: 1.0.1` reported version 1.0.1), so raise it with each change.
+  ZIP with `Bundle-Version: 1.0.1` reported version 1.0.1). Raise it with each change, or pass
+  the content hash to the deployment's `redeploy_triggers`.
 
 ## Deploying
 

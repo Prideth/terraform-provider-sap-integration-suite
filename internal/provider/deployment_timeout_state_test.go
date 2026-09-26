@@ -45,6 +45,7 @@ func TestMessageMappingDeployment_TimeoutKeepsState(t *testing.T) {
 	plan.Set(ctx, messageMappingDeploymentModel{
 		ID: types.StringUnknown(), PackageID: types.StringValue("P"), MappingID: types.StringValue("Map_A"),
 		MappingVersion: types.StringValue("1.0.5"), Status: types.StringUnknown(), RuntimeLocationID: types.StringNull(),
+		RedeployTriggers: types.MapNull(types.StringType),
 		Timeouts: timeouts.Value{Object: types.ObjectValueMust(timeoutTypes, map[string]attr.Value{
 			"create": types.StringValue("200ms"), "update": types.StringNull(), "delete": types.StringNull(),
 		})},

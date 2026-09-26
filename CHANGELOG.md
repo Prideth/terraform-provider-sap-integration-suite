@@ -161,6 +161,16 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
+- `redeploy_triggers` on `sapintegrationsuite_message_mapping_deployment`,
+  `sapintegrationsuite_script_collection_deployment` and
+  `sapintegrationsuite_value_mapping_deployment`, as the integration flow
+  deployment already had. Uploading new content does not change an
+  artifact's version (tenant test, September 2026), so until now new
+  content only reached the runtime with a new version; passing the
+  artifact's `content_hash` redeploys on every content change.
+- A guide, "Integration Content and Deployments", on getting artifact ZIPs
+  out of the UI, the bundle ID, versions and redeploys, deploy times and
+  timeouts, `SAP_ProfileId`, and which content is safe to deploy.
 - `sapintegrationsuite_secure_parameter` manages Security Content "Secure
   Parameter" artifacts, the confidential values custom adapters and scripts
   read by alias. SAP Help documents the artifact only in the UI; the entity

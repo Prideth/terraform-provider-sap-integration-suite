@@ -28,3 +28,22 @@ func TestIntegrationFlowDeploymentResource_RedeployTriggersUpdateInPlace(t *test
 		t.Error("redeploy_triggers must not carry plan modifiers such as RequiresReplace")
 	}
 }
+
+// Uploading new content keeps an artifact's version, so every deployment
+// resource needs redeploy_triggers to pick up new content without a new
+// version. It must update in place (redeploy), never replace (undeploy).
+func TestDeploymentResources_RedeployTriggersUpdateInPlace(t *testing.T) {
+	for name, r := range map[string]resource.Resource{
+		"integration flow":  NewIntegrationFlowDeploymentResource(),
+		"message mapping":   NewMessageMappingDeploymentResource(),
+		"script collection": NewScriptCollectionDeploymentResource(),
+		"value mapping":     NewValueMappingDeploymentResource(),
+	} {
+		var resp resource.SchemaResponse
+		r.Schema(context.Background(), resource.SchemaRequest{}, &resp)
+		attr, ok := resp.Schema.Attributes["redeploy_triggers"].(schema.MapAttribute)
+		if !ok || !attr.Optional || attr.Computed || len(attr.PlanModifiers) != 0 {
+			t.Errorf("%s deployment: redeploy_triggers must be an optional map without plan modifiers", name)
+		}
+	}
+}
