@@ -127,3 +127,32 @@ func TestConfig_HTTPClient_InvalidateForcesFreshToken(t *testing.T) {
 		t.Errorf("expected Invalidate to force a different token, got the same one: %q", gotAuth[2])
 	}
 }
+
+// Terraform cancels the ConfigureProvider context as soon as the call
+// returns; the provider builds this client there and fetches the first token
+// much later, in a resource call. The first acceptance run failed every
+// request with "context canceled" on the token URL.
+func TestConfig_HTTPClient_OutlivesConfigureContext(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"access_token": "test-token", "token_type": "bearer", "expires_in": 3600}`))
+	}))
+	defer server.Close()
+	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer api.Close()
+
+	configureCtx, cancel := context.WithCancel(context.Background())
+	client, _, err := Config{TokenURL: server.URL, ClientID: "id", ClientSecret: "secret"}.HTTPClient(configureCtx, http.DefaultClient)
+	if err != nil {
+		t.Fatalf("HTTPClient() error: %v", err)
+	}
+	cancel()
+
+	resp, err := client.Get(api.URL)
+	if err != nil {
+		t.Fatalf("request after the configure context ended: %v", err)
+	}
+	_ = resp.Body.Close()
+}

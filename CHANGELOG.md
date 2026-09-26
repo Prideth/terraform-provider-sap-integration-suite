@@ -6,6 +6,15 @@ All notable changes to this project are documented in this file.
 
 ### Fixed
 
+- Every request failed under Terraform with `context canceled` on the token
+  URL. The provider built its OAuth client with the context of the
+  ConfigureProvider call, which Terraform cancels as soon as that call
+  returns, so the first token fetch in a resource was already cancelled.
+  Tokens are now fetched with a context that is not tied to that call, and
+  each token request has its own 60-second limit. The first acceptance test
+  run against a real tenant found this; unit tests could not, because they
+  never cancel the context.
+
 - Access policy artifact references now use the property names SAP's
   `ArtifactReferences` entity actually has (`Name`, `Description`, `Type`,
   `ConditionAttribute`, `ConditionType`, `ConditionValue`). Earlier releases

@@ -177,7 +177,7 @@ SAP_INTEGRATION_SUITE_HOST=https://<tenant>.it-cpi<...>.cfapps.<region>.hana.ond
 SAP_INTEGRATION_SUITE_TOKEN_URL=https://<subdomain>.authentication.<region>.hana.ondemand.com/oauth/token \
 SAP_INTEGRATION_SUITE_CLIENT_ID=... \
 SAP_INTEGRATION_SUITE_CLIENT_SECRET=... \
-go test ./internal/provider/ -run '^TestAcc' -v -timeout 60m
+go test ./internal/provider/ -run '^TestAcc[A-Z]' -v -timeout 60m
 ```
 
 The client needs the roles listed in the "Authorization and Roles" guide

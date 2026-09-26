@@ -8,10 +8,14 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
+	"time"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
 )
+
+// tokenFetchTimeout bounds one request to the token URL.
+const tokenFetchTimeout = 60 * time.Second
 
 // Config holds the OAuth 2.0 client credentials needed to authenticate
 // against one SAP Integration Suite API area.
@@ -98,11 +102,20 @@ func (c Config) HTTPClient(ctx context.Context, base *http.Client) (client *http
 		Scopes:       c.Scopes,
 	}
 
-	tokenCtx := context.WithValue(ctx, oauth2.HTTPClient, base)
+	// The client outlives ctx: the provider builds it in ConfigureProvider,
+	// and Terraform cancels that request's context as soon as the call
+	// returns, long before the first resource fetches a token. Tokens are
+	// therefore fetched with a context that keeps ctx's values but not its
+	// cancellation, and each fetch gets its own time limit instead. The
+	// first acceptance run against a tenant failed every request with
+	// "context canceled" on the token URL before this.
+	tokenCtx := context.WithValue(context.WithoutCancel(ctx), oauth2.HTTPClient, base)
 
 	source := &invalidatableTokenSource{
 		fetch: func() (*oauth2.Token, error) {
-			return ccConfig.Token(tokenCtx)
+			fetchCtx, cancel := context.WithTimeout(tokenCtx, tokenFetchTimeout)
+			defer cancel()
+			return ccConfig.Token(fetchCtx)
 		},
 	}
 
