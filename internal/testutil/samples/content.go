@@ -60,6 +60,7 @@ func ExportArtifacts(export []byte) ([]ExportArtifact, error) {
 
 var symbolicNameHeader = regexp.MustCompile(`(?m)^Bundle-SymbolicName: [^;\n]*`)
 var nameHeader = regexp.MustCompile(`(?m)^Bundle-Name: .*`)
+var capabilityName = regexp.MustCompile(`\b(messagemapping|scriptcollection)\.[^;\s]+;`)
 
 // WithBundleID returns a copy of an artifact ZIP whose Bundle-SymbolicName
 // and Bundle-Name are id, so the artifact can be created under a unique ID
@@ -79,11 +80,13 @@ func WithBundleID(content []byte, id string) ([]byte, error) {
 		}
 		if f.Name == "META-INF/MANIFEST.MF" {
 			text := unfoldManifest(string(data))
-			// Message mappings also name themselves in Provide-Capability
-			// ("messagemapping.<ID>;version:Version=...").
-			if old := strings.TrimPrefix(symbolicNameHeader.FindString(text), "Bundle-SymbolicName: "); old != "" {
-				text = strings.ReplaceAll(text, "messagemapping."+old+";", "messagemapping."+id+";")
-			}
+			// Message mappings and script collections also name themselves in
+			// Provide-Capability ("messagemapping.<ID>;version:Version=...",
+			// "scriptcollection.<ID>;..."). That name can differ from the
+			// symbolic name (an exported mapping carried
+			// messagemapping.MM_BYDtoHANA_ActualUtilization with symbolic name
+			// MM_ActualUtilization), so it is replaced whatever it is.
+			text = capabilityName.ReplaceAllString(text, "${1}."+id+";")
 			text = symbolicNameHeader.ReplaceAllString(text, "Bundle-SymbolicName: "+id)
 			text = nameHeader.ReplaceAllString(text, "Bundle-Name: "+id)
 			data = []byte(foldManifest(text))

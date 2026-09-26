@@ -165,6 +165,15 @@ repositories is copied into this one.
   samples marked `Deployable`: no timer and no polling sender, so they run
   only when someone calls their endpoint.
 
+Content that SAP's samples lack (script collections, value mappings) comes
+from your own exports: set `SAP_LOCAL_CONTENT_DIR` to a directory with
+package exports or artifact downloads (nested ZIPs are read too). The
+offline tests then run every artifact in it through the MANIFEST parser,
+and the acceptance tests for script collections and value mappings use the
+first one of each type. That content is often private: it is only read from
+that directory, never copied into the repository, and value mapping entries
+are replaced with made-up ones before a live test uploads them.
+
 To add a sample, pick a file at a fixed commit, compute its SHA-256, add the
 entry to the catalog with the right `Kind`, and check that
 `TestCatalog` passes with `SAP_SAMPLES_DOWNLOAD=1`.
