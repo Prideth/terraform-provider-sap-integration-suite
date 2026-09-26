@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/apierror"
+	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/cloudintegration"
 )
 
 // isNotFound reports whether err represents an HTTP 404 from a SAP API
@@ -141,4 +142,26 @@ func int64OrNull(n int) types.Int64 {
 		return types.Int64Null()
 	}
 	return types.Int64Value(int64(n))
+}
+
+// alignUploadBundleID gives the copy of an integration flow or message
+// mapping that is uploaded the artifact's ID as Bundle-SymbolicName, and
+// warns when that changed anything. SAP writes the ID into the MANIFEST on
+// create and rejects a later content update whose Bundle-SymbolicName
+// differs (tenant test, September 2026), so a ZIP exported under another ID
+// could be created but never updated. The local file is not changed.
+func alignUploadBundleID(content []byte, id, file string, diags *diag.Diagnostics) []byte {
+	aligned, previous, err := cloudintegration.AlignBundleID(content, id)
+	if err != nil {
+		diags.AddWarning("Could not align the bundle ID of "+file,
+			fmt.Sprintf("The content is uploaded unchanged. SAP rejects content updates whose Bundle-SymbolicName differs from %q. Details: %v", id, err))
+		return content
+	}
+	if previous != id {
+		diags.AddWarning("Bundle-SymbolicName adjusted for upload",
+			fmt.Sprintf("%s has Bundle-SymbolicName %q in META-INF/MANIFEST.MF; the provider uploads it as %q, because SAP "+
+				"rejects content updates whose bundle ID differs from the artifact ID. Your file is not changed. "+
+				"Set Bundle-SymbolicName to %q in the file to remove this warning.", file, previous, id, id))
+	}
+	return aligned
 }

@@ -81,3 +81,26 @@ func (c *Client) UndeployRuntimeArtifact(ctx context.Context, id string) error {
 	path := v2.BuildPath(runtimeArtifactsEntitySet, v2.KeyPredicate(id), "")
 	return c.odata.Delete(ctx, path)
 }
+
+const buildAndDeployStatusEntitySet = "BuildAndDeployStatus"
+
+// BuildAndDeployStatus is the state of the task a deploy request started,
+// keyed by the task ID the deploy returns. A tenant reported "SUCCESS" once
+// the task was done (September 2026); other values are not documented.
+type BuildAndDeployStatus struct {
+	TaskID string `json:"TaskId"`
+	Status string `json:"Status"`
+}
+
+// GetBuildAndDeployStatus reads the status of a deployment task.
+func (c *Client) GetBuildAndDeployStatus(ctx context.Context, taskID string) (*BuildAndDeployStatus, error) {
+	body, err := c.odata.Get(ctx, v2.BuildPath(buildAndDeployStatusEntitySet, v2.KeyPredicate(taskID), ""))
+	if err != nil {
+		return nil, err
+	}
+	var status BuildAndDeployStatus
+	if err := v2.DecodeEntity(body, &status); err != nil {
+		return nil, err
+	}
+	return &status, nil
+}

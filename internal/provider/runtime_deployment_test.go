@@ -142,3 +142,78 @@ func TestWaitForRuntimeArtifact_NotFoundThenStarted(t *testing.T) {
 		t.Errorf("calls = %d, want at least 2 (a 404 followed by a successful poll)", calls)
 	}
 }
+
+func fastDeploymentPolls(t *testing.T) {
+	t.Helper()
+	interval, maxDelay := deploymentPollInterval, deploymentPollMax
+	deploymentPollInterval, deploymentPollMax = 10*time.Millisecond, 20*time.Millisecond
+	t.Cleanup(func() { deploymentPollInterval, deploymentPollMax = interval, maxDelay })
+}
+
+// taskServer answers the runtime status with 404 (or the given artifact
+// status) and BuildAndDeployStatus with taskStatus.
+func taskServer(t *testing.T, runtimeStatus, taskStatus string) *httptest.Server {
+	t.Helper()
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case strings.HasPrefix(r.URL.Path, "/api/v1/BuildAndDeployStatus"):
+			_, _ = w.Write([]byte(`{"d": {"TaskId": "task-1", "Status": "` + taskStatus + `"}}`))
+		case runtimeStatus == "":
+			w.WriteHeader(http.StatusNotFound)
+			_, _ = w.Write([]byte(`{"error": {"code": "Not Found", "message": {"value": "not found"}}}`))
+		default:
+			_, _ = w.Write([]byte(`{"d": {"Id": "flow", "Version": "1.0.0", "Status": "` + runtimeStatus + `"}}`))
+		}
+	}))
+	t.Cleanup(server.Close)
+	return server
+}
+
+// A tenant deployed a flow with SAP_ProfileId "integrationcell": the task
+// ended with SUCCESS, but no Cloud Integration runtime artifact appeared.
+// The wait stops with an explanation instead of running into the timeout.
+func TestWaitForDeployment_TaskSucceededButNotInRuntime(t *testing.T) {
+	fastDeploymentPolls(t)
+	client := cloudintegration.New(http.DefaultClient, taskServer(t, "", "SUCCESS").URL)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	_, err := waitForDeployment(ctx, client, "flow", "task-1")
+	if err == nil || !strings.Contains(err.Error(), "SAP_ProfileId") {
+		t.Fatalf("error = %v, want the runtime profile explanation", err)
+	}
+	if ctx.Err() != nil {
+		t.Error("the wait ran into the timeout instead of stopping early")
+	}
+}
+
+func TestWaitForDeployment_TaskFailed(t *testing.T) {
+	fastDeploymentPolls(t)
+	client := cloudintegration.New(http.DefaultClient, taskServer(t, "", "FAIL").URL)
+	_, err := waitForDeployment(context.Background(), client, "flow", "task-1")
+	if err == nil || !strings.Contains(err.Error(), "FAIL") {
+		t.Fatalf("error = %v, want the failed task", err)
+	}
+}
+
+func TestWaitForDeployment_StartedIgnoresTask(t *testing.T) {
+	fastDeploymentPolls(t)
+	client := cloudintegration.New(http.DefaultClient, taskServer(t, "STARTED", "SUCCESS").URL)
+	artifact, err := waitForDeployment(context.Background(), client, "flow", "task-1")
+	if err != nil || artifact.Status != "STARTED" {
+		t.Fatalf("artifact %+v, err %v", artifact, err)
+	}
+}
+
+// Without a task ID (other artifact types) the old behaviour stays: keep
+// polling until the timeout.
+func TestWaitForDeployment_NoTaskWaitsForTimeout(t *testing.T) {
+	fastDeploymentPolls(t)
+	client := cloudintegration.New(http.DefaultClient, taskServer(t, "", "SUCCESS").URL)
+	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+	defer cancel()
+	_, err := waitForDeployment(ctx, client, "flow", "")
+	if err == nil || !strings.Contains(err.Error(), "timed out") {
+		t.Fatalf("error = %v, want the timeout", err)
+	}
+}

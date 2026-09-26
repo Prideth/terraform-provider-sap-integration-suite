@@ -72,7 +72,7 @@ func TestClient_DeployIntegrationFlow(t *testing.T) {
 
 	client := New(http.DefaultClient, server.URL)
 
-	if err := client.DeployIntegrationFlow(context.Background(), "metering", "active"); err != nil {
+	if _, err := client.DeployIntegrationFlow(context.Background(), "metering", "active"); err != nil {
 		t.Fatalf("DeployIntegrationFlow() error: %v", err)
 	}
 }
@@ -89,7 +89,7 @@ func TestClient_DeployIntegrationFlow_SpecificVersion(t *testing.T) {
 
 	client := New(http.DefaultClient, server.URL)
 
-	if err := client.DeployIntegrationFlow(context.Background(), "metering", "1.0.1"); err != nil {
+	if _, err := client.DeployIntegrationFlow(context.Background(), "metering", "1.0.1"); err != nil {
 		t.Fatalf("DeployIntegrationFlow() error: %v", err)
 	}
 }

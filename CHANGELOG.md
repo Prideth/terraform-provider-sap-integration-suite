@@ -14,6 +14,23 @@ All notable changes to this project are documented in this file.
   each token request has its own 60-second limit. The first acceptance test
   run against a real tenant found this; unit tests could not, because they
   never cancel the context.
+- An integration flow or message mapping whose ZIP was exported under a
+  different ID could be created but never updated. SAP writes the artifact
+  ID into `Bundle-SymbolicName` on create and rejects every later content
+  update whose bundle ID differs (400 for flows, 500
+  `BUNDLE_SYMBOLIC_NAME_CANNOT_BE_UPDATED` for mappings). The provider now
+  uploads a copy that carries the artifact ID (and, for mappings, the same
+  name in `Provide-Capability`) and shows a warning; the local file is not
+  changed, and `content_hash` still refers to it.
+- `sapintegrationsuite_integration_flow_deployment` waited until its timeout
+  when SAP deployed a flow to another runtime. A flow with the externalized
+  parameter `SAP_ProfileId = "integrationcell"` is deployed successfully,
+  but to Integration Cell, and never appears in the Cloud Integration
+  runtime. The resource now follows the task the deploy returns
+  (`BuildAndDeployStatus`) and stops with an explanation once the task has
+  succeeded and the flow is still missing, or at once when the task fails.
+  The integration flow configuration guide shows how to set
+  `SAP_ProfileId` to `iflmap`.
 
 - Access policy artifact references now use the property names SAP's
   `ArtifactReferences` entity actually has (`Name`, `Description`, `Type`,

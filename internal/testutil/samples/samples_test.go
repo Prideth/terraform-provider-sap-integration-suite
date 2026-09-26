@@ -128,3 +128,33 @@ func TestWithBundleID_RoundTrip(t *testing.T) {
 		})
 	}
 }
+
+// The provider's AlignBundleID works on SAP's real artifacts: a flow with a
+// wrapped symbolic name and a message mapping.
+func TestAlignBundleID_Samples(t *testing.T) {
+	flows, err := samples.ExportArtifacts(samples.Get(t, "codejam-package-export"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	inputs := [][]byte{samples.Get(t, "spend-account-dim-map")}
+	for _, a := range flows {
+		if a.Type == "IFlow" {
+			inputs = append(inputs, a.Content)
+		}
+	}
+	for i, content := range inputs {
+		aligned, previous, err := cloudintegration.AlignBundleID(content, "tfacc_aligned")
+		if err != nil {
+			t.Fatalf("input %d: %v", i, err)
+		}
+		m, err := cloudintegration.ParseBundleManifest(aligned)
+		if err != nil || m.SymbolicName != "tfacc_aligned" || previous == "tfacc_aligned" {
+			t.Errorf("input %d: symbolic name %q (was %q), err %v", i, m.SymbolicName, previous, err)
+		}
+		before, _ := samples.FileNames(content)
+		after, _ := samples.FileNames(aligned)
+		if len(before) != len(after) {
+			t.Errorf("input %d: %d entries became %d", i, len(before), len(after))
+		}
+	}
+}

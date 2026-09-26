@@ -3,12 +3,12 @@
 page_title: "sapintegrationsuite_integration_flow_deployment Resource - sapintegrationsuite"
 subcategory: ""
 description: |-
-  Expresses the desired runtime deployment state of a Cloud Integration integration flow, independent of its design-time content lifecycle. Deploying is asynchronous: this resource polls SAP's runtime artifact status until the deployment reaches a terminal state (STARTED or ERROR) or the configured timeout elapses.
+  Expresses the desired runtime deployment state of a Cloud Integration integration flow, independent of its design-time content lifecycle. Deploying is asynchronous: this resource polls SAP's runtime artifact status until the deployment reaches a terminal state (STARTED or ERROR) or the configured timeout elapses. It also follows the task SAP returns for the deploy (BuildAndDeployStatus): if the task fails, or succeeds while the flow does not appear in the Cloud Integration runtime, it stops at once. The second case means the flow went to another runtime profile: a flow whose externalized parameter SAP_ProfileId is "integrationcell" deploys to Integration Cell, which this provider does not support; set it to "iflmap" with sapintegrationsuite_integration_flow_configuration.
 ---
 
 # sapintegrationsuite_integration_flow_deployment (Resource)
 
-Expresses the desired runtime deployment state of a Cloud Integration integration flow, independent of its design-time content lifecycle. Deploying is asynchronous: this resource polls SAP's runtime artifact status until the deployment reaches a terminal state (STARTED or ERROR) or the configured timeout elapses.
+Expresses the desired runtime deployment state of a Cloud Integration integration flow, independent of its design-time content lifecycle. Deploying is asynchronous: this resource polls SAP's runtime artifact status until the deployment reaches a terminal state (STARTED or ERROR) or the configured timeout elapses. It also follows the task SAP returns for the deploy (BuildAndDeployStatus): if the task fails, or succeeds while the flow does not appear in the Cloud Integration runtime, it stops at once. The second case means the flow went to another runtime profile: a flow whose externalized parameter SAP_ProfileId is "integrationcell" deploys to Integration Cell, which this provider does not support; set it to "iflmap" with sapintegrationsuite_integration_flow_configuration.
 
 ## Example Usage
 

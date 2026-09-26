@@ -77,6 +77,32 @@ resource "sapintegrationsuite_integration_flow_deployment" "metering" {
 Any change to the map redeploys the flow in place. There is no undeploy, so the flow keeps
 running the old configuration until the new deployment is started.
 
+## The runtime profile (`SAP_ProfileId`)
+
+Tenants that also have Integration Cell give flows an externalized parameter `SAP_ProfileId`,
+which picks the runtime the flow is deployed to. On a tenant in September 2026, a flow
+created from a ZIP had `SAP_ProfileId = "integrationcell"`: SAP accepted the deployment and
+reported the task as `SUCCESS`, but the flow never appeared in the Cloud Integration runtime,
+because it went to Integration Cell, which this provider does not support. With the value
+`iflmap` (the `SAP-RuntimeProfile` in the flow's own MANIFEST) the same flow was running at once.
+
+Set the parameter before deploying:
+
+```terraform
+resource "sapintegrationsuite_integration_flow_configuration" "metering" {
+  flow_id      = sapintegrationsuite_integration_flow.metering.flow_id
+  flow_version = sapintegrationsuite_integration_flow.metering.version
+  parameters = {
+    SAP_ProfileId = "iflmap"
+  }
+}
+```
+
+and make the deployment depend on it (for example through `redeploy_triggers` as above). If
+a flow still lands on another runtime, `sapintegrationsuite_integration_flow_deployment` stops
+with an error naming `SAP_ProfileId` as soon as SAP reports the deployment task as done,
+instead of waiting until its timeout.
+
 ## Drift, import and destroy
 
 On refresh, the provider reads the current values of the managed keys. A value changed in the

@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	v2 "github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/odata/v2"
 )
@@ -125,9 +126,37 @@ func (c *Client) DeleteIntegrationFlow(ctx context.Context, flowID string) error
 // design-time artifact, so that changing the deployed version is a visible,
 // plannable change rather than an implicit side effect of "whatever is
 // active right now".
-func (c *Client) DeployIntegrationFlow(ctx context.Context, flowID, version string) error {
+func (c *Client) DeployIntegrationFlow(ctx context.Context, flowID, version string) (taskID string, err error) {
 	path := fmt.Sprintf("DeployIntegrationDesigntimeArtifact?Id='%s'&Version='%s'",
 		v2.EscapeLiteral(flowID), v2.EscapeLiteral(version))
-	_, err := c.odata.Post(ctx, path, nil)
-	return err
+	body, err := c.odata.Post(ctx, path, nil)
+	if err != nil {
+		return "", err
+	}
+	return deployTaskID(body), nil
+}
+
+// deployTaskID reads the task ID from a deploy response. The $metadata
+// declares Edm.String as the result; a tenant answered 202 with the bare ID
+// as text ("2f93475d-9c44-4175-6b13-3f0b2c26e246"), so both that and the
+// OData JSON form {"d": {"DeployIntegrationDesigntimeArtifact": "..."}} are
+// read. An empty result means no task to follow.
+func deployTaskID(body []byte) string {
+	text := strings.TrimSpace(string(body))
+	var wrapped struct {
+		D map[string]json.RawMessage `json:"d"`
+	}
+	if json.Unmarshal(body, &wrapped) == nil && len(wrapped.D) > 0 {
+		for _, raw := range wrapped.D {
+			var id string
+			if json.Unmarshal(raw, &id) == nil {
+				return id
+			}
+		}
+		return ""
+	}
+	if strings.ContainsAny(text, " {}<>\n") {
+		return ""
+	}
+	return strings.Trim(text, "\"")
 }

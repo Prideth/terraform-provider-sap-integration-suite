@@ -90,7 +90,10 @@ func (r *messageMappingResource) Schema(_ context.Context, _ resource.SchemaRequ
 					"example \"${path.module}/message-mappings/customer-mapping.zip\". Required to " +
 					"manage the mapping's content; left as-is on import until a matching " +
 					"configuration is applied, since SAP does not return a local file path for an " +
-					"existing design-time artifact.",
+					"existing design-time artifact. The copy that is uploaded carries mapping_id as " +
+					"Bundle-SymbolicName and in Provide-Capability (the file itself is not changed, and a " +
+					"warning says when this happened): SAP rejects a content update whose bundle ID differs " +
+					"from the mapping ID.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -145,6 +148,7 @@ func (r *messageMappingResource) Create(ctx context.Context, req resource.Create
 		resp.Diagnostics.AddError("Message mapping content hash mismatch", err.Error())
 		return
 	}
+	content = alignUploadBundleID(content, plan.MappingID.ValueString(), plan.Content.ValueString(), &resp.Diagnostics)
 
 	mapping, err := r.client.CreateMessageMapping(ctx, plan.PackageID.ValueString(), plan.MappingID.ValueString(), plan.Name.ValueString(), content)
 	if err != nil {
@@ -205,6 +209,7 @@ func (r *messageMappingResource) Update(ctx context.Context, req resource.Update
 		resp.Diagnostics.AddError("Message mapping content hash mismatch", err.Error())
 		return
 	}
+	content = alignUploadBundleID(content, plan.MappingID.ValueString(), plan.Content.ValueString(), &resp.Diagnostics)
 
 	mapping, err := r.client.UpdateMessageMapping(ctx, plan.MappingID.ValueString(), plan.Name.ValueString(), content)
 	if err != nil {

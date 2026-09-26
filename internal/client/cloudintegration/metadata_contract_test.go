@@ -30,6 +30,7 @@ func TestWireContractAgainstMetadata(t *testing.T) {
 		{integrationPackagesEntitySet, packageWriteRequest{}},
 		{integrationPackagesEntitySet, packageUpdateRequest{}},
 		{runtimeArtifactsEntitySet, RuntimeArtifact{}},
+		{buildAndDeployStatusEntitySet, BuildAndDeployStatus{}},
 		{scriptCollectionDesigntimeArtifactsEntitySet, ScriptCollection{}},
 		{serviceEndpointsEntitySet, ServiceEndpoint{}},
 		{"EntryPoints", EntryPoint{}},
@@ -57,6 +58,8 @@ func TestWireContractAgainstMetadata(t *testing.T) {
 	m.AssertKey(t, valueMappingDesigntimeArtifactsEntitySet, "Id", "Edm.String", "Version", "Edm.String")
 	m.AssertKey(t, integrationAdapterDesigntimeArtifactsEntitySet, "Id", "Edm.String")
 	m.AssertKey(t, runtimeArtifactsEntitySet, "Id", "Edm.String")
+	m.AssertKey(t, buildAndDeployStatusEntitySet, "TaskId", "Edm.String")
+	m.AssertFunctionImport(t, "DeployIntegrationDesigntimeArtifact", "POST", "Id", "Version")
 	m.AssertKey(t, numberRangesEntitySet, "Name", "Edm.String")
 	m.AssertKey(t, customTagConfigurationsEntitySet, "Id", "Edm.String")
 	m.AssertKey(t, integrationFlowConfigurationsEntitySet, "ParameterKey", "Edm.String")

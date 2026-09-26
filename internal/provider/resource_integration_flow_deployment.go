@@ -46,7 +46,13 @@ func (r *integrationFlowDeploymentResource) Schema(_ context.Context, _ resource
 		Description: "Expresses the desired runtime deployment state of a Cloud Integration " +
 			"integration flow, independent of its design-time content lifecycle. Deploying is " +
 			"asynchronous: this resource polls SAP's runtime artifact status until the deployment " +
-			"reaches a terminal state (STARTED or ERROR) or the configured timeout elapses.",
+			"reaches a terminal state (STARTED or ERROR) or the configured timeout elapses. It also " +
+			"follows the task SAP returns for the deploy (BuildAndDeployStatus): if the task fails, or " +
+			"succeeds while the flow does not appear in the Cloud Integration runtime, it stops at once. " +
+			"The second case means the flow went to another runtime profile: a flow whose externalized " +
+			"parameter SAP_ProfileId is \"integrationcell\" deploys to Integration Cell, which this " +
+			"provider does not support; set it to \"iflmap\" with " +
+			"sapintegrationsuite_integration_flow_configuration.",
 		Attributes: map[string]schema.Attribute{
 			"runtime_location_id": runtimeLocationResourceAttribute(),
 			"id": schema.StringAttribute{
@@ -135,12 +141,13 @@ func (r *integrationFlowDeploymentResource) Create(ctx context.Context, req reso
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	if err := client.DeployIntegrationFlow(ctx, plan.FlowID.ValueString(), plan.FlowVersion.ValueString()); err != nil {
+	taskID, err := client.DeployIntegrationFlow(ctx, plan.FlowID.ValueString(), plan.FlowVersion.ValueString())
+	if err != nil {
 		resp.Diagnostics.AddError("Failed to deploy SAP Integration Suite integration flow", diagnosticDetail(err))
 		return
 	}
 
-	artifact, err := waitForRuntimeArtifact(ctx, client, plan.FlowID.ValueString())
+	artifact, err := waitForDeployment(ctx, client, plan.FlowID.ValueString(), taskID)
 	if err != nil {
 		resp.Diagnostics.AddError("Deployment did not reach a ready state", diagnosticDetail(err))
 		return
@@ -202,12 +209,13 @@ func (r *integrationFlowDeploymentResource) Update(ctx context.Context, req reso
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	if err := client.DeployIntegrationFlow(ctx, plan.FlowID.ValueString(), plan.FlowVersion.ValueString()); err != nil {
+	taskID, err := client.DeployIntegrationFlow(ctx, plan.FlowID.ValueString(), plan.FlowVersion.ValueString())
+	if err != nil {
 		resp.Diagnostics.AddError("Failed to redeploy SAP Integration Suite integration flow", diagnosticDetail(err))
 		return
 	}
 
-	artifact, err := waitForRuntimeArtifact(ctx, client, plan.FlowID.ValueString())
+	artifact, err := waitForDeployment(ctx, client, plan.FlowID.ValueString(), taskID)
 	if err != nil {
 		resp.Diagnostics.AddError("Deployment did not reach a ready state", diagnosticDetail(err))
 		return

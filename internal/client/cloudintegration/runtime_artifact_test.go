@@ -104,3 +104,34 @@ func TestClient_GetRuntimeArtifactErrorInformation(t *testing.T) {
 		t.Errorf("info = %q, want the trimmed text", info)
 	}
 }
+
+func TestDeployTaskID(t *testing.T) {
+	cases := map[string]string{
+		"2f93475d-9c44-4175-6b13-3f0b2c26e246":                     "2f93475d-9c44-4175-6b13-3f0b2c26e246", // tenant answer, September 2026
+		"\"2f93475d-9c44-4175-6b13-3f0b2c26e246\"\n":               "2f93475d-9c44-4175-6b13-3f0b2c26e246",
+		`{"d": {"DeployIntegrationDesigntimeArtifact": "task-9"}}`: "task-9",
+		"":                                   "",
+		"<html><body>Accepted</body></html>": "",
+	}
+	for body, want := range cases {
+		if got := deployTaskID([]byte(body)); got != want {
+			t.Errorf("deployTaskID(%q) = %q, want %q", body, got, want)
+		}
+	}
+}
+
+func TestClient_GetBuildAndDeployStatus(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if want := "/api/v1/BuildAndDeployStatus('task-1')"; r.URL.Path != want {
+			t.Errorf("path = %q, want %q", r.URL.Path, want)
+		}
+		// Shape a tenant returned, September 2026.
+		_, _ = w.Write([]byte(`{"d": {"__metadata": {"type": "com.sap.hci.api.BuildAndDeployStatus"}, "TaskId": "task-1", "Status": "SUCCESS"}}`))
+	}))
+	defer server.Close()
+
+	status, err := New(http.DefaultClient, server.URL).GetBuildAndDeployStatus(context.Background(), "task-1")
+	if err != nil || status.Status != "SUCCESS" || status.TaskID != "task-1" {
+		t.Fatalf("status %+v, err %v", status, err)
+	}
+}
