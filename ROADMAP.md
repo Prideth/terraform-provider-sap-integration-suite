@@ -22,13 +22,33 @@ Event Mesh, Open Connectors, OData Provisioning) has been researched and classif
 An earlier version of this section called public API coverage complete. The September 2026
 re-audit showed that some contracts counted as confirmed had been reconstructed from UI labels
 and did not match SAP's services (access policy references, integration adapters, service
-endpoint API definitions). Those are fixed, and the Cloud Integration, Security Content and
-Partner Directory clients are now checked against a tenant `$metadata` by contract tests. What
-remains open is listed with the evidence each item needs in
+endpoint API definitions). Those are fixed, and the Cloud Integration, Security Content,
+Partner Directory and Classic API Management clients are now checked against the services'
+`$metadata` by contract tests, including field types and navigation properties.
+
+The same month brought the first checks against a real tenant, which found more than a dozen
+defects that documentation research and unit tests could not: among them every request
+failing under Terraform with `context canceled` on the token URL, SAP answering writes with 202
+or 200 and no body, updates it rejects (PUT on access policies and API products, empty IDs on
+message mapping updates), certificates that need a fingerprint confirmation, and content
+updates that fail when a ZIP's bundle ID differs from the artifact ID. Each fix is listed in
+`CHANGELOG.md`. Two kinds of checks now exist:
+
+- **Probe scripts** send the provider's exact requests to a tenant and record SAP's answers.
+  They verified the write paths of access policies, packages, Security Content (credentials,
+  secure parameters, certificates, key pairs), Partner Directory, number ranges, API products,
+  key value maps and the design-time content types.
+- **Acceptance tests** (`TestAcc*`) run the provider itself through Terraform, with content
+  from SAP's public samples and from local exports (see `CONTRIBUTING.md`). Packages,
+  integration flows with content updates, import, configuration and `save_as_version`, flow
+  deployments and script collections pass end to end; the message mapping and value mapping
+  tests are waiting for a rerun with longer deployment timeouts.
+
+What remains open is listed with the evidence each item needs in
 [`docs/research/sap-2026-public-api-gap-closure.md`](docs/research/sap-2026-public-api-gap-closure.md):
-chiefly the Classic API Management `$metadata`, the Hub specifications for the Transport API
-and Data Space Integration, service-key access for API Composition and Integration Assessment,
-and tenant checks that need additional role templates.
+chiefly the Hub specifications for the Transport API and Data Space Integration, service-key
+access for API Composition and Integration Assessment, a virtual host key, and acceptance tests
+for the resources that so far were only probed.
 
 API Composition's business data graph is implemented as experimental: SAP documents its
 contract, but the PATCH body and delete request are inferred and unverified on a live system
@@ -126,22 +146,25 @@ planned as a separate, independently versioned Terraform provider (working name
 `Prideth/terraform-provider-sap-developer-hub`). See `docs/provider-scope.md` for the boundary
 statement and `docs/feature-support.md`'s single `developer_hub` catalog entry.
 
-Access Policies were re-audited in September 2026 against SAP's own access-policy automation.
-The re-audit corrected the artifact-reference wire format (property names, Int64 keys, create and
-delete paths), switched policy updates to PUT, removed the non-existent `reconciliation_status`,
-and added lookup by role name — see "Implemented" below and `docs/guides/access-policies.md`.
-Runtime targeting stays open until the `AccessPolicyRuntimeAssignments` schema is published.
+Access Policies were re-audited in September 2026 against SAP's own access-policy automation and
+then verified on a tenant. The re-audit corrected the artifact-reference wire format (property
+names, Int64 keys, create and delete paths), removed the non-existent `reconciliation_status`,
+added lookup by role name and a read-only runtime assignments data source; the tenant check
+showed that description updates need PATCH (PUT answers 501) and that creates can return no
+body — see "Implemented" below and `docs/guides/access-policies.md`. Managing runtime
+assignments stays open until SAP documents how they are written.
 Partner Directory is also done —
 see "Implemented" below and `docs/guides/partner-directory.md`. Cloud Integration Service
 Endpoints discovery is also done — see "Implemented" below and `docs/guides/service-endpoints.md`.
-Security Content (User Credentials, OAuth2 Client Credentials, Keystore Entry discovery,
-Certificates, and SAP-generated Key Pairs), custom Integration Adapter design-time/deployment
-support, and Custom Tag Configuration management are also done, each at a `partial` or better
-support level — see "Implemented" below, `docs/guides/security-content.md`,
+Security Content (User Credentials, OAuth2 Client Credentials, Secure Parameters, Keystore
+Entry discovery, Certificates, and SAP-generated Key Pairs), custom Integration Adapter
+design-time/deployment support, and Custom Tag Configuration management are also done, each at
+a `partial` or better support level — see "Implemented" below, `docs/guides/security-content.md`,
 `docs/guides/integration-adapters.md`, and `docs/guides/custom-tag-configurations.md`. Number
-Ranges / Variables / Data Stores is also done — a narrow write-only-lifecycle Number Range
-resource (SAP documents no `GET`/`DELETE` for it at all), with Variables, Data Stores, and Data
-Store Entries deliberately left unsupported/out of scope — see "Implemented" below and
+Ranges / Variables / Data Stores is also done — a Number Range resource whose counter is a
+version-gated write-only attribute (SAP documents only create and update, but a tenant check
+confirmed read and delete, so it also detects drift and imports), with Variables, Data Stores,
+and Data Store Entries deliberately left unsupported/out of scope — see "Implemented" below and
 `docs/guides/runtime-stores-and-number-ranges.md`.
 
 This order describes what to work on **next**; it does not retroactively unimplement anything
@@ -156,17 +179,24 @@ already shipped (see "Implemented" below).
 - OData V2 request/query/pagination/error-parsing foundation
 - Cloud Integration fundamentals:
   - `sapintegrationsuite_integration_package`
-  - `sapintegrationsuite_integration_flow`
-  - `sapintegrationsuite_integration_flow_deployment`
+  - `data.sapintegrationsuite_integration_package`
+  - `sapintegrationsuite_integration_flow` (uploads a copy whose bundle ID equals the flow ID,
+    since SAP rejects updates otherwise)
+  - `sapintegrationsuite_integration_flow_configuration` (externalized parameters, including
+    `SAP_ProfileId`, which picks the runtime a flow is deployed to)
+  - `sapintegrationsuite_integration_flow_deployment` (follows SAP's deploy task; a deployment
+    that does not confirm stays in state as tainted)
 - Access Policies (wire contract re-audited in 2026 against SAP's own tooling; lookup by role
   name; runtime targeting still open — see `docs/guides/access-policies.md`):
   - `sapintegrationsuite_access_policy`
   - `sapintegrationsuite_access_policy_reference`
   - `data.sapintegrationsuite_access_policy`
   - `data.sapintegrationsuite_access_policy_reference`
+  - `data.sapintegrationsuite_access_policy_runtime_assignments`
 - Value Mappings:
   - `sapintegrationsuite_value_mapping`
   - `sapintegrationsuite_value_mapping_deployment`
+  - `data.sapintegrationsuite_value_mapping`
 - Message Mappings (reusable, package-level artifacts — not the inline/local mapping step an
   integration flow can also define directly, see `docs/resource-design.md`):
   - `sapintegrationsuite_message_mapping`
@@ -199,6 +229,8 @@ already shipped (see "Implemented" below).
   - `data.sapintegrationsuite_user_credential`
   - `sapintegrationsuite_oauth2_client_credential`
   - `data.sapintegrationsuite_oauth2_client_credential`
+  - `sapintegrationsuite_secure_parameter` (Security Content "Secure Parameter", value write-only;
+    the entity set comes from the tenant `$metadata`, SAP Help documents only the UI)
 - Security Content keystore management (read-only entry discovery, X.509 certificates, and
   SAP-generated key pairs — private key material never enters this provider; certificate drift
   detection uses a locally-computed SHA-256 fingerprint, not raw PEM text; no separate "SSH Key"
@@ -227,10 +259,9 @@ already shipped (see "Implemented" below).
   clear operation for this entity at all — see `docs/guides/custom-tag-configurations.md`):
   - `sapintegrationsuite_custom_tag_configuration`
   - `data.sapintegrationsuite_custom_tag_configuration`
-- Number Range configuration (a write-only-lifecycle resource: SAP documents Create/Update but
-  no `GET`/`DELETE` for this entity anywhere, so Read is a documented no-op and Import/Delete
-  both refuse explicitly rather than guess; the runtime counter is a version-gated write-only
-  attribute, never an ordinary reconciled field — see
+- Number Range configuration (the runtime counter is a version-gated write-only attribute,
+  never an ordinary reconciled field; SAP documents only create and update, but a tenant check
+  confirmed read and delete, so the resource detects drift, imports and deletes — see
   `docs/guides/runtime-stores-and-number-ranges.md`. Variables, Data Stores, and Data Store
   Entries were evaluated and are deliberately unsupported/out of scope — no independent
   creation API, and/or the object is runtime business data, not desired state):
@@ -244,7 +275,12 @@ already shipped (see "Implemented" below).
   - `data.sapintegrationsuite_provider_feature`
 - Import support and drift detection for every resource above
 - Unit test suite (`httptest`-based) for auth, HTTP retry, OData v2, and domain mapping
-- Acceptance test framework (gated on `TF_ACC=1`)
+- Contract tests of every wire struct against the services' `$metadata` (property names, keys,
+  function imports, field types, navigation properties)
+- Acceptance tests (`TestAcc*`, gated on `TF_ACC=1`) for packages, integration flows and their
+  configuration and deployment, message mappings, script collections and value mappings, using
+  pinned content from SAP's public samples and, where those lack a type, local exports — see
+  `CONTRIBUTING.md`
 - Generated provider documentation, greenfield/brownfield examples
 - CI (fmt/vet/test/build/lint) and GoReleaser-based release pipeline
 - Edge Integration Cell classification (registration/activation confirmed UI/CLI-only; Access
@@ -259,7 +295,7 @@ already shipped (see "Implemented" below).
   - `sapintegrationsuite_api_provider`
   - `data.sapintegrationsuite_api_provider`
   - `data.sapintegrationsuite_api_providers`
-  - `sapintegrationsuite_api_product`
+  - `sapintegrationsuite_api_product` (replace-only: SAP answers every update with 405)
   - `data.sapintegrationsuite_api_product`
   - `sapintegrationsuite_api_management_certificate_store_reference`
   - `data.sapintegrationsuite_api_management_certificate_store_reference`
