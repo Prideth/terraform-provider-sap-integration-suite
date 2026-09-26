@@ -141,11 +141,23 @@ resource "sapintegrationsuite_integration_flow" "test" {
 func TestAccIntegrationFlowDeployment_sample(t *testing.T) {
 	pkg, flow := testAccName(), testAccName()
 	path := testAccArtifactFile(t, testAccExportFlow(t, "eventhub-package-export", "ReceiveEvents_SAPCloudApplicationEventHub"), flow)
+	// Tenants with Integration Cell give new flows SAP_ProfileId =
+	// "integrationcell"; the flow then never reaches the Cloud Integration
+	// runtime. Point it at iflmap first, as the configuration guide shows.
 	deployment := `
-resource "sapintegrationsuite_integration_flow_deployment" "test" {
-  package_id   = sapintegrationsuite_integration_package.test.id
+resource "sapintegrationsuite_integration_flow_configuration" "test" {
   flow_id      = sapintegrationsuite_integration_flow.test.flow_id
   flow_version = sapintegrationsuite_integration_flow.test.version
+  parameters = {
+    SAP_ProfileId = "iflmap"
+  }
+}
+
+resource "sapintegrationsuite_integration_flow_deployment" "test" {
+  package_id        = sapintegrationsuite_integration_package.test.id
+  flow_id           = sapintegrationsuite_integration_flow.test.flow_id
+  flow_version      = sapintegrationsuite_integration_flow.test.version
+  redeploy_triggers = sapintegrationsuite_integration_flow_configuration.test.parameters
 
   timeouts {
     create = "5m"
