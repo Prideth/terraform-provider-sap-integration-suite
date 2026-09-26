@@ -1524,7 +1524,7 @@ var Catalog = []Feature{
 				"API Management Client SDK 3.0.6 (Classic API Portal endpoints only) and SAP's own " +
 				"2026 CI/CD tooling (no API artifact automation).",
 			"The 2026 features around API artifacts, such as API-centric integration, simplified " +
-				"creation from a URL or specification, AI-generated OpenAPI specifications and " +
+				"creation from a URL or specification, OpenAPI specifications drafted by SAP's assistant and " +
 				"product subscriptions, are all UI features.",
 			"Re-checked 2026-09-26 (Hub package APIMgmt of 2026-09-24, SAP Help mirror of " +
 				"2026-09-18, Client SDK 3.0.6 of 2026-09-24): still no API. API artifacts and MCP " +
