@@ -24,8 +24,8 @@ import (
 func TestMessageMappingDeployment_TimeoutKeepsState(t *testing.T) {
 	fastDeploymentPolls(t)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch {
-		case r.Method == http.MethodPost:
+		switch r.Method {
+		case http.MethodPost:
 			w.WriteHeader(http.StatusAccepted)
 		default:
 			// Deployed, but still starting, as seen on the tenant.

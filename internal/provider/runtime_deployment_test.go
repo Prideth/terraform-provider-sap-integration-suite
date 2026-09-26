@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -213,7 +214,14 @@ func TestWaitForDeployment_NoTaskWaitsForTimeout(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
 	defer cancel()
 	_, err := waitForDeployment(ctx, client, "flow", "")
-	if err == nil || !strings.Contains(err.Error(), "timed out") {
+	// The deadline can hit between two polls ("timed out waiting ...") or
+	// during a request ("context deadline exceeded"); both mean it waited.
+	if err == nil {
+		t.Fatal("want the timeout, got no error")
+	}
+	waited := strings.Contains(err.Error(), "timed out") || errors.Is(err, context.DeadlineExceeded) ||
+		strings.Contains(err.Error(), "deadline exceeded")
+	if !waited {
 		t.Fatalf("error = %v, want the timeout", err)
 	}
 }
