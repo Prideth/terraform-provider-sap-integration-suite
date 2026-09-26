@@ -20,8 +20,13 @@ override.tf.json
 *_override.tf
 *_override.tf.json
 
+
 # Editor / OS
 .vscode/
 .idea/
 *.swp
 .DS_Store
+
+# keys
+keys.local.json
+*.zip

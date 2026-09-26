@@ -103,17 +103,14 @@ in one place upgrades it everywhere.
    `$metadata`" below).
 6. Add an example under `examples/resources/<name>/` or
    `examples/data-sources/<name>/`, then run `make docs`.
-7. If the change is acceptance-testable, add an acceptance test gated on
-   `TF_ACC=1`, using `tf-acc-` prefixed names for any object created in a
-   real tenant. As of this writing, no acceptance tests exist in this
-   repository yet — every phase of this provider's development so far has
-   worked from documentation research without live tenant credentials, so
-   coverage has been unit-test (`httptest`-based) only; `TF_ACC=1` is the
-   convention future contributors with tenant access are expected to use,
-   not a claim that tests currently run against a real tenant. See
-   `docs/api-capability-matrix.md` and `docs/feature-support.md` for what
-   each implemented resource's confirmed API behavior actually is, in lieu
-   of acceptance-test evidence.
+7. If the change is acceptance-testable, add an acceptance test
+   (`TestAcc*`, `terraform-plugin-testing`) next to the ones in
+   `internal/provider/acc_*_test.go`. Name every object it creates with
+   `testAccName()` (`tfacc` plus random characters; no hyphens, because
+   several SAP IDs reject them), and take design-time content from
+   `internal/testutil/samples` (see "Testing with SAP's samples" below).
+   Acceptance tests only run with `TF_ACC=1` and the
+   `SAP_INTEGRATION_SUITE_*` variables set.
 
    A test that creates, modifies, or deletes **tenant-wide singleton**
    configuration (for example `sapintegrationsuite_custom_tag_configuration`,
@@ -146,6 +143,47 @@ in one place upgrades it everywhere.
       — they fail if a registered resource/data source has no catalog
       entry, or if a catalog entry claims a resource/data source type that
       does not exist.
+
+## Testing with SAP's samples
+
+Resources that upload content (integration flows, message mappings and
+their deployments) are tested with real artifacts from SAP's public sample
+repositories on github.com/SAP-samples (Apache-2.0).
+`internal/testutil/samples/catalog.go` lists each file with its repository,
+commit and SHA-256 hash; `samples.Get` downloads it into a local cache and
+fails the test if the bytes differ from the pinned hash. Nothing from those
+repositories is copied into this one.
+
+- **Offline tests** (`go test ./internal/testutil/samples/`) check every
+  catalog entry against the provider's own parsers, for example the
+  MANIFEST reader, which has to join SAP's wrapped manifest lines. They
+  download only with `SAP_SAMPLES_DOWNLOAD=1` (CI sets it) and skip
+  otherwise, unless the samples are already cached.
+- **Acceptance tests** give every artifact a unique ID with
+  `samples.WithBundleID`, because SAP rejects a content update whose
+  `Bundle-SymbolicName` differs from the artifact ID. A test deploys only
+  samples marked `Deployable`: no timer and no polling sender, so they run
+  only when someone calls their endpoint.
+
+To add a sample, pick a file at a fixed commit, compute its SHA-256, add the
+entry to the catalog with the right `Kind`, and check that
+`TestCatalog` passes with `SAP_SAMPLES_DOWNLOAD=1`.
+
+## Running the acceptance tests against a tenant
+
+```sh
+TF_ACC=1 \
+SAP_INTEGRATION_SUITE_HOST=https://<tenant>.it-cpi<...>.cfapps.<region>.hana.ondemand.com \
+SAP_INTEGRATION_SUITE_TOKEN_URL=https://<subdomain>.authentication.<region>.hana.ondemand.com/oauth/token \
+SAP_INTEGRATION_SUITE_CLIENT_ID=... \
+SAP_INTEGRATION_SUITE_CLIENT_SECRET=... \
+go test ./internal/provider/ -run '^TestAcc' -v -timeout 60m
+```
+
+The client needs the roles listed in the "Authorization and Roles" guide
+for packages, content, configuration and deployment. Each test destroys what
+it created; an interrupted run can leave `tfacc*` packages behind, which you
+can delete in the Design UI.
 
 ## Checking wire contracts against `$metadata`
 

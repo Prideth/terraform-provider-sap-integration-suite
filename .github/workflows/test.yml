@@ -37,4 +37,7 @@ jobs:
         run: go build ./...
 
       - name: go test
+        # Downloads the pinned SAP-samples files for internal/testutil/samples.
+        env:
+          SAP_SAMPLES_DOWNLOAD: "1"
         run: go test -race -cover ./...
