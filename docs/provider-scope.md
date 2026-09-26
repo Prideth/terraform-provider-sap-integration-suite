@@ -146,7 +146,8 @@ previously listed here, is now implemented as the experimental
 OData Provisioning, previously listed here, has no public management API: registering and
 configuring OData services is documented only in the UI.
 
-See `docs/sap-api-references.md` and `internal/features/catalog.go` for the full evidence behind
+See `docs/research/capability-evidence-2026.md`, `docs/sap-api-references.md` and
+`internal/features/catalog.go` for the full evidence behind
 each of these.
 
 ## One-sentence summary

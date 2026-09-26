@@ -1,176 +1,133 @@
 # Roadmap
 
-This roadmap is adjusted after each round of API discovery documented under `docs/`. It
-favors a small, high-quality resource set over broad but shallow coverage. Status labels used
-below: **Implemented**, **Partial**, **Next**, **Planned**, **Blocked by API**, **Research
-required**, **Out of scope**.
+This roadmap orders the open work by what unblocks it. Every item names the evidence it needs;
+nothing moves up because an entity merely exists in a `$metadata` document, since that does not
+show that SAP supports writing it. The authoritative per-feature status is
+[`docs/feature-support.md`](docs/feature-support.md); the dated evidence behind every entry that
+is not fully supported is [`docs/research/capability-evidence-2026.md`](docs/research/capability-evidence-2026.md);
+the entity-level view of each service contract is [`docs/api-discovery-report.md`](docs/api-discovery-report.md).
 
-For what this provider *version* actually supports today, feature by feature, see
-[`docs/feature-support.md`](docs/feature-support.md) and the
-`sapintegrationsuite_provider_features` / `sapintegrationsuite_provider_feature` data sources —
-this document describes direction and sequencing, not the authoritative current support
-matrix.
+Priorities:
 
-## Current status
+- **P0**: in progress or blocked only on a tenant run that is already prepared.
+- **P1**: a public contract exists; needs a tenant check or a service key, then implementation.
+- **P2**: a public contract is partly confirmed; needs more evidence first.
+- **P3**: valuable but low demand or high effort.
+- **WATCH**: no public API today; revisit when SAP publishes one.
+- **SEPARATE PROVIDERS** and **OUT OF SCOPE**: deliberately not in this provider.
 
-Every SAP Integration Suite capability this provider knows about (Cloud Integration, Security
-Content, Partner Directory, Classic API Management, current API Management/API Artifacts,
-Integration Cell, Edge Integration Cell, Developer Hub, API Composition, Integration Assessment,
-Trading Partner Management, Integration Advisor, Migration Assessment, Data Space Integration,
-Event Mesh, Open Connectors, OData Provisioning) has been researched and classified.
+## Status, September 2026
 
-An earlier version of this section called public API coverage complete. The September 2026
-re-audit showed that some contracts counted as confirmed had been reconstructed from UI labels
-and did not match SAP's services (access policy references, integration adapters, service
-endpoint API definitions). Those are fixed, and the Cloud Integration, Security Content,
-Partner Directory and Classic API Management clients are now checked against the services'
-`$metadata` by contract tests, including field types and navigation properties.
+The provider covers Cloud Integration content and deployments, Security Content, Partner
+Directory, access policies, number ranges, Classic API Management (API providers, products, key
+value maps, certificate store references and, experimentally, API proxies) and, experimentally,
+API Composition's business data graphs.
 
-The same month brought the first checks against a real tenant, which found more than a dozen
-defects that documentation research and unit tests could not: among them every request
-failing under Terraform with `context canceled` on the token URL, SAP answering writes with 202
-or 200 and no body, updates it rejects (PUT on access policies and API products, empty IDs on
-message mapping updates), certificates that need a fingerprint confirmation, and content
-updates that fail when a ZIP's bundle ID differs from the artifact ID. Each fix is listed in
-`CHANGELOG.md`. Two kinds of checks now exist:
+Since the September 2026 re-audit, every OData client declares its contract, and the contract is
+checked against committed snapshots of the services' `$metadata` in every CI run. A discovery
+command compares the snapshots with a tenant's live documents and reports new or changed
+entities; every entity set of every snapshot is classified as used, a candidate or excluded, and
+a test fails when SAP adds one that nobody has looked at. Acceptance tests run per capability
+behind explicit gates (see `CONTRIBUTING.md`).
 
-- **Probe scripts** send the provider's exact requests to a tenant and record SAP's answers.
-  They verified the write paths of access policies, packages, Security Content (credentials,
-  secure parameters, certificates, key pairs), Partner Directory, number ranges, API products,
-  key value maps and the design-time content types.
-- **Acceptance tests** (`TestAcc*`) run the provider itself through Terraform, with content
-  from SAP's public samples and from local exports (see `CONTRIBUTING.md`). Packages,
-  integration flows with content updates, import, configuration and `save_as_version`, flow
-  deployments and script collections pass end to end; the message mapping and value mapping
-  tests are waiting for a rerun with longer deployment timeouts.
+The re-audit of current API Management (API artifacts, reusable API artifacts, MCP servers,
+Integration Cell, virtual hosts, runtime profiles) against SAP's 2026 releases found no public
+API: the Business Accelerator Hub's API Management package (2026-09-24), the Client SDK 3.0.6
+(2026-09-24) and SAP Help (2026-09-18) describe these objects only in the UI. They travel as
+integration package content. See `docs/guides/current-api-management.md`.
 
-What remains open is listed with the evidence each item needs in
-[`docs/research/sap-2026-public-api-gap-closure.md`](docs/research/sap-2026-public-api-gap-closure.md):
-chiefly the Hub specifications for the Transport API and Data Space Integration, service-key
-access for API Composition and Integration Assessment, a virtual host key, and acceptance tests
-for the resources that so far were only probed.
+## P0 — tenant runs that decide promotions
 
-API Composition's business data graph is implemented as experimental: SAP documents its
-contract, but the PATCH body and delete request are inferred and unverified on a live system
-(see `docs/guides/api-composition.md`). Edge Integration Cell targeting is **not supported**:
-an untested `runtime_location_id` remains on several resources, but verifying it is outside
-this provider's scope (see `docs/guides/edge-integration-cell.md`).
+These need no further research, only a run of the prepared tests (`.specs/run-all-probes.ps1
+-All` locally, or the acceptance workflow):
 
-Future work follows newly published SAP APIs and incoming feature requests, not a fixed backlog.
-The clearest concrete opportunities already identified, in case SAP's documented API surface
-moves first, are listed in the "Confirmed-but-not-yet-implemented capabilities" section of
-`docs/provider-scope.md` — Classic API Management's API Proxy content upload, Data Space
-Integration, and Integration Assessment's Landscape Configuration.
+| Item | Test | Decides |
+|---|---|---|
+| Classic API proxy | `TestAccAPIProxy_sample` | `sapintegrationsuite_api_proxy` from experimental to supported (replace-only) |
+| Live contract check | `TestAccMetadata` (`SAP_INTEGRATION_SUITE_ACC_METADATA`) | First comparison of the committed snapshots with a tenant; strict mode lists new SAP entities |
+| Resources verified only by probes | the credential, certificate, key pair, number range, Partner Directory, access policy, key value map and API product acceptance tests | Terraform-level confirmation of state, drift and import |
+| Deployments with longer timeouts | message mapping and value mapping acceptance tests | Whether slow deployments need more than the documented timeout advice |
+| Design-time types, value mapping entries, security kinds | `tenant-probe -GapTests` | The P1 items below |
 
-The remaining Integration Suite capability audit is done. Two capability areas had no prior
-catalog entry at all and were added: **API Composition** (Business Data Graph, activated
-alongside Developer Hub as a sub-capability of API Management) was, at the time of this audit,
-the strongest confirmed-but-unimplemented finding of the whole provider; it has since been
-implemented, see "Implemented" below — and **OData Provisioning**, which the September 2026
-re-audit found to have no public management API (the `ODPAPIAccess` role grants runtime access
-to registered services, not management). Three previously-placeholder entries
-were reclassified with real evidence: **Event Mesh**
-is now `separate_provider` (a genuine, well-documented Solace PubSub+ broker API, deliberately
-excluded because it predates Integration Suite and belongs to a different provider's boundary,
-the same reasoning already applied to Developer Hub); **Data Space Integration** is confirmed
-`research_required` with a real, separately credentialed REST API and a genuinely complex
-object model warranting its own future phase; **Open Connectors** is now `out_of_scope` as a
-deliberate judgment (a catalog of 170+ independent third-party connector types that does not fit
-this provider's schema-first design), not a research gap. Capability activation itself was
-reconfirmed, once more, to have no public API for any capability this provider has ever audited
-— see "Implemented" below, `docs/provider-scope.md`, and `docs/sap-api-references.md`.
+## P1 — public contract, next implementation
 
-Migration Assessment research is done — no public API was found for Source System registration,
-Data Extraction Requests, or Scenario Evaluation Requests across Migration Assessment's small
-(roughly fifteen-page) documentation tree. Uniquely among the capabilities audited this run, this
-conclusion would hold even if an API were confirmed: Migration Assessment's documentation
-describes it as an API *consumer* (reaching into a registered source system's own SAP Process
-Orchestration APIs to extract data), and every one of its own objects is either action-triggered
-workflow (Create starts an extraction with a resulting status) or reporting output (assessment
-categories, readiness scores, effort estimates) — see "Implemented" below and
-`docs/guides/migration-assessment.md`.
+1. **Data types, message types, fault message types, service interfaces.** The `$metadata`
+   defines all four with `SaveAsVersion`, and a package export carries data types in the same
+   bundle format as message mappings. If the gap probe confirms create, update, version and
+   delete with the message mapping's requests, the four resources reuse the shared design-time
+   client and the `save_as_version` attribute.
+2. **API Composition hardening.** `TestAccBusinessDataGraph_basic` needs a service key of plan
+   `configuration` and a destination; the service's `$metadata` goes through
+   `cmd/apidiscovery` (service `api-composition-configuration`). Passing both promotes the
+   business data graph from experimental and settles the PATCH body and delete request.
+3. **Edge Integration Cell targeting.** `TestAccEdgeIntegrationCell_securityAndPartnerDirectory`
+   needs a tenant with an Edge Integration Cell. Passing it makes `runtime_location_id` supported
+   for the tested resources; the deployment resources follow with their own test.
+4. **Integration Assessment.** Fetch the Entities and Management `$metadata` with a service key
+   (services `integration-assessment-entities` and `-management` in `cmd/apidiscovery`),
+   classify the entity sets, then implement the landscape configuration (applications,
+   application instances, technologies, technology instances, vendors) where writes are
+   verified. Requests stay out of scope as workflow.
 
-Integration Advisor research is done — no public API was found for any design-time object (MIG,
-MAG, Type System, Codelist, Shared Code, Global Parameters) across roughly eighty-five
-documentation pages checked. One page describing OAuth credential creation initially looked
-promising but, on full reading, turned out to describe authenticating against Cloud Integration
-for runtime-artifact injection, not a credential for Integration Advisor's own content — recorded
-explicitly as a research caution for future phases. Injection itself is a confirmed UI wizard
-with no REST equivalent, and is out of scope as an imperative action regardless — see
-"Implemented" below and `docs/guides/integration-advisor.md`.
+## P2 — partly confirmed, more evidence first
 
-Trading Partner Management research is done — no public API was found for any design-time object
-(Company/Trading Partner/Communication Partner Profile, Agreement Template, Agreement) across
-roughly ninety documentation pages checked, using the same negative-evidence method (absence of a
-dedicated API-access page) that has proven reliable for every capability audited so far.
-Activating a trading partner agreement is confirmed to push generated entries into Partner
-Directory, which this provider already manages directly and continues to treat as the correct,
-existing surface for that runtime data — see "Implemented" below and
-`docs/guides/trading-partner-management.md`.
+5. **Value mapping entries.** `UpsertValMaps` is documented; `DeleteValMaps` can only clear a
+   whole agency/identifier pair. If the gap probe shows that it clears the values and leaves the
+   pair (and that upserts do not duplicate source values), a resource that owns one complete
+   agency pair is safe. Entries written through the API would still be replaced by a content
+   upload of the value mapping, which the resource must document.
+6. **Security content.** Certificate chains (upload media type), PGP keyrings (upload format;
+   secret keyrings write-only) and OAuth2 client credential custom parameters (write path). The
+   OAuth2 password and SAML bearer artifacts become user credential kinds if the gap probe finds
+   them among `UserCredentials`.
+7. **Classic virtual hosts.** Write API documented (`Configuration.svc/VirtualHostRequests`) and
+   read schema confirmed; needs a key with `APIManagement.SelfService.Administrator` and a
+   destructive-gated tenant test, since virtual hosts are tenant-wide.
+8. **Data Space Integration.** Parse the DSIAPI OpenAPI document (`cmd/apidiscovery -from`) once
+   it is available, then model only desired-state configuration (assets, policies, contract
+   definitions); negotiations and transfers stay out of scope.
 
-Integration Assessment is done for its currently reachable public API surface — a separate BTP
-service subscription, dual-base-URL OAuth authentication, and a fully confirmed 19-entity
-inventory are all real findings, but no field-level wire contract was confirmed for any entity
-despite checking the SAP-docs mirror, an official 2400-line PDF user guide, and SAP's own TechEd
-hands-on sample repository, so nothing is implemented. Landscape Configuration
-(Application/Technology/Vendor) is flagged as the strongest candidate if a schema is ever
-confirmed; Requests/assessment workflow is out of scope regardless — see "Implemented" below and
-`docs/guides/integration-assessment.md`.
+## P3 — later
 
-Edge Integration Cell is done — SAP-side registration and activation remain UI/CLI-only (no public
-API), Access Policy replication has a public but undocumented API surface
-(`public_api_incomplete`), local monitoring APIs are confirmed real but out of scope as runtime data, and the Operations Cockpit API is confirmed real but excluded as
-Kubernetes-adjacent operational configuration — see "Implemented" below and
-`docs/guides/edge-integration-cell.md`.
+9. Value mapping in-place update and `save_as_version` (needs a verified PUT).
+10. Integration adapters with real adapter content (create and read still undocumented).
+11. Classic certificate stores, applications, cache resources, rate plans, policy templates and
+    product access control, each once SAP documents update and delete.
+12. Discovery automation: a scheduled strict discovery run that opens an issue with the semantic
+    diff instead of failing silently.
 
-Classic API Management is also done for its currently reachable public API surface — API
-Provider, API Product, Certificate Store Reference, and Key Value Map are implemented (each with
-a scope limitation specific to what SAP's API actually supports); API Proxy, API Proxy
-Deployment, and Policy remain unimplemented because this phase could not confirm the API Proxy
-content upload wire format from any reachable primary source, not because no API exists — see
-"Implemented" below and `docs/guides/classic-api-management.md` for the full boundary and
-exactly what would need to be confirmed to revisit API Proxy.
+## WATCH — no public API today
 
-Current API Management / API Artifacts / Integration Cell (API Artifacts, MCP Servers, Runtime
-Profiles, Integration Cell, Virtual Hosts, Policies, Reusable API Artifacts) was re-audited in
-September 2026 after SAP's 2026 releases (API-centric integration, MCP Gateway, Client SDK
-3.0.0). SAP still exposes no public API for any object in this family, so this provider
-implements none of it — see `docs/guides/current-api-management.md` for the evidence and for the
-design that applies once an API appears. The channels to watch are listed at the end of that
-guide.
+- Current API Management: API artifacts, reusable API artifacts, API artifact deployment,
+  policies, MCP servers and the MCP Gateway, runtime profiles; Integration Cell runtime and
+  virtual hosts. Channels: the Hub's API Management and Cloud Integration packages, the Client
+  SDK on Maven Central, What's New for Integrations and APIs. The design for an API artifact
+  resource is in `docs/guides/current-api-management.md`.
+- Capability activation for every Integration Suite capability.
+- Known hosts, certificate-to-user mapping (Neo only today), where-used lists.
+- OData Provisioning, Integration Advisor, Trading Partner Management configuration, Migration
+  Assessment.
 
-Developer Hub — SAP's API/Event/MCP Server catalog, publication, and subscription capability — is
-not part of this provider's roadmap at all. It has its own API boundary, its own OAuth
-credentials, and a consumer/catalog lifecycle unlike anything else this provider manages, and is
-planned as a separate, independently versioned Terraform provider (working name
-`Prideth/terraform-provider-sap-developer-hub`). See `docs/provider-scope.md` for the boundary
-statement and `docs/feature-support.md`'s single `developer_hub` catalog entry.
+## SEPARATE PROVIDERS
 
-Access Policies were re-audited in September 2026 against SAP's own access-policy automation and
-then verified on a tenant. The re-audit corrected the artifact-reference wire format (property
-names, Int64 keys, create and delete paths), removed the non-existent `reconciliation_status`,
-added lookup by role name and a read-only runtime assignments data source; the tenant check
-showed that description updates need PATCH (PUT answers 501) and that creates can return no
-body — see "Implemented" below and `docs/guides/access-policies.md`. Managing runtime
-assignments stays open until SAP documents how they are written.
-Partner Directory is also done —
-see "Implemented" below and `docs/guides/partner-directory.md`. Cloud Integration Service
-Endpoints discovery is also done — see "Implemented" below and `docs/guides/service-endpoints.md`.
-Security Content (User Credentials, OAuth2 Client Credentials, Secure Parameters, Keystore
-Entry discovery, Certificates, and SAP-generated Key Pairs), custom Integration Adapter
-design-time/deployment support, and Custom Tag Configuration management are also done, each at
-a `partial` or better support level — see "Implemented" below, `docs/guides/security-content.md`,
-`docs/guides/integration-adapters.md`, and `docs/guides/custom-tag-configurations.md`. Number
-Ranges / Variables / Data Stores is also done — a Number Range resource whose counter is a
-version-gated write-only attribute (SAP documents only create and update, but a tenant check
-confirmed read and delete, so it also detects drift and imports), with Variables, Data Stores,
-and Data Store Entries deliberately left unsupported/out of scope — see "Implemented" below and
-`docs/guides/runtime-stores-and-number-ranges.md`.
+- **Developer Hub**: its own API boundary and credentials; planned as
+  `Prideth/terraform-provider-sap-developer-hub`. MCP server products and subscriptions belong
+  there.
+- **Event Mesh**: a general BTP messaging service with its own broker APIs.
 
-This order describes what to work on **next**; it does not retroactively unimplement anything
-already shipped (see "Implemented" below).
+## OUT OF SCOPE
 
-## Implemented (v0.1.x — Provider Foundation)
+- Runtime and monitoring data: message processing logs, message stores, JMS queues, data
+  stores, variables, trace, logs, B2B interchange monitoring.
+- Workflows and one-shot actions: Integration Assessment requests, Migration Assessment
+  extraction and evaluation, Integration Advisor injection, agreement activation, restarts and
+  retries.
+- Edge Integration Cell local and Operations Cockpit APIs (runtime data and Kubernetes-level
+  settings), OAuth2 authorization codes (interactive consent), Open Connectors.
+- BTP control-plane objects (subaccounts, entitlements, subscriptions, destinations, role
+  collections): use the `SAP/btp` provider.
+
+## Implemented
 
 - Provider skeleton on the Terraform Plugin Framework, named `sapintegrationsuite`
 - OAuth 2.0 client credentials authentication with a thread-safe, context-aware token cache
@@ -223,8 +180,7 @@ already shipped (see "Implemented" below).
   - `data.sapintegrationsuite_alternative_partner`
   - `data.sapintegrationsuite_partner_authorized_user`
 - Security Content credentials (write-only secrets, in-place redeploy via `PUT` — see
-  `docs/guides/security-content.md`; most other Security Content artifact types remain
-  unimplemented, see `docs/guides/security-content.md` for the full boundary):
+  `docs/guides/security-content.md` for the full boundary):
   - `sapintegrationsuite_user_credential`
   - `data.sapintegrationsuite_user_credential`
   - `sapintegrationsuite_oauth2_client_credential`
@@ -277,7 +233,10 @@ already shipped (see "Implemented" below).
 - Unit test suite (`httptest`-based) for auth, HTTP retry, OData v2, and domain mapping
 - Contract tests of every wire struct against the services' `$metadata` (property names, keys,
   function imports, field types, navigation properties)
-- Acceptance tests (`TestAcc*`, gated on `TF_ACC=1`) for packages, integration flows and their
+- API discovery: `$metadata` and OpenAPI parsing, committed contract snapshots, semantic diffs,
+  entity classification and a generated discovery report (`cmd/apidiscovery`)
+- Acceptance tests (`TestAcc*`, gated per capability with `internal/testutil/accgate`;
+  `cmd/accplan` shows what would run) for packages, integration flows and their
   configuration and deployment, message mappings, script collections and value mappings, using
   pinned content from SAP's public samples and, where those lack a type, local exports — see
   `CONTRIBUTING.md`
@@ -289,14 +248,14 @@ already shipped (see "Implemented" below).
 - Classic API Management (a separate `provider.api_management` credential block and
   `internal/client/apimanagementclassic`; API Provider, API Product, Certificate Store Reference,
   and Key Value Map resources and data sources, each scoped to what SAP's `Management.svc` API
-  actually confirms; API Proxy, API Proxy Deployment, and Policy deliberately unimplemented
-  pending a confirmed content-upload wire format) — see
-  `docs/guides/classic-api-management.md`:
+  actually confirms; API proxies experimentally, from their bundle ZIP, uploaded as SAP's
+  Client SDK does it) — see `docs/guides/classic-api-management.md`:
   - `sapintegrationsuite_api_provider`
   - `data.sapintegrationsuite_api_provider`
   - `data.sapintegrationsuite_api_providers`
   - `sapintegrationsuite_api_product` (replace-only: SAP answers every update with 405)
   - `data.sapintegrationsuite_api_product`
+  - `sapintegrationsuite_api_proxy` (experimental; a new bundle replaces the proxy)
   - `sapintegrationsuite_api_management_certificate_store_reference`
   - `data.sapintegrationsuite_api_management_certificate_store_reference`
   - `sapintegrationsuite_api_key_value_map`
@@ -306,41 +265,3 @@ already shipped (see "Implemented" below).
   request inferred) — see `docs/guides/api-composition.md`:
   - `sapintegrationsuite_business_data_graph`
   - `data.sapintegrationsuite_business_data_graph`
-
-## v0.2.x
-
-- Value mapping entry-level management (`UpsertValMaps`, `UpdateDefaultValMap`,
-  `DeleteValMaps`), once the exact payload/path shapes and delete granularity are confirmed
-  against a reachable primary source or a live tenant — see `docs/resource-design.md`
-  (**Research required**)
-- Message mapping entry-level or dependent-resource management, if SAP ever exposes one
-  independent of the opaque content archive this provider already transports (**Research
-  required**)
-- `sapintegrationsuite_api_proxy` and its deployment/policy siblings, once the API Proxy content
-  upload wire format (multipart, base64 JSON field, or otherwise) is confirmed from a reachable
-  primary source — see `docs/guides/classic-api-management.md` (**Research required**)
-- Integration Assessment Landscape Configuration (Application/Application Instance/Technology/
-  Technology Instance/Vendor), once a field-level wire contract is confirmed for it — see
-  `docs/guides/integration-assessment.md` (**Research required**)
-- Data Space Integration (Connector/Asset/Policy/Contract Definition/Contract Negotiation), once
-  its field-level wire contract is confirmed — see `docs/sap-api-references.md` (**Research
-  required**)
-
-## v0.3.x
-
-The provider hardening pass is done — see "Current status" above.
-
-## Later
-
-- Any further Integration-Suite capability for which SAP publishes a stable, documented
-  public API, evaluated resource-by-resource against `docs/resource-design.md`'s suitability
-  checklist before it is added.
-
-## Explicitly not planned (Out of scope)
-
-- Anything listed as "Out of Scope" in `docs/provider-scope.md`
-- A generic `sapintegrationsuite_capability` resource, unless SAP publishes a public
-  capability-activation API (none exists today — see
-  `docs/provisioning-capability-matrix.md`)
-- Terraform data sources for logs, metrics, or events (see `docs/architecture.md` and
-  `docs/provider-scope.md` §66 — this provider is not a monitoring system)

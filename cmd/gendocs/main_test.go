@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/features"
 )
 
 // utf8BOM is the three-byte UTF-8 byte-order mark. Markdown renderers,
@@ -84,5 +86,29 @@ func TestRegenerateReadme_IsIdempotent(t *testing.T) {
 	}
 	if !strings.Contains(string(first), "Trailing content.") {
 		t.Fatal("regenerateReadme() must not touch content outside the marker block")
+	}
+}
+
+// Every feature that is not fully supported appears in the evidence
+// document under a known classification.
+func TestEvidenceDoc_ListsEveryIncompleteFeature(t *testing.T) {
+	doc := evidenceDoc()
+	known := map[string]bool{}
+	for _, c := range classificationOrder {
+		known[c.label] = true
+	}
+	for _, f := range features.Catalog {
+		if f.SupportStatus == features.StatusSupported {
+			continue
+		}
+		if !known[features.Classification(f)] {
+			t.Errorf("%s: classification %q has no section", f.Key, features.Classification(f))
+		}
+		if !strings.Contains(doc, "`"+f.Key+"`") {
+			t.Errorf("%s is missing from the evidence document", f.Key)
+		}
+	}
+	if strings.HasPrefix(doc, utf8BOM) {
+		t.Error("the evidence document starts with a byte-order mark")
 	}
 }

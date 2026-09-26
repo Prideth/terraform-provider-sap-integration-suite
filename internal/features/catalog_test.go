@@ -3,6 +3,7 @@ package features
 import (
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestCatalog_KeysAreNonEmptyAndUnique(t *testing.T) {
@@ -123,5 +124,38 @@ func TestLookup(t *testing.T) {
 
 	if _, ok := Lookup("cloud_integration.does_not_exist"); ok {
 		t.Error("Lookup() unexpectedly found a feature for an unknown key")
+	}
+}
+
+// TestEvidence_EveryIncompleteFeatureHasARecord keeps the evidence document
+// complete: every feature that is not fully supported needs a dated record
+// with sources, a finding and the next step, and no record may outlive its
+// feature or describe a supported one.
+func TestEvidence_EveryIncompleteFeatureHasARecord(t *testing.T) {
+	keys := map[string]Feature{}
+	for _, f := range Catalog {
+		keys[f.Key] = f
+		if f.SupportStatus == StatusSupported {
+			continue
+		}
+		rec, ok := Evidence[f.Key]
+		if !ok {
+			t.Errorf("%s (%s) has no evidence record", f.Key, Classification(f))
+			continue
+		}
+		if _, err := time.Parse("2006-01-02", rec.CheckedOn); err != nil {
+			t.Errorf("%s: CheckedOn %q is not a date", f.Key, rec.CheckedOn)
+		}
+		if len(rec.Sources) == 0 || rec.Finding == "" || rec.NextStep == "" {
+			t.Errorf("%s: evidence record needs sources, a finding and a next step", f.Key)
+		}
+	}
+	for key := range Evidence {
+		f, ok := keys[key]
+		if !ok {
+			t.Errorf("evidence record %s has no catalog entry", key)
+		} else if f.SupportStatus == StatusSupported {
+			t.Errorf("evidence record %s describes a supported feature; remove it", key)
+		}
 	}
 }

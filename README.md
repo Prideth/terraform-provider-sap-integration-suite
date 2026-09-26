@@ -396,7 +396,7 @@ See [`ROADMAP.md`](ROADMAP.md).
   `PUT`. SAP separately documents a distinct
   `ValueMappingDesigntimeArtifactSaveAsVersion` action this provider does
   not yet use; implementing true in-place update through it is deferred to
-  v0.2.x. See `docs/sap-api-references.md`.
+  a later release (ROADMAP.md, P3). See `docs/sap-api-references.md`.
   `sapintegrationsuite_message_mapping` does not share this limitation — it
   has a confirmed in-place update via `PUT`, on different, entity-specific
   evidence (see `docs/sap-api-references.md`).
@@ -405,17 +405,28 @@ See [`ROADMAP.md`](ROADMAP.md).
   configurable directly inside an integration flow — see
   `docs/resource-design.md` for the distinction.
 - Individual value mapping entries (`UpsertValMaps`, `UpdateDefaultValMap`,
-  `DeleteValMaps`) are not yet manageable through this provider — only the
-  design-time artifact as a whole. See `docs/resource-design.md` for why.
+  `DeleteValMaps`) are not manageable yet — only the design-time artifact as
+  a whole. `DeleteValMaps` can only clear a whole agency/identifier pair, and
+  its effect is being checked on a tenant first. See
+  `docs/research/capability-evidence-2026.md`.
 - Whether Delete removes only the active version or every version of the
   artifact is unconfirmed for `sapintegrationsuite_value_mapping`,
   `sapintegrationsuite_message_mapping`, and
   `sapintegrationsuite_script_collection` — see `docs/sap-api-references.md`.
-- Current API Management (API Artifacts, Integration Cell, Virtual Hosts,
-  Runtime Profiles), Classic API Management, and Edge Integration Cell
-  resources are not implemented: no public API was found for any current
-  API Management object after a thorough research pass — see
-  `docs/guides/current-api-management.md` and `ROADMAP.md`.
+- Current API Management (API artifacts, reusable API artifacts, MCP
+  servers, Integration Cell, its virtual hosts and runtime profiles) has no
+  public API as of September 2026; SAP documents these objects only in the UI.
+  They travel as integration package content. See
+  `docs/guides/current-api-management.md`.
+- Classic API Management covers API providers, API products, key value maps,
+  certificate store references and, experimentally, API proxies
+  (`sapintegrationsuite_api_proxy`, replaced on every bundle change). Virtual
+  hosts, certificate stores, applications, rate plans and policy templates
+  are not managed; their write APIs are not documented well enough. See
+  `docs/guides/classic-api-management.md`.
+- Edge Integration Cell targeting (`runtime_location_id`) is not supported
+  until its acceptance test has passed on a tenant with an Edge Integration
+  Cell; leave the attribute unset.
 - There is no `sapintegrationsuite_partner` resource: SAP documents no
   confirmed create operation for Partner Directory `Partners`, and
   deleting one is documented as cascading to every entity that belongs to
@@ -428,18 +439,17 @@ See [`ROADMAP.md`](ROADMAP.md).
   `sapintegrationsuite_oauth2_client_credential` never read a password or
   client secret back from SAP — the same permanent property, though unlike
   the Partner Directory credential these two do have a confirmed in-place
-  update (a full redeploy). Only a handful of fields are exposed for
-  `sapintegrationsuite_oauth2_client_credential` (grant type placement,
-  client authentication mode, resource, audience, and custom parameters are
-  not yet implemented). See `docs/guides/security-content.md`.
-- Most Security Content artifact types remain unimplemented: keystore
-  entries, certificates, key pairs, SSH keys, certificate chains, secure
-  parameters, and known hosts are deferred pending confirmation of their
-  exact OData `$metadata`. Certificate-to-user mapping has no public API
-  for the Cloud Foundry environment this provider targets (Neo-only). OAuth2
-  Authorization Code is out of scope on safety grounds (requires
-  interactive human authorization). See `docs/guides/security-content.md`
-  and `docs/feature-support.md`.
+  update (a full redeploy). Custom token request parameters and the grant
+  type placement of OAuth2 client credentials cannot be set yet. See
+  `docs/guides/security-content.md`.
+- Security Content covers user credentials, OAuth2 client credentials,
+  secure parameters, certificates, key pairs (with an OpenSSH export) and
+  access policies. Certificate chains and PGP keyrings have entities in the
+  service's `$metadata` but no documented requests; known hosts, OAuth2
+  password credentials, OAuth2 SAML bearer assertions and where-used lists
+  are UI-only. Certificate-to-user mapping exists only for Neo. OAuth2
+  authorization codes need an interactive consent and stay out of scope. See
+  `docs/guides/security-content.md` and `docs/feature-support.md`.
 - Partner Directory data (string and binary parameters) is stored
   unencrypted by SAP; do not store secrets there.
 

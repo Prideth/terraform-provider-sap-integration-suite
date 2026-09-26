@@ -44,7 +44,7 @@ resource "sapintegrationsuite_integration_flow_deployment" "metering" {
 ### Optional
 
 - `redeploy_triggers` (Map of String) Arbitrary values that redeploy the flow in place whenever they change, for example the parameters of a sapintegrationsuite_integration_flow_configuration. Changed externalized parameters only take effect at runtime after a redeploy, and flow_version does not change when only parameters change.
-- `runtime_location_id` (String) NOT SUPPORTED. Edge Integration Cell targeting has not been tested against a tenant with an Edge Integration Cell and is outside the supported scope of this provider; leave this unset. If set, requests go to /location/<id>/api/v1 on the same tenant host, the service root SAP Help documents for Edge Integration Cells, and the value is the runtime location ID SAP shows in the monitoring URL after selecting the Edge Integration Cell as runtime ({"edge":{"runtimeLocationId":"myedge"}}). Use it only at your own risk. Changing it replaces the resource.
+- `runtime_location_id` (String) NOT SUPPORTED YET. Edge Integration Cell targeting has not passed its acceptance test on a tenant with an Edge Integration Cell; leave this unset until it has. If set, requests go to /location/<id>/api/v1 on the same tenant host, the service root SAP Help documents for Edge Integration Cells, and the value is the runtime location ID SAP shows in the monitoring URL after selecting the Edge Integration Cell as runtime ({"edge":{"runtimeLocationId":"myedge"}}). Use it only at your own risk. Changing it replaces the resource.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only

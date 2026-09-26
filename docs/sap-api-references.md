@@ -140,7 +140,7 @@ elsewhere, it confirms names, keys and types but not which operations SAP accept
   resource (`Create` a new artifact, `Delete` the old one) instead of relying on an unverified
   update path. `UpdateValueMapping` no longer exists in
   `internal/client/cloudintegration/value_mapping.go`. Implementing true in-place update via
-  `ValueMappingDesigntimeArtifactSaveAsVersion` is deferred to v0.2.x, once its request/response
+  `ValueMappingDesigntimeArtifactSaveAsVersion` is deferred (ROADMAP.md, P3), once its request/response
   contract can be confirmed against a live tenant or a reachable primary source; see
   `docs/resource-design.md` for the full reasoning.
 - **Delete semantics — unverified scope**: `DeleteValueMapping` deletes via the same
@@ -1139,7 +1139,7 @@ relying on that result. Each item below names what was checked and what it showe
 | 1 | Integration Content API resource table | Help page `integration-content-d1679a8`, version synced 2026-07-10 | Resources: integration packages (Discover, Design), custom tags, integration flows with configurations and resources, message mappings, script collections, build and deploy status, MDI delta token, runtime artifacts with errors and endpoints, value mappings, integration adapters. No API artifact, MCP server, runtime profile or virtual host. |
 | 2 | *API Documentation* index pages | `api-documentation-3fd9fc9` (Cloud Integration), `api-documentation-e26b332` (API Management) | Point to `https://api.sap.com/package/CloudIntegrationAPI/odata` and `https://api.sap.com/package/APIMgmt/all` only. |
 | 3 | Lifecycle pages in `SAP-docs/btp-integration-suite`, `docs/ISuite_Integrations_APIs/` | ~60 pages matching api-artifact, mcp, runtime-profile, virtual-host, integration-cell | All UI procedures. None names an endpoint, entity set, HTTP method or Business Accelerator Hub page. |
-| 4 | SAP API Management Client SDK | Maven Central `com.sap.apimgmt.client.sdk:apim-client-sdk`, versions up to 3.0.6 (published 2026-09-18); What's New "Update Client SDK to Version 3.0.0", 2026-09-20 | Classes: `APIProxyClient`, `APIProductClient`, `APIKeyValueMapClient` and models for proxies, products, providers, key maps, virtual hosts (Classic). Endpoints: `/apiportal/api/1.0/Management.svc`, `/apiportal/api/1.0/ContentArchive.svc`, `/api/1.0/apis/`. Classic API Portal only. |
+| 4 | SAP API Management Client SDK | Maven Central `com.sap.apimgmt.client.sdk:apim-client-sdk`, versions up to 3.0.6 (files dated 2026-09-24); What's New "Update Client SDK to Version 3.0.0", 2026-09-20 | Classes: `APIProxyClient`, `APIProductClient`, `APIKeyValueMapClient` and models for proxies, products, providers, key maps, virtual hosts (Classic). Endpoints: `/apiportal/api/1.0/Management.svc`, `/apiportal/api/1.0/ContentArchive.svc`, `/api/1.0/apis/`. Classic API Portal only. |
 | 5 | SAP's CI/CD tooling | `github.com/SAP/cicd-actions-for-sap-integration-suite`, 2026 | Actions for packages, integration flows, deployments, Partner Directory and access policies. None for API artifacts or MCP servers. |
 | 6 | API Management What's New (Cloud Foundry) | `what-s-new-for-sap-api-management-cloud-foundry-d9d60be`, entries to 2026-09-20 | 2026 Integration Cell entries (API-centric integration, MCP Gateway, reusable API artifact, simplified creation, product subscriptions, trace data, tool limit 30, remote MCP servers) are UI features. No API announced. |
 | 7 | Business Accelerator Hub | `api.sap.com` search and index | No page for API artifacts, MCP servers, Integration Cell or virtual hosts is indexed. The hub renders in the browser and gates specification downloads behind an SAP login, so this channel was only checked through search engines. |
@@ -1317,7 +1317,7 @@ per-map field (the UI's "Encrypted" checkbox), but neither GET's response shape 
 map's entry values, nor an Update/Delete REST example of any kind, was found in any reachable
 source.
 
-### API Proxy (`APIProxies`) — confirmed real, Create mechanism not confirmed
+### API Proxy (`APIProxies`) — implemented experimentally (September 2026)
 
 The entity set's existence, `GET`, and `DELETE` are confirmed directly (the very first
 programmatic-access documentation page uses `GET .../Management.svc/APIProxies` as its worked
@@ -1336,14 +1336,14 @@ What is not confirmed, despite a specific search for it (SAP Community threads d
 "Uploading Proxy to API Management via REST API" community thread that could not be fetched due
 to that site's bot-blocking): the exact Create/Update wire format for the ZIP content itself. The
 official user guide's own "Import an API Definition" section describes only the UI wizard
-procedure, never a REST call. This provider does not implement `sapintegrationsuite_api_proxy`
-on the strength of a confirmed bundle *shape* alone — Create needs an independently confirmed
-request format, the same bar this provider applies everywhere else.
+procedure, never a REST call. The bundle shape alone was therefore not enough for a resource;
+the request format came later from SAP's own Client SDK (next section), and
+`sapintegrationsuite_api_proxy` is built on exactly that request.
 
 ### Re-audit September 2026: Client SDK 3.0.6 and virtual hosts
 
 **SAP API Management Client SDK.** `com.sap.apimgmt.client.sdk:apim-client-sdk` 3.0.6 (Maven
-Central, published 2026-09-18; What's New "Update Client SDK to Version 3.0.0", 2026-09-20) was
+Central, files dated 2026-09-24; What's New "Update Client SDK to Version 3.0.0", 2026-09-20) was
 disassembled with `javap` to read the endpoints and headers it sends. `StandardAPIProxyClient`:
 
 | SDK method | Request |
@@ -1357,9 +1357,12 @@ disassembled with `javap` to read the endpoints and headers it sends. `StandardA
 | default virtual host | `GET Management.svc/VirtualHosts?$filter=isDefault eq true&$select=id` |
 
 The odd import URL (`?name=?virtualhost=default`) is reproduced as the SDK sends it. A community
-write-up of the same endpoint uses `?virtualhost=<GUID>` and a base64 string body instead. SAP
-Help documents `Transport.svc` nowhere, so the upload format stays disputed and API Proxy stays
-`public_api_incomplete`.
+write-up of the same endpoint uses `?virtualhost=<GUID>` and a base64 string body instead; the
+provider follows SAP's own tooling, not the write-up. SAP Help documents `Transport.svc` nowhere,
+and nothing public says what an import over an existing proxy does, so
+`sapintegrationsuite_api_proxy` imports only new proxies (a changed bundle replaces the proxy),
+reads and deletes through `Management.svc`, and stays experimental until
+`TestAccAPIProxy_sample` passes on a tenant.
 
 **Classic virtual hosts.** SAP Help (*Configuring a Default Domain for a Virtual Host*,
 *Configuring a Custom Domain for a Virtual Host*, *Configuring Mutual TLS …*) documents a
@@ -1370,9 +1373,12 @@ request-style API: `POST /apiportal/operations/1.0/Configuration.svc/VirtualHost
 `keyStoreAlias`, `trustStore`, `isClientAuthEnabled`, `virtualHostId` (update/delete). The 201
 response returns an `apimgmtconfiguration.VirtualHostRequest` with `virtualHostId`,
 `allocationStatus`, `allocatedPort` and the TLS settings. Reading goes through
-`Management.svc/VirtualHosts`, whose properties are not documented; the SDK confirms only `id`
-and `isDefault`. Recorded as `api_management.classic.virtual_host`, `public_api_incomplete`,
-until `Management.svc/$metadata` is available.
+`Management.svc/VirtualHosts`; its properties (key `id`; `name`, `virtual_host`, `virtual_port`,
+`isDefault`, `isSSL`, `isForCustomDomain`, `isClientAuthEnabled`, `keyStoreName`,
+`keyStoreAlias`, `trustStore`, `projectPath`) are confirmed by the committed
+`Management.svc/$metadata` snapshot. Recorded as `api_management.classic.virtual_host`,
+`public_api_incomplete`, until the write path has been exercised with the
+`APIManagement.SelfService.Administrator` role.
 
 ### Not evaluated this phase
 

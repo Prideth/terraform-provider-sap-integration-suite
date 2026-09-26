@@ -252,7 +252,7 @@ artifact's design-time content, not a fully independent object graph creatable p
   relies on `Create` and `Delete` — both independently confirmed, unlike the update path.
   `internal/client/cloudintegration/value_mapping.go` no longer has an `UpdateValueMapping`
   function at all; see the comment there for the full reasoning. Implementing true in-place
-  update via `ValueMappingDesigntimeArtifactSaveAsVersion` is deferred to v0.2.x, once its exact
+  update via `ValueMappingDesigntimeArtifactSaveAsVersion` is deferred (ROADMAP.md, P3), once its exact
   contract can be confirmed against a live tenant or a reachable primary source — see
   `docs/sap-api-references.md`.
 - **Delete**: `DELETE ValueMappingDesigntimeArtifacts(Id='{mapping_id}',Version='active')`.
@@ -1821,7 +1821,7 @@ so repeating that nineteen times would not add information.
   practitioners exactly what the API actually supports (existence checks and discovery) without
   inventing a lifecycle SAP does not offer.
 
-## Deferred to v0.2.x and later
+## Deferred (see ROADMAP.md)
 
 `sapintegrationsuite_capability`, `sapintegrationsuite_api_artifact`,
 `sapintegrationsuite_api_artifact_deployment`, message mapping entry-level or dependent-resource

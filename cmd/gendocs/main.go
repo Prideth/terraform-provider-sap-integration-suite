@@ -11,7 +11,8 @@
 //	go run ./cmd/gendocs
 //	go run ./cmd/gendocs -readme
 //
-// The first form writes docs/feature-support.md directly (it no longer
+// The first form writes docs/feature-support.md and
+// docs/research/capability-evidence-2026.md directly (it no longer
 // relies on the caller redirecting stdout with a shell "> docs/feature-support.md":
 // that redirection is not portable — a Windows shell's ">" operator can
 // prepend a UTF-8 byte-order mark that a POSIX shell's ">" never does,
@@ -98,6 +99,10 @@ func main() {
 		fmt.Fprintln(os.Stderr, "gendocs:", err)
 		os.Exit(1)
 	}
+	if err := writeGeneratedFile(evidencePath, evidenceDoc()); err != nil {
+		fmt.Fprintln(os.Stderr, "gendocs:", err)
+		os.Exit(1)
+	}
 }
 
 // writeGeneratedFile writes content to path as plain UTF-8 with no
@@ -107,7 +112,7 @@ func main() {
 // there is no path-traversal concern despite the variable parameter this
 // function takes to stay reusable between the two call sites.
 func writeGeneratedFile(path, content string) error {
-	return os.WriteFile(path, []byte(content), 0o600) //nolint:gosec // G703: path is always featureSupportPath or readmePath, compile-time constants in this same file, never external input
+	return os.WriteFile(path, []byte(content), 0o600) //nolint:gosec // G703: path is always featureSupportPath, evidencePath or readmePath, compile-time constants in this same file, never external input
 }
 
 func sortedCatalog() []features.Feature {

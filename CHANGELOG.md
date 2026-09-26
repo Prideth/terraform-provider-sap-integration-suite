@@ -352,6 +352,26 @@ All notable changes to this project are documented in this file.
 
 ### Documentation
 
+- New `docs/research/capability-evidence-2026.md`, generated from
+  `internal/features/evidence.go`: for every catalog entry that is not fully
+  supported, the date of the latest check, the sources with their own dates,
+  the finding and the step that would change the classification. A test
+  requires a record for every such entry.
+- The ROADMAP is rewritten around priorities (P0 tenant runs that decide
+  promotions, P1 to P3, WATCH, separate providers, out of scope), each item
+  with the evidence it needs.
+- Removed outdated statements: the README said that Classic API Management
+  and most Security Content types were not implemented and that OAuth2
+  client authentication, resource and audience could not be set; the
+  references said that the API proxy had no resource. A new test fails when a
+  hand-written document says that a registered resource type does not exist
+  or is not managed.
+- The current API Management re-audit of 2026-09-26 (Hub packages of
+  2026-09-24, SAP Help of 2026-09-18, Client SDK 3.0.6) found no public API
+  for API artifacts, MCP servers, runtime profiles or Integration Cell
+  virtual hosts; they travel as integration package content. The catalog
+  records this, the new Partner Directory API in the Edge Integration Cell's
+  local package, and the tested path for Edge Integration Cell targeting.
 - New research summary `docs/research/sap-2026-public-api-gap-closure.md`:
   method, results per area, corrected earlier conclusions, breaking changes
   and the open items with the evidence each one needs. The ROADMAP no longer

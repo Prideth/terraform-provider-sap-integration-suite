@@ -109,7 +109,7 @@ func (c *Client) CreateValueMapping(ctx context.Context, packageID, mappingID, n
 // name/content/content_hash changes as replacing the resource (see
 // resource_value_mapping.go), which only relies on Create and Delete, both
 // independently confirmed. Implementing update-in-place via
-// ValueMappingDesigntimeArtifactSaveAsVersion is tracked as a v0.2.x item
+// ValueMappingDesigntimeArtifactSaveAsVersion is a P3 item in ROADMAP.md
 // once its request/response contract can be confirmed against a live
 // tenant or a reachable primary source; see docs/sap-api-references.md and
 // docs/resource-design.md.

@@ -1270,9 +1270,8 @@ var Catalog = []Feature{
 			"Confirmed to be XML content embedded inside the API Proxy ZIP bundle (a <policies> " +
 				"element in the proxy's root XML, referencing named files under a Policy/ folder), not " +
 				"an independently addressable OData entity with its own Create/Read/Update/Delete — so " +
-				"individual policies are not a separate resource candidate; they would be managed as " +
-				"part of api_management.classic.api_proxy's opaque content, once that entity's own " +
-				"Create mechanism is confirmed.",
+				"individual policies are not a separate resource candidate; they are managed as part " +
+				"of the bundle content of sapintegrationsuite_api_proxy (experimental).",
 		},
 	},
 	{
@@ -1527,6 +1526,13 @@ var Catalog = []Feature{
 			"The 2026 features around API artifacts, such as API-centric integration, simplified " +
 				"creation from a URL or specification, AI-generated OpenAPI specifications and " +
 				"product subscriptions, are all UI features.",
+			"Re-checked 2026-09-26 (Hub package APIMgmt of 2026-09-24, SAP Help mirror of " +
+				"2026-09-18, Client SDK 3.0.6 of 2026-09-24): still no API. API artifacts and MCP " +
+				"servers are integration package content (resourceType API in a package export) and " +
+				"move between tenants with the package: export, POST IntegrationPackages with " +
+				"PackageContent (optionally ?Overwrite=true), SAP Cloud Transport Management or CTS+. " +
+				"That whole-package import is the only public path and is opaque to individual API " +
+				"artifacts, so it is not modelled as an API artifact resource.",
 		},
 	},
 	{
@@ -1687,9 +1693,9 @@ var Catalog = []Feature{
 		PublicAPI:     true,
 		APIProtocol:   "OData V2 (Message Processing Logs, Message Stores) / OData V4 (Operations Cockpit)",
 		Limitations: []string{
-			"Confirmed reachable and documented (SAP Business Accelerator Hub packages " +
-				"sap-int-eic-eic-operations, sap-int-eic-message-processing-logs-v1, " +
-				"sap-int-eic-message-store-v1), authenticated with the same certificate or " +
+			"Confirmed reachable and documented (SAP Business Accelerator Hub package " +
+				"sap-int-eic-eic-operations, created 2026-04-30, with the APIs Jobs, Components, " +
+				"Partner Directory, Message Stores and Message Processing Logs), authenticated with the same certificate or " +
 				"clientId/clientsecret mechanisms as the rest of this provider, and CSRF-token gated for " +
 				"modifying calls — but every entity behind it is monitoring/operational runtime data " +
 				"(message processing records, message store/JMS contents, data store/variable values), " +
@@ -1697,6 +1703,10 @@ var Catalog = []Feature{
 				"MessageProcessingLogs/DataStores/Variables. See edge_integration_cell.runtime for the " +
 				"separate Operations Cockpit control-plane objects reachable through this same /local " +
 				"prefix.",
+			"The package's Partner Directory API is configuration, not monitoring, but it is the same " +
+				"Partner Directory the provider reaches from the cloud through /location/<runtime " +
+				"location id>/api/v1 (see edge_integration_cell.deployment_target), so a second, " +
+				"network-local path is not needed.",
 		},
 	},
 	{
@@ -1742,16 +1752,18 @@ var Catalog = []Feature{
 		PublicAPI:     true,
 		APIProtocol:   "OData V2",
 		Limitations: []string{
-			"Not supported. SAP Help's Integration Content, Security Content and Partner Directory " +
-				"pages (version of 2026-07-10) document https://<host>/location/<runtime location id>/" +
-				"api/v1/<path> for calling the same APIs against an Edge Integration Cell, once for all " +
-				"operations and without per-operation examples, and SAP's own CI/CD tooling still called " +
-				"the path unpublished in May 2026. It has not been verified against a tenant with an " +
-				"Edge Integration Cell, and verifying it is out of this provider's scope.",
+			"Not supported yet. SAP Help's Integration Content, Security Content, Partner Directory, " +
+				"message processing log, message store and number range pages (mirror of 2026-09-18) " +
+				"document https://<host>/location/<runtime location id>/api/v1/<path> for calling the " +
+				"same APIs against an Edge Integration Cell, once for all operations and without " +
+				"per-operation examples, and SAP's own CI/CD tooling still called the path unpublished " +
+				"in May 2026. It has not been verified against a tenant with an Edge Integration Cell.",
 			"The deployment, credential, certificate, key pair and Partner Directory resources and " +
-				"their data sources still carry an optional runtime_location_id that sends requests to " +
-				"that path, and import IDs accept a location:<id>/ prefix. Both are untested and " +
-				"unsupported; leave runtime_location_id unset.",
+				"their data sources carry an optional runtime_location_id that sends requests to that " +
+				"path, and import IDs accept a location:<id>/ prefix. " +
+				"TestAccEdgeIntegrationCell_securityAndPartnerDirectory (gate " +
+				"SAP_INTEGRATION_SUITE_ACC_EDGE_INTEGRATION_CELL) checks both; until it passes on a " +
+				"tenant, leave runtime_location_id unset.",
 		},
 	},
 	{
