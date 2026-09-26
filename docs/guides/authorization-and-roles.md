@@ -32,6 +32,46 @@ A role change only shows up in tokens issued afterwards. For plan `api`, access 
 for 12 hours by default, so a token fetched before the change keeps the old scopes. Each
 Terraform run fetches a fresh token, so a new run is enough.
 
+## Creating the client with Terraform
+
+The service instance and its key can themselves be managed with Terraform, using SAP's BTP and
+Cloud Foundry providers. SAP's sample
+[`trial_integration_suite`](https://github.com/SAP-samples/btp-terraform-samples/tree/main/released/usecases/trial_integration_suite)
+(step `04_setup_oauth_clients`) entitles plan `api` of service `it-rt`, creates the instance with
+the roles as instance parameters, and creates a service key for it. Adapted to what this
+provider needs, the instance looks like this:
+
+```hcl
+resource "cloudfoundry_service_instance" "integration_suite_api" {
+  name         = "terraform-integration-suite-api"
+  type         = "managed"
+  space        = var.space_id
+  service_plan = data.cloudfoundry_service_plans.it_api.service_plans[0].id
+  parameters = jsonencode({
+    "roles"          = ["WorkspacePackagesEdit", "WorkspaceArtifactsDeploy", "MonitoringDataRead"]
+    "grant-types"    = ["client_credentials"]
+    "redirect-uris"  = []
+    "token-validity" = 43200
+  })
+}
+
+resource "cloudfoundry_service_credential_binding" "integration_suite_api" {
+  type             = "key"
+  name             = "terraform-integration-suite-api"
+  service_instance = cloudfoundry_service_instance.integration_suite_api.id
+}
+```
+
+Pick the roles from the table below. Two points from SAP's sample:
+
+- Plan `api` only appears in the Cloud Foundry marketplace after the Integration Suite
+  capabilities have been activated in the Integration Suite application, which is a manual
+  step. The sample therefore splits the setup into several Terraform configurations.
+- SAP notes that the key's details cannot be read back through the Cloud Foundry provider's data
+  source ("This service does not support fetching service binding parameters"). Take the URL,
+  token URL, client ID and secret from the key in the BTP cockpit, and pass the secret to this
+  provider through a variable or your secret store, not through the configuration file.
+
 ## Roles per resource family
 
 Cloud Integration client (plan `api`), based on SAP's *Tasks and Permissions for Cloud

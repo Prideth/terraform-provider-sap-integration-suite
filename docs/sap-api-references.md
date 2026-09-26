@@ -1449,6 +1449,15 @@ budget was directed at the desired-state-configuration candidates above instead.
   descriptions explicitly warn against storing secrets there; only
   `UserCredentialParameters` is treated as a credential store, and even that is modeled
   conservatively — see the write-only `password_wo` design in `docs/resource-design.md`.
+- **SAP's own client code**: SAP's
+  [Partner Directory accelerator](https://github.com/SAP-samples/integration-suite-partner-directory-accelerator-for-pipeline-concept)
+  (`HttpRequestHandler.java`) sends the same requests as this provider: `POST AlternativePartners`
+  with `Agency`, `Scheme`, `Id`, `Pid` and `PUT AlternativePartners(Hexagency=…,Hexscheme=…,Hexid=…)`
+  with only `Pid`; `PUT StringParameters(Pid=…,Id=…)` with only `Value`; `PUT
+  BinaryParameters(Pid=…,Id=…)` with `ContentType` and the base64 `Value`; `DELETE` on the same
+  keys; lists with `$filter=Pid eq '…'`. It sends no CSRF token, which matches this provider
+  fetching one only when SAP answers 403 with `X-CSRF-Token: Required`. It also uses `$select`
+  and `startswith(…)` in `$filter` on these entity sets, which this provider does not need.
 
 ## Remaining Integration Suite capability audit
 
