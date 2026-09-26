@@ -97,29 +97,8 @@ func (c *Client) CreateMessageMapping(ctx context.Context, packageID, mappingID,
 // for the full reasoning, including why MessageMappingDesigntimeArtifactSaveAsVersion
 // existing alongside PUT here is not evidence against PUT.
 func (c *Client) UpdateMessageMapping(ctx context.Context, mappingID, name string, content []byte) (*MessageMapping, error) {
-	payload, err := json.Marshal(MessageMapping{
-		Name:    name,
-		Content: base64.StdEncoding.EncodeToString(content),
-	})
-	if err != nil {
-		return nil, fmt.Errorf("cloudintegration: encoding message mapping: %w", err)
-	}
-
-	key, err := designtimeArtifactKey(mappingID, activeVersion)
-	if err != nil {
-		return nil, err
-	}
-
-	body, err := c.odata.Put(ctx, v2.BuildPath(messageMappingDesigntimeArtifactsEntitySet, key, ""), payload)
-	if err != nil {
-		return nil, err
-	}
-
-	var mapping MessageMapping
-	if err := v2.DecodeEntity(body, &mapping); err != nil {
-		return nil, err
-	}
-	return &mapping, nil
+	return updateDesigntimeArtifact(ctx, c, messageMappingDesigntimeArtifactsEntitySet, mappingID, name, content,
+		func() (*MessageMapping, error) { return c.GetMessageMapping(ctx, "", mappingID) })
 }
 
 // DeleteMessageMapping deletes the message mapping design-time artifact

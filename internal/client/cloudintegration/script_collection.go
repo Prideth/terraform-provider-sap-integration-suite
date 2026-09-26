@@ -90,29 +90,8 @@ func (c *Client) CreateScriptCollection(ctx context.Context, packageID, scriptCo
 // SAP Knowledge Base Article or other evidence of a documented PUT problem
 // for this entity set was found. See docs/sap-api-references.md.
 func (c *Client) UpdateScriptCollection(ctx context.Context, scriptCollectionID, name string, content []byte) (*ScriptCollection, error) {
-	payload, err := json.Marshal(ScriptCollection{
-		Name:    name,
-		Content: base64.StdEncoding.EncodeToString(content),
-	})
-	if err != nil {
-		return nil, fmt.Errorf("cloudintegration: encoding script collection: %w", err)
-	}
-
-	key, err := designtimeArtifactKey(scriptCollectionID, activeVersion)
-	if err != nil {
-		return nil, err
-	}
-
-	body, err := c.odata.Put(ctx, v2.BuildPath(scriptCollectionDesigntimeArtifactsEntitySet, key, ""), payload)
-	if err != nil {
-		return nil, err
-	}
-
-	var sc ScriptCollection
-	if err := v2.DecodeEntity(body, &sc); err != nil {
-		return nil, err
-	}
-	return &sc, nil
+	return updateDesigntimeArtifact(ctx, c, scriptCollectionDesigntimeArtifactsEntitySet, scriptCollectionID, name, content,
+		func() (*ScriptCollection, error) { return c.GetScriptCollection(ctx, "", scriptCollectionID) })
 }
 
 // DeleteScriptCollection deletes the script collection design-time

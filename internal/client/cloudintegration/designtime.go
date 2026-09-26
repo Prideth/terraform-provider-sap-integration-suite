@@ -2,6 +2,8 @@ package cloudintegration
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 
 	v2 "github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/odata/v2"
@@ -62,4 +64,40 @@ func (c *Client) SaveMessageMappingAsVersion(ctx context.Context, mappingID, ver
 func (c *Client) SaveScriptCollectionAsVersion(ctx context.Context, scriptCollectionID, version string) (*ScriptCollection, error) {
 	return saveAsVersion(ctx, c, "ScriptCollectionDesigntimeArtifactSaveAsVersion", scriptCollectionID, version,
 		func() (*ScriptCollection, error) { return c.GetScriptCollection(ctx, "", scriptCollectionID) })
+}
+
+// designtimeUpdateRequest is the body of a content update (PUT on
+// <Artifact>(Id,Version='active')). It carries only the name and the content:
+// a tenant answered a message mapping update that also sent empty Id and
+// PackageId with 500 "Update of PackageId and Id are not allowed", while the
+// same update with just these two fields answered 200 (September 2026).
+type designtimeUpdateRequest struct {
+	Name    string `json:"Name"`
+	Content string `json:"ArtifactContent"`
+}
+
+// updateDesigntimeArtifact uploads new content for an existing artifact.
+// The tenant answered these updates with 200 and an empty body, so without
+// a body the active version is read back.
+func updateDesigntimeArtifact[T any](ctx context.Context, c *Client, entitySet, id, name string, content []byte, readActive func() (*T, error)) (*T, error) {
+	payload, err := json.Marshal(designtimeUpdateRequest{Name: name, Content: base64.StdEncoding.EncodeToString(content)})
+	if err != nil {
+		return nil, fmt.Errorf("cloudintegration: encoding %s update: %w", entitySet, err)
+	}
+	key, err := designtimeArtifactKey(id, activeVersion)
+	if err != nil {
+		return nil, err
+	}
+	body, err := c.odata.Put(ctx, v2.BuildPath(entitySet, key, ""), payload)
+	if err != nil {
+		return nil, err
+	}
+	if v2.EmptyBody(body) {
+		return readActive()
+	}
+	var updated T
+	if err := v2.DecodeEntity(body, &updated); err != nil {
+		return nil, err
+	}
+	return &updated, nil
 }

@@ -14,6 +14,12 @@ All notable changes to this project are documented in this file.
   each token request has its own 60-second limit. The first acceptance test
   run against a real tenant found this; unit tests could not, because they
   never cancel the context.
+- Changing the content of an integration flow, message mapping or script
+  collection failed on a real tenant. The update sent empty `Id` and
+  `PackageId` fields, which SAP rejects for message mappings ("Update of
+  PackageId and Id are not allowed"), and SAP answers a successful update
+  with 200 and no body, which the provider tried to decode. Updates now send
+  only `Name` and `ArtifactContent` and read the new version back.
 - An integration flow or message mapping whose ZIP was exported under a
   different ID could be created but never updated. SAP writes the artifact
   ID into `Bundle-SymbolicName` on create and rejects every later content

@@ -80,29 +80,8 @@ func (c *Client) CreateIntegrationFlow(ctx context.Context, packageID, flowID, n
 // rather than POSTing to the collection again, which is how OData V2
 // distinguishes "create a new entity" from "update this one".
 func (c *Client) UpdateIntegrationFlow(ctx context.Context, flowID, name string, content []byte) (*IntegrationFlow, error) {
-	payload, err := json.Marshal(IntegrationFlow{
-		Name:    name,
-		Content: base64.StdEncoding.EncodeToString(content),
-	})
-	if err != nil {
-		return nil, fmt.Errorf("cloudintegration: encoding integration flow: %w", err)
-	}
-
-	key, err := designtimeArtifactKey(flowID, activeVersion)
-	if err != nil {
-		return nil, err
-	}
-
-	body, err := c.odata.Put(ctx, v2.BuildPath(integrationDesigntimeArtifactsEntitySet, key, ""), payload)
-	if err != nil {
-		return nil, err
-	}
-
-	var flow IntegrationFlow
-	if err := v2.DecodeEntity(body, &flow); err != nil {
-		return nil, err
-	}
-	return &flow, nil
+	return updateDesigntimeArtifact(ctx, c, integrationDesigntimeArtifactsEntitySet, flowID, name, content,
+		func() (*IntegrationFlow, error) { return c.GetIntegrationFlow(ctx, "", flowID) })
 }
 
 // DeleteIntegrationFlow deletes an integration flow design-time artifact

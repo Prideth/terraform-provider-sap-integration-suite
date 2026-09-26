@@ -42,6 +42,10 @@ func TestWireContractAgainstMetadata(t *testing.T) {
 	for _, s := range structs {
 		m.AssertStruct(t, s.entitySet, s.value)
 	}
+	// Content update body, sent to each versioned design-time entity set.
+	for _, set := range []string{integrationDesigntimeArtifactsEntitySet, messageMappingDesigntimeArtifactsEntitySet, scriptCollectionDesigntimeArtifactsEntitySet} {
+		m.AssertWriteStruct(t, set, designtimeUpdateRequest{})
+	}
 	// Create body that links the policy (deep link); never decoded.
 	m.AssertWriteStruct(t, artifactReferencesEntitySet, accessPolicyReferenceCreate{})
 
