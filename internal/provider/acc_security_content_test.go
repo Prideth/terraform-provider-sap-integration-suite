@@ -14,6 +14,8 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
+	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/testutil/accgate"
 )
 
 // Security Content acceptance tests. Every object is named tfacc<random>
@@ -22,6 +24,7 @@ import (
 // SAP asks for.
 
 func TestAccUserCredential_basic(t *testing.T) {
+	accgate.Require(t, accgate.SecurityContent)
 	name := testAccName()
 	config := func(description, version string) string {
 		return fmt.Sprintf(`
@@ -35,7 +38,6 @@ resource "sapintegrationsuite_user_credential" "test" {
 `, name, description, version)
 	}
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -62,6 +64,7 @@ resource "sapintegrationsuite_user_credential" "test" {
 }
 
 func TestAccOAuth2ClientCredential_basic(t *testing.T) {
+	accgate.Require(t, accgate.SecurityContent)
 	name := testAccName()
 	config := func(description string) string {
 		return fmt.Sprintf(`
@@ -76,7 +79,6 @@ resource "sapintegrationsuite_oauth2_client_credential" "test" {
 `, name, description)
 	}
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{Config: config("created"), Check: resource.TestCheckResourceAttr("sapintegrationsuite_oauth2_client_credential.test", "id", name)},
@@ -92,6 +94,7 @@ resource "sapintegrationsuite_oauth2_client_credential" "test" {
 }
 
 func TestAccSecureParameter_basic(t *testing.T) {
+	accgate.Require(t, accgate.SecurityContent)
 	name := testAccName()
 	config := func(description, version string) string {
 		return fmt.Sprintf(`
@@ -104,7 +107,6 @@ resource "sapintegrationsuite_secure_parameter" "test" {
 `, name, description, version)
 	}
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{Config: config("created", "1"), Check: resource.TestCheckResourceAttr("sapintegrationsuite_secure_parameter.test", "id", name)},
@@ -152,6 +154,7 @@ func testAccCertificateFile(t *testing.T, commonName string) string {
 // replacing it under the same alias needs update=true (tenant test,
 // September 2026).
 func TestAccCertificate_selfSignedAndReplace(t *testing.T) {
+	accgate.Require(t, accgate.SecurityContent)
 	alias := testAccName()
 	first := testAccCertificateFile(t, "tfacc-first")
 	second := testAccCertificateFile(t, "tfacc-second")
@@ -164,7 +167,6 @@ resource "sapintegrationsuite_certificate" "test" {
 `, alias, path)
 	}
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{Config: config(first), Check: resource.TestCheckResourceAttr("sapintegrationsuite_certificate.test", "subject_dn", "CN=tfacc-first")},
@@ -182,9 +184,9 @@ resource "sapintegrationsuite_certificate" "test" {
 // SAP generates the key pair; destroy removes exactly this alias with the
 // keystore mass-delete operation.
 func TestAccKeyPair_basic(t *testing.T) {
+	accgate.Require(t, accgate.SecurityContent)
 	alias := testAccName()
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -209,6 +211,7 @@ resource "sapintegrationsuite_key_pair" "test" {
 
 // Number range names may not contain hyphens; tfacc<random> has none.
 func TestAccNumberRange_basic(t *testing.T) {
+	accgate.Require(t, accgate.CloudIntegration)
 	name := testAccName()
 	config := func(description string) string {
 		return fmt.Sprintf(`
@@ -224,7 +227,6 @@ resource "sapintegrationsuite_number_range" "test" {
 `, name, description)
 	}
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{Config: config("created"), Check: resource.TestCheckResourceAttr("sapintegrationsuite_number_range.test", "name", name)},

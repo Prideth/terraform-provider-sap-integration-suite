@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<edmx:Edmx xmlns:edmx="http://schemas.microsoft.com/ado/2007/06/edmx" Version="1.0">
+  <edmx:DataServices xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata" m:DataServiceVersion="2.0">
+    <Schema xmlns="http://schemas.microsoft.com/ado/2008/09/edm" xmlns:sap="http://www.sap.com/Protocols/SAPData" Namespace="com.example.api" Alias="Ex">
+      <EntityType Name="Policy" sap:creatable="true" sap:label="Access Policy">
+        <Key><PropertyRef Name="Id"/></Key>
+        <Property Name="Id" Type="Edm.Int64" Nullable="false"/>
+        <Property Name="RoleName" Type="Edm.String" Nullable="false" MaxLength="100" sap:label="Role"/>
+        <Property Name="Description" Type="Edm.String"/>
+        <Property Name="Settings" Type="Ex.Settings"/>
+        <NavigationProperty Name="References" Relationship="Ex.Policy_Reference" FromRole="Policy" ToRole="Reference"/>
+      </EntityType>
+      <EntityType Name="Reference">
+        <Key><PropertyRef Name="Id"/></Key>
+        <Property Name="Id" Type="Edm.Int64" Nullable="false"/>
+        <Property Name="PolicyId" Type="Edm.Int64" Nullable="false"/>
+        <NavigationProperty Name="Policy" Relationship="Ex.Policy_Reference" FromRole="Reference" ToRole="Policy"/>
+      </EntityType>
+      <EntityType Name="Base" Abstract="true">
+        <Key><PropertyRef Name="Name"/></Key>
+        <Property Name="Name" Type="Edm.String" Nullable="false"/>
+      </EntityType>
+      <EntityType Name="Resource" BaseType="Ex.Base" m:HasStream="true">
+        <Property Name="Size" Type="Edm.Int32"/>
+      </EntityType>
+      <EntityType Name="Orphan">
+        <Key><PropertyRef Name="Id"/></Key>
+        <Property Name="Id" Type="Edm.String" Nullable="false"/>
+      </EntityType>
+      <ComplexType Name="Settings">
+        <Property Name="Level" Type="Edm.Int32"/>
+        <Property Name="Endpoint" Type="Edm.String"/>
+      </ComplexType>
+      <Association Name="Policy_Reference">
+        <End Role="Policy" Type="Ex.Policy" Multiplicity="1"/>
+        <End Role="Reference" Type="Ex.Reference" Multiplicity="*"/>
+        <ReferentialConstraint>
+          <Principal Role="Policy"><PropertyRef Name="Id"/></Principal>
+          <Dependent Role="Reference"><PropertyRef Name="PolicyId"/></Dependent>
+        </ReferentialConstraint>
+      </Association>
+      <EntityContainer Name="Container" m:IsDefaultEntityContainer="true">
+        <EntitySet Name="Policies" EntityType="Ex.Policy"/>
+        <EntitySet Name="References" EntityType="Ex.Reference"/>
+        <EntitySet Name="Resources" EntityType="Ex.Resource"/>
+        <AssociationSet Name="Policy_Reference_Set" Association="Ex.Policy_Reference">
+          <End Role="Policy" EntitySet="Policies"/>
+          <End Role="Reference" EntitySet="References"/>
+        </AssociationSet>
+        <FunctionImport Name="Deploy" ReturnType="Edm.String" m:HttpMethod="POST">
+          <Parameter Name="Id" Type="Edm.String" Mode="In"/>
+          <Parameter Name="Version" Type="Edm.String" Mode="In"/>
+        </FunctionImport>
+      </EntityContainer>
+    </Schema>
+  </edmx:DataServices>
+</edmx:Edmx>

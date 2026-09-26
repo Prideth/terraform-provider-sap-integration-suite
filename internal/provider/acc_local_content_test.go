@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
+	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/testutil/accgate"
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/testutil/samples"
 )
 
@@ -16,6 +17,7 @@ import (
 // by made-up ones before upload.
 
 func TestAccScriptCollection_localContent(t *testing.T) {
+	accgate.Require(t, accgate.CloudIntegration, samples.EnvLocalContent)
 	sc := samples.LocalArtifactOfType(t, "ScriptCollection")
 	pkg, id := testAccName(), testAccName()
 	path := testAccArtifactFile(t, sc.Content, id)
@@ -46,7 +48,6 @@ resource "sapintegrationsuite_script_collection_deployment" "test" {
 		return c
 	}
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -69,6 +70,7 @@ resource "sapintegrationsuite_script_collection_deployment" "test" {
 }
 
 func TestAccValueMapping_localContent(t *testing.T) {
+	accgate.Require(t, accgate.CloudIntegration, samples.EnvLocalContent)
 	vm := samples.LocalArtifactOfType(t, "ValueMapping")
 	synthetic, err := samples.SyntheticValueMapping(vm.Content, "tfacc")
 	if err != nil {
@@ -103,7 +105,6 @@ resource "sapintegrationsuite_value_mapping_deployment" "test" {
 		return c
 	}
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{

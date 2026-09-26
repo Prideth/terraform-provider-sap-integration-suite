@@ -781,7 +781,8 @@ All three entity sets exist (`AccessPolicies`, `ArtifactReferences`,
 `AccessPolicyRuntimeAssignments`). The document carries no `sap:creatable`/`sap:updatable`
 annotations, so it says nothing about which operations each set accepts. The provider's
 contract test (`internal/client/cloudintegration/metadata_contract_test.go`) checks the
-structs and keys against this document whenever it is available locally.
+structs and keys against the committed snapshot of this document
+(`testdata/api-metadata/cloud-integration.json`) on every test run.
 
 ### Still not publicly documented
 

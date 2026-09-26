@@ -7,12 +7,15 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
+	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/testutil/accgate"
 )
 
 // Partner Directory: every entry belongs to a partner ID of its own
 // (tfacc<random>), which SAP creates with the first parameter and removes
 // with the last.
 func TestAccPartnerDirectory_basic(t *testing.T) {
+	accgate.Require(t, accgate.PartnerDirectory)
 	pid := testAccName()
 	user := testAccName() // authorized users are tenant-wide and must be lowercase
 	xml := filepath.Join(t.TempDir(), "routing.xml")
@@ -58,7 +61,6 @@ resource "sapintegrationsuite_partner_user_credential_parameter" "test" {
 `, pid, user, value, xmlPath)
 	}
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{Config: config("first"), Check: resource.TestCheckResourceAttr("sapintegrationsuite_partner_string_parameter.test", "value", "first")},
@@ -81,6 +83,7 @@ resource "sapintegrationsuite_partner_user_credential_parameter" "test" {
 // An access policy for a made-up role, with one reference; the description
 // update uses PATCH (the tenant rejects PUT with 501).
 func TestAccAccessPolicy_withReference(t *testing.T) {
+	accgate.Require(t, accgate.SecurityContent)
 	role := testAccName()
 	config := func(description string) string {
 		return fmt.Sprintf(`
@@ -100,7 +103,6 @@ resource "sapintegrationsuite_access_policy_reference" "test" {
 `, role, description)
 	}
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{Config: config("created"), Check: resource.TestCheckResourceAttr("sapintegrationsuite_access_policy.test", "role_name", role)},
@@ -111,23 +113,10 @@ resource "sapintegrationsuite_access_policy_reference" "test" {
 	})
 }
 
-// testAccAPIManagementPreCheck skips unless the API portal credentials are
-// set.
-func testAccAPIManagementPreCheck(t *testing.T) {
-	t.Helper()
-	for _, name := range []string{
-		"SAP_INTEGRATION_SUITE_API_MANAGEMENT_HOST", "SAP_INTEGRATION_SUITE_API_MANAGEMENT_TOKEN_URL",
-		"SAP_INTEGRATION_SUITE_API_MANAGEMENT_CLIENT_ID", "SAP_INTEGRATION_SUITE_API_MANAGEMENT_CLIENT_SECRET",
-	} {
-		if os.Getenv(name) == "" {
-			t.Skipf("%s is not set", name)
-		}
-	}
-}
-
 // A key value map scoped to a proxy name that does not exist; SAP accepts
 // that, and nothing outside the map is touched. Entries force a new map.
 func TestAccAPIKeyValueMap_basic(t *testing.T) {
+	accgate.Require(t, accgate.APIManagementClassic)
 	name := testAccName()
 	config := func(value string) string {
 		return fmt.Sprintf(`
@@ -142,7 +131,6 @@ resource "sapintegrationsuite_api_key_value_map" "test" {
 `, name, value)
 	}
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccAPIManagementPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{Config: config("one"), Check: resource.TestCheckResourceAttr("sapintegrationsuite_api_key_value_map.test", "entries.0.value", "one")},
@@ -155,13 +143,10 @@ resource "sapintegrationsuite_api_key_value_map" "test" {
 // An API product needs an existing API proxy; name one in
 // SAP_INTEGRATION_SUITE_ACC_API_PROXY. The product is replace-only.
 func TestAccAPIProduct_basic(t *testing.T) {
+	accgate.Require(t, accgate.APIManagementClassic, "SAP_INTEGRATION_SUITE_ACC_API_PROXY")
 	proxy := os.Getenv("SAP_INTEGRATION_SUITE_ACC_API_PROXY")
-	if proxy == "" {
-		t.Skip("SAP_INTEGRATION_SUITE_ACC_API_PROXY is not set")
-	}
 	name := testAccName()
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccAPIManagementPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{

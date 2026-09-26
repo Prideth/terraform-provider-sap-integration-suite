@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
+	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/testutil/accgate"
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/testutil/samples"
 )
 
@@ -25,9 +26,9 @@ resource "sapintegrationsuite_integration_package" "test" {
 }
 
 func TestAccIntegrationPackage_basic(t *testing.T) {
+	accgate.Require(t, accgate.CloudIntegration)
 	id := testAccName()
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -68,6 +69,7 @@ resource "sapintegrationsuite_integration_flow" "test" {
 // flow of the same export (same ID in the MANIFEST), import, and set one of
 // its externalized parameters. Nothing is deployed.
 func TestAccIntegrationFlow_sampleContent(t *testing.T) {
+	accgate.Require(t, accgate.CloudIntegration)
 	pkg, flow := testAccName(), testAccName()
 	v1 := testAccArtifactFile(t, testAccExportFlow(t, "codejam-package-export", "Request Employee Dependants - Exercise 05"), flow)
 	v2 := testAccArtifactFile(t, testAccExportFlow(t, "codejam-package-export", "Request Employee Dependants - Exercise 06"), flow)
@@ -81,7 +83,6 @@ resource "sapintegrationsuite_integration_flow_configuration" "test" {
 }
 `
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -113,10 +114,10 @@ resource "sapintegrationsuite_integration_flow_configuration" "test" {
 // save_as_version: SAP answers the function import with 200 and no body; the
 // provider must read the saved version back.
 func TestAccIntegrationFlow_saveAsVersion(t *testing.T) {
+	accgate.Require(t, accgate.CloudIntegration)
 	pkg, flow := testAccName(), testAccName()
 	path := testAccArtifactFile(t, testAccExportFlow(t, "codejam-package-export", "Request Employee Dependants - Exercise 05"), flow)
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -139,6 +140,7 @@ resource "sapintegrationsuite_integration_flow" "test" {
 // The e-bite Event Hub flow has only an HTTPS sender and no receiver, so
 // deploying it starts nothing. Destroy undeploys it.
 func TestAccIntegrationFlowDeployment_sample(t *testing.T) {
+	accgate.Require(t, accgate.CloudIntegration)
 	pkg, flow := testAccName(), testAccName()
 	path := testAccArtifactFile(t, testAccExportFlow(t, "eventhub-package-export", "ReceiveEvents_SAPCloudApplicationEventHub"), flow)
 	// Tenants with Integration Cell give new flows SAP_ProfileId =
@@ -166,7 +168,6 @@ resource "sapintegrationsuite_integration_flow_deployment" "test" {
 }
 `
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -207,11 +208,11 @@ resource "sapintegrationsuite_message_mapping_deployment" "test" {
 // Message mappings from SAP's spend analysis sample: create, replace the
 // content with another mapping under the same ID, import, then deploy.
 func TestAccMessageMapping_sample(t *testing.T) {
+	accgate.Require(t, accgate.CloudIntegration)
 	pkg, mapping := testAccName(), testAccName()
 	v1 := testAccArtifactFile(t, samples.Get(t, "spend-account-dim-map"), mapping)
 	v2 := testAccArtifactFile(t, samples.Get(t, "spend-supplier-dim-map"), mapping)
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{

@@ -14,26 +14,14 @@ import (
 )
 
 // Acceptance tests run the provider through Terraform against a real tenant.
-// They only run with TF_ACC=1 and the SAP_INTEGRATION_SUITE_* variables set
-// (.specs/run-acceptance.ps1 fills them from keys.local.json). Every object
-// they create is named tfacc<random> and is destroyed at the end of its test.
+// Each one starts with accgate.Require for its capability, so it runs only
+// with TF_ACC=1, SAP_INTEGRATION_SUITE_ACC_ALL=1 or its capability gate, and
+// the credentials of that capability set (go run ./cmd/accplan shows what
+// would run). Every object they create is named tfacc<random> and is
+// destroyed at the end of its test.
 
 var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
 	"sapintegrationsuite": providerserver.NewProtocol6WithError(New("acctest")()),
-}
-
-// testAccPreCheck skips an acceptance test unless the Cloud Integration
-// credentials are present in the environment.
-func testAccPreCheck(t *testing.T) {
-	t.Helper()
-	for _, name := range []string{
-		"SAP_INTEGRATION_SUITE_HOST", "SAP_INTEGRATION_SUITE_TOKEN_URL",
-		"SAP_INTEGRATION_SUITE_CLIENT_ID", "SAP_INTEGRATION_SUITE_CLIENT_SECRET",
-	} {
-		if os.Getenv(name) == "" {
-			t.Skipf("%s is not set", name)
-		}
-	}
 }
 
 // testAccName returns a unique object name that SAP accepts as a package,

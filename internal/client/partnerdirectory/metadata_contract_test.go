@@ -3,39 +3,20 @@ package partnerdirectory
 import (
 	"testing"
 
-	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/testutil/edmx"
+	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/apimeta"
 )
 
-// TestWireContractAgainstMetadata checks every wire struct and entity set
-// this package uses against a tenant $metadata document. It skips when no
-// document is available (see internal/testutil/edmx).
+// TestWireContractAgainstMetadata checks Contract (the wire structs, keys,
+// navigation properties, operations and limits this client relies on)
+// against the committed snapshot of the service's $metadata in
+// testdata/api-metadata. The metadata acceptance test checks the same
+// contract against a live tenant.
 func TestWireContractAgainstMetadata(t *testing.T) {
-	m := edmx.Load(t)
-
-	structs := []struct {
-		entitySet string
-		value     any
-	}{
-		{alternativePartnersEntitySet, AlternativePartner{}},
-		{authorizedUsersEntitySet, AuthorizedUser{}},
-		{binaryParametersEntitySet, BinaryParameter{}},
-		{partnersEntitySet, Partner{}},
-		{stringParametersEntitySet, StringParameter{}},
-		{userCredentialParametersEntitySet, UserCredentialParameter{}},
-		{userCredentialParametersEntitySet, createUserCredentialParameterRequest{}},
+	s, err := apimeta.LoadSnapshot(Contract.Service)
+	if err != nil {
+		t.Fatalf("loading the %s snapshot: %v", Contract.Service, err)
 	}
-	for _, s := range structs {
-		m.AssertStruct(t, s.entitySet, s.value)
+	for _, problem := range apimeta.Verify(s, Contract) {
+		t.Error(problem)
 	}
-
-	m.AssertKey(t, partnersEntitySet, "Pid", "Edm.String")
-	m.AssertKey(t, stringParametersEntitySet, "Pid", "Edm.String", "Id", "Edm.String")
-	m.AssertKey(t, binaryParametersEntitySet, "Pid", "Edm.String", "Id", "Edm.String")
-	m.AssertKey(t, userCredentialParametersEntitySet, "Pid", "Edm.String", "Id", "Edm.String")
-	m.AssertKey(t, alternativePartnersEntitySet, "Hexagency", "Edm.String", "Hexscheme", "Edm.String", "Hexid", "Edm.String")
-	m.AssertKey(t, authorizedUsersEntitySet, "User", "Edm.String")
-
-	// The binary parameter size check follows the service's own MaxLength,
-	// not the older 260 KB figure some SAP pages still give.
-	m.AssertMaxLength(t, binaryParametersEntitySet, "Value", MaxBinaryParameterValueBytes)
 }

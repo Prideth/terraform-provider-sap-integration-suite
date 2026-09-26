@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Version="4.0">
+  <edmx:Reference Uri="https://oasis-tcs.github.io/odata-vocabularies/vocabularies/Org.OData.Core.V1.xml">
+    <edmx:Include Namespace="Org.OData.Core.V1" Alias="Core"/>
+  </edmx:Reference>
+  <edmx:DataServices>
+    <Schema xmlns="http://docs.oasis-open.org/odata/ns/edm" Namespace="com.example.graph" Alias="G">
+      <EnumType Name="Status">
+        <Member Name="PROCESSING"/>
+        <Member Name="FAILED"/>
+      </EnumType>
+      <EnumType Name="Unused">
+        <Member Name="A"/>
+      </EnumType>
+      <ComplexType Name="DataSource">
+        <Property Name="Destination" Type="Edm.String" Nullable="false"/>
+        <Property Name="Services" Type="Collection(G.Service)"/>
+      </ComplexType>
+      <ComplexType Name="Service">
+        <Property Name="Path" Type="Edm.String"/>
+      </ComplexType>
+      <EntityType Name="Graph">
+        <Key><PropertyRef Name="id"/></Key>
+        <Property Name="id" Type="Edm.String" Nullable="false"/>
+        <Property Name="status" Type="G.Status"/>
+        <Property Name="dataSources" Type="Collection(G.DataSource)"/>
+        <NavigationProperty Name="versions" Type="Collection(G.Version)" Partner="graph" ContainsTarget="true"/>
+        <Annotation Term="Core.Description" String="See https://tenant.example.com/help"/>
+      </EntityType>
+      <EntityType Name="Version">
+        <Key><PropertyRef Name="id"/></Key>
+        <Property Name="id" Type="Edm.String" Nullable="false"/>
+        <Property Name="graphId" Type="Edm.String"/>
+        <NavigationProperty Name="graph" Type="G.Graph" Nullable="false" Partner="versions">
+          <ReferentialConstraint Property="graphId" ReferencedProperty="id"/>
+        </NavigationProperty>
+      </EntityType>
+      <EntityType Name="Settings">
+        <Key><PropertyRef Name="name"/></Key>
+        <Property Name="name" Type="Edm.String" Nullable="false"/>
+      </EntityType>
+      <EntityType Name="Audit">
+        <Key><PropertyRef Name="id"/></Key>
+        <Property Name="id" Type="Edm.String" Nullable="false"/>
+      </EntityType>
+      <Action Name="activate" IsBound="true">
+        <Parameter Name="graph" Type="G.Graph" Nullable="false"/>
+        <Parameter Name="force" Type="Edm.Boolean"/>
+        <ReturnType Type="G.Graph"/>
+      </Action>
+      <Action Name="audit" IsBound="true">
+        <Parameter Name="version" Type="G.Version" Nullable="false"/>
+        <ReturnType Type="G.Audit"/>
+      </Action>
+      <Function Name="latest" IsBound="false">
+        <Parameter Name="name" Type="Edm.String" Nullable="false"/>
+        <ReturnType Type="Collection(G.Version)"/>
+      </Function>
+      <EntityContainer Name="Container">
+        <EntitySet Name="graphs" EntityType="G.Graph">
+          <NavigationPropertyBinding Path="versions" Target="versions"/>
+        </EntitySet>
+        <Singleton Name="settings" Type="G.Settings"/>
+        <FunctionImport Name="latest" Function="G.latest" EntitySet="graphs"/>
+      </EntityContainer>
+      <Annotations Target="G.Graph">
+        <Annotation Term="Org.OData.Capabilities.V1.InsertRestrictions">
+          <Record><PropertyValue Property="Insertable" Bool="false"/></Record>
+        </Annotation>
+      </Annotations>
+    </Schema>
+  </edmx:DataServices>
+</edmx:Edmx>

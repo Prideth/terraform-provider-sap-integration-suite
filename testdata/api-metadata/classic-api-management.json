@@ -1,0 +1,7483 @@
+{
+  "id": "classic-api-management",
+  "protocol": "odata-v2",
+  "capturedAt": "2026-09-26",
+  "source": "local document",
+  "namespaces": [
+    "apiportal"
+  ],
+  "entitySets": [
+    {
+      "name": "ACLProductLinkages",
+      "entityType": "apiportal.ACLProductLinkage"
+    },
+    {
+      "name": "APIProductAdditionalProperties",
+      "entityType": "apiportal.APIProductAdditionalProperty"
+    },
+    {
+      "name": "APIProducts",
+      "entityType": "apiportal.APIProduct"
+    },
+    {
+      "name": "APIProviderAdditionalPropertys",
+      "entityType": "apiportal.APIProviderAdditionalProperty"
+    },
+    {
+      "name": "APIProviders",
+      "entityType": "apiportal.APIProvider"
+    },
+    {
+      "name": "APIProxies",
+      "entityType": "apiportal.APIProxy"
+    },
+    {
+      "name": "APIProxyDeployments",
+      "entityType": "apiportal.APIProxyDeployment"
+    },
+    {
+      "name": "APIProxyEndPointRevisions",
+      "entityType": "apiportal.APIProxyEndPointRevision"
+    },
+    {
+      "name": "APIProxyEndPoints",
+      "entityType": "apiportal.APIProxyEndPoint"
+    },
+    {
+      "name": "APIProxyRevisions",
+      "entityType": "apiportal.APIProxyRevision"
+    },
+    {
+      "name": "APIResourceRevisions",
+      "entityType": "apiportal.APIResourceRevision"
+    },
+    {
+      "name": "APIResources",
+      "entityType": "apiportal.APIResource"
+    },
+    {
+      "name": "APITargetEndPointRevisions",
+      "entityType": "apiportal.APITargetEndPointRevision"
+    },
+    {
+      "name": "APITargetEndPoints",
+      "entityType": "apiportal.APITargetEndPoint"
+    },
+    {
+      "name": "AgentAdditionalPropertys",
+      "entityType": "apiportal.AgentAdditionalProperty"
+    },
+    {
+      "name": "Agents",
+      "entityType": "apiportal.Agent"
+    },
+    {
+      "name": "ApiportalCloneMappings",
+      "entityType": "apiportal.ApiportalCloneMapping"
+    },
+    {
+      "name": "ApplicationAdditionalPropertys",
+      "entityType": "apiportal.ApplicationAdditionalProperty"
+    },
+    {
+      "name": "Applications",
+      "entityType": "apiportal.Application"
+    },
+    {
+      "name": "AttachmentRevisions",
+      "entityType": "apiportal.AttachmentRevision"
+    },
+    {
+      "name": "Bills",
+      "entityType": "apiportal.Bill"
+    },
+    {
+      "name": "CacheResources",
+      "entityType": "apiportal.CacheResource"
+    },
+    {
+      "name": "CertificateStoreReferences",
+      "entityType": "apiportal.CertificateStoreReference"
+    },
+    {
+      "name": "CertificateStores",
+      "entityType": "apiportal.CertificateStore"
+    },
+    {
+      "name": "Certificates",
+      "entityType": "apiportal.Certificate"
+    },
+    {
+      "name": "ConditionalFlowRuleRevisions",
+      "entityType": "apiportal.ConditionalFlowRuleRevision"
+    },
+    {
+      "name": "ConditionalFlowRules",
+      "entityType": "apiportal.ConditionalFlowRule"
+    },
+    {
+      "name": "ContentPackageMappers",
+      "entityType": "apiportal.ContentPackageMapper"
+    },
+    {
+      "name": "DefaultFaultRuleRevisions",
+      "entityType": "apiportal.DefaultFaultRuleRevision"
+    },
+    {
+      "name": "DefaultFaultRules",
+      "entityType": "apiportal.DefaultFaultRule"
+    },
+    {
+      "name": "DestinationAndUrlMappings",
+      "entityType": "apiportal.DestinationAndUrlMapping"
+    },
+    {
+      "name": "Developers",
+      "entityType": "apiportal.Developer"
+    },
+    {
+      "name": "DocumentationRevisions",
+      "entityType": "apiportal.DocumentationRevision"
+    },
+    {
+      "name": "Documentations",
+      "entityType": "apiportal.Documentation"
+    },
+    {
+      "name": "EndPointProperties",
+      "entityType": "apiportal.EndPointProperty"
+    },
+    {
+      "name": "EndPointPropertyRevisions",
+      "entityType": "apiportal.EndPointPropertyRevision"
+    },
+    {
+      "name": "FaultRuleRevisions",
+      "entityType": "apiportal.FaultRuleRevision"
+    },
+    {
+      "name": "FaultRules",
+      "entityType": "apiportal.FaultRule"
+    },
+    {
+      "name": "FileResourceRevisions",
+      "entityType": "apiportal.FileResourceRevision"
+    },
+    {
+      "name": "FileResources",
+      "entityType": "apiportal.FileResource"
+    },
+    {
+      "name": "FlowRuleRevisions",
+      "entityType": "apiportal.FlowRuleRevision"
+    },
+    {
+      "name": "FlowRules",
+      "entityType": "apiportal.FlowRule"
+    },
+    {
+      "name": "GenericKeyMapEntries",
+      "entityType": "apiportal.GenericKeyMapEntry"
+    },
+    {
+      "name": "GenericKeyMapEntryValues",
+      "entityType": "apiportal.GenericKeyMapEntryValue"
+    },
+    {
+      "name": "KeyMapEntries",
+      "entityType": "apiportal.KeyMapEntry"
+    },
+    {
+      "name": "KeyMapEntryValues",
+      "entityType": "apiportal.KeyMapEntryValue"
+    },
+    {
+      "name": "Policies",
+      "entityType": "apiportal.Policy"
+    },
+    {
+      "name": "PolicyRevisions",
+      "entityType": "apiportal.PolicyRevision"
+    },
+    {
+      "name": "PolicyTemplateContainers",
+      "entityType": "apiportal.PolicyTemplateContainer"
+    },
+    {
+      "name": "RatePlans",
+      "entityType": "apiportal.RatePlan"
+    },
+    {
+      "name": "ResourceRevisions",
+      "entityType": "apiportal.ResourceRevision"
+    },
+    {
+      "name": "Resources",
+      "entityType": "apiportal.Resource"
+    },
+    {
+      "name": "RouteRuleRevisions",
+      "entityType": "apiportal.RouteRuleRevision"
+    },
+    {
+      "name": "RouteRules",
+      "entityType": "apiportal.RouteRule"
+    },
+    {
+      "name": "StepRevisions",
+      "entityType": "apiportal.StepRevision"
+    },
+    {
+      "name": "Steps",
+      "entityType": "apiportal.Step"
+    },
+    {
+      "name": "StreamRevisions",
+      "entityType": "apiportal.StreamRevision"
+    },
+    {
+      "name": "Streams",
+      "entityType": "apiportal.Stream"
+    },
+    {
+      "name": "TemplateFileResources",
+      "entityType": "apiportal.TemplateFileResource"
+    },
+    {
+      "name": "TemplatePolicys",
+      "entityType": "apiportal.TemplatePolicy"
+    },
+    {
+      "name": "VirtualHosts",
+      "entityType": "apiportal.VirtualHost"
+    }
+  ],
+  "entityTypes": [
+    {
+      "name": "apiportal.ACLProductLinkage",
+      "key": [
+        "ruleId"
+      ],
+      "properties": [
+        {
+          "name": "devportalRuleId",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "entityId",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "entityType",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "64"
+        },
+        {
+          "name": "isPublished",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "operation",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "64"
+        },
+        {
+          "name": "permissionSet",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "1024"
+        },
+        {
+          "name": "ruleId",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProduct",
+      "key": [
+        "name"
+      ],
+      "properties": [
+        {
+          "name": "description",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "16000"
+        },
+        {
+          "name": "isPublished",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "isRestricted",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "published_at",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "published_by",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "256"
+        },
+        {
+          "name": "quotaCount",
+          "type": "Edm.Int32",
+          "nullable": true
+        },
+        {
+          "name": "quotaInterval",
+          "type": "Edm.Int32",
+          "nullable": true
+        },
+        {
+          "name": "quotaTimeUnit",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "10"
+        },
+        {
+          "name": "scope",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "4000"
+        },
+        {
+          "name": "shortText",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "status_code",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "20"
+        },
+        {
+          "name": "title",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "version",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "10"
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "additionalProperties",
+          "target": "apiportal.APIProductAdditionalProperty",
+          "collection": true,
+          "relationship": "apiportal.APIProduct_APIProductAdditionalProperty_One_Many0",
+          "fromRole": "APIProduct",
+          "toRole": "APIProductAdditionalProperty"
+        },
+        {
+          "name": "agents",
+          "target": "apiportal.Agent",
+          "collection": true,
+          "relationship": "apiportal.APIProduct_Agent_Many_Many0",
+          "fromRole": "APIProduct",
+          "toRole": "Agent"
+        },
+        {
+          "name": "apiProxies",
+          "target": "apiportal.APIProxy",
+          "collection": true,
+          "relationship": "apiportal.APIProduct_APIProxy_Many_Many0",
+          "fromRole": "APIProduct",
+          "toRole": "APIProxy"
+        },
+        {
+          "name": "apiResources",
+          "target": "apiportal.APIResource",
+          "collection": true,
+          "relationship": "apiportal.APIProduct_APIResource_One_Many0",
+          "fromRole": "APIProduct",
+          "toRole": "APIResource"
+        },
+        {
+          "name": "applications",
+          "target": "apiportal.Application",
+          "collection": true,
+          "relationship": "apiportal.APIProduct_Application_Many_Many0",
+          "fromRole": "APIProduct",
+          "toRole": "Application"
+        },
+        {
+          "name": "ratePlans",
+          "target": "apiportal.RatePlan",
+          "collection": true,
+          "relationship": "apiportal.APIProduct_RatePlan_Many_Many0",
+          "fromRole": "APIProduct",
+          "toRole": "RatePlan"
+        },
+        {
+          "name": "resources",
+          "target": "apiportal.Resource",
+          "collection": true,
+          "relationship": "apiportal.APIProduct_Resource_One_Many0",
+          "fromRole": "APIProduct",
+          "toRole": "Resource"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProductAdditionalProperty",
+      "key": [
+        "entityId",
+        "name"
+      ],
+      "properties": [
+        {
+          "name": "entityId",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "value",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "1024"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProvider",
+      "key": [
+        "name"
+      ],
+      "properties": [
+        {
+          "name": "authType",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "126"
+        },
+        {
+          "name": "clientId",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "clientSecret",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "cloudConnectorLocation",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "2048"
+        },
+        {
+          "name": "cockpit_url",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "description",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "16000"
+        },
+        {
+          "name": "destType",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "30"
+        },
+        {
+          "name": "host",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "2048"
+        },
+        {
+          "name": "isOnPremise",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "keystoreLocation",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "keystorePassword",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "200"
+        },
+        {
+          "name": "orgSecret",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "password",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "126"
+        },
+        {
+          "name": "pathPrefix",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "2048"
+        },
+        {
+          "name": "port",
+          "type": "Edm.Int32",
+          "nullable": true
+        },
+        {
+          "name": "region",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "100"
+        },
+        {
+          "name": "rt_auth",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "sslInfo",
+          "type": "apiportal.SSLInfo",
+          "nullable": true
+        },
+        {
+          "name": "timeout",
+          "type": "Edm.Int32",
+          "nullable": true
+        },
+        {
+          "name": "title",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "tokenUrl",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "trustAll",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "url",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "useSSL",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "userName",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "2048"
+        },
+        {
+          "name": "userSecret",
+          "type": "Edm.String",
+          "nullable": true
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "additionalProperties",
+          "target": "apiportal.APIProviderAdditionalProperty",
+          "collection": true,
+          "relationship": "apiportal.APIProvider_APIProviderAdditionalProperty_One_Many0",
+          "fromRole": "APIProvider",
+          "toRole": "APIProviderAdditionalProperty"
+        },
+        {
+          "name": "apiProxies",
+          "target": "apiportal.APIProxy",
+          "collection": true,
+          "relationship": "apiportal.APIProvider_APIProxy_One_Many0",
+          "fromRole": "APIProvider",
+          "toRole": "APIProxy"
+        },
+        {
+          "name": "envKVMs",
+          "target": "apiportal.KeyMapEntry",
+          "collection": true,
+          "relationship": "apiportal.APIProvider_KeyMapEntry_One_Many0",
+          "fromRole": "APIProvider",
+          "toRole": "KeyMapEntry"
+        },
+        {
+          "name": "resources",
+          "target": "apiportal.Resource",
+          "collection": true,
+          "relationship": "apiportal.APIProvider_Resource_One_Many0",
+          "fromRole": "APIProvider",
+          "toRole": "Resource"
+        },
+        {
+          "name": "targetEndPoints",
+          "target": "apiportal.APITargetEndPoint",
+          "collection": true,
+          "relationship": "apiportal.APIProvider_APITargetEndPoint_Many_Many0",
+          "fromRole": "APIProvider",
+          "toRole": "APITargetEndPoint"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProviderAdditionalProperty",
+      "key": [
+        "entityId",
+        "name"
+      ],
+      "properties": [
+        {
+          "name": "entityId",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "value",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "1024"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxy",
+      "key": [
+        "name"
+      ],
+      "properties": [
+        {
+          "name": "FK_PROVIDERNAME",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "200"
+        },
+        {
+          "name": "FK_deploymentinfo_name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "apiVersionGroup",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "cfBindingId",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "description",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "16000"
+        },
+        {
+          "name": "hasChanges",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "isCopy",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "isPublished",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "isUnmanaged",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "isVersioned",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "policyTemplateNames",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "provider_name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "200"
+        },
+        {
+          "name": "releaseMetadata",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "2048"
+        },
+        {
+          "name": "releaseStatus",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "15"
+        },
+        {
+          "name": "revisionID",
+          "type": "Edm.Int32",
+          "nullable": true
+        },
+        {
+          "name": "revisionName",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "service_code",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "20"
+        },
+        {
+          "name": "shortText",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "state",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "10"
+        },
+        {
+          "name": "status_code",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "20"
+        },
+        {
+          "name": "title",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "version",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "10"
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "apiProducts",
+          "target": "apiportal.APIProduct",
+          "collection": true,
+          "relationship": "apiportal.APIProduct_APIProxy_Many_Many0",
+          "fromRole": "APIProxy",
+          "toRole": "APIProduct"
+        },
+        {
+          "name": "apiProvider",
+          "target": "apiportal.APIProvider",
+          "relationship": "apiportal.APIProvider_APIProxy_One_Many0",
+          "fromRole": "APIProxy",
+          "toRole": "APIProvider"
+        },
+        {
+          "name": "contentPackage",
+          "target": "apiportal.ContentPackageMapper",
+          "relationship": "apiportal.APIProxy_ContentPackageMapper_One_ZeroToOne0",
+          "fromRole": "APIProxy",
+          "toRole": "ContentPackageMapper"
+        },
+        {
+          "name": "deploymentInfo",
+          "target": "apiportal.APIProxyDeployment",
+          "relationship": "apiportal.APIProxy_APIProxyDeployment_One_ZeroToOne0",
+          "fromRole": "APIProxy",
+          "toRole": "APIProxyDeployment"
+        },
+        {
+          "name": "fileResources",
+          "target": "apiportal.FileResource",
+          "collection": true,
+          "relationship": "apiportal.APIProxy_FileResource_Many_Many0",
+          "fromRole": "APIProxy",
+          "toRole": "FileResource"
+        },
+        {
+          "name": "policies",
+          "target": "apiportal.Policy",
+          "collection": true,
+          "relationship": "apiportal.APIProxy_Policy_One_Many0",
+          "fromRole": "APIProxy",
+          "toRole": "Policy"
+        },
+        {
+          "name": "proxyEndPoints",
+          "target": "apiportal.APIProxyEndPoint",
+          "collection": true,
+          "relationship": "apiportal.APIProxy_APIProxyEndPoint_One_Many0",
+          "fromRole": "APIProxy",
+          "toRole": "APIProxyEndPoint"
+        },
+        {
+          "name": "resources",
+          "target": "apiportal.Resource",
+          "collection": true,
+          "relationship": "apiportal.APIProxy_Resource_One_Many0",
+          "fromRole": "APIProxy",
+          "toRole": "Resource"
+        },
+        {
+          "name": "successorAPI",
+          "target": "apiportal.APIProxy",
+          "relationship": "apiportal.APIProxy_APIProxy_One_One0",
+          "fromRole": "APIProxy",
+          "toRole": "APIProxy2"
+        },
+        {
+          "name": "successorAPIReferences",
+          "target": "apiportal.APIProxy",
+          "collection": true,
+          "relationship": "apiportal.APIProxy_APIProxy_One_Many0",
+          "fromRole": "APIProxy",
+          "toRole": "APIProxy2"
+        },
+        {
+          "name": "targetAPIProxies",
+          "target": "apiportal.APITargetEndPoint",
+          "collection": true,
+          "relationship": "apiportal.APIProxy_APITargetEndPoint_One_Many0",
+          "fromRole": "APIProxy",
+          "toRole": "APITargetEndPoint"
+        },
+        {
+          "name": "targetEndPoints",
+          "target": "apiportal.APITargetEndPoint",
+          "collection": true,
+          "relationship": "apiportal.APIProxy_APITargetEndPoint_One_Many1",
+          "fromRole": "APIProxy",
+          "toRole": "APITargetEndPoint"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxyDeployment",
+      "key": [
+        "name"
+      ],
+      "properties": [
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "revisionID",
+          "type": "Edm.Int32",
+          "nullable": true
+        },
+        {
+          "name": "state",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "10"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxyEndPoint",
+      "key": [
+        "id"
+      ],
+      "properties": [
+        {
+          "name": "FK_API_NAME",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "FK_DEFAULTFAULTRULE_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_POSTCLIENTFLOW_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_POSTFLOW_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_PREFLOW_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "base_path",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "isDefault",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "publishUrl",
+          "type": "Edm.String",
+          "nullable": true
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "apiProxy",
+          "target": "apiportal.APIProxy",
+          "relationship": "apiportal.APIProxy_APIProxyEndPoint_One_Many0",
+          "fromRole": "APIProxyEndPoint",
+          "toRole": "APIProxy"
+        },
+        {
+          "name": "apiResources",
+          "target": "apiportal.APIResource",
+          "collection": true,
+          "relationship": "apiportal.APIProxyEndPoint_APIResource_One_Many0",
+          "fromRole": "APIProxyEndPoint",
+          "toRole": "APIResource"
+        },
+        {
+          "name": "conditionalFlows",
+          "target": "apiportal.ConditionalFlowRule",
+          "collection": true,
+          "relationship": "apiportal.APIProxyEndPoint_ConditionalFlowRule_One_Many0",
+          "fromRole": "APIProxyEndPoint",
+          "toRole": "ConditionalFlowRule"
+        },
+        {
+          "name": "defaultFaultRule",
+          "target": "apiportal.DefaultFaultRule",
+          "relationship": "apiportal.APIProxyEndPoint_DefaultFaultRule_One_One0",
+          "fromRole": "APIProxyEndPoint",
+          "toRole": "DefaultFaultRule"
+        },
+        {
+          "name": "faultRules",
+          "target": "apiportal.FaultRule",
+          "collection": true,
+          "relationship": "apiportal.APIProxyEndPoint_FaultRule_One_Many0",
+          "fromRole": "APIProxyEndPoint",
+          "toRole": "FaultRule"
+        },
+        {
+          "name": "postClientFlow",
+          "target": "apiportal.FlowRule",
+          "relationship": "apiportal.APIProxyEndPoint_FlowRule_One_One0",
+          "fromRole": "APIProxyEndPoint",
+          "toRole": "FlowRule"
+        },
+        {
+          "name": "postFlow",
+          "target": "apiportal.FlowRule",
+          "relationship": "apiportal.APIProxyEndPoint_FlowRule_One_One1",
+          "fromRole": "APIProxyEndPoint",
+          "toRole": "FlowRule"
+        },
+        {
+          "name": "preFlow",
+          "target": "apiportal.FlowRule",
+          "relationship": "apiportal.APIProxyEndPoint_FlowRule_One_One2",
+          "fromRole": "APIProxyEndPoint",
+          "toRole": "FlowRule"
+        },
+        {
+          "name": "properties",
+          "target": "apiportal.EndPointProperty",
+          "collection": true,
+          "relationship": "apiportal.APIProxyEndPoint_EndPointProperty_One_Many0",
+          "fromRole": "APIProxyEndPoint",
+          "toRole": "EndPointProperty"
+        },
+        {
+          "name": "routeRules",
+          "target": "apiportal.RouteRule",
+          "collection": true,
+          "relationship": "apiportal.APIProxyEndPoint_RouteRule_One_Many0",
+          "fromRole": "APIProxyEndPoint",
+          "toRole": "RouteRule"
+        },
+        {
+          "name": "virtualhosts",
+          "target": "apiportal.VirtualHost",
+          "collection": true,
+          "relationship": "apiportal.APIProxyEndPoint_VirtualHost_Many_Many0",
+          "fromRole": "APIProxyEndPoint",
+          "toRole": "VirtualHost"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxyEndPointRevision",
+      "key": [
+        "id",
+        "revisionID"
+      ],
+      "properties": [
+        {
+          "name": "FK_API_NAME",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "FK_DEFAULTFAULTRULE_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_POSTCLIENTFLOW_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_POSTFLOW_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_PREFLOW_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "base_path",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "isDefault",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "publishUrl",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "revisionID",
+          "type": "Edm.Int32",
+          "nullable": false
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "apiProxy",
+          "target": "apiportal.APIProxyRevision",
+          "relationship": "apiportal.APIProxyEndPointRevision_APIProxyRevision_Many_One0",
+          "fromRole": "APIProxyEndPointRevision",
+          "toRole": "APIProxyRevision"
+        },
+        {
+          "name": "apiResources",
+          "target": "apiportal.APIResourceRevision",
+          "collection": true,
+          "relationship": "apiportal.APIProxyEndPointRevision_APIResourceRevision_One_Many0",
+          "fromRole": "APIProxyEndPointRevision",
+          "toRole": "APIResourceRevision"
+        },
+        {
+          "name": "conditionalFlows",
+          "target": "apiportal.ConditionalFlowRuleRevision",
+          "collection": true,
+          "relationship": "apiportal.APIProxyEndPointRevision_ConditionalFlowRuleRevision_One_Many0",
+          "fromRole": "APIProxyEndPointRevision",
+          "toRole": "ConditionalFlowRuleRevision"
+        },
+        {
+          "name": "defaultFaultRule",
+          "target": "apiportal.DefaultFaultRuleRevision",
+          "relationship": "apiportal.APIProxyEndPointRevision_DefaultFaultRuleRevision_One_One0",
+          "fromRole": "APIProxyEndPointRevision",
+          "toRole": "DefaultFaultRuleRevision"
+        },
+        {
+          "name": "faultRules",
+          "target": "apiportal.FaultRuleRevision",
+          "collection": true,
+          "relationship": "apiportal.APIProxyEndPointRevision_FaultRuleRevision_One_Many0",
+          "fromRole": "APIProxyEndPointRevision",
+          "toRole": "FaultRuleRevision"
+        },
+        {
+          "name": "postClientFlow",
+          "target": "apiportal.FlowRuleRevision",
+          "relationship": "apiportal.APIProxyEndPointRevision_FlowRuleRevision_One_One0",
+          "fromRole": "APIProxyEndPointRevision",
+          "toRole": "FlowRuleRevision"
+        },
+        {
+          "name": "postFlow",
+          "target": "apiportal.FlowRuleRevision",
+          "relationship": "apiportal.APIProxyEndPointRevision_FlowRuleRevision_One_One1",
+          "fromRole": "APIProxyEndPointRevision",
+          "toRole": "FlowRuleRevision"
+        },
+        {
+          "name": "preFlow",
+          "target": "apiportal.FlowRuleRevision",
+          "relationship": "apiportal.APIProxyEndPointRevision_FlowRuleRevision_One_One2",
+          "fromRole": "APIProxyEndPointRevision",
+          "toRole": "FlowRuleRevision"
+        },
+        {
+          "name": "properties",
+          "target": "apiportal.EndPointPropertyRevision",
+          "collection": true,
+          "relationship": "apiportal.APIProxyEndPointRevision_EndPointPropertyRevision_One_Many0",
+          "fromRole": "APIProxyEndPointRevision",
+          "toRole": "EndPointPropertyRevision"
+        },
+        {
+          "name": "routeRules",
+          "target": "apiportal.RouteRuleRevision",
+          "collection": true,
+          "relationship": "apiportal.APIProxyEndPointRevision_RouteRuleRevision_One_Many0",
+          "fromRole": "APIProxyEndPointRevision",
+          "toRole": "RouteRuleRevision"
+        },
+        {
+          "name": "virtualhosts",
+          "target": "apiportal.VirtualHost",
+          "collection": true,
+          "relationship": "apiportal.APIProxyEndPointRevision_VirtualHost_Many_Many0",
+          "fromRole": "APIProxyEndPointRevision",
+          "toRole": "VirtualHost"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxyRevision",
+      "key": [
+        "revisionID"
+      ],
+      "properties": [
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "revisionDescription",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "revisionID",
+          "type": "Edm.Int32",
+          "nullable": false
+        },
+        {
+          "name": "revisionName",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIResource",
+      "key": [
+        "id"
+      ],
+      "properties": [
+        {
+          "name": "FK_PROXYENDPOINT_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "canShowDelete",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "canShowGet",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "canShowHead",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "canShowOption",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "canShowPatch",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "canShowPost",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "canShowPut",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "description",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "16000"
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "isDeleteChecked",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "isGetChecked",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "isHeadChecked",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "isOptionChecked",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "isPatchChecked",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "isPostChecked",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "isPutChecked",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "16384"
+        },
+        {
+          "name": "proxyEndPointName",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "resource_path",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "title",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "apiProxyEndPoint",
+          "target": "apiportal.APIProxyEndPoint",
+          "relationship": "apiportal.APIProxyEndPoint_APIResource_One_Many0",
+          "fromRole": "APIResource",
+          "toRole": "APIProxyEndPoint"
+        },
+        {
+          "name": "documentations",
+          "target": "apiportal.Documentation",
+          "collection": true,
+          "relationship": "apiportal.APIResource_Documentation_One_Many0",
+          "fromRole": "APIResource",
+          "toRole": "Documentation"
+        },
+        {
+          "name": "resources",
+          "target": "apiportal.Resource",
+          "collection": true,
+          "relationship": "apiportal.APIResource_Resource_One_Many0",
+          "fromRole": "APIResource",
+          "toRole": "Resource"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIResourceRevision",
+      "key": [
+        "id",
+        "revisionID"
+      ],
+      "properties": [
+        {
+          "name": "FK_PROXYENDPOINT_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "canShowDelete",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "canShowGet",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "canShowHead",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "canShowOption",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "canShowPatch",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "canShowPost",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "canShowPut",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "isDeleteChecked",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "isGetChecked",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "isHeadChecked",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "isOptionChecked",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "isPatchChecked",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "isPostChecked",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "isPutChecked",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "16384"
+        },
+        {
+          "name": "proxyEndPointName",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "resource_path",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "revisionID",
+          "type": "Edm.Int32",
+          "nullable": false
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "apiProxyEndPoint",
+          "target": "apiportal.APIProxyEndPointRevision",
+          "relationship": "apiportal.APIProxyEndPointRevision_APIResourceRevision_One_Many0",
+          "fromRole": "APIResourceRevision",
+          "toRole": "APIProxyEndPointRevision"
+        },
+        {
+          "name": "documentations",
+          "target": "apiportal.DocumentationRevision",
+          "collection": true,
+          "relationship": "apiportal.APIResourceRevision_DocumentationRevision_One_Many0",
+          "fromRole": "APIResourceRevision",
+          "toRole": "DocumentationRevision"
+        },
+        {
+          "name": "resources",
+          "target": "apiportal.ResourceRevision",
+          "collection": true,
+          "relationship": "apiportal.APIResourceRevision_ResourceRevision_One_Many0",
+          "fromRole": "APIResourceRevision",
+          "toRole": "ResourceRevision"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APITargetEndPoint",
+      "key": [
+        "id"
+      ],
+      "properties": [
+        {
+          "name": "FK_API_NAME",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "FK_DEFAULTFAULTRULE_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_POSTFLOW_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_PREFLOW_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_TARGET_API_PROXY",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "isDefault",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "loadBalancerConfigurations",
+          "type": "apiportal.LoadBalancerConfigurations",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "provider_id",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "200"
+        },
+        {
+          "name": "relativePath",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "targetAPIProxyName",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "url",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "2083"
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "additionalApiProviders",
+          "target": "apiportal.APIProvider",
+          "collection": true,
+          "relationship": "apiportal.APIProvider_APITargetEndPoint_Many_Many0",
+          "fromRole": "APITargetEndPoint",
+          "toRole": "APIProvider"
+        },
+        {
+          "name": "apiProxy",
+          "target": "apiportal.APIProxy",
+          "relationship": "apiportal.APIProxy_APITargetEndPoint_One_Many1",
+          "fromRole": "APITargetEndPoint",
+          "toRole": "APIProxy"
+        },
+        {
+          "name": "conditionalFlows",
+          "target": "apiportal.ConditionalFlowRule",
+          "collection": true,
+          "relationship": "apiportal.APITargetEndPoint_ConditionalFlowRule_One_Many0",
+          "fromRole": "APITargetEndPoint",
+          "toRole": "ConditionalFlowRule"
+        },
+        {
+          "name": "defaultFaultRule",
+          "target": "apiportal.DefaultFaultRule",
+          "relationship": "apiportal.APITargetEndPoint_DefaultFaultRule_One_One0",
+          "fromRole": "APITargetEndPoint",
+          "toRole": "DefaultFaultRule"
+        },
+        {
+          "name": "faultRules",
+          "target": "apiportal.FaultRule",
+          "collection": true,
+          "relationship": "apiportal.APITargetEndPoint_FaultRule_One_Many0",
+          "fromRole": "APITargetEndPoint",
+          "toRole": "FaultRule"
+        },
+        {
+          "name": "postFlow",
+          "target": "apiportal.FlowRule",
+          "relationship": "apiportal.APITargetEndPoint_FlowRule_One_One0",
+          "fromRole": "APITargetEndPoint",
+          "toRole": "FlowRule"
+        },
+        {
+          "name": "preFlow",
+          "target": "apiportal.FlowRule",
+          "relationship": "apiportal.APITargetEndPoint_FlowRule_One_One1",
+          "fromRole": "APITargetEndPoint",
+          "toRole": "FlowRule"
+        },
+        {
+          "name": "properties",
+          "target": "apiportal.EndPointProperty",
+          "collection": true,
+          "relationship": "apiportal.APITargetEndPoint_EndPointProperty_One_Many0",
+          "fromRole": "APITargetEndPoint",
+          "toRole": "EndPointProperty"
+        },
+        {
+          "name": "targetAPIProxy",
+          "target": "apiportal.APIProxy",
+          "relationship": "apiportal.APITargetEndPoint_APIProxy_One_ZeroToOne0",
+          "fromRole": "APITargetEndPoint",
+          "toRole": "APIProxy"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APITargetEndPointRevision",
+      "key": [
+        "id",
+        "revisionID"
+      ],
+      "properties": [
+        {
+          "name": "FK_API_NAME",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "FK_DEFAULTFAULTRULE_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_POSTFLOW_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_PREFLOW_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_TARGET_API_PROXY",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "isDefault",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "loadBalancerConfigurations",
+          "type": "apiportal.LoadBalancerConfigurations",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "provider_id",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "200"
+        },
+        {
+          "name": "relativePath",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "revisionID",
+          "type": "Edm.Int32",
+          "nullable": false
+        },
+        {
+          "name": "targetAPIProxyName",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "url",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "2083"
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "additionalApiProviders",
+          "target": "apiportal.APIProvider",
+          "collection": true,
+          "relationship": "apiportal.APITargetEndPointRevision_APIProvider_Many_Many0",
+          "fromRole": "APITargetEndPointRevision",
+          "toRole": "APIProvider"
+        },
+        {
+          "name": "apiProxy",
+          "target": "apiportal.APIProxyRevision",
+          "relationship": "apiportal.APITargetEndPointRevision_APIProxyRevision_Many_One0",
+          "fromRole": "APITargetEndPointRevision",
+          "toRole": "APIProxyRevision"
+        },
+        {
+          "name": "conditionalFlows",
+          "target": "apiportal.ConditionalFlowRuleRevision",
+          "collection": true,
+          "relationship": "apiportal.APITargetEndPointRevision_ConditionalFlowRuleRevision_One_Many0",
+          "fromRole": "APITargetEndPointRevision",
+          "toRole": "ConditionalFlowRuleRevision"
+        },
+        {
+          "name": "defaultFaultRule",
+          "target": "apiportal.DefaultFaultRuleRevision",
+          "relationship": "apiportal.APITargetEndPointRevision_DefaultFaultRuleRevision_One_One0",
+          "fromRole": "APITargetEndPointRevision",
+          "toRole": "DefaultFaultRuleRevision"
+        },
+        {
+          "name": "faultRules",
+          "target": "apiportal.FaultRuleRevision",
+          "collection": true,
+          "relationship": "apiportal.APITargetEndPointRevision_FaultRuleRevision_One_Many0",
+          "fromRole": "APITargetEndPointRevision",
+          "toRole": "FaultRuleRevision"
+        },
+        {
+          "name": "postFlow",
+          "target": "apiportal.FlowRuleRevision",
+          "relationship": "apiportal.APITargetEndPointRevision_FlowRuleRevision_One_One0",
+          "fromRole": "APITargetEndPointRevision",
+          "toRole": "FlowRuleRevision"
+        },
+        {
+          "name": "preFlow",
+          "target": "apiportal.FlowRuleRevision",
+          "relationship": "apiportal.APITargetEndPointRevision_FlowRuleRevision_One_One1",
+          "fromRole": "APITargetEndPointRevision",
+          "toRole": "FlowRuleRevision"
+        },
+        {
+          "name": "properties",
+          "target": "apiportal.EndPointPropertyRevision",
+          "collection": true,
+          "relationship": "apiportal.APITargetEndPointRevision_EndPointPropertyRevision_One_Many0",
+          "fromRole": "APITargetEndPointRevision",
+          "toRole": "EndPointPropertyRevision"
+        },
+        {
+          "name": "targetAPIProxy",
+          "target": "apiportal.APIProxy",
+          "relationship": "apiportal.APITargetEndPointRevision_APIProxy_One_ZeroToOne0",
+          "fromRole": "APITargetEndPointRevision",
+          "toRole": "APIProxy"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.Agent",
+      "key": [
+        "id"
+      ],
+      "properties": [
+        {
+          "name": "FK_DEVELOPER_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "256"
+        },
+        {
+          "name": "app_key",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "256"
+        },
+        {
+          "name": "app_secret",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "1000"
+        },
+        {
+          "name": "callbackurl",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "description",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "16000"
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "shortText",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "status_code",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "20"
+        },
+        {
+          "name": "subscribedRatePlan",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "title",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "valid_from",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "valid_to",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "version",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "10"
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "apiProducts",
+          "target": "apiportal.APIProduct",
+          "collection": true,
+          "relationship": "apiportal.APIProduct_Agent_Many_Many0",
+          "fromRole": "Agent",
+          "toRole": "APIProduct"
+        },
+        {
+          "name": "attributes",
+          "target": "apiportal.AgentAdditionalProperty",
+          "collection": true,
+          "relationship": "apiportal.Agent_AgentAdditionalProperty_One_Many0",
+          "fromRole": "Agent",
+          "toRole": "AgentAdditionalProperty"
+        },
+        {
+          "name": "developer",
+          "target": "apiportal.Developer",
+          "relationship": "apiportal.Agent_Developer_One_One0",
+          "fromRole": "Agent",
+          "toRole": "Developer"
+        },
+        {
+          "name": "resources",
+          "target": "apiportal.Resource",
+          "collection": true,
+          "relationship": "apiportal.Agent_Resource_One_Many0",
+          "fromRole": "Agent",
+          "toRole": "Resource"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.AgentAdditionalProperty",
+      "key": [
+        "entityId",
+        "name"
+      ],
+      "properties": [
+        {
+          "name": "entityId",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "value",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "1024"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.ApiportalCloneMapping",
+      "key": [
+        "subaccountId"
+      ],
+      "properties": [
+        {
+          "name": "apiportalClientId",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "512"
+        },
+        {
+          "name": "devportalTenantId",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "512"
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "newServiceInstanceId",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "512"
+        },
+        {
+          "name": "serviceInstanceId",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "512"
+        },
+        {
+          "name": "subaccountId",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "512"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.Application",
+      "key": [
+        "id"
+      ],
+      "properties": [
+        {
+          "name": "FK_DEVELOPER_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "256"
+        },
+        {
+          "name": "app_key",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "256"
+        },
+        {
+          "name": "app_secret",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "1000"
+        },
+        {
+          "name": "callbackurl",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "description",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "16000"
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "shortText",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "status_code",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "20"
+        },
+        {
+          "name": "subscribedRatePlan",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "title",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "valid_from",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "valid_to",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "version",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "10"
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "apiProducts",
+          "target": "apiportal.APIProduct",
+          "collection": true,
+          "relationship": "apiportal.APIProduct_Application_Many_Many0",
+          "fromRole": "Application",
+          "toRole": "APIProduct"
+        },
+        {
+          "name": "attributes",
+          "target": "apiportal.ApplicationAdditionalProperty",
+          "collection": true,
+          "relationship": "apiportal.Application_ApplicationAdditionalProperty_One_Many0",
+          "fromRole": "Application",
+          "toRole": "ApplicationAdditionalProperty"
+        },
+        {
+          "name": "developer",
+          "target": "apiportal.Developer",
+          "relationship": "apiportal.Application_Developer_One_One0",
+          "fromRole": "Application",
+          "toRole": "Developer"
+        },
+        {
+          "name": "resources",
+          "target": "apiportal.Resource",
+          "collection": true,
+          "relationship": "apiportal.Application_Resource_One_Many0",
+          "fromRole": "Application",
+          "toRole": "Resource"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.ApplicationAdditionalProperty",
+      "key": [
+        "entityId",
+        "name"
+      ],
+      "properties": [
+        {
+          "name": "entityId",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "value",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "1024"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.AttachmentRevision",
+      "key": [
+        "id",
+        "revisionID"
+      ],
+      "properties": [
+        {
+          "name": "attachment_data",
+          "type": "Edm.Binary",
+          "nullable": true
+        },
+        {
+          "name": "description",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "2048"
+        },
+        {
+          "name": "file_extension",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "40"
+        },
+        {
+          "name": "file_name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "256"
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "locale",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "5"
+        },
+        {
+          "name": "mime_type",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "256"
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "256"
+        },
+        {
+          "name": "object_name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "object_type",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "2"
+        },
+        {
+          "name": "object_version",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "10"
+        },
+        {
+          "name": "revisionID",
+          "type": "Edm.Int32",
+          "nullable": false
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "apiProxy",
+          "target": "apiportal.APIProxyRevision",
+          "relationship": "apiportal.AttachmentRevision_APIProxyRevision_Many_One0",
+          "fromRole": "AttachmentRevision",
+          "toRole": "APIProxyRevision"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.Bill",
+      "key": [
+        "entityId",
+        "entityType",
+        "fromDate",
+        "toDate"
+      ],
+      "properties": [
+        {
+          "name": "billDetails",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "billGeneratedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "billGeneratedBy",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "billId",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "64"
+        },
+        {
+          "name": "currency",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "32"
+        },
+        {
+          "name": "description",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "2048"
+        },
+        {
+          "name": "emailId",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "entityId",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "256"
+        },
+        {
+          "name": "entityName",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "256"
+        },
+        {
+          "name": "entityType",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "32"
+        },
+        {
+          "name": "firstName",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "fromDate",
+          "type": "Edm.DateTime",
+          "nullable": false
+        },
+        {
+          "name": "isoffboarded",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "lastName",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "offboardedDate",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "status",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "64"
+        },
+        {
+          "name": "toDate",
+          "type": "Edm.DateTime",
+          "nullable": false
+        },
+        {
+          "name": "total",
+          "type": "Edm.Double",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "apiportal.CacheResource",
+      "key": [
+        "name"
+      ],
+      "properties": [
+        {
+          "name": "compression_enabled",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "disk_size",
+          "type": "Edm.Int32",
+          "nullable": true
+        },
+        {
+          "name": "expirySettings",
+          "type": "apiportal.ExpirySettings",
+          "nullable": true
+        },
+        {
+          "name": "in_memory_size",
+          "type": "Edm.Int32",
+          "nullable": true
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "max_element_disk",
+          "type": "Edm.Int32",
+          "nullable": true
+        },
+        {
+          "name": "max_element_memory",
+          "type": "Edm.Int32",
+          "nullable": true
+        },
+        {
+          "name": "min_compression_size",
+          "type": "Edm.Int32",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "over_flow_to_disk",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "persistent_cache",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "skip_cache_element_size",
+          "type": "Edm.Int32",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "apiportal.Certificate",
+      "key": [
+        "name",
+        "storeName"
+      ],
+      "properties": [
+        {
+          "name": "certName",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "256"
+        },
+        {
+          "name": "content",
+          "type": "Edm.Binary",
+          "nullable": true
+        },
+        {
+          "name": "csKey",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "description",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "2048"
+        },
+        {
+          "name": "expiryDate",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "256"
+        },
+        {
+          "name": "format",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "256"
+        },
+        {
+          "name": "isValid",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "256"
+        },
+        {
+          "name": "issuerEmail",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "2048"
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "200"
+        },
+        {
+          "name": "password",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "256"
+        },
+        {
+          "name": "signAlgName",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "256"
+        },
+        {
+          "name": "storeName",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "200"
+        },
+        {
+          "name": "storeType",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "256"
+        },
+        {
+          "name": "subjectEmail",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "2048"
+        },
+        {
+          "name": "validFrom",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "256"
+        },
+        {
+          "name": "version",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "256"
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "certificateStore",
+          "target": "apiportal.CertificateStore",
+          "relationship": "apiportal.Certificate_CertificateStore_Many_ZeroToOne0",
+          "fromRole": "Certificate",
+          "toRole": "CertificateStore"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.CertificateStore",
+      "key": [
+        "name"
+      ],
+      "properties": [
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "200"
+        },
+        {
+          "name": "storeType",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "20"
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "certificates",
+          "target": "apiportal.Certificate",
+          "collection": true,
+          "relationship": "apiportal.Certificate_CertificateStore_Many_ZeroToOne0",
+          "fromRole": "CertificateStore",
+          "toRole": "Certificate"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.CertificateStoreReference",
+      "key": [
+        "name"
+      ],
+      "properties": [
+        {
+          "name": "certificateStoreName",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "200"
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "storeType",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "20"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.ConditionalFlowRule",
+      "key": [
+        "id"
+      ],
+      "properties": [
+        {
+          "name": "FK_APIRESOURCE_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_PROXYENDPOINT_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_REQUEST_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_RESPONSE_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_TARGETENDPOINT_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "conditions",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "16384"
+        },
+        {
+          "name": "readOnly",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "sequence",
+          "type": "Edm.Int32",
+          "nullable": true
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "apiResource",
+          "target": "apiportal.APIResource",
+          "relationship": "apiportal.ConditionalFlowRule_APIResource_One_One0",
+          "fromRole": "ConditionalFlowRule",
+          "toRole": "APIResource"
+        },
+        {
+          "name": "proxyEndPoint",
+          "target": "apiportal.APIProxyEndPoint",
+          "relationship": "apiportal.APIProxyEndPoint_ConditionalFlowRule_One_Many0",
+          "fromRole": "ConditionalFlowRule",
+          "toRole": "APIProxyEndPoint"
+        },
+        {
+          "name": "request",
+          "target": "apiportal.Stream",
+          "relationship": "apiportal.ConditionalFlowRule_Stream_One_ZeroToOne0",
+          "fromRole": "ConditionalFlowRule",
+          "toRole": "Stream"
+        },
+        {
+          "name": "response",
+          "target": "apiportal.Stream",
+          "relationship": "apiportal.ConditionalFlowRule_Stream_One_ZeroToOne1",
+          "fromRole": "ConditionalFlowRule",
+          "toRole": "Stream"
+        },
+        {
+          "name": "targetEndPoint",
+          "target": "apiportal.APITargetEndPoint",
+          "relationship": "apiportal.APITargetEndPoint_ConditionalFlowRule_One_Many0",
+          "fromRole": "ConditionalFlowRule",
+          "toRole": "APITargetEndPoint"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.ConditionalFlowRuleRevision",
+      "key": [
+        "id",
+        "revisionID"
+      ],
+      "properties": [
+        {
+          "name": "FK_APIRESOURCE_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_PROXYENDPOINT_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_REQUEST_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_RESPONSE_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_TARGETENDPOINT_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "conditions",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "16384"
+        },
+        {
+          "name": "readOnly",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "revisionID",
+          "type": "Edm.Int32",
+          "nullable": false
+        },
+        {
+          "name": "sequence",
+          "type": "Edm.Int32",
+          "nullable": true
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "apiResource",
+          "target": "apiportal.APIResourceRevision",
+          "relationship": "apiportal.ConditionalFlowRuleRevision_APIResourceRevision_One_One0",
+          "fromRole": "ConditionalFlowRuleRevision",
+          "toRole": "APIResourceRevision"
+        },
+        {
+          "name": "proxyEndPoint",
+          "target": "apiportal.APIProxyEndPointRevision",
+          "relationship": "apiportal.APIProxyEndPointRevision_ConditionalFlowRuleRevision_One_Many0",
+          "fromRole": "ConditionalFlowRuleRevision",
+          "toRole": "APIProxyEndPointRevision"
+        },
+        {
+          "name": "request",
+          "target": "apiportal.StreamRevision",
+          "relationship": "apiportal.ConditionalFlowRuleRevision_StreamRevision_One_ZeroToOne0",
+          "fromRole": "ConditionalFlowRuleRevision",
+          "toRole": "StreamRevision"
+        },
+        {
+          "name": "response",
+          "target": "apiportal.StreamRevision",
+          "relationship": "apiportal.ConditionalFlowRuleRevision_StreamRevision_One_ZeroToOne1",
+          "fromRole": "ConditionalFlowRuleRevision",
+          "toRole": "StreamRevision"
+        },
+        {
+          "name": "targetEndPoint",
+          "target": "apiportal.APITargetEndPointRevision",
+          "relationship": "apiportal.APITargetEndPointRevision_ConditionalFlowRuleRevision_One_Many0",
+          "fromRole": "ConditionalFlowRuleRevision",
+          "toRole": "APITargetEndPointRevision"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.ContentPackageMapper",
+      "key": [
+        "targetId",
+        "targetType"
+      ],
+      "properties": [
+        {
+          "name": "content",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "shortText",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "srcArtifactName",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "srcArtifactType",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "srcPackageID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "srcRepo",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "targetId",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "targetType",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "apiProxy",
+          "target": "apiportal.APIProxy",
+          "relationship": "apiportal.ContentPackageMapper_APIProxy_One_ZeroToOne0",
+          "fromRole": "ContentPackageMapper",
+          "toRole": "APIProxy"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.DefaultFaultRule",
+      "key": [
+        "id"
+      ],
+      "properties": [
+        {
+          "name": "FK_PROXYENDPOINT_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_TARGETENDPOINT_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "alwaysEnforce",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "proxyEndPoint",
+          "target": "apiportal.APIProxyEndPoint",
+          "relationship": "apiportal.DefaultFaultRule_APIProxyEndPoint_Many_One0",
+          "fromRole": "DefaultFaultRule",
+          "toRole": "APIProxyEndPoint"
+        },
+        {
+          "name": "steps",
+          "target": "apiportal.Step",
+          "collection": true,
+          "relationship": "apiportal.DefaultFaultRule_Step_One_Many0",
+          "fromRole": "DefaultFaultRule",
+          "toRole": "Step"
+        },
+        {
+          "name": "targetEndPoint",
+          "target": "apiportal.APITargetEndPoint",
+          "relationship": "apiportal.DefaultFaultRule_APITargetEndPoint_Many_One0",
+          "fromRole": "DefaultFaultRule",
+          "toRole": "APITargetEndPoint"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.DefaultFaultRuleRevision",
+      "key": [
+        "id",
+        "revisionID"
+      ],
+      "properties": [
+        {
+          "name": "FK_PROXYENDPOINT_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_TARGETENDPOINT_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "alwaysEnforce",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "revisionID",
+          "type": "Edm.Int32",
+          "nullable": false
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "proxyEndPoint",
+          "target": "apiportal.APIProxyEndPointRevision",
+          "relationship": "apiportal.DefaultFaultRuleRevision_APIProxyEndPointRevision_Many_One0",
+          "fromRole": "DefaultFaultRuleRevision",
+          "toRole": "APIProxyEndPointRevision"
+        },
+        {
+          "name": "steps",
+          "target": "apiportal.StepRevision",
+          "collection": true,
+          "relationship": "apiportal.DefaultFaultRuleRevision_StepRevision_One_Many0",
+          "fromRole": "DefaultFaultRuleRevision",
+          "toRole": "StepRevision"
+        },
+        {
+          "name": "targetEndPoint",
+          "target": "apiportal.APITargetEndPointRevision",
+          "relationship": "apiportal.DefaultFaultRuleRevision_APITargetEndPointRevision_Many_One0",
+          "fromRole": "DefaultFaultRuleRevision",
+          "toRole": "APITargetEndPointRevision"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.DestinationAndUrlMapping",
+      "key": [
+        "id"
+      ],
+      "properties": [
+        {
+          "name": "destination",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "256"
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "url",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "2048"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.Developer",
+      "key": [
+        "id"
+      ],
+      "properties": [
+        {
+          "name": "country",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "emailId",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "firstName",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "256"
+        },
+        {
+          "name": "lastName",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "agents",
+          "target": "apiportal.Agent",
+          "collection": true,
+          "relationship": "apiportal.Developer_Agent_One_Many0",
+          "fromRole": "Developer",
+          "toRole": "Agent"
+        },
+        {
+          "name": "applications",
+          "target": "apiportal.Application",
+          "collection": true,
+          "relationship": "apiportal.Developer_Application_One_Many0",
+          "fromRole": "Developer",
+          "toRole": "Application"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.Documentation",
+      "key": [
+        "id",
+        "locale"
+      ],
+      "properties": [
+        {
+          "name": "FK_APIRESOURCE_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "apiResourceName",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "16384"
+        },
+        {
+          "name": "content",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "locale",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "5"
+        },
+        {
+          "name": "mime_type",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "256"
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "apiResource",
+          "target": "apiportal.APIResource",
+          "relationship": "apiportal.APIResource_Documentation_One_Many0",
+          "fromRole": "Documentation",
+          "toRole": "APIResource"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.DocumentationRevision",
+      "key": [
+        "id",
+        "locale",
+        "revisionID"
+      ],
+      "properties": [
+        {
+          "name": "FK_APIRESOURCE_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "apiResourceName",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "16384"
+        },
+        {
+          "name": "content",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "locale",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "5"
+        },
+        {
+          "name": "mime_type",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "256"
+        },
+        {
+          "name": "revisionID",
+          "type": "Edm.Int32",
+          "nullable": false
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "apiResource",
+          "target": "apiportal.APIResourceRevision",
+          "relationship": "apiportal.APIResourceRevision_DocumentationRevision_One_Many0",
+          "fromRole": "DocumentationRevision",
+          "toRole": "APIResourceRevision"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.EndPointProperty",
+      "key": [
+        "id"
+      ],
+      "properties": [
+        {
+          "name": "FK_PROXYENDPOINT_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_TARGETENDPOINT_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "512"
+        },
+        {
+          "name": "value",
+          "type": "Edm.String",
+          "nullable": true
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "proxyEndPoint",
+          "target": "apiportal.APIProxyEndPoint",
+          "relationship": "apiportal.APIProxyEndPoint_EndPointProperty_One_Many0",
+          "fromRole": "EndPointProperty",
+          "toRole": "APIProxyEndPoint"
+        },
+        {
+          "name": "targetEndPoint",
+          "target": "apiportal.APITargetEndPoint",
+          "relationship": "apiportal.APITargetEndPoint_EndPointProperty_One_Many0",
+          "fromRole": "EndPointProperty",
+          "toRole": "APITargetEndPoint"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.EndPointPropertyRevision",
+      "key": [
+        "id",
+        "revisionID"
+      ],
+      "properties": [
+        {
+          "name": "FK_PROXYENDPOINT_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_TARGETENDPOINT_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "512"
+        },
+        {
+          "name": "revisionID",
+          "type": "Edm.Int32",
+          "nullable": false
+        },
+        {
+          "name": "value",
+          "type": "Edm.String",
+          "nullable": true
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "proxyEndPoint",
+          "target": "apiportal.APIProxyEndPointRevision",
+          "relationship": "apiportal.APIProxyEndPointRevision_EndPointPropertyRevision_One_Many0",
+          "fromRole": "EndPointPropertyRevision",
+          "toRole": "APIProxyEndPointRevision"
+        },
+        {
+          "name": "targetEndPoint",
+          "target": "apiportal.APITargetEndPointRevision",
+          "relationship": "apiportal.APITargetEndPointRevision_EndPointPropertyRevision_One_Many0",
+          "fromRole": "EndPointPropertyRevision",
+          "toRole": "APITargetEndPointRevision"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.FaultRule",
+      "key": [
+        "id"
+      ],
+      "properties": [
+        {
+          "name": "FK_PROXYENDPOINT_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_ROUTERULE_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_TARGETENDPOINT_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "condition",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "proxyEndPoint",
+          "target": "apiportal.APIProxyEndPoint",
+          "relationship": "apiportal.APIProxyEndPoint_FaultRule_One_Many0",
+          "fromRole": "FaultRule",
+          "toRole": "APIProxyEndPoint"
+        },
+        {
+          "name": "routeRule",
+          "target": "apiportal.RouteRule",
+          "relationship": "apiportal.FaultRule_RouteRule_Many_One0",
+          "fromRole": "FaultRule",
+          "toRole": "RouteRule"
+        },
+        {
+          "name": "steps",
+          "target": "apiportal.Step",
+          "collection": true,
+          "relationship": "apiportal.FaultRule_Step_One_Many0",
+          "fromRole": "FaultRule",
+          "toRole": "Step"
+        },
+        {
+          "name": "targetEndPoint",
+          "target": "apiportal.APITargetEndPoint",
+          "relationship": "apiportal.APITargetEndPoint_FaultRule_One_Many0",
+          "fromRole": "FaultRule",
+          "toRole": "APITargetEndPoint"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.FaultRuleRevision",
+      "key": [
+        "id",
+        "revisionID"
+      ],
+      "properties": [
+        {
+          "name": "FK_PROXYENDPOINT_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_ROUTERULE_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_TARGETENDPOINT_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "condition",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "revisionID",
+          "type": "Edm.Int32",
+          "nullable": false
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "proxyEndPoint",
+          "target": "apiportal.APIProxyEndPointRevision",
+          "relationship": "apiportal.APIProxyEndPointRevision_FaultRuleRevision_One_Many0",
+          "fromRole": "FaultRuleRevision",
+          "toRole": "APIProxyEndPointRevision"
+        },
+        {
+          "name": "routeRule",
+          "target": "apiportal.RouteRuleRevision",
+          "relationship": "apiportal.FaultRuleRevision_RouteRuleRevision_Many_One0",
+          "fromRole": "FaultRuleRevision",
+          "toRole": "RouteRuleRevision"
+        },
+        {
+          "name": "steps",
+          "target": "apiportal.StepRevision",
+          "collection": true,
+          "relationship": "apiportal.FaultRuleRevision_StepRevision_One_Many0",
+          "fromRole": "FaultRuleRevision",
+          "toRole": "StepRevision"
+        },
+        {
+          "name": "targetEndPoint",
+          "target": "apiportal.APITargetEndPointRevision",
+          "relationship": "apiportal.APITargetEndPointRevision_FaultRuleRevision_One_Many0",
+          "fromRole": "FaultRuleRevision",
+          "toRole": "APITargetEndPointRevision"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.FileResource",
+      "key": [
+        "id"
+      ],
+      "properties": [
+        {
+          "name": "content",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "scope",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "20"
+        },
+        {
+          "name": "type",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "10"
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "apiProxies",
+          "target": "apiportal.APIProxy",
+          "collection": true,
+          "relationship": "apiportal.APIProxy_FileResource_Many_Many0",
+          "fromRole": "FileResource",
+          "toRole": "APIProxy"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.FileResourceRevision",
+      "key": [
+        "id",
+        "revisionID"
+      ],
+      "properties": [
+        {
+          "name": "content",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "revisionID",
+          "type": "Edm.Int32",
+          "nullable": false
+        },
+        {
+          "name": "scope",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "20"
+        },
+        {
+          "name": "type",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "10"
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "apiProxies",
+          "target": "apiportal.APIProxyRevision",
+          "collection": true,
+          "relationship": "apiportal.FileResourceRevision_APIProxyRevision_Many_Many0",
+          "fromRole": "FileResourceRevision",
+          "toRole": "APIProxyRevision"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.FlowRule",
+      "key": [
+        "id"
+      ],
+      "properties": [
+        {
+          "name": "FK_REQUEST_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_RESPONSE_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "request",
+          "target": "apiportal.Stream",
+          "relationship": "apiportal.FlowRule_Stream_One_ZeroToOne0",
+          "fromRole": "FlowRule",
+          "toRole": "Stream"
+        },
+        {
+          "name": "response",
+          "target": "apiportal.Stream",
+          "relationship": "apiportal.FlowRule_Stream_One_ZeroToOne1",
+          "fromRole": "FlowRule",
+          "toRole": "Stream"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.FlowRuleRevision",
+      "key": [
+        "id",
+        "revisionID"
+      ],
+      "properties": [
+        {
+          "name": "FK_REQUEST_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_RESPONSE_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "16384"
+        },
+        {
+          "name": "revisionID",
+          "type": "Edm.Int32",
+          "nullable": false
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "request",
+          "target": "apiportal.StreamRevision",
+          "relationship": "apiportal.FlowRuleRevision_StreamRevision_One_ZeroToOne0",
+          "fromRole": "FlowRuleRevision",
+          "toRole": "StreamRevision"
+        },
+        {
+          "name": "response",
+          "target": "apiportal.StreamRevision",
+          "relationship": "apiportal.FlowRuleRevision_StreamRevision_One_ZeroToOne1",
+          "fromRole": "FlowRuleRevision",
+          "toRole": "StreamRevision"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.GenericKeyMapEntry",
+      "key": [
+        "name",
+        "scope",
+        "scopeId"
+      ],
+      "properties": [
+        {
+          "name": "isEncrypted",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "scope",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "60"
+        },
+        {
+          "name": "scopeId",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "genericKeyMapEntryValues",
+          "target": "apiportal.GenericKeyMapEntryValue",
+          "collection": true,
+          "relationship": "apiportal.GenericKeyMapEntry_GenericKeyMapEntryValue_One_Many0",
+          "fromRole": "GenericKeyMapEntry",
+          "toRole": "GenericKeyMapEntryValue"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.GenericKeyMapEntryValue",
+      "key": [
+        "mapName",
+        "name",
+        "scope",
+        "scopeId"
+      ],
+      "properties": [
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "mapName",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "scope",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "60"
+        },
+        {
+          "name": "scopeId",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "value",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "10240"
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "genericKeyMapEntry",
+          "target": "apiportal.GenericKeyMapEntry",
+          "relationship": "apiportal.GenericKeyMapEntry_GenericKeyMapEntryValue_One_Many0",
+          "fromRole": "GenericKeyMapEntryValue",
+          "toRole": "GenericKeyMapEntry"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.KeyMapEntry",
+      "key": [
+        "name"
+      ],
+      "properties": [
+        {
+          "name": "encrypted",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "scope",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "keyMapEntryValues",
+          "target": "apiportal.KeyMapEntryValue",
+          "collection": true,
+          "relationship": "apiportal.KeyMapEntry_KeyMapEntryValue_One_Many0",
+          "fromRole": "KeyMapEntry",
+          "toRole": "KeyMapEntryValue"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.KeyMapEntryValue",
+      "key": [
+        "map_name",
+        "name"
+      ],
+      "properties": [
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "map_name",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "value",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "10240"
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "keyMapEntry",
+          "target": "apiportal.KeyMapEntry",
+          "relationship": "apiportal.KeyMapEntry_KeyMapEntryValue_One_Many0",
+          "fromRole": "KeyMapEntryValue",
+          "toRole": "KeyMapEntry"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.Policy",
+      "key": [
+        "id"
+      ],
+      "properties": [
+        {
+          "name": "FK_API_NAME",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "policy_content",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "type",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "40"
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "apiProxy",
+          "target": "apiportal.APIProxy",
+          "relationship": "apiportal.APIProxy_Policy_One_Many0",
+          "fromRole": "Policy",
+          "toRole": "APIProxy"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.PolicyRevision",
+      "key": [
+        "id",
+        "revisionID"
+      ],
+      "properties": [
+        {
+          "name": "FK_API_NAME",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "policy_content",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "revisionID",
+          "type": "Edm.Int32",
+          "nullable": false
+        },
+        {
+          "name": "type",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "40"
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "apiProxy",
+          "target": "apiportal.APIProxyRevision",
+          "relationship": "apiportal.PolicyRevision_APIProxyRevision_Many_One0",
+          "fromRole": "PolicyRevision",
+          "toRole": "APIProxyRevision"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.PolicyTemplateContainer",
+      "key": [
+        "name"
+      ],
+      "properties": [
+        {
+          "name": "description",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "4096"
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "proxyEndPointxml",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "targetEndPointxml",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "title",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "version",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "10"
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "fileResources",
+          "target": "apiportal.TemplateFileResource",
+          "collection": true,
+          "relationship": "apiportal.PolicyTemplateContainer_TemplateFileResource_One_Many0",
+          "fromRole": "PolicyTemplateContainer",
+          "toRole": "TemplateFileResource"
+        },
+        {
+          "name": "policies",
+          "target": "apiportal.TemplatePolicy",
+          "collection": true,
+          "relationship": "apiportal.PolicyTemplateContainer_TemplatePolicy_One_Many0",
+          "fromRole": "PolicyTemplateContainer",
+          "toRole": "TemplatePolicy"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.RatePlan",
+      "key": [
+        "id"
+      ],
+      "properties": [
+        {
+          "name": "currency",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "50"
+        },
+        {
+          "name": "description",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "16000"
+        },
+        {
+          "name": "frequency",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false
+        },
+        {
+          "name": "isActive",
+          "type": "Edm.Boolean",
+          "nullable": false
+        },
+        {
+          "name": "isPublished",
+          "type": "Edm.Boolean",
+          "nullable": false
+        },
+        {
+          "name": "isSeasonal",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "rate",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "type",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "validFrom",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "validTo",
+          "type": "Edm.DateTime",
+          "nullable": true
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "apiProducts",
+          "target": "apiportal.APIProduct",
+          "collection": true,
+          "relationship": "apiportal.APIProduct_RatePlan_Many_Many0",
+          "fromRole": "RatePlan",
+          "toRole": "APIProduct"
+        },
+        {
+          "name": "resources",
+          "target": "apiportal.Resource",
+          "collection": true,
+          "relationship": "apiportal.RatePlan_Resource_One_Many0",
+          "fromRole": "RatePlan",
+          "toRole": "Resource"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.Resource",
+      "key": [
+        "locale",
+        "object_id",
+        "type"
+      ],
+      "properties": [
+        {
+          "name": "locale",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "5"
+        },
+        {
+          "name": "long_text",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "16000"
+        },
+        {
+          "name": "medium_text",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "object_id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "short_text",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "type",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "2"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.ResourceRevision",
+      "key": [
+        "locale",
+        "object_id",
+        "revisionID",
+        "type"
+      ],
+      "properties": [
+        {
+          "name": "locale",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "5"
+        },
+        {
+          "name": "long_text",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "16000"
+        },
+        {
+          "name": "medium_text",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "object_id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "255"
+        },
+        {
+          "name": "revisionID",
+          "type": "Edm.Int32",
+          "nullable": false
+        },
+        {
+          "name": "short_text",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "type",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "2"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.RouteRule",
+      "key": [
+        "id"
+      ],
+      "properties": [
+        {
+          "name": "FK_PROXYENDPOINT_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "conditions",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "sequence",
+          "type": "Edm.Int32",
+          "nullable": true
+        },
+        {
+          "name": "targetEndPointName",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "url",
+          "type": "Edm.String",
+          "nullable": true
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "faultRules",
+          "target": "apiportal.FaultRule",
+          "collection": true,
+          "relationship": "apiportal.FaultRule_RouteRule_Many_One0",
+          "fromRole": "RouteRule",
+          "toRole": "FaultRule"
+        },
+        {
+          "name": "proxyEndPoint",
+          "target": "apiportal.APIProxyEndPoint",
+          "relationship": "apiportal.APIProxyEndPoint_RouteRule_One_Many0",
+          "fromRole": "RouteRule",
+          "toRole": "APIProxyEndPoint"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.RouteRuleRevision",
+      "key": [
+        "id",
+        "revisionID"
+      ],
+      "properties": [
+        {
+          "name": "FK_PROXYENDPOINT_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "conditions",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "revisionID",
+          "type": "Edm.Int32",
+          "nullable": false
+        },
+        {
+          "name": "sequence",
+          "type": "Edm.Int32",
+          "nullable": true
+        },
+        {
+          "name": "targetEndPointName",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "url",
+          "type": "Edm.String",
+          "nullable": true
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "faultRules",
+          "target": "apiportal.FaultRuleRevision",
+          "collection": true,
+          "relationship": "apiportal.FaultRuleRevision_RouteRuleRevision_Many_One0",
+          "fromRole": "RouteRuleRevision",
+          "toRole": "FaultRuleRevision"
+        },
+        {
+          "name": "proxyEndPoint",
+          "target": "apiportal.APIProxyEndPointRevision",
+          "relationship": "apiportal.APIProxyEndPointRevision_RouteRuleRevision_One_Many0",
+          "fromRole": "RouteRuleRevision",
+          "toRole": "APIProxyEndPointRevision"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.Step",
+      "key": [
+        "id"
+      ],
+      "properties": [
+        {
+          "name": "FK_DEFAULTFAULTRULE_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_FAULTRULE_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_STREAM_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "condition",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "policy_name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "sequence",
+          "type": "Edm.Int32",
+          "nullable": true
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "defaultFaultRule",
+          "target": "apiportal.DefaultFaultRule",
+          "relationship": "apiportal.DefaultFaultRule_Step_One_Many0",
+          "fromRole": "Step",
+          "toRole": "DefaultFaultRule"
+        },
+        {
+          "name": "faultRule",
+          "target": "apiportal.FaultRule",
+          "relationship": "apiportal.FaultRule_Step_One_Many0",
+          "fromRole": "Step",
+          "toRole": "FaultRule"
+        },
+        {
+          "name": "stream",
+          "target": "apiportal.Stream",
+          "relationship": "apiportal.Step_Stream_Many_One0",
+          "fromRole": "Step",
+          "toRole": "Stream"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.StepRevision",
+      "key": [
+        "id",
+        "revisionID"
+      ],
+      "properties": [
+        {
+          "name": "FK_DEFAULTFAULTRULE_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_FAULTRULE_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "FK_STREAM_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "condition",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "policy_name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "revisionID",
+          "type": "Edm.Int32",
+          "nullable": false
+        },
+        {
+          "name": "sequence",
+          "type": "Edm.Int32",
+          "nullable": true
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "defaultFaultRule",
+          "target": "apiportal.DefaultFaultRuleRevision",
+          "relationship": "apiportal.DefaultFaultRuleRevision_StepRevision_One_Many0",
+          "fromRole": "StepRevision",
+          "toRole": "DefaultFaultRuleRevision"
+        },
+        {
+          "name": "faultRule",
+          "target": "apiportal.FaultRuleRevision",
+          "relationship": "apiportal.FaultRuleRevision_StepRevision_One_Many0",
+          "fromRole": "StepRevision",
+          "toRole": "FaultRuleRevision"
+        },
+        {
+          "name": "stream",
+          "target": "apiportal.StreamRevision",
+          "relationship": "apiportal.StepRevision_StreamRevision_Many_One0",
+          "fromRole": "StepRevision",
+          "toRole": "StreamRevision"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.Stream",
+      "key": [
+        "id"
+      ],
+      "properties": [
+        {
+          "name": "FK_FLOW_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "isRequest",
+          "type": "Edm.Boolean",
+          "nullable": true
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "flow",
+          "target": "apiportal.FlowRule",
+          "relationship": "apiportal.Stream_FlowRule_One_ZeroToOne0",
+          "fromRole": "Stream",
+          "toRole": "FlowRule"
+        },
+        {
+          "name": "steps",
+          "target": "apiportal.Step",
+          "collection": true,
+          "relationship": "apiportal.Step_Stream_Many_One0",
+          "fromRole": "Stream",
+          "toRole": "Step"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.StreamRevision",
+      "key": [
+        "id",
+        "revisionID"
+      ],
+      "properties": [
+        {
+          "name": "FK_FLOW_ID",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "36"
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "isRequest",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "revisionID",
+          "type": "Edm.Int32",
+          "nullable": false
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "flow",
+          "target": "apiportal.FlowRuleRevision",
+          "relationship": "apiportal.StreamRevision_FlowRuleRevision_One_ZeroToOne0",
+          "fromRole": "StreamRevision",
+          "toRole": "FlowRuleRevision"
+        },
+        {
+          "name": "steps",
+          "target": "apiportal.StepRevision",
+          "collection": true,
+          "relationship": "apiportal.StepRevision_StreamRevision_Many_One0",
+          "fromRole": "StreamRevision",
+          "toRole": "StepRevision"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.TemplateFileResource",
+      "key": [
+        "id"
+      ],
+      "properties": [
+        {
+          "name": "FK_TEMPLATE_NAME",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "content",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "scope",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "20"
+        },
+        {
+          "name": "type",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "10"
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "policyTemplateContainer",
+          "target": "apiportal.PolicyTemplateContainer",
+          "relationship": "apiportal.PolicyTemplateContainer_TemplateFileResource_One_Many0",
+          "fromRole": "TemplateFileResource",
+          "toRole": "PolicyTemplateContainer"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.TemplatePolicy",
+      "key": [
+        "id"
+      ],
+      "properties": [
+        {
+          "name": "FK_TEMPLATE_NAME",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "policy_content",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "type",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "40"
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "policyTemplateContainer",
+          "target": "apiportal.PolicyTemplateContainer",
+          "relationship": "apiportal.PolicyTemplateContainer_TemplatePolicy_One_Many0",
+          "fromRole": "TemplatePolicy",
+          "toRole": "PolicyTemplateContainer"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.VirtualHost",
+      "key": [
+        "id"
+      ],
+      "properties": [
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "maxLength": "36"
+        },
+        {
+          "name": "isClientAuthEnabled",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "isDefault",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "isForCustomDomain",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "isSSL",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "keyStoreAlias",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "256"
+        },
+        {
+          "name": "keyStoreName",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "256"
+        },
+        {
+          "name": "life_cycle",
+          "type": "apiportal.History",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "projectPath",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "trustStore",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "256"
+        },
+        {
+          "name": "virtual_host",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "2048"
+        },
+        {
+          "name": "virtual_port",
+          "type": "Edm.Int32",
+          "nullable": true
+        }
+      ]
+    }
+  ],
+  "complexTypes": [
+    {
+      "name": "apiportal.ExpirySettings",
+      "properties": [
+        {
+          "name": "expiry_date",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "expiry_settings_override_disabled",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "time_out",
+          "type": "Edm.Int32",
+          "nullable": true
+        },
+        {
+          "name": "time_out_day",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.HealthMonitor",
+      "properties": [
+        {
+          "name": "httpMonitor",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "2048"
+        },
+        {
+          "name": "intervalInSec",
+          "type": "Edm.Int32",
+          "nullable": true
+        },
+        {
+          "name": "isEnabled",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "tcpMonitor",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "2048"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.History",
+      "properties": [
+        {
+          "name": "changed_at",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "changed_by",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "created_at",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "created_by",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.LoadBalancerConfigurations",
+      "properties": [
+        {
+          "name": "HealthMonitor",
+          "type": "apiportal.HealthMonitor",
+          "nullable": true
+        },
+        {
+          "name": "algorithm",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "fallBackServer",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "isRetry",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "maxFailures",
+          "type": "Edm.Int32",
+          "nullable": true
+        },
+        {
+          "name": "serverUnhealthyResponseCode",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "weigths",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.SSLInfo",
+      "properties": [
+        {
+          "name": "ciphers",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "clientAuthEnabled",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "enabled",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "ignoreValidationErrors",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "keyAlias",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "keyStore",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "protocols",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        },
+        {
+          "name": "trustStore",
+          "type": "Edm.String",
+          "nullable": true,
+          "maxLength": "255"
+        }
+      ]
+    }
+  ],
+  "associations": [
+    {
+      "name": "apiportal.APIProduct_APIProductAdditionalProperty_One_Many0",
+      "ends": [
+        {
+          "role": "APIProduct",
+          "type": "apiportal.APIProduct",
+          "multiplicity": "1"
+        },
+        {
+          "role": "APIProductAdditionalProperty",
+          "type": "apiportal.APIProductAdditionalProperty",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProduct_APIProxy_Many_Many0",
+      "ends": [
+        {
+          "role": "APIProduct",
+          "type": "apiportal.APIProduct",
+          "multiplicity": "*"
+        },
+        {
+          "role": "APIProxy",
+          "type": "apiportal.APIProxy",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProduct_APIResource_One_Many0",
+      "ends": [
+        {
+          "role": "APIProduct",
+          "type": "apiportal.APIProduct",
+          "multiplicity": "1"
+        },
+        {
+          "role": "APIResource",
+          "type": "apiportal.APIResource",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProduct_Agent_Many_Many0",
+      "ends": [
+        {
+          "role": "APIProduct",
+          "type": "apiportal.APIProduct",
+          "multiplicity": "*"
+        },
+        {
+          "role": "Agent",
+          "type": "apiportal.Agent",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProduct_Application_Many_Many0",
+      "ends": [
+        {
+          "role": "APIProduct",
+          "type": "apiportal.APIProduct",
+          "multiplicity": "*"
+        },
+        {
+          "role": "Application",
+          "type": "apiportal.Application",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProduct_RatePlan_Many_Many0",
+      "ends": [
+        {
+          "role": "APIProduct",
+          "type": "apiportal.APIProduct",
+          "multiplicity": "*"
+        },
+        {
+          "role": "RatePlan",
+          "type": "apiportal.RatePlan",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProduct_Resource_One_Many0",
+      "ends": [
+        {
+          "role": "APIProduct",
+          "type": "apiportal.APIProduct",
+          "multiplicity": "1"
+        },
+        {
+          "role": "Resource",
+          "type": "apiportal.Resource",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProvider_APIProviderAdditionalProperty_One_Many0",
+      "ends": [
+        {
+          "role": "APIProvider",
+          "type": "apiportal.APIProvider",
+          "multiplicity": "1"
+        },
+        {
+          "role": "APIProviderAdditionalProperty",
+          "type": "apiportal.APIProviderAdditionalProperty",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProvider_APIProxy_One_Many0",
+      "ends": [
+        {
+          "role": "APIProvider",
+          "type": "apiportal.APIProvider",
+          "multiplicity": "0..1"
+        },
+        {
+          "role": "APIProxy",
+          "type": "apiportal.APIProxy",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APIProvider",
+      "dependentRole": "APIProxy",
+      "referentialConstraints": [
+        {
+          "property": "FK_PROVIDERNAME",
+          "referencedProperty": "name"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProvider_APITargetEndPoint_Many_Many0",
+      "ends": [
+        {
+          "role": "APIProvider",
+          "type": "apiportal.APIProvider",
+          "multiplicity": "*"
+        },
+        {
+          "role": "APITargetEndPoint",
+          "type": "apiportal.APITargetEndPoint",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProvider_KeyMapEntry_One_Many0",
+      "ends": [
+        {
+          "role": "APIProvider",
+          "type": "apiportal.APIProvider",
+          "multiplicity": "1"
+        },
+        {
+          "role": "KeyMapEntry",
+          "type": "apiportal.KeyMapEntry",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProvider_Resource_One_Many0",
+      "ends": [
+        {
+          "role": "APIProvider",
+          "type": "apiportal.APIProvider",
+          "multiplicity": "1"
+        },
+        {
+          "role": "Resource",
+          "type": "apiportal.Resource",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxyEndPointRevision_APIProxyRevision_Many_One0",
+      "ends": [
+        {
+          "role": "APIProxyEndPointRevision",
+          "type": "apiportal.APIProxyEndPointRevision",
+          "multiplicity": "*"
+        },
+        {
+          "role": "APIProxyRevision",
+          "type": "apiportal.APIProxyRevision",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "APIProxyRevision",
+      "dependentRole": "APIProxyEndPointRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_API_NAME",
+          "referencedProperty": "revisionID"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": ""
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxyEndPointRevision_APIResourceRevision_One_Many0",
+      "ends": [
+        {
+          "role": "APIProxyEndPointRevision",
+          "type": "apiportal.APIProxyEndPointRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "APIResourceRevision",
+          "type": "apiportal.APIResourceRevision",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APIProxyEndPointRevision",
+      "dependentRole": "APIResourceRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_PROXYENDPOINT_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxyEndPointRevision_ConditionalFlowRuleRevision_One_Many0",
+      "ends": [
+        {
+          "role": "APIProxyEndPointRevision",
+          "type": "apiportal.APIProxyEndPointRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "ConditionalFlowRuleRevision",
+          "type": "apiportal.ConditionalFlowRuleRevision",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APIProxyEndPointRevision",
+      "dependentRole": "ConditionalFlowRuleRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_PROXYENDPOINT_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxyEndPointRevision_DefaultFaultRuleRevision_One_One0",
+      "ends": [
+        {
+          "role": "APIProxyEndPointRevision",
+          "type": "apiportal.APIProxyEndPointRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "DefaultFaultRuleRevision",
+          "type": "apiportal.DefaultFaultRuleRevision",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "DefaultFaultRuleRevision",
+      "dependentRole": "APIProxyEndPointRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_DEFAULTFAULTRULE_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxyEndPointRevision_EndPointPropertyRevision_One_Many0",
+      "ends": [
+        {
+          "role": "APIProxyEndPointRevision",
+          "type": "apiportal.APIProxyEndPointRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "EndPointPropertyRevision",
+          "type": "apiportal.EndPointPropertyRevision",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APIProxyEndPointRevision",
+      "dependentRole": "EndPointPropertyRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_PROXYENDPOINT_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxyEndPointRevision_FaultRuleRevision_One_Many0",
+      "ends": [
+        {
+          "role": "APIProxyEndPointRevision",
+          "type": "apiportal.APIProxyEndPointRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "FaultRuleRevision",
+          "type": "apiportal.FaultRuleRevision",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APIProxyEndPointRevision",
+      "dependentRole": "FaultRuleRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_PROXYENDPOINT_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxyEndPointRevision_FlowRuleRevision_One_One0",
+      "ends": [
+        {
+          "role": "APIProxyEndPointRevision",
+          "type": "apiportal.APIProxyEndPointRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "FlowRuleRevision",
+          "type": "apiportal.FlowRuleRevision",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "FlowRuleRevision",
+      "dependentRole": "APIProxyEndPointRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_POSTCLIENTFLOW_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxyEndPointRevision_FlowRuleRevision_One_One1",
+      "ends": [
+        {
+          "role": "APIProxyEndPointRevision",
+          "type": "apiportal.APIProxyEndPointRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "FlowRuleRevision",
+          "type": "apiportal.FlowRuleRevision",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "FlowRuleRevision",
+      "dependentRole": "APIProxyEndPointRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_POSTFLOW_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxyEndPointRevision_FlowRuleRevision_One_One2",
+      "ends": [
+        {
+          "role": "APIProxyEndPointRevision",
+          "type": "apiportal.APIProxyEndPointRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "FlowRuleRevision",
+          "type": "apiportal.FlowRuleRevision",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "FlowRuleRevision",
+      "dependentRole": "APIProxyEndPointRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_PREFLOW_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxyEndPointRevision_RouteRuleRevision_One_Many0",
+      "ends": [
+        {
+          "role": "APIProxyEndPointRevision",
+          "type": "apiportal.APIProxyEndPointRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "RouteRuleRevision",
+          "type": "apiportal.RouteRuleRevision",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APIProxyEndPointRevision",
+      "dependentRole": "RouteRuleRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_PROXYENDPOINT_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxyEndPointRevision_VirtualHost_Many_Many0",
+      "ends": [
+        {
+          "role": "APIProxyEndPointRevision",
+          "type": "apiportal.APIProxyEndPointRevision",
+          "multiplicity": "*"
+        },
+        {
+          "role": "VirtualHost",
+          "type": "apiportal.VirtualHost",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxyEndPoint_APIResource_One_Many0",
+      "ends": [
+        {
+          "role": "APIProxyEndPoint",
+          "type": "apiportal.APIProxyEndPoint",
+          "multiplicity": "1"
+        },
+        {
+          "role": "APIResource",
+          "type": "apiportal.APIResource",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APIProxyEndPoint",
+      "dependentRole": "APIResource",
+      "referentialConstraints": [
+        {
+          "property": "FK_PROXYENDPOINT_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxyEndPoint_ConditionalFlowRule_One_Many0",
+      "ends": [
+        {
+          "role": "APIProxyEndPoint",
+          "type": "apiportal.APIProxyEndPoint",
+          "multiplicity": "1"
+        },
+        {
+          "role": "ConditionalFlowRule",
+          "type": "apiportal.ConditionalFlowRule",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APIProxyEndPoint",
+      "dependentRole": "ConditionalFlowRule",
+      "referentialConstraints": [
+        {
+          "property": "FK_PROXYENDPOINT_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxyEndPoint_DefaultFaultRule_One_One0",
+      "ends": [
+        {
+          "role": "APIProxyEndPoint",
+          "type": "apiportal.APIProxyEndPoint",
+          "multiplicity": "1"
+        },
+        {
+          "role": "DefaultFaultRule",
+          "type": "apiportal.DefaultFaultRule",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "DefaultFaultRule",
+      "dependentRole": "APIProxyEndPoint",
+      "referentialConstraints": [
+        {
+          "property": "FK_DEFAULTFAULTRULE_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxyEndPoint_EndPointProperty_One_Many0",
+      "ends": [
+        {
+          "role": "APIProxyEndPoint",
+          "type": "apiportal.APIProxyEndPoint",
+          "multiplicity": "1"
+        },
+        {
+          "role": "EndPointProperty",
+          "type": "apiportal.EndPointProperty",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APIProxyEndPoint",
+      "dependentRole": "EndPointProperty",
+      "referentialConstraints": [
+        {
+          "property": "FK_PROXYENDPOINT_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxyEndPoint_FaultRule_One_Many0",
+      "ends": [
+        {
+          "role": "APIProxyEndPoint",
+          "type": "apiportal.APIProxyEndPoint",
+          "multiplicity": "1"
+        },
+        {
+          "role": "FaultRule",
+          "type": "apiportal.FaultRule",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APIProxyEndPoint",
+      "dependentRole": "FaultRule",
+      "referentialConstraints": [
+        {
+          "property": "FK_PROXYENDPOINT_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxyEndPoint_FlowRule_One_One0",
+      "ends": [
+        {
+          "role": "APIProxyEndPoint",
+          "type": "apiportal.APIProxyEndPoint",
+          "multiplicity": "1"
+        },
+        {
+          "role": "FlowRule",
+          "type": "apiportal.FlowRule",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "FlowRule",
+      "dependentRole": "APIProxyEndPoint",
+      "referentialConstraints": [
+        {
+          "property": "FK_POSTCLIENTFLOW_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxyEndPoint_FlowRule_One_One1",
+      "ends": [
+        {
+          "role": "APIProxyEndPoint",
+          "type": "apiportal.APIProxyEndPoint",
+          "multiplicity": "1"
+        },
+        {
+          "role": "FlowRule",
+          "type": "apiportal.FlowRule",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "FlowRule",
+      "dependentRole": "APIProxyEndPoint",
+      "referentialConstraints": [
+        {
+          "property": "FK_POSTFLOW_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxyEndPoint_FlowRule_One_One2",
+      "ends": [
+        {
+          "role": "APIProxyEndPoint",
+          "type": "apiportal.APIProxyEndPoint",
+          "multiplicity": "1"
+        },
+        {
+          "role": "FlowRule",
+          "type": "apiportal.FlowRule",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "FlowRule",
+      "dependentRole": "APIProxyEndPoint",
+      "referentialConstraints": [
+        {
+          "property": "FK_PREFLOW_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxyEndPoint_RouteRule_One_Many0",
+      "ends": [
+        {
+          "role": "APIProxyEndPoint",
+          "type": "apiportal.APIProxyEndPoint",
+          "multiplicity": "1"
+        },
+        {
+          "role": "RouteRule",
+          "type": "apiportal.RouteRule",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APIProxyEndPoint",
+      "dependentRole": "RouteRule",
+      "referentialConstraints": [
+        {
+          "property": "FK_PROXYENDPOINT_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxyEndPoint_VirtualHost_Many_Many0",
+      "ends": [
+        {
+          "role": "APIProxyEndPoint",
+          "type": "apiportal.APIProxyEndPoint",
+          "multiplicity": "*"
+        },
+        {
+          "role": "VirtualHost",
+          "type": "apiportal.VirtualHost",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxy_APIProxyDeployment_One_ZeroToOne0",
+      "ends": [
+        {
+          "role": "APIProxy",
+          "type": "apiportal.APIProxy",
+          "multiplicity": "1"
+        },
+        {
+          "role": "APIProxyDeployment",
+          "type": "apiportal.APIProxyDeployment",
+          "multiplicity": "0..1"
+        }
+      ],
+      "principalRole": "APIProxyDeployment",
+      "dependentRole": "APIProxy",
+      "referentialConstraints": [
+        {
+          "property": "FK_deploymentinfo_name",
+          "referencedProperty": "name"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxy_APIProxyEndPoint_One_Many0",
+      "ends": [
+        {
+          "role": "APIProxy",
+          "type": "apiportal.APIProxy",
+          "multiplicity": "1"
+        },
+        {
+          "role": "APIProxyEndPoint",
+          "type": "apiportal.APIProxyEndPoint",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APIProxy",
+      "dependentRole": "APIProxyEndPoint",
+      "referentialConstraints": [
+        {
+          "property": "FK_API_NAME",
+          "referencedProperty": "name"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxy_APIProxy_One_Many0",
+      "ends": [
+        {
+          "role": "APIProxy",
+          "type": "apiportal.APIProxy",
+          "multiplicity": "1"
+        },
+        {
+          "role": "APIProxy2",
+          "type": "apiportal.APIProxy",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxy_APIProxy_One_One0",
+      "ends": [
+        {
+          "role": "APIProxy",
+          "type": "apiportal.APIProxy",
+          "multiplicity": "1"
+        },
+        {
+          "role": "APIProxy2",
+          "type": "apiportal.APIProxy",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxy_APITargetEndPoint_One_Many0",
+      "ends": [
+        {
+          "role": "APIProxy",
+          "type": "apiportal.APIProxy",
+          "multiplicity": "1"
+        },
+        {
+          "role": "APITargetEndPoint",
+          "type": "apiportal.APITargetEndPoint",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxy_APITargetEndPoint_One_Many1",
+      "ends": [
+        {
+          "role": "APIProxy",
+          "type": "apiportal.APIProxy",
+          "multiplicity": "1"
+        },
+        {
+          "role": "APITargetEndPoint",
+          "type": "apiportal.APITargetEndPoint",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APIProxy",
+      "dependentRole": "APITargetEndPoint",
+      "referentialConstraints": [
+        {
+          "property": "FK_API_NAME",
+          "referencedProperty": "name"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxy_ContentPackageMapper_One_ZeroToOne0",
+      "ends": [
+        {
+          "role": "APIProxy",
+          "type": "apiportal.APIProxy",
+          "multiplicity": "1"
+        },
+        {
+          "role": "ContentPackageMapper",
+          "type": "apiportal.ContentPackageMapper",
+          "multiplicity": "0..1"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxy_FileResource_Many_Many0",
+      "ends": [
+        {
+          "role": "APIProxy",
+          "type": "apiportal.APIProxy",
+          "multiplicity": "*"
+        },
+        {
+          "role": "FileResource",
+          "type": "apiportal.FileResource",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxy_Policy_One_Many0",
+      "ends": [
+        {
+          "role": "APIProxy",
+          "type": "apiportal.APIProxy",
+          "multiplicity": "1"
+        },
+        {
+          "role": "Policy",
+          "type": "apiportal.Policy",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APIProxy",
+      "dependentRole": "Policy",
+      "referentialConstraints": [
+        {
+          "property": "FK_API_NAME",
+          "referencedProperty": "name"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIProxy_Resource_One_Many0",
+      "ends": [
+        {
+          "role": "APIProxy",
+          "type": "apiportal.APIProxy",
+          "multiplicity": "1"
+        },
+        {
+          "role": "Resource",
+          "type": "apiportal.Resource",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIResourceRevision_DocumentationRevision_One_Many0",
+      "ends": [
+        {
+          "role": "APIResourceRevision",
+          "type": "apiportal.APIResourceRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "DocumentationRevision",
+          "type": "apiportal.DocumentationRevision",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APIResourceRevision",
+      "dependentRole": "DocumentationRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_APIRESOURCE_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIResourceRevision_ResourceRevision_One_Many0",
+      "ends": [
+        {
+          "role": "APIResourceRevision",
+          "type": "apiportal.APIResourceRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "ResourceRevision",
+          "type": "apiportal.ResourceRevision",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIResource_Documentation_One_Many0",
+      "ends": [
+        {
+          "role": "APIResource",
+          "type": "apiportal.APIResource",
+          "multiplicity": "1"
+        },
+        {
+          "role": "Documentation",
+          "type": "apiportal.Documentation",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APIResource",
+      "dependentRole": "Documentation",
+      "referentialConstraints": [
+        {
+          "property": "FK_APIRESOURCE_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APIResource_Resource_One_Many0",
+      "ends": [
+        {
+          "role": "APIResource",
+          "type": "apiportal.APIResource",
+          "multiplicity": "1"
+        },
+        {
+          "role": "Resource",
+          "type": "apiportal.Resource",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APITargetEndPointRevision_APIProvider_Many_Many0",
+      "ends": [
+        {
+          "role": "APIProvider",
+          "type": "apiportal.APIProvider",
+          "multiplicity": "*"
+        },
+        {
+          "role": "APITargetEndPointRevision",
+          "type": "apiportal.APITargetEndPointRevision",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APITargetEndPointRevision_APIProxyRevision_Many_One0",
+      "ends": [
+        {
+          "role": "APIProxyRevision",
+          "type": "apiportal.APIProxyRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "APITargetEndPointRevision",
+          "type": "apiportal.APITargetEndPointRevision",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APIProxyRevision",
+      "dependentRole": "APITargetEndPointRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_API_NAME",
+          "referencedProperty": "revisionID"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": ""
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APITargetEndPointRevision_APIProxy_One_ZeroToOne0",
+      "ends": [
+        {
+          "role": "APIProxy",
+          "type": "apiportal.APIProxy",
+          "multiplicity": "0..1"
+        },
+        {
+          "role": "APITargetEndPointRevision",
+          "type": "apiportal.APITargetEndPointRevision",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "APIProxy",
+      "dependentRole": "APITargetEndPointRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_TARGET_API_PROXY",
+          "referencedProperty": "name"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APITargetEndPointRevision_ConditionalFlowRuleRevision_One_Many0",
+      "ends": [
+        {
+          "role": "APITargetEndPointRevision",
+          "type": "apiportal.APITargetEndPointRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "ConditionalFlowRuleRevision",
+          "type": "apiportal.ConditionalFlowRuleRevision",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APITargetEndPointRevision",
+      "dependentRole": "ConditionalFlowRuleRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_TARGETENDPOINT_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APITargetEndPointRevision_DefaultFaultRuleRevision_One_One0",
+      "ends": [
+        {
+          "role": "APITargetEndPointRevision",
+          "type": "apiportal.APITargetEndPointRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "DefaultFaultRuleRevision",
+          "type": "apiportal.DefaultFaultRuleRevision",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "DefaultFaultRuleRevision",
+      "dependentRole": "APITargetEndPointRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_DEFAULTFAULTRULE_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APITargetEndPointRevision_EndPointPropertyRevision_One_Many0",
+      "ends": [
+        {
+          "role": "APITargetEndPointRevision",
+          "type": "apiportal.APITargetEndPointRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "EndPointPropertyRevision",
+          "type": "apiportal.EndPointPropertyRevision",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APITargetEndPointRevision",
+      "dependentRole": "EndPointPropertyRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_TARGETENDPOINT_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APITargetEndPointRevision_FaultRuleRevision_One_Many0",
+      "ends": [
+        {
+          "role": "APITargetEndPointRevision",
+          "type": "apiportal.APITargetEndPointRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "FaultRuleRevision",
+          "type": "apiportal.FaultRuleRevision",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APITargetEndPointRevision",
+      "dependentRole": "FaultRuleRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_TARGETENDPOINT_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APITargetEndPointRevision_FlowRuleRevision_One_One0",
+      "ends": [
+        {
+          "role": "APITargetEndPointRevision",
+          "type": "apiportal.APITargetEndPointRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "FlowRuleRevision",
+          "type": "apiportal.FlowRuleRevision",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "FlowRuleRevision",
+      "dependentRole": "APITargetEndPointRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_POSTFLOW_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APITargetEndPointRevision_FlowRuleRevision_One_One1",
+      "ends": [
+        {
+          "role": "APITargetEndPointRevision",
+          "type": "apiportal.APITargetEndPointRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "FlowRuleRevision",
+          "type": "apiportal.FlowRuleRevision",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "FlowRuleRevision",
+      "dependentRole": "APITargetEndPointRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_PREFLOW_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APITargetEndPoint_APIProxy_One_ZeroToOne0",
+      "ends": [
+        {
+          "role": "APIProxy",
+          "type": "apiportal.APIProxy",
+          "multiplicity": "0..1"
+        },
+        {
+          "role": "APITargetEndPoint",
+          "type": "apiportal.APITargetEndPoint",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "APIProxy",
+      "dependentRole": "APITargetEndPoint",
+      "referentialConstraints": [
+        {
+          "property": "FK_TARGET_API_PROXY",
+          "referencedProperty": "name"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APITargetEndPoint_ConditionalFlowRule_One_Many0",
+      "ends": [
+        {
+          "role": "APITargetEndPoint",
+          "type": "apiportal.APITargetEndPoint",
+          "multiplicity": "1"
+        },
+        {
+          "role": "ConditionalFlowRule",
+          "type": "apiportal.ConditionalFlowRule",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APITargetEndPoint",
+      "dependentRole": "ConditionalFlowRule",
+      "referentialConstraints": [
+        {
+          "property": "FK_TARGETENDPOINT_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APITargetEndPoint_DefaultFaultRule_One_One0",
+      "ends": [
+        {
+          "role": "APITargetEndPoint",
+          "type": "apiportal.APITargetEndPoint",
+          "multiplicity": "1"
+        },
+        {
+          "role": "DefaultFaultRule",
+          "type": "apiportal.DefaultFaultRule",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "DefaultFaultRule",
+      "dependentRole": "APITargetEndPoint",
+      "referentialConstraints": [
+        {
+          "property": "FK_DEFAULTFAULTRULE_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APITargetEndPoint_EndPointProperty_One_Many0",
+      "ends": [
+        {
+          "role": "APITargetEndPoint",
+          "type": "apiportal.APITargetEndPoint",
+          "multiplicity": "1"
+        },
+        {
+          "role": "EndPointProperty",
+          "type": "apiportal.EndPointProperty",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APITargetEndPoint",
+      "dependentRole": "EndPointProperty",
+      "referentialConstraints": [
+        {
+          "property": "FK_TARGETENDPOINT_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APITargetEndPoint_FaultRule_One_Many0",
+      "ends": [
+        {
+          "role": "APITargetEndPoint",
+          "type": "apiportal.APITargetEndPoint",
+          "multiplicity": "1"
+        },
+        {
+          "role": "FaultRule",
+          "type": "apiportal.FaultRule",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APITargetEndPoint",
+      "dependentRole": "FaultRule",
+      "referentialConstraints": [
+        {
+          "property": "FK_TARGETENDPOINT_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APITargetEndPoint_FlowRule_One_One0",
+      "ends": [
+        {
+          "role": "APITargetEndPoint",
+          "type": "apiportal.APITargetEndPoint",
+          "multiplicity": "1"
+        },
+        {
+          "role": "FlowRule",
+          "type": "apiportal.FlowRule",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "FlowRule",
+      "dependentRole": "APITargetEndPoint",
+      "referentialConstraints": [
+        {
+          "property": "FK_POSTFLOW_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.APITargetEndPoint_FlowRule_One_One1",
+      "ends": [
+        {
+          "role": "APITargetEndPoint",
+          "type": "apiportal.APITargetEndPoint",
+          "multiplicity": "1"
+        },
+        {
+          "role": "FlowRule",
+          "type": "apiportal.FlowRule",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "FlowRule",
+      "dependentRole": "APITargetEndPoint",
+      "referentialConstraints": [
+        {
+          "property": "FK_PREFLOW_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.Agent_AgentAdditionalProperty_One_Many0",
+      "ends": [
+        {
+          "role": "Agent",
+          "type": "apiportal.Agent",
+          "multiplicity": "1"
+        },
+        {
+          "role": "AgentAdditionalProperty",
+          "type": "apiportal.AgentAdditionalProperty",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.Agent_Developer_One_One0",
+      "ends": [
+        {
+          "role": "Agent",
+          "type": "apiportal.Agent",
+          "multiplicity": "1"
+        },
+        {
+          "role": "Developer",
+          "type": "apiportal.Developer",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "Developer",
+      "dependentRole": "Agent",
+      "referentialConstraints": [
+        {
+          "property": "FK_DEVELOPER_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.Agent_Resource_One_Many0",
+      "ends": [
+        {
+          "role": "Agent",
+          "type": "apiportal.Agent",
+          "multiplicity": "1"
+        },
+        {
+          "role": "Resource",
+          "type": "apiportal.Resource",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.Application_ApplicationAdditionalProperty_One_Many0",
+      "ends": [
+        {
+          "role": "Application",
+          "type": "apiportal.Application",
+          "multiplicity": "1"
+        },
+        {
+          "role": "ApplicationAdditionalProperty",
+          "type": "apiportal.ApplicationAdditionalProperty",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.Application_Developer_One_One0",
+      "ends": [
+        {
+          "role": "Application",
+          "type": "apiportal.Application",
+          "multiplicity": "1"
+        },
+        {
+          "role": "Developer",
+          "type": "apiportal.Developer",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "Developer",
+      "dependentRole": "Application",
+      "referentialConstraints": [
+        {
+          "property": "FK_DEVELOPER_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.Application_Resource_One_Many0",
+      "ends": [
+        {
+          "role": "Application",
+          "type": "apiportal.Application",
+          "multiplicity": "1"
+        },
+        {
+          "role": "Resource",
+          "type": "apiportal.Resource",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.AttachmentRevision_APIProxyRevision_Many_One0",
+      "ends": [
+        {
+          "role": "APIProxyRevision",
+          "type": "apiportal.APIProxyRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "AttachmentRevision",
+          "type": "apiportal.AttachmentRevision",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APIProxyRevision",
+      "dependentRole": "AttachmentRevision",
+      "referentialConstraints": [
+        {
+          "property": "object_name",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.Certificate_CertificateStore_Many_ZeroToOne0",
+      "ends": [
+        {
+          "role": "Certificate",
+          "type": "apiportal.Certificate",
+          "multiplicity": "*"
+        },
+        {
+          "role": "CertificateStore",
+          "type": "apiportal.CertificateStore",
+          "multiplicity": "0..1"
+        }
+      ],
+      "principalRole": "CertificateStore",
+      "dependentRole": "Certificate",
+      "referentialConstraints": [
+        {
+          "property": "storeName",
+          "referencedProperty": "name"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.ConditionalFlowRuleRevision_APIResourceRevision_One_One0",
+      "ends": [
+        {
+          "role": "APIResourceRevision",
+          "type": "apiportal.APIResourceRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "ConditionalFlowRuleRevision",
+          "type": "apiportal.ConditionalFlowRuleRevision",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "APIResourceRevision",
+      "dependentRole": "ConditionalFlowRuleRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_APIRESOURCE_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.ConditionalFlowRuleRevision_StreamRevision_One_ZeroToOne0",
+      "ends": [
+        {
+          "role": "ConditionalFlowRuleRevision",
+          "type": "apiportal.ConditionalFlowRuleRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "StreamRevision",
+          "type": "apiportal.StreamRevision",
+          "multiplicity": "0..1"
+        }
+      ],
+      "principalRole": "StreamRevision",
+      "dependentRole": "ConditionalFlowRuleRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_REQUEST_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.ConditionalFlowRuleRevision_StreamRevision_One_ZeroToOne1",
+      "ends": [
+        {
+          "role": "ConditionalFlowRuleRevision",
+          "type": "apiportal.ConditionalFlowRuleRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "StreamRevision",
+          "type": "apiportal.StreamRevision",
+          "multiplicity": "0..1"
+        }
+      ],
+      "principalRole": "StreamRevision",
+      "dependentRole": "ConditionalFlowRuleRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_RESPONSE_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.ConditionalFlowRule_APIResource_One_One0",
+      "ends": [
+        {
+          "role": "APIResource",
+          "type": "apiportal.APIResource",
+          "multiplicity": "1"
+        },
+        {
+          "role": "ConditionalFlowRule",
+          "type": "apiportal.ConditionalFlowRule",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "APIResource",
+      "dependentRole": "ConditionalFlowRule",
+      "referentialConstraints": [
+        {
+          "property": "FK_APIRESOURCE_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.ConditionalFlowRule_Stream_One_ZeroToOne0",
+      "ends": [
+        {
+          "role": "ConditionalFlowRule",
+          "type": "apiportal.ConditionalFlowRule",
+          "multiplicity": "1"
+        },
+        {
+          "role": "Stream",
+          "type": "apiportal.Stream",
+          "multiplicity": "0..1"
+        }
+      ],
+      "principalRole": "Stream",
+      "dependentRole": "ConditionalFlowRule",
+      "referentialConstraints": [
+        {
+          "property": "FK_REQUEST_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.ConditionalFlowRule_Stream_One_ZeroToOne1",
+      "ends": [
+        {
+          "role": "ConditionalFlowRule",
+          "type": "apiportal.ConditionalFlowRule",
+          "multiplicity": "1"
+        },
+        {
+          "role": "Stream",
+          "type": "apiportal.Stream",
+          "multiplicity": "0..1"
+        }
+      ],
+      "principalRole": "Stream",
+      "dependentRole": "ConditionalFlowRule",
+      "referentialConstraints": [
+        {
+          "property": "FK_RESPONSE_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.ContentPackageMapper_APIProxy_One_ZeroToOne0",
+      "ends": [
+        {
+          "role": "APIProxy",
+          "type": "apiportal.APIProxy",
+          "multiplicity": "0..1"
+        },
+        {
+          "role": "ContentPackageMapper",
+          "type": "apiportal.ContentPackageMapper",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.DefaultFaultRuleRevision_APIProxyEndPointRevision_Many_One0",
+      "ends": [
+        {
+          "role": "APIProxyEndPointRevision",
+          "type": "apiportal.APIProxyEndPointRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "DefaultFaultRuleRevision",
+          "type": "apiportal.DefaultFaultRuleRevision",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APIProxyEndPointRevision",
+      "dependentRole": "DefaultFaultRuleRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_PROXYENDPOINT_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.DefaultFaultRuleRevision_APITargetEndPointRevision_Many_One0",
+      "ends": [
+        {
+          "role": "APITargetEndPointRevision",
+          "type": "apiportal.APITargetEndPointRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "DefaultFaultRuleRevision",
+          "type": "apiportal.DefaultFaultRuleRevision",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APITargetEndPointRevision",
+      "dependentRole": "DefaultFaultRuleRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_TARGETENDPOINT_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.DefaultFaultRuleRevision_StepRevision_One_Many0",
+      "ends": [
+        {
+          "role": "DefaultFaultRuleRevision",
+          "type": "apiportal.DefaultFaultRuleRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "StepRevision",
+          "type": "apiportal.StepRevision",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "DefaultFaultRuleRevision",
+      "dependentRole": "StepRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_DEFAULTFAULTRULE_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.DefaultFaultRule_APIProxyEndPoint_Many_One0",
+      "ends": [
+        {
+          "role": "APIProxyEndPoint",
+          "type": "apiportal.APIProxyEndPoint",
+          "multiplicity": "1"
+        },
+        {
+          "role": "DefaultFaultRule",
+          "type": "apiportal.DefaultFaultRule",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APIProxyEndPoint",
+      "dependentRole": "DefaultFaultRule",
+      "referentialConstraints": [
+        {
+          "property": "FK_PROXYENDPOINT_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.DefaultFaultRule_APITargetEndPoint_Many_One0",
+      "ends": [
+        {
+          "role": "APITargetEndPoint",
+          "type": "apiportal.APITargetEndPoint",
+          "multiplicity": "1"
+        },
+        {
+          "role": "DefaultFaultRule",
+          "type": "apiportal.DefaultFaultRule",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APITargetEndPoint",
+      "dependentRole": "DefaultFaultRule",
+      "referentialConstraints": [
+        {
+          "property": "FK_TARGETENDPOINT_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.DefaultFaultRule_Step_One_Many0",
+      "ends": [
+        {
+          "role": "DefaultFaultRule",
+          "type": "apiportal.DefaultFaultRule",
+          "multiplicity": "1"
+        },
+        {
+          "role": "Step",
+          "type": "apiportal.Step",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "DefaultFaultRule",
+      "dependentRole": "Step",
+      "referentialConstraints": [
+        {
+          "property": "FK_DEFAULTFAULTRULE_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.Developer_Agent_One_Many0",
+      "ends": [
+        {
+          "role": "Agent",
+          "type": "apiportal.Agent",
+          "multiplicity": "*"
+        },
+        {
+          "role": "Developer",
+          "type": "apiportal.Developer",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.Developer_Application_One_Many0",
+      "ends": [
+        {
+          "role": "Application",
+          "type": "apiportal.Application",
+          "multiplicity": "*"
+        },
+        {
+          "role": "Developer",
+          "type": "apiportal.Developer",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.FaultRuleRevision_RouteRuleRevision_Many_One0",
+      "ends": [
+        {
+          "role": "FaultRuleRevision",
+          "type": "apiportal.FaultRuleRevision",
+          "multiplicity": "*"
+        },
+        {
+          "role": "RouteRuleRevision",
+          "type": "apiportal.RouteRuleRevision",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "RouteRuleRevision",
+      "dependentRole": "FaultRuleRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_ROUTERULE_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.FaultRuleRevision_StepRevision_One_Many0",
+      "ends": [
+        {
+          "role": "FaultRuleRevision",
+          "type": "apiportal.FaultRuleRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "StepRevision",
+          "type": "apiportal.StepRevision",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "FaultRuleRevision",
+      "dependentRole": "StepRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_FAULTRULE_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.FaultRule_RouteRule_Many_One0",
+      "ends": [
+        {
+          "role": "FaultRule",
+          "type": "apiportal.FaultRule",
+          "multiplicity": "*"
+        },
+        {
+          "role": "RouteRule",
+          "type": "apiportal.RouteRule",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "RouteRule",
+      "dependentRole": "FaultRule",
+      "referentialConstraints": [
+        {
+          "property": "FK_ROUTERULE_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.FaultRule_Step_One_Many0",
+      "ends": [
+        {
+          "role": "FaultRule",
+          "type": "apiportal.FaultRule",
+          "multiplicity": "1"
+        },
+        {
+          "role": "Step",
+          "type": "apiportal.Step",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "FaultRule",
+      "dependentRole": "Step",
+      "referentialConstraints": [
+        {
+          "property": "FK_FAULTRULE_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.FileResourceRevision_APIProxyRevision_Many_Many0",
+      "ends": [
+        {
+          "role": "APIProxyRevision",
+          "type": "apiportal.APIProxyRevision",
+          "multiplicity": "*"
+        },
+        {
+          "role": "FileResourceRevision",
+          "type": "apiportal.FileResourceRevision",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.FlowRuleRevision_StreamRevision_One_ZeroToOne0",
+      "ends": [
+        {
+          "role": "FlowRuleRevision",
+          "type": "apiportal.FlowRuleRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "StreamRevision",
+          "type": "apiportal.StreamRevision",
+          "multiplicity": "0..1"
+        }
+      ],
+      "principalRole": "StreamRevision",
+      "dependentRole": "FlowRuleRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_REQUEST_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.FlowRuleRevision_StreamRevision_One_ZeroToOne1",
+      "ends": [
+        {
+          "role": "FlowRuleRevision",
+          "type": "apiportal.FlowRuleRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "StreamRevision",
+          "type": "apiportal.StreamRevision",
+          "multiplicity": "0..1"
+        }
+      ],
+      "principalRole": "StreamRevision",
+      "dependentRole": "FlowRuleRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_RESPONSE_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.FlowRule_Stream_One_ZeroToOne0",
+      "ends": [
+        {
+          "role": "FlowRule",
+          "type": "apiportal.FlowRule",
+          "multiplicity": "1"
+        },
+        {
+          "role": "Stream",
+          "type": "apiportal.Stream",
+          "multiplicity": "0..1"
+        }
+      ],
+      "principalRole": "Stream",
+      "dependentRole": "FlowRule",
+      "referentialConstraints": [
+        {
+          "property": "FK_REQUEST_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.FlowRule_Stream_One_ZeroToOne1",
+      "ends": [
+        {
+          "role": "FlowRule",
+          "type": "apiportal.FlowRule",
+          "multiplicity": "1"
+        },
+        {
+          "role": "Stream",
+          "type": "apiportal.Stream",
+          "multiplicity": "0..1"
+        }
+      ],
+      "principalRole": "Stream",
+      "dependentRole": "FlowRule",
+      "referentialConstraints": [
+        {
+          "property": "FK_RESPONSE_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.GenericKeyMapEntry_GenericKeyMapEntryValue_One_Many0",
+      "ends": [
+        {
+          "role": "GenericKeyMapEntry",
+          "type": "apiportal.GenericKeyMapEntry",
+          "multiplicity": "0..1"
+        },
+        {
+          "role": "GenericKeyMapEntryValue",
+          "type": "apiportal.GenericKeyMapEntryValue",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "GenericKeyMapEntry",
+      "dependentRole": "GenericKeyMapEntryValue",
+      "referentialConstraints": [
+        {
+          "property": "mapName",
+          "referencedProperty": "name"
+        },
+        {
+          "property": "scope",
+          "referencedProperty": "scope"
+        },
+        {
+          "property": "scopeId",
+          "referencedProperty": "scopeId"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.KeyMapEntry_KeyMapEntryValue_One_Many0",
+      "ends": [
+        {
+          "role": "KeyMapEntry",
+          "type": "apiportal.KeyMapEntry",
+          "multiplicity": "0..1"
+        },
+        {
+          "role": "KeyMapEntryValue",
+          "type": "apiportal.KeyMapEntryValue",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "KeyMapEntry",
+      "dependentRole": "KeyMapEntryValue",
+      "referentialConstraints": [
+        {
+          "property": "map_name",
+          "referencedProperty": "name"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.PolicyRevision_APIProxyRevision_Many_One0",
+      "ends": [
+        {
+          "role": "APIProxyRevision",
+          "type": "apiportal.APIProxyRevision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "PolicyRevision",
+          "type": "apiportal.PolicyRevision",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "APIProxyRevision",
+      "dependentRole": "PolicyRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_API_NAME",
+          "referencedProperty": "revisionID"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": ""
+        }
+      ]
+    },
+    {
+      "name": "apiportal.PolicyTemplateContainer_TemplateFileResource_One_Many0",
+      "ends": [
+        {
+          "role": "PolicyTemplateContainer",
+          "type": "apiportal.PolicyTemplateContainer",
+          "multiplicity": "1"
+        },
+        {
+          "role": "TemplateFileResource",
+          "type": "apiportal.TemplateFileResource",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "PolicyTemplateContainer",
+      "dependentRole": "TemplateFileResource",
+      "referentialConstraints": [
+        {
+          "property": "FK_TEMPLATE_NAME",
+          "referencedProperty": "name"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.PolicyTemplateContainer_TemplatePolicy_One_Many0",
+      "ends": [
+        {
+          "role": "PolicyTemplateContainer",
+          "type": "apiportal.PolicyTemplateContainer",
+          "multiplicity": "1"
+        },
+        {
+          "role": "TemplatePolicy",
+          "type": "apiportal.TemplatePolicy",
+          "multiplicity": "*"
+        }
+      ],
+      "principalRole": "PolicyTemplateContainer",
+      "dependentRole": "TemplatePolicy",
+      "referentialConstraints": [
+        {
+          "property": "FK_TEMPLATE_NAME",
+          "referencedProperty": "name"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.RatePlan_Resource_One_Many0",
+      "ends": [
+        {
+          "role": "RatePlan",
+          "type": "apiportal.RatePlan",
+          "multiplicity": "1"
+        },
+        {
+          "role": "Resource",
+          "type": "apiportal.Resource",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.StepRevision_StreamRevision_Many_One0",
+      "ends": [
+        {
+          "role": "StepRevision",
+          "type": "apiportal.StepRevision",
+          "multiplicity": "*"
+        },
+        {
+          "role": "StreamRevision",
+          "type": "apiportal.StreamRevision",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "StreamRevision",
+      "dependentRole": "StepRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_STREAM_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.Step_Stream_Many_One0",
+      "ends": [
+        {
+          "role": "Step",
+          "type": "apiportal.Step",
+          "multiplicity": "*"
+        },
+        {
+          "role": "Stream",
+          "type": "apiportal.Stream",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "Stream",
+      "dependentRole": "Step",
+      "referentialConstraints": [
+        {
+          "property": "FK_STREAM_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.StreamRevision_FlowRuleRevision_One_ZeroToOne0",
+      "ends": [
+        {
+          "role": "FlowRuleRevision",
+          "type": "apiportal.FlowRuleRevision",
+          "multiplicity": "0..1"
+        },
+        {
+          "role": "StreamRevision",
+          "type": "apiportal.StreamRevision",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "FlowRuleRevision",
+      "dependentRole": "StreamRevision",
+      "referentialConstraints": [
+        {
+          "property": "FK_FLOW_ID",
+          "referencedProperty": "id"
+        },
+        {
+          "property": "revisionID",
+          "referencedProperty": "revisionID"
+        }
+      ]
+    },
+    {
+      "name": "apiportal.Stream_FlowRule_One_ZeroToOne0",
+      "ends": [
+        {
+          "role": "FlowRule",
+          "type": "apiportal.FlowRule",
+          "multiplicity": "0..1"
+        },
+        {
+          "role": "Stream",
+          "type": "apiportal.Stream",
+          "multiplicity": "1"
+        }
+      ],
+      "principalRole": "FlowRule",
+      "dependentRole": "Stream",
+      "referentialConstraints": [
+        {
+          "property": "FK_FLOW_ID",
+          "referencedProperty": "id"
+        }
+      ]
+    }
+  ],
+  "operations": [
+    {
+      "name": "GetAllRevisions",
+      "kind": "FunctionImport",
+      "httpMethod": "GET",
+      "entitySet": "APIProxyRevisions",
+      "parameters": [
+        {
+          "name": "apiProxyName",
+          "type": "Edm.String",
+          "nullable": false
+        }
+      ],
+      "returnType": "Collection(apiportal.APIProxyRevision)"
+    }
+  ],
+  "graph": {
+    "reachable": [
+      "apiportal.ACLProductLinkage",
+      "apiportal.APIProduct",
+      "apiportal.APIProductAdditionalProperty",
+      "apiportal.APIProvider",
+      "apiportal.APIProviderAdditionalProperty",
+      "apiportal.APIProxy",
+      "apiportal.APIProxyDeployment",
+      "apiportal.APIProxyEndPoint",
+      "apiportal.APIProxyEndPointRevision",
+      "apiportal.APIProxyRevision",
+      "apiportal.APIResource",
+      "apiportal.APIResourceRevision",
+      "apiportal.APITargetEndPoint",
+      "apiportal.APITargetEndPointRevision",
+      "apiportal.Agent",
+      "apiportal.AgentAdditionalProperty",
+      "apiportal.ApiportalCloneMapping",
+      "apiportal.Application",
+      "apiportal.ApplicationAdditionalProperty",
+      "apiportal.AttachmentRevision",
+      "apiportal.Bill",
+      "apiportal.CacheResource",
+      "apiportal.Certificate",
+      "apiportal.CertificateStore",
+      "apiportal.CertificateStoreReference",
+      "apiportal.ConditionalFlowRule",
+      "apiportal.ConditionalFlowRuleRevision",
+      "apiportal.ContentPackageMapper",
+      "apiportal.DefaultFaultRule",
+      "apiportal.DefaultFaultRuleRevision",
+      "apiportal.DestinationAndUrlMapping",
+      "apiportal.Developer",
+      "apiportal.Documentation",
+      "apiportal.DocumentationRevision",
+      "apiportal.EndPointProperty",
+      "apiportal.EndPointPropertyRevision",
+      "apiportal.ExpirySettings",
+      "apiportal.FaultRule",
+      "apiportal.FaultRuleRevision",
+      "apiportal.FileResource",
+      "apiportal.FileResourceRevision",
+      "apiportal.FlowRule",
+      "apiportal.FlowRuleRevision",
+      "apiportal.GenericKeyMapEntry",
+      "apiportal.GenericKeyMapEntryValue",
+      "apiportal.HealthMonitor",
+      "apiportal.History",
+      "apiportal.KeyMapEntry",
+      "apiportal.KeyMapEntryValue",
+      "apiportal.LoadBalancerConfigurations",
+      "apiportal.Policy",
+      "apiportal.PolicyRevision",
+      "apiportal.PolicyTemplateContainer",
+      "apiportal.RatePlan",
+      "apiportal.Resource",
+      "apiportal.ResourceRevision",
+      "apiportal.RouteRule",
+      "apiportal.RouteRuleRevision",
+      "apiportal.SSLInfo",
+      "apiportal.Step",
+      "apiportal.StepRevision",
+      "apiportal.Stream",
+      "apiportal.StreamRevision",
+      "apiportal.TemplateFileResource",
+      "apiportal.TemplatePolicy",
+      "apiportal.VirtualHost"
+    ]
+  }
+}

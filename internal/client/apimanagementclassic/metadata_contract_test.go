@@ -3,38 +3,20 @@ package apimanagementclassic
 import (
 	"testing"
 
-	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/testutil/edmx"
+	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/apimeta"
 )
 
-// TestWireContractAgainstMetadata checks every wire struct and entity set
-// this package uses against the API portal's Management.svc $metadata. It
-// skips when no document is available (see internal/testutil/edmx).
+// TestWireContractAgainstMetadata checks Contract (the wire structs, keys,
+// navigation properties, operations and limits this client relies on)
+// against the committed snapshot of the service's $metadata in
+// testdata/api-metadata. The metadata acceptance test checks the same
+// contract against a live tenant.
 func TestWireContractAgainstMetadata(t *testing.T) {
-	m := edmx.LoadFrom(t, "SAP_API_PORTAL_METADATA_FILE", ".specs/apim-management-metadata.xml")
-
-	structs := []struct {
-		entitySet string
-		value     any
-	}{
-		{apiProvidersEntitySet, APIProvider{}},
-		{apiProductsEntitySet, APIProduct{}},
-		{apiProductsEntitySet, apiProductReadWire{}},
-		{apiProductAdditionalPropertiesEntity, APIProductAdditionalProperty{}},
-		{certificateStoreReferencesEntitySet, CertificateStoreReference{}},
-		{genericKeyMapEntriesEntitySet, KeyValueMap{}},
-		{genericKeyMapEntriesEntitySet, keyValueMapReadWire{}},
-		{"GenericKeyMapEntryValues", keyValueMapEntryValueWire{}},
+	s, err := apimeta.LoadSnapshot(Contract.Service)
+	if err != nil {
+		t.Fatalf("loading the %s snapshot: %v", Contract.Service, err)
 	}
-	for _, s := range structs {
-		m.AssertStruct(t, s.entitySet, s.value)
+	for _, problem := range apimeta.Verify(s, Contract) {
+		t.Error(problem)
 	}
-	// Create bodies with deep inserts; never decoded.
-	m.AssertWriteStruct(t, apiProductsEntitySet, apiProductWire{})
-	m.AssertWriteStruct(t, genericKeyMapEntriesEntitySet, keyValueMapWire{})
-
-	m.AssertKey(t, apiProvidersEntitySet, "name", "Edm.String")
-	m.AssertKey(t, apiProductsEntitySet, "name", "Edm.String")
-	m.AssertKey(t, apiProductAdditionalPropertiesEntity, "entityId", "Edm.String", "name", "Edm.String")
-	m.AssertKey(t, certificateStoreReferencesEntitySet, "name", "Edm.String")
-	m.AssertKey(t, genericKeyMapEntriesEntitySet, "name", "Edm.String", "scope", "Edm.String", "scopeId", "Edm.String")
 }

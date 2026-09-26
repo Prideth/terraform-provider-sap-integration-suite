@@ -161,6 +161,30 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
+- API discovery for the services the provider knows. `$metadata` (OData V2
+  and V4) and OpenAPI documents are parsed into one normalized model, and a
+  snapshot of each service's contract is committed under
+  `testdata/api-metadata/` (Cloud Integration and the Classic API portal so
+  far; no host names, URLs or tenant data). The client contract tests now
+  check against these snapshots, so they run in CI instead of skipping
+  without a local `$metadata` file. `go run ./cmd/apidiscovery` compares a
+  tenant's live documents with the snapshots and reports changes in
+  semantic terms (new entity sets, changed properties, removed operations),
+  separating breaking from additive ones. Every entity set of a snapshot is
+  classified as used by the provider, a candidate for a resource, or
+  excluded with a reason, and a test fails when a new one is not;
+  `docs/api-discovery-report.md` is generated from that. Make targets:
+  `api-metadata-diff`, `api-discovery`, `api-metadata-refresh`,
+  `api-discovery-report`, `testacc-metadata`.
+- Capability gates for acceptance tests. A test now runs only with
+  `TF_ACC=1` and either `SAP_INTEGRATION_SUITE_ACC_ALL=1` or its capability
+  gate (for example `SAP_INTEGRATION_SUITE_ACC_CLOUD_INTEGRATION=1`), and
+  skips with the missing variable names otherwise. Destructive tests also
+  need `SAP_INTEGRATION_SUITE_ACC_DESTRUCTIVE=1` and their gate set by name;
+  `SAP_INTEGRATION_SUITE_ACC_ALL` never runs them. `go run ./cmd/accplan`
+  (`make accplan`) prints what would run and why the rest would skip. Anyone
+  who ran the acceptance tests with `TF_ACC=1` alone needs to add
+  `SAP_INTEGRATION_SUITE_ACC_ALL=1` (or `make testacc-all`).
 - `redeploy_triggers` on `sapintegrationsuite_message_mapping_deployment`,
   `sapintegrationsuite_script_collection_deployment` and
   `sapintegrationsuite_value_mapping_deployment`, as the integration flow

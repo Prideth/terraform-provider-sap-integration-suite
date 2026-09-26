@@ -3,38 +3,20 @@ package securitycontent
 import (
 	"testing"
 
-	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/testutil/edmx"
+	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/apimeta"
 )
 
-// TestWireContractAgainstMetadata checks every wire struct and entity set
-// this package uses against a tenant $metadata document. It skips when no
-// document is available (see internal/testutil/edmx).
+// TestWireContractAgainstMetadata checks Contract (the wire structs, keys,
+// navigation properties, operations and limits this client relies on)
+// against the committed snapshot of the service's $metadata in
+// testdata/api-metadata. The metadata acceptance test checks the same
+// contract against a live tenant.
 func TestWireContractAgainstMetadata(t *testing.T) {
-	m := edmx.Load(t)
-
-	structs := []struct {
-		entitySet string
-		value     any
-	}{
-		{oauth2ClientCredentialsEntitySet, OAuth2ClientCredential{}},
-		{oauth2ClientCredentialsEntitySet, oauth2ClientCredentialWriteRequest{}},
-		{userCredentialsEntitySet, UserCredential{}},
-		{userCredentialsEntitySet, userCredentialWriteRequest{}},
-		{secureParametersEntitySet, SecureParameter{}},
-		{secureParametersEntitySet, secureParameterWriteRequest{}},
-		{keystoreEntriesEntitySet, KeystoreEntry{}},
-		{keyPairGenerationRequestsEntitySet, keyPairGenerationWireRequest{}},
-		{keystoreResourcesEntitySet, deleteKeystoreEntriesRequest{}},
+	s, err := apimeta.LoadSnapshot(Contract.Service)
+	if err != nil {
+		t.Fatalf("loading the %s snapshot: %v", Contract.Service, err)
 	}
-	for _, s := range structs {
-		m.AssertStruct(t, s.entitySet, s.value)
+	for _, problem := range apimeta.Verify(s, Contract) {
+		t.Error(problem)
 	}
-	m.AssertKey(t, keystoreEntriesEntitySet, "Hexalias", "Edm.String")
-	m.AssertKey(t, certificateResourcesEntitySet, "Hexalias", "Edm.String")
-	m.AssertKey(t, oauth2ClientCredentialsEntitySet, "Name", "Edm.String")
-	m.AssertKey(t, userCredentialsEntitySet, "Name", "Edm.String")
-	m.AssertKey(t, secureParametersEntitySet, "Name", "Edm.String")
-	m.AssertMaxLength(t, secureParametersEntitySet, "Name", MaxSecureParameterNameLength)
-	m.AssertMaxLength(t, secureParametersEntitySet, "SecureParam", MaxSecureParameterValueLength)
-	m.AssertKey(t, keystoreResourcesEntitySet, "Name", "Edm.String")
 }

@@ -35,11 +35,13 @@ Evidence was ranked as follows, and a lower source never overrode a higher one:
 
 Two techniques are reusable and documented in `CONTRIBUTING.md`:
 
-- **Contract tests against `$metadata`.** `internal/testutil/edmx` parses a `$metadata` document,
-  and each OData client package has a `metadata_contract_test.go` that checks every wire
-  struct's JSON fields (including inherited ones), every key and every function import the
-  client uses, plus selected `MaxLength` facets. The tests skip without a document, so CI stays
-  green without tenant access; a skipped run is not evidence.
+- **Contract tests against `$metadata`.** `internal/apimeta` parses `$metadata` (OData V2 and
+  V4) and OpenAPI documents into a normalized model, which is committed per service as a
+  snapshot in `testdata/api-metadata/`. Each OData client package declares a `Contract` of
+  every wire struct's JSON fields (including inherited ones), every key, navigation property
+  and function import it uses, plus selected `MaxLength` facets, and a test checks it against
+  the snapshot. Because the snapshots are committed, these checks run in CI without tenant
+  access; a live acceptance test compares the snapshots with a tenant's current documents.
 - **The Hub's catalog service.** `https://api.sap.com/odata/1.0/catalog.svc` answers anonymously
   at package level: the complete package list (1,971 packages, paged via `__next`) and each
   package's APIs with type and version. It ignores `$filter`, so filtered queries prove nothing,
@@ -117,8 +119,9 @@ for access policies must be numeric.
 
 ## Reproducing the checks
 
-1. Place a `$metadata` document at `.specs/cloudintegration-metadata.xml` (or set
-   `SAP_INTEGRATION_SUITE_METADATA_FILE`) and run `go test ./internal/client/...`.
+1. Run `go test ./internal/client/... ./internal/apidiscovery/...` for the contract checks
+   against the committed snapshots, and `make api-metadata-diff` (with the service
+   credentials set) to compare the snapshots with a tenant's live documents.
 2. For the Hub, list packages with
    `curl "https://api.sap.com/odata/1.0/catalog.svc/ContentEntities.ContentPackages?\$select=TechnicalName,DisplayName&\$format=json"`
    and follow `__next`; list a package's APIs with

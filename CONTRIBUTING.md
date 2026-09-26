@@ -98,9 +98,10 @@ in one place upgrades it everywhere.
    field SAP does not support updating in place.
 5. Add unit tests (`httptest`-based) for the client method(s) and a basic
    schema/import sanity test for the resource. For an OData entity, also
-   register every wire struct, key and function import in the package's
-   `metadata_contract_test.go` (see "Checking wire contracts against
-   `$metadata`" below).
+   register every wire struct, key, navigation and function import in the
+   package's `Contract` (`contract.go`) and drop the entity set from the
+   discovery classification (see "API discovery and contract checks"
+   below).
 6. Add an example under `examples/resources/<name>/` or
    `examples/data-sources/<name>/`, then run `make docs`.
 7. If the change is acceptance-testable, add an acceptance test
@@ -109,20 +110,18 @@ in one place upgrades it everywhere.
    `testAccName()` (`tfacc` plus random characters; no hyphens, because
    several SAP IDs reject them), and take design-time content from
    `internal/testutil/samples` (see "Testing with SAP's samples" below).
-   Acceptance tests only run with `TF_ACC=1` and the
-   `SAP_INTEGRATION_SUITE_*` variables set.
+   Start the test with `accgate.Require(t, accgate.<Capability>)` so it runs
+   only with its capability gate (see "Running the acceptance tests against
+   a tenant" below).
 
    A test that creates, modifies, or deletes **tenant-wide singleton**
    configuration (for example `sapintegrationsuite_custom_tag_configuration`,
-   or any future Classic API Management resource whose identity is scoped
-   to the whole tenant rather than a named object a test can safely
-   namespace with a `tf-acc-` prefix) must be gated behind an *additional*,
-   capability-specific opt-in environment variable beyond plain `TF_ACC=1`
-   — for example `SAP_INTEGRATION_SUITE_ACC_API_MANAGEMENT=1` for Classic
-   API Management acceptance tests. `TF_ACC=1` alone must never be
-   sufficient to run a test that could disrupt a shared tenant's existing
-   configuration; the extra gate makes that risk an explicit, opt-in
-   decision for whoever runs the test suite against a real tenant.
+   or anything whose identity is scoped to the whole tenant rather than a
+   named object a test can namespace with `tfacc`) uses
+   `accgate.RequireDestructive` instead. It then runs only when its
+   capability gate is set by name and `SAP_INTEGRATION_SUITE_ACC_DESTRUCTIVE=1`;
+   neither `TF_ACC=1` nor `SAP_INTEGRATION_SUITE_ACC_ALL=1` is ever enough to
+   run a test that could disrupt a shared tenant's existing configuration.
 8. **Update the feature support catalog.** This is mandatory, not optional
    — no feature implementation is complete until this step is done:
    1. Add or update the feature's entry in `internal/features/catalog.go`
@@ -180,55 +179,153 @@ entry to the catalog with the right `Kind`, and check that
 
 ## Running the acceptance tests against a tenant
 
+Acceptance tests run only when three things hold: `TF_ACC=1`, the test's
+capability is enabled, and that capability's credentials are set. Every
+acceptance test starts with `accgate.Require` (package
+`internal/testutil/accgate`), which checks this and otherwise skips the test
+with the reason.
+
+| Gate | Enables |
+|---|---|
+| `SAP_INTEGRATION_SUITE_ACC_ALL=1` | every capability, but never a destructive test |
+| `SAP_INTEGRATION_SUITE_ACC_METADATA=1` | the live `$metadata` checks (read-only) |
+| `SAP_INTEGRATION_SUITE_ACC_CLOUD_INTEGRATION=1` | packages, content, deployments, number ranges |
+| `SAP_INTEGRATION_SUITE_ACC_SECURITY_CONTENT=1` | credentials, certificates, key pairs, access policies |
+| `SAP_INTEGRATION_SUITE_ACC_PARTNER_DIRECTORY=1` | Partner Directory |
+| `SAP_INTEGRATION_SUITE_ACC_API_MANAGEMENT_CLASSIC=1` | the API portal (Management.svc) |
+| `SAP_INTEGRATION_SUITE_ACC_API_MANAGEMENT_CURRENT=1` | reserved; no public service root confirmed yet |
+| `SAP_INTEGRATION_SUITE_ACC_API_COMPOSITION=1` | API Composition |
+| `SAP_INTEGRATION_SUITE_ACC_INTEGRATION_ASSESSMENT=1` | Integration Assessment |
+| `SAP_INTEGRATION_SUITE_ACC_EDGE_INTEGRATION_CELL=1` | runtime-location APIs (needs `SAP_INTEGRATION_SUITE_RUNTIME_LOCATION_ID`) |
+| `SAP_INTEGRATION_SUITE_ACC_DATA_SPACE_INTEGRATION=1` | reserved; no service in the provider yet |
+| `SAP_INTEGRATION_SUITE_ACC_DESTRUCTIVE=1` | destructive tests of capabilities enabled by name |
+
+A **destructive** test changes tenant-wide singleton configuration (for
+example the custom tag configuration or archiving settings) or could
+disturb content it did not create. It calls `accgate.RequireDestructive` and
+runs only with its capability gate set by name *and*
+`SAP_INTEGRATION_SUITE_ACC_DESTRUCTIVE=1`; `SAP_INTEGRATION_SUITE_ACC_ALL`
+never runs it.
+
+To see what a run would do without running anything:
+
 ```sh
-TF_ACC=1 \
+TF_ACC=1 SAP_INTEGRATION_SUITE_ACC_ALL=1 go run ./cmd/accplan
+```
+
+It prints every acceptance test with `RUN`, `SKIPPED — credentials
+unavailable (missing …)`, `SKIPPED — destructive gate not enabled` and so on.
+It names variables, never their values. `make testacc-all` prints the plan
+and then runs the tests.
+
+```sh
+TF_ACC=1 SAP_INTEGRATION_SUITE_ACC_ALL=1 \
 SAP_INTEGRATION_SUITE_HOST=https://<tenant>.it-cpi<...>.cfapps.<region>.hana.ondemand.com \
 SAP_INTEGRATION_SUITE_TOKEN_URL=https://<subdomain>.authentication.<region>.hana.ondemand.com/oauth/token \
 SAP_INTEGRATION_SUITE_CLIENT_ID=... \
 SAP_INTEGRATION_SUITE_CLIENT_SECRET=... \
-go test ./internal/provider/ -run '^TestAcc[A-Z]' -v -timeout 60m
+go test ./... -run '^TestAcc[A-Z]' -v -timeout 120m
 ```
 
 The client needs the roles listed in the "Authorization and Roles" guide
 for packages, content, configuration and deployment. Each test destroys what
 it created; an interrupted run can leave `tfacc*` packages behind, which you
-can delete in the Design UI.
+can delete in the Design UI. The test of `cmd/accplan` fails for a `TestAcc`
+function without a gate, so a new acceptance test cannot run ungated.
 
-## Checking wire contracts against `$metadata`
+## API discovery and contract checks
 
 Several past mistakes in this provider had the same cause: a property name
 was inferred from SAP's UI labels or prose documentation and never checked
 against the service itself. The access policy reference fields, the
 integration adapter's `Type`/`Application` and the service endpoint API
-definition `Type` all looked plausible and did not exist.
+definition `Type` all looked plausible and did not exist. The discovery
+framework makes the service's own published contract the reference.
 
-The cheapest guard is the OData service's own `$metadata` document. Every
-OData client package has a `metadata_contract_test.go` that uses
-`internal/testutil/edmx` to check, by reflection, that each wire struct's
-JSON fields are properties of the entity type behind its entity set
-(including properties inherited through `BaseType`), that key names and EDM
-types match what the client sends, and that function imports have the
-parameters the client passes.
+### The pieces
 
-The document is tenant data and is never committed. To run the checks,
-download it once from a tenant you are allowed to use:
+- `internal/apimeta` parses OData V2 and V4 `$metadata` (entity sets,
+  singletons, entity, complex and enum types, associations, navigation,
+  function and action imports, bound operations, media entities, the
+  `sap:` contract annotations) and OpenAPI 3 / Swagger 2 documents into one
+  normalized model. It walks the type graph from the entity sets and
+  operations (with a visited set, so cycles are fine) and reports
+  unreachable types and unresolved references. It also computes a semantic
+  diff between two contracts (`NEW ENTITY SET`, `PROPERTY CHANGED`, …),
+  marking each change as additive or breaking.
+- `testdata/api-metadata/<service>.json` holds one normalized, sorted
+  snapshot per service. Snapshots contain the contract only: no host names,
+  no URLs (annotation values are redacted), no tenant data, no credentials.
+  They are the same for every tenant on the same service version, which is
+  why they are committed while raw documents under `.specs/` are not.
+- Each OData client package declares a `Contract` in `contract.go`: every
+  wire struct it decodes or sends (per entity set), every key it addresses
+  entities with, every navigation property it follows, every function
+  import it calls. `metadata_contract_test.go` checks the contract against
+  the committed snapshot by reflection (property names including inherited
+  ones, EDM type compatibility of Go field types, key names and types,
+  function import parameters and HTTP methods, `MaxLength` limits). These
+  tests need no credentials and run in CI.
+- `internal/apidiscovery` lists the known service roots with the evidence
+  for each (SAP documentation, a service key field or SAP's own tooling; a
+  root is never guessed), fetches live documents, compares them with the
+  snapshots, and classifies every entity set and operation: used by the
+  provider (derived from the contracts), a **candidate** for a resource
+  (with the catalog key that tracks it), or **excluded** (with the reason).
+  A unit test fails as soon as a snapshot holds an unclassified entity set,
+  so new SAP entities cannot slip in unnoticed.
+- `docs/api-discovery-report.md` is generated from all of the above; a test
+  fails when it is out of date.
 
-```shell
-curl -H "Authorization: Bearer <token>" \
-  "https://<tenant-api-host>/api/v1/\$metadata" \
-  -o .specs/cloudintegration-metadata.xml
-```
+### Test layers
 
-Add `.specs/` to `.git/info/exclude`, then run `go test ./internal/client/...`.
-The Classic API Management client is checked the same way against the API
-portal's `/apiportal/api/1.0/Management.svc/$metadata`, stored as
-`.specs/apim-management-metadata.xml` (or named by
-`SAP_API_PORTAL_METADATA_FILE`); it needs a service key of plan
-`apiportal-apiaccess`.
-The helper also honors `SAP_INTEGRATION_SUITE_METADATA_FILE`. Without a
-document the contract tests skip, which is why CI stays green without tenant
-access. A skipped contract test is not evidence, so mention in the PR
-whether you ran them.
+1. **Reachability** (`TestAccMetadata`, gated by
+   `SAP_INTEGRATION_SUITE_ACC_METADATA` or `_ALL`): the live document is
+   readable and parses; the service document is compared with it.
+2. **Contract**: every client contract holds against the live document.
+3. **Discovery delta**: the live document is compared with the snapshot. A
+   breaking change to something the provider uses fails; everything else is
+   a warning, unless `SAP_INTEGRATION_SUITE_DISCOVERY_STRICT=1`, which fails
+   on any difference and asks you to refresh the snapshot.
+4. **CRUD**: the resource acceptance tests.
+
+### Commands
+
+| Command | What it does |
+|---|---|
+| `make api-metadata-diff` | Compare live contracts with the snapshots; fail only on breaking changes to what the provider uses. |
+| `make api-discovery` | Same, but fail on any difference; use it to find new SAP entities. |
+| `make api-metadata-refresh` | Write snapshots whose contract changed, then regenerate the report. Nothing is committed. |
+| `make api-discovery-report` | Regenerate `docs/api-discovery-report.md` from the snapshots. |
+| `make testacc-metadata` | Run the metadata acceptance test (layers 1–3). |
+| `go run ./cmd/apidiscovery -list` | Show each service, whether it is configured (variable names only) and its evidence. |
+
+`cmd/apidiscovery` reads the same `SAP_INTEGRATION_SUITE_*` variables as the
+provider. It can also parse a document you downloaded yourself:
+`go run ./cmd/apidiscovery -from cloud-integration=.specs/cloudintegration-metadata.xml`.
+With `-raw-dir .specs/raw` it keeps the fetched documents; keep that
+directory out of the repository (`.specs/` is in `.git/info/exclude`).
+
+### When a snapshot changes
+
+1. Read the diff. For every new entity set or operation, add an entry to the
+   classification in `internal/apidiscovery/classification.go`: a candidate
+   with its catalog key, or an exclusion with a reason. Add a catalog entry
+   if none fits.
+2. A breaking change to something the provider uses needs a code change in
+   the client before the snapshot is accepted.
+3. Run `make api-metadata-refresh`, review the snapshot and report diff, and
+   commit them together with the classification.
+
+### What a contract does not prove
+
+`$metadata` settles property names, keys, types, length facets such as
+`MaxLength`, and navigation. It does not settle enum values (they are plain
+`Edm.String`) or whether SAP actually accepts a create or update on an entity
+set: an entity set in `$metadata` is not evidence of write support. Every
+mutable resource additionally needs SAP's documentation, SAP's own published
+tooling, or a safe verification on a tenant, recorded in
+`docs/sap-api-references.md`.
 
 Do not add query options to reads without checking them on a tenant. Several
 Cloud Integration entity sets reject options the `$metadata` does not warn
@@ -238,20 +335,13 @@ answers any option, even `$format=json`, with 400. The OData client asks for
 JSON through the `Accept` header for that reason (see
 `docs/sap-api-references.md`, "Tenant probe results").
 
-`$metadata` settles property names, keys, types, length facets such as
-`MaxLength`, and navigation. It does not settle enum values (they are plain
-`Edm.String`) or whether SAP actually accepts a create or update on an entity
-set. Those still need SAP's documentation, SAP's own published tooling, or a
-live request.
-
-The same approach works for other SAP OData services whose specification is
-only available behind the Business Accelerator Hub login. Integration
-Assessment's two APIs and API Composition's Configuration API are OData
-services; with a service key of the respective instance, fetch
-`<service root>/$metadata` the same way and store it under `.specs/`. For
-Integration Assessment the service roots are the key's `entities` and
-`management` values, and the token endpoint is its `url` plus `/oauth/token`.
-A document like that is what an implementation of those areas needs first.
+Services without a snapshot yet (Transport.svc, the Edge Integration Cell
+location API, API Composition, Integration Assessment) get one the same
+way: configure the service's variables (see `-list`), run
+`go run ./cmd/apidiscovery -services <id> -update`, then classify the new
+entity sets. For Integration Assessment the service roots are the service
+key's `entities` and `management` values, and the token endpoint is its
+`url` plus `/oauth/token`.
 
 ## Documentation standards
 

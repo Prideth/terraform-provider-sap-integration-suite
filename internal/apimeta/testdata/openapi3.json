@@ -1,0 +1,27 @@
+{
+  "openapi": "3.0.1",
+  "info": {"title": "Example Configuration API", "version": "1.2.0"},
+  "components": {
+    "securitySchemes": {"oauth2": {"type": "oauth2"}},
+    "schemas": {
+      "Graph": {"type": "object", "required": ["id"], "properties": {
+        "id": {"type": "string"},
+        "dataSources": {"type": "array", "items": {"$ref": "#/components/schemas/DataSource"}}
+      }},
+      "DataSource": {"type": "object", "properties": {"destination": {"type": "string"}}}
+    }
+  },
+  "security": [{"oauth2": []}],
+  "paths": {
+    "/graphs": {
+      "get": {"operationId": "listGraphs", "parameters": [{"name": "$top", "in": "query", "schema": {"type": "integer", "format": "int32"}}],
+        "responses": {"200": {"content": {"application/json": {"schema": {"type": "array", "items": {"$ref": "#/components/schemas/Graph"}}}}}}},
+      "post": {"operationId": "createGraph", "requestBody": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Graph"}}}},
+        "responses": {"201": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Graph"}}}}}}
+    },
+    "/graphs/{id}": {
+      "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "string"}}],
+      "delete": {"operationId": "deleteGraph", "responses": {"204": {}}}
+    }
+  }
+}
