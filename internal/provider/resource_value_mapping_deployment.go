@@ -133,8 +133,8 @@ func (r *valueMappingDeploymentResource) Create(ctx context.Context, req resourc
 
 	artifact, err := waitForRuntimeArtifact(ctx, client, plan.MappingID.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Deployment did not reach a ready state", diagnosticDetail(err))
-		return
+		resp.Diagnostics.AddError("Deployment did not reach a ready state", diagnosticDetail(err)+deploymentTaintedNote)
+		artifact = unconfirmedDeployment(ctx, client, plan.MappingID.ValueString(), plan.MappingVersion.ValueString())
 	}
 
 	m := valueMappingDeploymentToModel(plan.PackageID.ValueString(), artifact, plan.Timeouts)

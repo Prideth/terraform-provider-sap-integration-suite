@@ -14,6 +14,14 @@ All notable changes to this project are documented in this file.
   each token request has its own 60-second limit. The first acceptance test
   run against a real tenant found this; unit tests could not, because they
   never cancel the context.
+- A deployment that SAP accepted but that did not reach `STARTED` before
+  its timeout (or ended in `ERROR`) was dropped from state and kept running
+  on the tenant untracked; `terraform destroy` then left it behind. All
+  deployment resources now keep such a deployment in state with its last
+  runtime status, so Terraform marks it tainted and the next apply or
+  destroy undeploys it. On a tenant, message mapping and value mapping
+  deployments sometimes stayed `STARTING` for several minutes before
+  starting; raise `timeouts.create` if that is common on yours.
 - Changing the content of an integration flow, message mapping or script
   collection failed on a real tenant. The update sent empty `Id` and
   `PackageId` fields, which SAP rejects for message mappings ("Update of

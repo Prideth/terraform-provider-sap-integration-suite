@@ -135,8 +135,8 @@ func (r *scriptCollectionDeploymentResource) Create(ctx context.Context, req res
 
 	artifact, err := waitForRuntimeArtifact(ctx, client, plan.ScriptCollectionID.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Deployment did not reach a ready state", diagnosticDetail(err))
-		return
+		resp.Diagnostics.AddError("Deployment did not reach a ready state", diagnosticDetail(err)+deploymentTaintedNote)
+		artifact = unconfirmedDeployment(ctx, client, plan.ScriptCollectionID.ValueString(), plan.ScriptCollectionVersion.ValueString())
 	}
 
 	m := scriptCollectionDeploymentToModel(plan.PackageID.ValueString(), artifact, plan.Timeouts)

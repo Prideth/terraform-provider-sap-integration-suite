@@ -135,3 +135,28 @@ func deployedElsewhere(id, taskID string) error {
 		"provider does not support; set it to \"iflmap\" with sapintegrationsuite_integration_flow_configuration "+
 		"to deploy to Cloud Integration", taskID, id)
 }
+
+// unconfirmedDeployment stands in for the runtime artifact when SAP accepted
+// a deploy request but the wait for STARTED failed (timeout, ERROR, a task
+// that went elsewhere). A deployment may exist or still come up; on a tenant
+// in September 2026 a value mapping was still STARTING after five minutes and
+// STARTED later. Create records it anyway: Terraform then marks the resource
+// tainted, and the next apply or destroy undeploys it instead of leaving it
+// running untracked. The status comes from one last read with a fresh time
+// limit, since ctx may already have expired; the version is the planned one,
+// so the state matches the plan.
+func unconfirmedDeployment(ctx context.Context, client *cloudintegration.Client, id, version string) *cloudintegration.RuntimeArtifact {
+	status := "UNKNOWN"
+	readCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 30*time.Second)
+	defer cancel()
+	if artifact, err := client.GetRuntimeArtifact(readCtx, id); err == nil && artifact.Status != "" {
+		status = artifact.Status
+	}
+	return &cloudintegration.RuntimeArtifact{ID: id, Version: version, Status: status}
+}
+
+// deploymentTaintedNote tells the user why the resource shows up tainted
+// after a failed deployment.
+const deploymentTaintedNote = "\n\nSAP accepted the deploy request, so the deployment is kept in state and marked " +
+	"tainted: the next apply redeploys it and destroy undeploys it. Deployments of message mappings " +
+	"and value mappings can take several minutes; raise timeouts.create if this was a timeout."

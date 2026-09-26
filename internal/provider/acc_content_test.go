@@ -160,8 +160,8 @@ resource "sapintegrationsuite_integration_flow_deployment" "test" {
   redeploy_triggers = sapintegrationsuite_integration_flow_configuration.test.parameters
 
   timeouts {
-    create = "5m"
-    delete = "5m"
+    create = "15m"
+    delete = "10m"
   }
 }
 `
@@ -195,8 +195,8 @@ resource "sapintegrationsuite_message_mapping_deployment" "test" {
   mapping_version = sapintegrationsuite_message_mapping.test.version
 
   timeouts {
-    create = "5m"
-    delete = "5m"
+    create = "15m"
+    delete = "10m"
   }
 }
 `

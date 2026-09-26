@@ -149,8 +149,8 @@ func (r *integrationFlowDeploymentResource) Create(ctx context.Context, req reso
 
 	artifact, err := waitForDeployment(ctx, client, plan.FlowID.ValueString(), taskID)
 	if err != nil {
-		resp.Diagnostics.AddError("Deployment did not reach a ready state", diagnosticDetail(err))
-		return
+		resp.Diagnostics.AddError("Deployment did not reach a ready state", diagnosticDetail(err)+deploymentTaintedNote)
+		artifact = unconfirmedDeployment(ctx, client, plan.FlowID.ValueString(), plan.FlowVersion.ValueString())
 	}
 
 	m := deploymentToModel(plan.PackageID.ValueString(), artifact, plan.Timeouts, plan.RedeployTriggers)

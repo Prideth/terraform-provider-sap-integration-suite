@@ -128,8 +128,8 @@ func (r *integrationAdapterDeploymentResource) Create(ctx context.Context, req r
 
 	artifact, err := waitForRuntimeArtifact(ctx, client, plan.AdapterID.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Deployment did not reach a ready state", diagnosticDetail(err))
-		return
+		resp.Diagnostics.AddError("Deployment did not reach a ready state", diagnosticDetail(err)+deploymentTaintedNote)
+		artifact = unconfirmedDeployment(ctx, client, plan.AdapterID.ValueString(), "")
 	}
 
 	m := integrationAdapterDeploymentToModel(artifact, plan.Timeouts)

@@ -37,8 +37,8 @@ resource "sapintegrationsuite_script_collection_deployment" "test" {
   script_collection_version = sapintegrationsuite_script_collection.test.version
 
   timeouts {
-    create = "5m"
-    delete = "5m"
+    create = "15m"
+    delete = "10m"
   }
 }
 `
@@ -94,8 +94,8 @@ resource "sapintegrationsuite_value_mapping_deployment" "test" {
   mapping_version = sapintegrationsuite_value_mapping.test.version
 
   timeouts {
-    create = "5m"
-    delete = "5m"
+    create = "15m"
+    delete = "10m"
   }
 }
 `
