@@ -5,7 +5,7 @@ subcategory: ""
 description: |-
   EXPERIMENTAL: needs enable_experimental = true in the provider block. Manages a business data graph through API Composition's Configuration API. A business data graph exposes the business systems of a landscape as one connected API. This resource needs provider.api_composition, a credential set separate from provider.oauth and provider.api_management.
   SAP processes a new or changed graph asynchronously. Create and Update wait until the status leaves PROCESSING. When SAP reports FAILED, the graph is still stored in state, with status_details and log_messages, and Terraform marks it tainted.
-  SAP documents the Create body and the GET and PATCH URLs. It gives no example body for PATCH and no request for delete; this resource sends the writable properties as the PATCH body and DELETE to the graph's URL. Extensions cannot be managed through this API and are only reported. See the API Composition guide.
+  SAP documents the Create body and the GET and PATCH URLs. It gives no example body for PATCH and no request for delete; this resource sends the writable properties as the PATCH body and DELETE to the graph's URL. Both are therefore unofficial and also need enable_unofficial = true: without it a graph can be created and read, but not updated in place or destroyed. Extensions cannot be managed through this API and are only reported. See the API Composition guide.
 ---
 
 # sapintegrationsuite_business_data_graph (Resource)
@@ -14,12 +14,14 @@ EXPERIMENTAL: needs enable_experimental = true in the provider block. Manages a 
 
 SAP processes a new or changed graph asynchronously. Create and Update wait until the status leaves PROCESSING. When SAP reports FAILED, the graph is still stored in state, with status_details and log_messages, and Terraform marks it tainted.
 
-SAP documents the Create body and the GET and PATCH URLs. It gives no example body for PATCH and no request for delete; this resource sends the writable properties as the PATCH body and DELETE to the graph's URL. Extensions cannot be managed through this API and are only reported. See the API Composition guide.
+SAP documents the Create body and the GET and PATCH URLs. It gives no example body for PATCH and no request for delete; this resource sends the writable properties as the PATCH body and DELETE to the graph's URL. Both are therefore unofficial and also need enable_unofficial = true: without it a graph can be created and read, but not updated in place or destroyed. Extensions cannot be managed through this API and are only reported. See the API Composition guide.
 
 ## Example Usage
 
 ```terraform
 # Experimental: needs enable_experimental = true in the provider block.
+# Updating a graph in place and destroying it also need
+# enable_unofficial = true, because SAP documents neither request.
 # A graph over an S/4HANA system and SAP Sales Cloud. Both destinations
 # must exist in the subaccount and carry the additional property
 # IntegrationCell.Include = true. Needs provider.api_composition.

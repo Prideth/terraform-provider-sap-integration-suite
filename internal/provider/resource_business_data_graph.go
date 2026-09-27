@@ -36,6 +36,9 @@ func NewBusinessDataGraphResource() resource.Resource {
 
 type businessDataGraphResource struct {
 	client *apicomposition.Client
+	// allowUnofficial is the provider's enable_unofficial: SAP documents
+	// creating and reading graphs, not updating (PATCH) or deleting them.
+	allowUnofficial bool
 }
 
 type businessDataGraphModel struct {
@@ -172,7 +175,9 @@ func (r *businessDataGraphResource) Schema(ctx context.Context, _ resource.Schem
 			"with status_details and log_messages, and Terraform marks it tainted.\n\n" +
 			"SAP documents the Create body and the GET and PATCH URLs. It gives no example body for " +
 			"PATCH and no request for delete; this resource sends the writable properties as the " +
-			"PATCH body and DELETE to the graph's URL. Extensions cannot be managed through this " +
+			"PATCH body and DELETE to the graph's URL. Both are therefore unofficial and also need " +
+			"enable_unofficial = true: without it a graph can be created and read, but not updated " +
+			"in place or destroyed. Extensions cannot be managed through this " +
 			"API and are only reported. See the API Composition guide.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -382,6 +387,7 @@ func (r *businessDataGraphResource) Configure(_ context.Context, req resource.Co
 		return
 	}
 	r.client = apicomposition.New(data.APICompositionHTTPClient, data.APICompositionHost)
+	r.allowUnofficial = data.EnableUnofficial
 }
 
 func keyMappingSideToClient(m *keyMappingSideModel) apicomposition.KeyMappingSide {
@@ -606,7 +612,30 @@ func (r *businessDataGraphResource) Read(ctx context.Context, req resource.ReadR
 	resp.Diagnostics.Append(resp.State.Set(ctx, model)...)
 }
 
+const (
+	businessDataGraphUpdateOp = "update (PATCH with the writable properties)"
+	businessDataGraphDeleteOp = "delete (DELETE on the graph)"
+)
+
+// ModifyPlan stops, without enable_unofficial, a plan that updates a graph in
+// place or deletes it (destroy or replacement). Both work on a tenant but SAP
+// does not document them.
+func (r *businessDataGraphResource) ModifyPlan(_ context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if r.client == nil {
+		return // provider not configured yet; Update and Delete check again
+	}
+	switch {
+	case isPlannedDelete(req, resp):
+		requireUnofficialOperation(r.allowUnofficial, "sapintegrationsuite_business_data_graph", businessDataGraphDeleteOp, &resp.Diagnostics)
+	case isInPlaceUpdate(req, resp):
+		requireUnofficialOperation(r.allowUnofficial, "sapintegrationsuite_business_data_graph", businessDataGraphUpdateOp, &resp.Diagnostics)
+	}
+}
+
 func (r *businessDataGraphResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	if !requireUnofficialOperation(r.allowUnofficial, "sapintegrationsuite_business_data_graph", businessDataGraphUpdateOp, &resp.Diagnostics) {
+		return
+	}
 	var plan businessDataGraphModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
@@ -626,6 +655,9 @@ func (r *businessDataGraphResource) Update(ctx context.Context, req resource.Upd
 }
 
 func (r *businessDataGraphResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	if !requireUnofficialOperation(r.allowUnofficial, "sapintegrationsuite_business_data_graph", businessDataGraphDeleteOp, &resp.Diagnostics) {
+		return
+	}
 	var state businessDataGraphModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {

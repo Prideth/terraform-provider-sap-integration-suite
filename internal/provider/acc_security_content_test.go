@@ -210,22 +210,31 @@ resource "sapintegrationsuite_key_pair" "test" {
 	})
 }
 
-// Number range names may not contain hyphens; tfacc<random> has none.
-func TestAccNumberRange_basic(t *testing.T) {
-	accgate.Require(t, accgate.CloudIntegration)
-	name := testAccName()
-	config := func(description string) string {
-		return fmt.Sprintf(`
+// testAccNumberRangeConfig is a number range whose counter is set to value
+// whenever version changes. Names may not contain hyphens; tfacc<random> has
+// none.
+func testAccNumberRangeConfig(name, description, value, version string) string {
+	return fmt.Sprintf(`
 resource "sapintegrationsuite_number_range" "test" {
   name                     = %[1]q
   description              = %[2]q
   min_value                = "1"
   max_value                = "999999"
   rotate                   = true
-  current_value_wo         = "1"
-  current_value_wo_version = "1"
+  current_value_wo         = %[3]q
+  current_value_wo_version = %[4]q
 }
-`, name, description)
+`, name, description, value, version)
+}
+
+// The full lifecycle, including the unofficial operations: drift detection
+// (GET by name), an update that keeps the live counter, import and delete.
+func TestAccNumberRange_basic(t *testing.T) {
+	accgate.Require(t, accgate.CloudIntegration)
+	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "true")
+	name := testAccName()
+	config := func(description string) string {
+		return testAccNumberRangeConfig(name, description, "1", "1")
 	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -242,6 +251,38 @@ resource "sapintegrationsuite_number_range" "test" {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"current_value_wo_version"},
+			},
+		},
+	})
+}
+
+// Without enable_unofficial a number range uses only what SAP documents:
+// create (POST), and an update (PUT) that sends the configured counter. The
+// last step turns the switch on, which reads the number range back to check
+// the counter SAP stored and lets the test delete it.
+func TestAccNumberRange_documentedOnly(t *testing.T) {
+	accgate.Require(t, accgate.CloudIntegration)
+	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "false")
+	name := testAccName()
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNumberRangeConfig(name, "created", "1", "1"),
+				Check:  resource.TestCheckResourceAttr("sapintegrationsuite_number_range.test", "current_value", "1"),
+			},
+			{
+				Config: testAccNumberRangeConfig(name, "updated", "5", "2"),
+				Check:  resource.TestCheckResourceAttr("sapintegrationsuite_number_range.test", "current_value", "5"),
+			},
+			{
+				PreConfig: func() { t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "true") },
+				Config:    testAccNumberRangeConfig(name, "updated", "5", "2"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sapintegrationsuite_number_range.test", "current_value", "5"),
+					resource.TestCheckResourceAttr("sapintegrationsuite_number_range.test", "description", "updated"),
+					resource.TestCheckResourceAttrSet("sapintegrationsuite_number_range.test", "deployed_on"),
+				),
 			},
 		},
 	})

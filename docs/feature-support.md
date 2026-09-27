@@ -167,7 +167,7 @@ provider "sapintegrationsuite" {
 | `sapintegrationsuite_business_data_graph` | experimental | `enable_experimental` |
 | `sapintegrationsuite_secure_parameter` | unofficial | `enable_unofficial` |
 
-Individual operations of an otherwise documented feature can be unofficial too. They are not switched off, because they belong to supported resources, but they are listed here:
+Individual operations of an otherwise documented feature can be unofficial too. They are switched off by `enable_unofficial` as well, but only the operation: the resource itself stays usable with its documented operations. A plan that needs one of them fails with an error that names the operation, for example an in-place update of a message mapping's content. Number ranges without the switch work with what SAP documents: a refresh keeps the state instead of reading the number range, an update has to change `current_value_wo_version` so that it can send the counter, and delete and import are refused.
 
 | Feature | Implemented operation that SAP does not document |
 |---|---|
@@ -196,7 +196,7 @@ Grouped by why, not just that. A feature can be `partial` and reachable via one 
 
 - **`api_composition.business_data_graph`** — A business data graph combines the business systems of a landscape (S/4HANA, SAP Sales Cloud, custom OData services and others) into one connected API. Managed through API Composition's Configuration API.
   - Needs its own credentials in provider.api_composition: a service key of an API Composition service instance with plan "configuration". SAP does not document that service key field by field, so the four values are entered as they are.
-  - SAP documents the Create body, GET and PATCH on GraphConfiguration/{id}, and the status model. It gives no PATCH body and no delete request. The provider sends the writable properties as the PATCH body and DELETE to the graph's URL. Not yet verified against a live system.
+  - SAP documents the Create body, GET and PATCH on GraphConfiguration/{id}, and the status model. It gives no PATCH body and no delete request. The provider sends the writable properties as the PATCH body and DELETE to the graph's URL. Not yet verified against a live system. Both need enable_unofficial in addition to enable_experimental, so without it a graph can be created and read, but not changed in place or destroyed.
   - SAP processes graphs asynchronously. Create and Update wait until the status leaves PROCESSING (20 minutes by default, configurable with timeouts). A graph that ends in FAILED is kept in state and marked tainted.
   - Extensions cannot be managed through the Configuration API, according to SAP; extensions is read-only and left alone on update.
   - Cue-scoped key mappings and the OData containment setting are described by SAP without a property name and cannot be set.

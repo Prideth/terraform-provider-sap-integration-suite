@@ -185,6 +185,17 @@ in one place upgrades it everywhere.
       does not follow; a status change is therefore always a code change
       too, and it goes into the CHANGELOG, since users must set or can drop
       the switch.
+
+      An implemented operation that SAP does not document goes into the
+      feature's `UndocumentedOperations` and is gated on its own: the
+      resource gets an `allowUnofficial` field that `Configure` fills from
+      `enable_unofficial`, a `ModifyPlan` that refuses the plan with
+      `requireUnofficialOperation` (`isInPlaceUpdate` and
+      `isPlannedDelete` tell the kinds of plan apart), and the same check at
+      the start of the CRUD method, for plans made before the provider was
+      configured. `TestOperationGates_MatchCatalog` fails when a feature
+      lists undocumented operations without a gated resource, or the other
+      way round.
    4. Regenerate `docs/feature-support.md` with `go run ./cmd/gendocs`
       (also done by `make docs`).
    5. Run the catalog consistency tests

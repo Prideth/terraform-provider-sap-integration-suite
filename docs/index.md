@@ -31,8 +31,11 @@ provider "sapintegrationsuite" {
   # Both off by default. Resources and data sources whose status is
   # "experimental" (lifecycle not yet verified on a tenant) or "unofficial"
   # (works, but SAP does not document the API) refuse to run until the
-  # matching switch is true, so nobody uses them by accident. See
-  # docs/feature-support.md for the list. Environment variables:
+  # matching switch is true, so nobody uses them by accident.
+  # enable_unofficial also allows the undocumented operations of documented
+  # resources, such as an in-place update of a message mapping's content or
+  # deleting a number range. See docs/feature-support.md, "Contract
+  # sources", for the list. Environment variables:
   # SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL, SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL.
   enable_experimental = false
   enable_unofficial   = false
@@ -81,7 +84,7 @@ provider "sapintegrationsuite" {
 - `api_composition` (Block, Optional) Credentials for API Composition's Configuration API, used only by sapintegrationsuite_business_data_graph. The API has its own region-specific host and OAuth client, from a service key of an API Composition service instance with plan "configuration"; the oauth and api_management credentials do not work there. Set all four values, or none. Each can also come from a SAP_INTEGRATION_SUITE_API_COMPOSITION_* environment variable. (see [below for nested schema](#nestedblock--api_composition))
 - `api_management` (Block, Optional) Optional, and independent of the oauth block above. Classic API Management (API Providers, API Proxies, API Products, Key Value Maps) authenticates against its own API Portal application URL and its own OAuth 2.0 client, generated from the apiportal-apiaccess service plan — never the Cloud Integration credentials configured above. Leave this entire block out if you do not use any sapintegrationsuite_api_provider, sapintegrationsuite_api_product, sapintegrationsuite_api_key_value_map, or sapintegrationsuite_api_management_certificate_store_reference resource or data source. All four values (or their SAP_INTEGRATION_SUITE_API_MANAGEMENT_* environment variable equivalents) must be supplied together, or all left unset. (see [below for nested schema](#nestedblock--api_management))
 - `enable_experimental` (Boolean) Allows resources and data sources whose support status is "experimental": implemented on a documented API, but their lifecycle has not yet passed an acceptance test on a tenant, so behavior or schema may still change. Off by default; a configuration that uses one fails until this is true. Can also be set via the SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL environment variable. See docs/feature-support.md for which ones they are.
-- `enable_unofficial` (Boolean) Allows resources and data sources whose support status is "unofficial": they work and were verified on a tenant, but SAP does not document the API behind them (it is known only from the service's $metadata), so SAP may change it without notice. Off by default; a configuration that uses one fails until this is true. Can also be set via the SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL environment variable.
+- `enable_unofficial` (Boolean) Allows resources and data sources whose support status is "unofficial": they work and were verified on a tenant, but SAP does not document the API behind them (it is known only from the service's $metadata), so SAP may change it without notice. It also allows the unofficial operations of otherwise documented resources, for example updating a message mapping's content in place or deleting a number range. Off by default; a configuration or plan that needs one fails until this is true. Can also be set via the SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL environment variable.
 - `host` (String) Base URL of the SAP Integration Suite tenant used for Cloud Integration APIs, for example https://<tenant>.it-cpi<...>.cfapps.<region>.hana.ondemand.com. Can also be set via the SAP_INTEGRATION_SUITE_HOST environment variable.
 - `oauth` (Block, Optional) OAuth 2.0 client credentials used to authenticate against the SAP Integration Suite APIs. (see [below for nested schema](#nestedblock--oauth))
 

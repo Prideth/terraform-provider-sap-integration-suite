@@ -17,8 +17,11 @@ provider "sapintegrationsuite" {
   # Both off by default. Resources and data sources whose status is
   # "experimental" (lifecycle not yet verified on a tenant) or "unofficial"
   # (works, but SAP does not document the API) refuse to run until the
-  # matching switch is true, so nobody uses them by accident. See
-  # docs/feature-support.md for the list. Environment variables:
+  # matching switch is true, so nobody uses them by accident.
+  # enable_unofficial also allows the undocumented operations of documented
+  # resources, such as an in-place update of a message mapping's content or
+  # deleting a number range. See docs/feature-support.md, "Contract
+  # sources", for the list. Environment variables:
   # SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL, SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL.
   enable_experimental = false
   enable_unofficial   = false

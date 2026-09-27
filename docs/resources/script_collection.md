@@ -4,11 +4,14 @@ page_title: "sapintegrationsuite_script_collection Resource - sapintegrationsuit
 subcategory: ""
 description: |-
   Manages the design-time content of a reusable Cloud Integration script collection, uploaded from a local content file (a ZIP archive of Groovy/JavaScript script files). Backed by the public Integration Content OData V2 API (ScriptCollectionDesigntimeArtifacts). Deploying to a runtime is handled by the separate sapintegrationsuite_script_collection_deployment resource, and is never triggered automatically by deploying an integration flow that references this collection.
+  SAP documents creating, reading and deleting script collections, not updating them or saving them as a version. An in-place update (PUT of the content) and save_as_version work on a tenant but are unofficial, so they need enable_unofficial = true in the provider block.
 ---
 
 # sapintegrationsuite_script_collection (Resource)
 
 Manages the design-time content of a reusable Cloud Integration script collection, uploaded from a local content file (a ZIP archive of Groovy/JavaScript script files). Backed by the public Integration Content OData V2 API (ScriptCollectionDesigntimeArtifacts). Deploying to a runtime is handled by the separate sapintegrationsuite_script_collection_deployment resource, and is never triggered automatically by deploying an integration flow that references this collection.
+
+SAP documents creating, reading and deleting script collections, not updating them or saving them as a version. An in-place update (PUT of the content) and save_as_version work on a tenant but are unofficial, so they need enable_unofficial = true in the provider block.
 
 ## Example Usage
 

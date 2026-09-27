@@ -137,8 +137,10 @@ func (p *sapIntegrationSuiteProvider) Schema(_ context.Context, _ provider.Schem
 				Description: "Allows resources and data sources whose support status is " +
 					"\"unofficial\": they work and were verified on a tenant, but SAP does not " +
 					"document the API behind them (it is known only from the service's $metadata), " +
-					"so SAP may change it without notice. Off by default; a configuration that uses " +
-					"one fails until this is true. Can also be set via the " +
+					"so SAP may change it without notice. It also allows the unofficial operations of " +
+					"otherwise documented resources, for example updating a message mapping's content " +
+					"in place or deleting a number range. Off by default; a configuration or plan that " +
+					"needs one fails until this is true. Can also be set via the " +
 					"SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL environment variable.",
 			},
 			"host": schema.StringAttribute{

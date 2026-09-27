@@ -27,6 +27,10 @@ func NewScriptCollectionResource() resource.Resource {
 
 type scriptCollectionResource struct {
 	client *cloudintegration.Client
+	// allowUnofficial is the provider's enable_unofficial: the content
+	// update (PUT) and ScriptCollectionDesigntimeArtifactSaveAsVersion are
+	// not documented by SAP.
+	allowUnofficial bool
 }
 
 type scriptCollectionModel struct {
@@ -52,7 +56,11 @@ func (r *scriptCollectionResource) Schema(_ context.Context, _ resource.SchemaRe
 			"(ScriptCollectionDesigntimeArtifacts). Deploying to a runtime is handled by the " +
 			"separate sapintegrationsuite_script_collection_deployment resource, and is never " +
 			"triggered automatically by deploying an integration flow that references this " +
-			"collection.",
+			"collection.\n\n" +
+			"SAP documents creating, reading and deleting script collections, not updating them or " +
+			"saving them as a version. An in-place update (PUT of the content) and save_as_version " +
+			"work on a tenant but are unofficial, so they need enable_unofficial = true in the " +
+			"provider block.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
@@ -125,6 +133,7 @@ func (r *scriptCollectionResource) Configure(_ context.Context, req resource.Con
 		return
 	}
 	r.client = cloudintegration.New(data.HTTPClient, data.Host)
+	r.allowUnofficial = data.EnableUnofficial
 }
 
 func (r *scriptCollectionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -141,6 +150,10 @@ func (r *scriptCollectionResource) Create(ctx context.Context, req resource.Crea
 	}
 	if err := verifyContentHash(content, plan.ContentHash.ValueString()); err != nil {
 		resp.Diagnostics.AddError("Script collection content hash mismatch", err.Error())
+		return
+	}
+	if _, due := versionToSave(plan.SaveAsVersion, types.StringNull()); due &&
+		!requireUnofficialOperation(r.allowUnofficial, "sapintegrationsuite_script_collection", scriptCollectionSaveAsVersionOp, &resp.Diagnostics) {
 		return
 	}
 
@@ -185,7 +198,36 @@ func (r *scriptCollectionResource) Read(ctx context.Context, req resource.ReadRe
 	resp.Diagnostics.Append(resp.State.Set(ctx, scriptCollectionToModel(state.PackageID.ValueString(), sc, state))...)
 }
 
+// ModifyPlan stops, without enable_unofficial, a plan that updates a script
+// collection in place (content PUT) or saves it as a version on create:
+// SAP documents neither for script collections.
+func (r *scriptCollectionResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if r.client == nil {
+		return // provider not configured yet; Create and Update check again
+	}
+	if isInPlaceUpdate(req, resp) {
+		requireUnofficialOperation(r.allowUnofficial, "sapintegrationsuite_script_collection", scriptCollectionUpdateOp, &resp.Diagnostics)
+		return
+	}
+	if req.State.Raw.IsNull() && !req.Plan.Raw.IsNull() {
+		var v types.String
+		resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, pathRoot("save_as_version"), &v)...)
+		// An unknown version is checked again in Create.
+		if _, due := versionToSave(v, types.StringNull()); due {
+			requireUnofficialOperation(r.allowUnofficial, "sapintegrationsuite_script_collection", scriptCollectionSaveAsVersionOp, &resp.Diagnostics)
+		}
+	}
+}
+
+const (
+	scriptCollectionUpdateOp        = "update of the content (PUT)"
+	scriptCollectionSaveAsVersionOp = "save_as_version (ScriptCollectionDesigntimeArtifactSaveAsVersion)"
+)
+
 func (r *scriptCollectionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	if !requireUnofficialOperation(r.allowUnofficial, "sapintegrationsuite_script_collection", scriptCollectionUpdateOp, &resp.Diagnostics) {
+		return
+	}
 	var plan scriptCollectionModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	var prior scriptCollectionModel

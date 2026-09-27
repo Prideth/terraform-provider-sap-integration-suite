@@ -55,7 +55,12 @@ func writeContractSources(b *strings.Builder, sorted []features.Feature) {
 		fmt.Fprintln(b)
 	}
 	fmt.Fprintln(b, "Individual operations of an otherwise documented feature can be unofficial too. They are "+
-		"not switched off, because they belong to supported resources, but they are listed here:")
+		"switched off by `enable_unofficial` as well, but only the operation: the resource itself stays "+
+		"usable with its documented operations. A plan that needs one of them fails with an error that "+
+		"names the operation, for example an in-place update of a message mapping's content. Number "+
+		"ranges without the switch work with what SAP documents: a refresh keeps the state instead of "+
+		"reading the number range, an update has to change `current_value_wo_version` so that it can send "+
+		"the counter, and delete and import are refused.")
 	fmt.Fprintln(b)
 	fmt.Fprintln(b, "| Feature | Implemented operation that SAP does not document |")
 	fmt.Fprintln(b, "|---|---|")

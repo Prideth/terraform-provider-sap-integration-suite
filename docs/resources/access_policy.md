@@ -4,11 +4,14 @@ page_title: "sapintegrationsuite_access_policy Resource - sapintegrationsuite"
 subcategory: ""
 description: |-
   An SAP Integration Suite access policy: a named guard, tied to a BTP role, that restricts who can work with the artifacts its references match. The policy itself only carries the role name and a description; the matching rules live in separate sapintegrationsuite_access_policy_reference resources. Backed by the AccessPolicies entity of the Security Content OData V2 API.
+  SAP's tooling creates, reads and deletes access policies. Changing the description in place uses PATCH, which works on a tenant but is unofficial, so it needs enable_unofficial = true in the provider block.
 ---
 
 # sapintegrationsuite_access_policy (Resource)
 
 An SAP Integration Suite access policy: a named guard, tied to a BTP role, that restricts who can work with the artifacts its references match. The policy itself only carries the role name and a description; the matching rules live in separate sapintegrationsuite_access_policy_reference resources. Backed by the AccessPolicies entity of the Security Content OData V2 API.
+
+SAP's tooling creates, reads and deletes access policies. Changing the description in place uses PATCH, which works on a tenant but is unofficial, so it needs enable_unofficial = true in the provider block.
 
 ## Example Usage
 

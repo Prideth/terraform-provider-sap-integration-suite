@@ -566,8 +566,13 @@ var Catalog = []Feature{
 		Limitations: []string{
 			"SAP documents only POST and PUT. GET by name and DELETE were verified on a tenant " +
 				"(September 2026: GET returned every field as sent, DELETE answered 202 and a read " +
-				"afterwards 404), so the resource reads, deletes and imports. The collection rejects " +
-				"$top with 501, and every write answered 202 without a body.",
+				"afterwards 404), so with enable_unofficial the resource reads, deletes and imports. " +
+				"The collection rejects $top with 501, and every write answered 202 without a body.",
+			"Without enable_unofficial the resource uses only POST and PUT: a refresh keeps the state " +
+				"(no drift detection, and deployed_by/deployed_on stay empty), an update must change " +
+				"current_value_wo_version because SAP needs a counter in the PUT and the live one " +
+				"cannot be read, and delete and import are refused. Create then cannot check whether " +
+				"the name already exists.",
 			"The runtime counter is a write-only, version-gated attribute (current_value_wo / " +
 				"current_value_wo_version), sent on create and only when the version marker changes; " +
 				"current_value reports the live value. After an import the first apply records the " +
@@ -575,8 +580,8 @@ var Catalog = []Feature{
 			"SAP rejects a PUT without CurrentValue (500, object unchanged), so every other update " +
 				"reads the live counter right before the PUT and sends it back; a number consumed " +
 				"during that round trip would be handed out again.",
-			"Create stops when the name already exists, because SAP does not document what a create " +
-				"on an existing name does. Names must not contain hyphens: a tenant rejected one with " +
+			"With enable_unofficial, create stops when the name already exists, because SAP does not " +
+				"document what a create on an existing name does. Names must not contain hyphens: a tenant rejected one with " +
 				"a 500 while the same request with a plain name succeeded.",
 			"SAP documents an Edge Integration Cell path (/location/<id>/api/v1/NumberRanges); " +
 				"runtime_location_id is not offered; Edge Integration Cell targeting is not supported.",
@@ -1938,7 +1943,8 @@ var Catalog = []Feature{
 			"SAP documents the Create body, GET and PATCH on GraphConfiguration/{id}, and the status " +
 				"model. It gives no PATCH body and no delete request. The provider sends the writable " +
 				"properties as the PATCH body and DELETE to the graph's URL. Not yet verified against " +
-				"a live system.",
+				"a live system. Both need enable_unofficial in addition to enable_experimental, so " +
+				"without it a graph can be created and read, but not changed in place or destroyed.",
 			"SAP processes graphs asynchronously. Create and Update wait until the status leaves " +
 				"PROCESSING (20 minutes by default, configurable with timeouts). A graph that ends in " +
 				"FAILED is kept in state and marked tainted.",

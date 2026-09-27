@@ -22,6 +22,8 @@ const envGraphDestination = "SAP_INTEGRATION_SUITE_ACC_GRAPH_DESTINATION"
 func TestAccBusinessDataGraph_basic(t *testing.T) {
 	accgate.Require(t, accgate.APIComposition, envGraphDestination)
 	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL", "true")
+	// The in-place update (PATCH) and the delete are unofficial operations.
+	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "true")
 	id := testAccName()
 	destination := os.Getenv(envGraphDestination)
 	config := func(exclude string) string {

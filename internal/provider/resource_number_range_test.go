@@ -157,7 +157,7 @@ func TestNumberRangeResource_Update_SendsLiveCounterWhenVersionUnchanged(t *test
 	}))
 	defer server.Close()
 
-	r := &numberRangeResource{client: cloudintegration.New(http.DefaultClient, server.URL)}
+	r := &numberRangeResource{client: cloudintegration.New(http.DefaultClient, server.URL), allowUnofficial: true}
 	s := numberRangeSchema(t).Schema
 	ctx := context.Background()
 	objType := s.Type().TerraformType(ctx).(tftypes.Object)
@@ -227,7 +227,7 @@ func TestNumberRangeResource_Update_SendsCurrentValueWhenVersionChanges(t *testi
 	}))
 	defer server.Close()
 
-	r := &numberRangeResource{client: cloudintegration.New(http.DefaultClient, server.URL)}
+	r := &numberRangeResource{client: cloudintegration.New(http.DefaultClient, server.URL), allowUnofficial: true}
 	s := numberRangeSchema(t).Schema
 	ctx := context.Background()
 	objType := s.Type().TerraformType(ctx).(tftypes.Object)
@@ -343,7 +343,7 @@ func TestNumberRangeResource_Read_DetectsDrift(t *testing.T) {
 	}))
 	defer server.Close()
 
-	r := &numberRangeResource{client: cloudintegration.New(http.DefaultClient, server.URL)}
+	r := &numberRangeResource{client: cloudintegration.New(http.DefaultClient, server.URL), allowUnofficial: true}
 	s := numberRangeSchema(t).Schema
 	ctx := context.Background()
 	v1 := "v1"
@@ -377,7 +377,7 @@ func TestNumberRangeResource_Read_RemovesDeletedRange(t *testing.T) {
 	}))
 	defer server.Close()
 
-	r := &numberRangeResource{client: cloudintegration.New(http.DefaultClient, server.URL)}
+	r := &numberRangeResource{client: cloudintegration.New(http.DefaultClient, server.URL), allowUnofficial: true}
 	s := numberRangeSchema(t).Schema
 	v1 := "v1"
 
@@ -399,7 +399,7 @@ func TestNumberRangeResource_Delete_SendsDelete(t *testing.T) {
 	}))
 	defer server.Close()
 
-	r := &numberRangeResource{client: cloudintegration.New(http.DefaultClient, server.URL)}
+	r := &numberRangeResource{client: cloudintegration.New(http.DefaultClient, server.URL), allowUnofficial: true}
 	s := numberRangeSchema(t).Schema
 	v1 := "v1"
 
@@ -414,7 +414,7 @@ func TestNumberRangeResource_Delete_SendsDelete(t *testing.T) {
 }
 
 func TestNumberRangeResource_ImportState_SetsName(t *testing.T) {
-	r := NewNumberRangeResource().(resource.ResourceWithImportState)
+	r := &numberRangeResource{allowUnofficial: true}
 	s := numberRangeSchema(t).Schema
 	ctx := context.Background()
 
@@ -446,7 +446,7 @@ func TestNumberRangeResource_Update_AfterImportKeepsCounter(t *testing.T) {
 	}))
 	defer server.Close()
 
-	r := &numberRangeResource{client: cloudintegration.New(http.DefaultClient, server.URL)}
+	r := &numberRangeResource{client: cloudintegration.New(http.DefaultClient, server.URL), allowUnofficial: true}
 	s := numberRangeSchema(t).Schema
 	ctx := context.Background()
 	v1 := "v1"
@@ -485,7 +485,7 @@ func TestNumberRangeResource_Create_RefusesExistingName(t *testing.T) {
 	}))
 	defer server.Close()
 
-	r := &numberRangeResource{client: cloudintegration.New(http.DefaultClient, server.URL)}
+	r := &numberRangeResource{client: cloudintegration.New(http.DefaultClient, server.URL), allowUnofficial: true}
 	s := numberRangeSchema(t).Schema
 	v1 := "v1"
 

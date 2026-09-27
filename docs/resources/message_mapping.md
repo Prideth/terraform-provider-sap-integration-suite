@@ -4,11 +4,14 @@ page_title: "sapintegrationsuite_message_mapping Resource - sapintegrationsuite"
 subcategory: ""
 description: |-
   Manages the design-time content of a reusable Cloud Integration message mapping artifact, uploaded from a local content file (a ZIP archive containing a mapping definition file and any schema files it references). Backed by the public Integration Content OData V2 API (MessageMappingDesigntimeArtifacts). This is the reusable, package-level message mapping artifact that an integration flow can reference from a message mapping step — not the inline/local message mapping configuration an integration flow can also define directly inside its own content; see docs/resource-design.md for that distinction. Deploying to a runtime is handled by the separate sapintegrationsuite_message_mapping_deployment resource, and is never triggered automatically by deploying an integration flow that references this mapping — SAP does not do that either.
+  SAP documents reading, creating and deleting message mappings, not updating them. An in-place update (new content or name) sends the content with PUT, which works on a tenant but is unofficial, so it needs enable_unofficial = true in the provider block.
 ---
 
 # sapintegrationsuite_message_mapping (Resource)
 
 Manages the design-time content of a reusable Cloud Integration message mapping artifact, uploaded from a local content file (a ZIP archive containing a mapping definition file and any schema files it references). Backed by the public Integration Content OData V2 API (MessageMappingDesigntimeArtifacts). This is the reusable, package-level message mapping artifact that an integration flow can reference from a message mapping step — not the inline/local message mapping configuration an integration flow can also define directly inside its own content; see docs/resource-design.md for that distinction. Deploying to a runtime is handled by the separate sapintegrationsuite_message_mapping_deployment resource, and is never triggered automatically by deploying an integration flow that references this mapping — SAP does not do that either.
+
+SAP documents reading, creating and deleting message mappings, not updating them. An in-place update (new content or name) sends the content with PUT, which works on a tenant but is unofficial, so it needs enable_unofficial = true in the provider block.
 
 ## Example Usage
 

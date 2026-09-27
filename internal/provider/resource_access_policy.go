@@ -25,6 +25,9 @@ func NewAccessPolicyResource() resource.Resource {
 
 type accessPolicyResource struct {
 	client *cloudintegration.Client
+	// allowUnofficial is the provider's enable_unofficial: SAP's tooling
+	// creates, reads and deletes access policies, but does not update them.
+	allowUnofficial bool
 }
 
 type accessPolicyModel struct {
@@ -43,7 +46,10 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 			"restricts who can work with the artifacts its references match. The policy itself only " +
 			"carries the role name and a description; the matching rules live in separate " +
 			"sapintegrationsuite_access_policy_reference resources. Backed by the AccessPolicies " +
-			"entity of the Security Content OData V2 API.",
+			"entity of the Security Content OData V2 API.\n\n" +
+			"SAP's tooling creates, reads and deletes access policies. Changing the description in " +
+			"place uses PATCH, which works on a tenant but is unofficial, so it needs " +
+			"enable_unofficial = true in the provider block.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,
@@ -90,6 +96,7 @@ func (r *accessPolicyResource) Configure(_ context.Context, req resource.Configu
 		return
 	}
 	r.client = cloudintegration.New(data.HTTPClient, data.Host)
+	r.allowUnofficial = data.EnableUnofficial
 }
 
 func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -132,7 +139,22 @@ func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadReques
 	resp.Diagnostics.Append(resp.State.Set(ctx, accessPolicyToModel(policy))...)
 }
 
+// ModifyPlan stops a description change without enable_unofficial: the
+// PATCH that applies it works on a tenant but is not documented. role_name
+// replaces the policy, so the description is the only in-place change.
+func (r *accessPolicyResource) ModifyPlan(_ context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if r.client == nil {
+		return // provider not configured yet; Update checks again
+	}
+	if isInPlaceUpdate(req, resp) {
+		requireUnofficialOperation(r.allowUnofficial, "sapintegrationsuite_access_policy", "description update (PATCH)", &resp.Diagnostics)
+	}
+}
+
 func (r *accessPolicyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	if !requireUnofficialOperation(r.allowUnofficial, "sapintegrationsuite_access_policy", "description update (PATCH)", &resp.Diagnostics) {
+		return
+	}
 	var plan accessPolicyModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {

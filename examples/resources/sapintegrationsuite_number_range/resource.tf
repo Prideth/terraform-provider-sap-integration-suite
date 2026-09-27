@@ -1,9 +1,10 @@
-# SAP documents no GET or DELETE operation for Number Ranges - only Create
-# (POST) and Update (PUT) are confirmed. This resource can push
-# configuration and observe nothing back: Read never contacts SAP, and
-# both Import and Delete return explicit errors instead of guessing at an
-# unconfirmed operation. See docs/guides/runtime-stores-and-number-ranges.md
-# before adopting this resource.
+# SAP documents only Create (POST) and Update (PUT) for Number Ranges.
+# Reading by name, delete and import were verified on a tenant but are
+# unofficial and need enable_unofficial = true in the provider block.
+# Without it, a refresh keeps the state, every update must change
+# current_value_wo_version, and destroy and import are refused. See
+# docs/guides/runtime-stores-and-number-ranges.md before adopting this
+# resource.
 resource "sapintegrationsuite_number_range" "invoice_numbers" {
   name        = "InvoiceNumbers"
   min_value   = "0"

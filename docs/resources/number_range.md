@@ -4,7 +4,8 @@ page_title: "sapintegrationsuite_number_range Resource - sapintegrationsuite"
 subcategory: ""
 description: |-
   Manages the static configuration of a Cloud Integration "Number Ranges" object, used to generate unique interchange numbers for outbound EDI/EDIFACT documents. Backed by the public Message Stores OData V2 API (NumberRanges).
-  SAP documents only create and update for this entity. Reading by name and deleting were verified on a tenant in September 2026 (GET and DELETE on NumberRanges('')), so this resource detects drift, supports destroy and can be imported by name. Create refuses to run when a number range of that name already exists, because SAP does not document what a create on an existing name does.
+  SAP documents only create and update for this entity. Reading by name and deleting were verified on a tenant in September 2026 (GET and DELETE on NumberRanges('')), but are unofficial: with enable_unofficial = true in the provider block this resource detects drift, supports destroy and can be imported by name, and create refuses to run when a number range of that name already exists, because SAP does not document what a create on an existing name does.
+  Without enable_unofficial it uses only the documented create and update: a refresh keeps the state as it is, every update must change current_value_wo_version (SAP needs a counter in the update, and the live one cannot be read), destroy and import are refused, and create cannot check for an existing name.
   The runtime counter (SAP's CurrentValue, shown as 'Next Value' in the UI) is handled separately from the rest of this resource's configuration: see current_value_wo below. Ordinary applies that only change description, min_value, max_value, rotate, or field_length send back the counter SAP currently holds, and current_value shows its live value.
 ---
 
@@ -12,19 +13,22 @@ description: |-
 
 Manages the static configuration of a Cloud Integration "Number Ranges" object, used to generate unique interchange numbers for outbound EDI/EDIFACT documents. Backed by the public Message Stores OData V2 API (NumberRanges). 
 
-SAP documents only create and update for this entity. Reading by name and deleting were verified on a tenant in September 2026 (GET and DELETE on NumberRanges('<name>')), so this resource detects drift, supports destroy and can be imported by name. Create refuses to run when a number range of that name already exists, because SAP does not document what a create on an existing name does.
+SAP documents only create and update for this entity. Reading by name and deleting were verified on a tenant in September 2026 (GET and DELETE on NumberRanges('<name>')), but are unofficial: with enable_unofficial = true in the provider block this resource detects drift, supports destroy and can be imported by name, and create refuses to run when a number range of that name already exists, because SAP does not document what a create on an existing name does.
+
+Without enable_unofficial it uses only the documented create and update: a refresh keeps the state as it is, every update must change current_value_wo_version (SAP needs a counter in the update, and the live one cannot be read), destroy and import are refused, and create cannot check for an existing name.
 
 The runtime counter (SAP's CurrentValue, shown as 'Next Value' in the UI) is handled separately from the rest of this resource's configuration: see current_value_wo below. Ordinary applies that only change description, min_value, max_value, rotate, or field_length send back the counter SAP currently holds, and current_value shows its live value.
 
 ## Example Usage
 
 ```terraform
-# SAP documents no GET or DELETE operation for Number Ranges - only Create
-# (POST) and Update (PUT) are confirmed. This resource can push
-# configuration and observe nothing back: Read never contacts SAP, and
-# both Import and Delete return explicit errors instead of guessing at an
-# unconfirmed operation. See docs/guides/runtime-stores-and-number-ranges.md
-# before adopting this resource.
+# SAP documents only Create (POST) and Update (PUT) for Number Ranges.
+# Reading by name, delete and import were verified on a tenant but are
+# unofficial and need enable_unofficial = true in the provider block.
+# Without it, a refresh keeps the state, every update must change
+# current_value_wo_version, and destroy and import are refused. See
+# docs/guides/runtime-stores-and-number-ranges.md before adopting this
+# resource.
 resource "sapintegrationsuite_number_range" "invoice_numbers" {
   name        = "InvoiceNumbers"
   min_value   = "0"
@@ -89,5 +93,7 @@ Import is supported using the following syntax:
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
+# Needs enable_unofficial = true: an import reads the number range by name,
+# which SAP does not document.
 terraform import sapintegrationsuite_number_range.invoice_numbers InvoiceNumbers
 ```

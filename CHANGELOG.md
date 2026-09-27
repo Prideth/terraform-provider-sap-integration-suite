@@ -311,6 +311,24 @@ All notable changes to this project are documented in this file.
   `SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL`. Without the switch, a
   configuration that uses one of them fails with an error that names it, so
   nobody relies on them by accident.
+- **Breaking:** `enable_unofficial` also switches off the undocumented
+  operations of otherwise documented resources. Without it, a plan fails
+  with an error that names the operation when it needs one of them:
+  - `sapintegrationsuite_message_mapping`: an in-place update (the content
+    is sent with PUT, which SAP does not document for message mappings);
+  - `sapintegrationsuite_script_collection`: an in-place update, and
+    `save_as_version`;
+  - `sapintegrationsuite_access_policy`: changing the description;
+  - `sapintegrationsuite_business_data_graph`: an in-place update and
+    delete, in addition to `enable_experimental`.
+
+  `sapintegrationsuite_number_range` keeps working without the switch, with
+  the operations SAP documents (create and update): a refresh keeps the
+  state instead of reading the number range, every update has to change
+  `current_value_wo_version` (SAP needs a counter in the update, and the
+  live one cannot be read without the undocumented GET), and destroy and
+  import are refused. Set `enable_unofficial = true` to keep the behavior
+  of earlier releases.
 - Support status now depends on where the contract comes from. Every
   implemented feature names its source (`sap_documentation`,
   `api_specification`, `sap_tooling` or `metadata_only`), and only an

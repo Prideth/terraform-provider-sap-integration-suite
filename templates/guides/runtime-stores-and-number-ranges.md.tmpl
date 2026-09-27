@@ -38,7 +38,7 @@ number must be added to each document." It has two very different parts:
 `sapintegrationsuite_number_range` manages the first part. It sets the counter only when you ask
 for it explicitly, and reports its live value in `current_value`.
 
-### Reading, deleting and importing: verified on a tenant
+### Reading, deleting and importing: verified on a tenant, unofficial
 
 SAP documents only two operations for Number Ranges: *Add* (`POST /api/v1/NumberRanges`) and
 *Update* (`PUT /api/v1/NumberRanges('<name>')`). Earlier releases of this provider therefore had a
@@ -47,7 +47,9 @@ SAP documents only two operations for Number Ranges: *Add* (`POST /api/v1/Number
 In September 2026 a tenant test settled the rest. `GET NumberRanges('<name>')` returned the
 object with every field exactly as it was sent, `DELETE NumberRanges('<name>')` answered `202`
 and a read afterwards returned `404`, and the tenant `$metadata` lists the same properties plus
-`DeployedBy` and `DeployedOn`. The resource now uses both operations:
+`DeployedBy` and `DeployedOn`. SAP still does not document them, so they are *unofficial*: they
+work today, but SAP may change them without notice. With `enable_unofficial = true` in the
+provider block, the resource uses both operations:
 
 - `Read` reports what SAP holds, so a description or range changed in the Monitor UI shows up as
   drift, and a number range deleted outside Terraform drops out of state.
@@ -59,6 +61,24 @@ and a read afterwards returned `404`, and the tenant `$metadata` lists the same 
 
 Because SAP does not document what a create does when the name already exists, `Create` checks
 first and stops with an error that asks for an import instead.
+
+### Without `enable_unofficial`
+
+Without the switch the resource uses only the two documented operations:
+
+- A refresh keeps the state as it is. Terraform shows no drift, and `deployed_by` and
+  `deployed_on` stay empty; `current_value` is the counter Terraform last sent.
+- Every update has to change `current_value_wo_version`, which sets the counter to
+  `current_value_wo`. SAP rejects an update without a counter, and keeping the live one would
+  mean reading it first. A plan that changes only the other attributes fails with an error that
+  says so.
+- `terraform destroy`, a replacement (a new `name`) and `terraform import` fail with an error
+  that names the operation. To stop managing a number range without deleting it, use
+  `terraform state rm`.
+- `Create` cannot check whether the name already exists.
+
+Switching `enable_unofficial` on later is safe: the next refresh reads the number range and fills
+in what the state is missing.
 
 Two request details from the same test matter if you call the API yourself: the entity set
 answers `$top` with `501`, so the provider reads without query options; and every write returned

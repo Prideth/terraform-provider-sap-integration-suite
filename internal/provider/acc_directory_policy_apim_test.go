@@ -85,6 +85,8 @@ resource "sapintegrationsuite_partner_user_credential_parameter" "test" {
 // update uses PATCH (the tenant rejects PUT with 501).
 func TestAccAccessPolicy_withReference(t *testing.T) {
 	accgate.Require(t, accgate.SecurityContent)
+	// The description update (PATCH) is an unofficial operation.
+	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "true")
 	role := testAccName()
 	config := func(description string) string {
 		return fmt.Sprintf(`

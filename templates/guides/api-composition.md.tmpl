@@ -210,6 +210,11 @@ The following parts are the provider's own inference:
   Read-only properties and extensions are never sent.
 - **Delete.** SAP says the API can delete graphs but documents no request. The provider sends
   `DELETE` to the graph's URL.
+
+  Because SAP documents neither the update body nor the delete request, both are unofficial
+  operations and need `enable_unofficial = true` in the provider block, in addition to
+  `enable_experimental`. Without it, a graph can be created and read, but a plan that updates
+  it in place, replaces it or destroys it fails with an error that names the operation.
 - **Shape of the locating policy.** The property table calls it an "array of locating policies",
   but both SAP examples show a single object with `cues`, `keyMapping` and `rules`. The provider
   follows the examples.
