@@ -484,6 +484,7 @@ Only UI procedures or internal endpoints, which the provider does not use.
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - What's New for API Management, Cloud Foundry (entries up to 2026-09-20)
   - a package export of the development tenant (2026-09-26): API artifacts and data types travel as package content
+  - artifact bundles downloaded from the development tenant (2026-09-27): an API artifact is a RESTAPI bundle and an MCP server an MCPSERVER bundle, both for runtime profile integrationcell; the MCP server requires the capability of its source API artifact
   - SAP/cicd-actions-for-sap-integration-suite (2026-06-02)
   - Business Accelerator Hub: the API artifacts of 173 Integration Suite, API Management, Edge, Graph and BTP packages (308 APIs) searched for API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API deployment, API policy, reusable API, proxy, transport and gateway (2026-09-27); the package list was unchanged since 2026-09-26
   - Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6
@@ -515,13 +516,14 @@ Only UI procedures or internal endpoints, which the provider does not use.
 
 `api_gateway.mcp_server` · checked 2026-09-27
 
-- **Finding:** MCP Gateway (2026-07-05) and remote MCP servers (2026-09-20) are UI features; MCP servers travel as package content.
+- **Finding:** MCP Gateway (2026-07-05) and remote MCP servers (2026-09-20) are UI features; MCP servers travel as package content (MCPSERVER bundles that depend on their source API artifact).
 - **Next step:** An MCP server API from SAP.
 - **Sources:**
   - What's New for API Management, Cloud Foundry (entries up to 2026-09-20)
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
   - SAP API Management Client SDK 3.0.6 (Maven Central, published 2026-09-24; classes StandardAPIProxyClient, StandardAPIProductClient, StandardAPIKeyValueMapClient)
+  - artifact bundles downloaded from the development tenant (2026-09-27): an API artifact is a RESTAPI bundle and an MCP server an MCPSERVER bundle, both for runtime profile integrationcell; the MCP server requires the capability of its source API artifact
   - Business Accelerator Hub: the API artifacts of 173 Integration Suite, API Management, Edge, Graph and BTP packages (308 APIs) searched for API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API deployment, API policy, reusable API, proxy, transport and gateway (2026-09-27); the package list was unchanged since 2026-09-26
   - Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6
 

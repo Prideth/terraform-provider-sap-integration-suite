@@ -52,6 +52,7 @@ const (
 	srcSDKCheck    = "Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6"
 	srcGapProbe    = "tenant-probe -GapTests on a development tenant (2026-09-27), synthetic tfAccProbe* objects only"
 	srcIAProbe     = "ia-probe -LandscapeTests on the development tenant's Integration Assessment (2026-09-27 17:29), synthetic tfacc-probe objects only"
+	srcBundles     = "artifact bundles downloaded from the development tenant (2026-09-27): an API artifact is a RESTAPI bundle and an MCP server an MCPSERVER bundle, both for runtime profile integrationcell; the MCP server requires the capability of its source API artifact"
 	srcAccRun      = "acceptance run of 2026-09-27 17:29 on the development tenant"
 	srcIAProbe2    = "ia-probe -LandscapeTests on the development tenant (2026-09-27 19:33), synthetic tfacc-probe objects only"
 )
@@ -263,7 +264,7 @@ var Evidence = map[string]EvidenceRecord{
 	"api_gateway.api_artifact": reaudited(
 		"No public API: the Hub's APIMgmt and CloudIntegrationAPI packages, the Client SDK and SAP Help describe API artifacts only in the UI. API artifacts travel as package content (resourceType API) and reach another tenant only through package export/import (POST IntegrationPackages with PackageContent) or transport.",
 		"An API artifact API from SAP. Until then, whole-package import is the only public path; it is opaque to individual API artifacts and not modelled.",
-		srcHubAPIM, srcHubCI, srcHubPackages, srcSDK, srcHelp, srcWhatsNew, srcExport, srcCICD),
+		srcHubAPIM, srcHubCI, srcHubPackages, srcSDK, srcHelp, srcWhatsNew, srcExport, srcBundles, srcCICD),
 	"api_gateway.api_artifact_deployment": reaudited(
 		"Deployment is a UI action; IntegrationRuntimeArtifacts is not documented for API artifacts.",
 		"tenant-probe -GapTests records whether deployed API artifacts appear among the runtime artifact types; a documented deploy call is still needed.",
@@ -277,9 +278,9 @@ var Evidence = map[string]EvidenceRecord{
 		"Depends on an API artifact API.",
 		srcWhatsNew, srcHelp),
 	"api_gateway.mcp_server": reaudited(
-		"MCP Gateway (2026-07-05) and remote MCP servers (2026-09-20) are UI features; MCP servers travel as package content.",
+		"MCP Gateway (2026-07-05) and remote MCP servers (2026-09-20) are UI features; MCP servers travel as package content (MCPSERVER bundles that depend on their source API artifact).",
 		"An MCP server API from SAP.",
-		srcWhatsNew, srcHelp, srcHubAPIM, srcSDK),
+		srcWhatsNew, srcHelp, srcHubAPIM, srcSDK, srcBundles),
 	"api_gateway.runtime_profile": reaudited(
 		"Enabled under Settings > Integrations only; the Runtime Profiles page lists no Integration Cell row.",
 		"An API; even then a weak data source.",

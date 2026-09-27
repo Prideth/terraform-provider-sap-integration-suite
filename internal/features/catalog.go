@@ -1611,6 +1611,10 @@ var Catalog = []Feature{
 				"PackageContent (optionally ?Overwrite=true), SAP Cloud Transport Management or CTS+. " +
 				"That whole-package import is the only public path and is opaque to individual API " +
 				"artifacts, so it is not modelled as an API artifact resource.",
+			"A downloaded API artifact (2026-09-27) is a bundle of type RESTAPI for the Integration " +
+				"Cell runtime profile. It holds an OpenAPI 3.0 definition and an integration flow " +
+				"that SAP generates from it. The format is SAP-internal, so building such bundles is " +
+				"not a way around the missing API.",
 		},
 	},
 	{
@@ -1682,6 +1686,10 @@ var Catalog = []Feature{
 			"New in 2026 (MCP Gateway, July 2026; remote MCP servers, September 2026). Creation, " +
 				"tool selection, authentication and deployment are documented only as UI procedures, " +
 				"and no MCP server resource appears in any public API or in SAP's Client SDK.",
+			"Like API artifacts, MCP servers are integration package content: a downloaded MCP " +
+				"server (2026-09-27) is a bundle of type MCPSERVER for the Integration Cell runtime " +
+				"profile that requires the bundle of its source API artifact. It can only be moved " +
+				"with the whole package.",
 			"Publishing an MCP server as a Developer Hub product belongs to the separate Developer " +
 				"Hub provider, not to this one.",
 		},
