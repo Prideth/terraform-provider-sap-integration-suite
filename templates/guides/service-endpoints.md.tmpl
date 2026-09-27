@@ -33,9 +33,9 @@ resource "sapintegrationsuite_integration_flow" "orders" {
 }
 
 resource "sapintegrationsuite_integration_flow_deployment" "orders" {
-  package_id = sapintegrationsuite_integration_package.utilities.id
-  flow_id    = sapintegrationsuite_integration_flow.orders.id
-  version    = sapintegrationsuite_integration_flow.orders.version
+  package_id   = sapintegrationsuite_integration_package.utilities.id
+  flow_id      = sapintegrationsuite_integration_flow.orders.flow_id
+  flow_version = sapintegrationsuite_integration_flow.orders.version
 }
 ```
 
