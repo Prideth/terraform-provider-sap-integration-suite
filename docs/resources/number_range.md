@@ -100,7 +100,7 @@ resource "sapintegrationsuite_number_range" "invoice_numbers" {
 - `current_value_wo_version` (String) An arbitrary marker (for example a counter or timestamp) that you change to push current_value_wo to SAP on this apply. After an import, the first apply only records the marker and does not touch the counter; change it once more to set the counter deliberately.
 - `max_value` (String) The highest value the counter may hold before it errors (if rotate is false) or wraps back to min_value (if rotate is true), as a decimal digit string. SAP's UI validates this as fewer than 15 digits.
 - `min_value` (String) The lowest value the counter may hold, as a decimal digit string (SAP's wire format — not a Terraform number, to avoid any numeric-precision assumption on values SAP documents as up to 14 digits long). SAP's UI validates this as greater than or equal to 0.
-- `name` (String) The Number Range object's name, SAP's OData key. Changing it replaces the number range. Must not contain hyphens: a tenant rejected a create with a hyphenated name and SAP's own example values with a 500, while the same request with the name tfAccProbeNr succeeded.
+- `name` (String) The Number Range object's name, SAP's OData key. Changing it replaces the number range. Only letters, digits, spaces and underscores: SAP rejects anything else with a 500 ("Invalid NRO name input. It can only contain alphanumeric characters, space and underscore.", tenant test September 2026).
 - `rotate` (Boolean) Whether the counter wraps back to min_value once it reaches max_value (confirmed by SAP's documentation), instead of erroring once exhausted. A Terraform bool; SAP's wire format is the string "true"/"false", translated by this provider.
 
 ### Optional
@@ -130,7 +130,8 @@ content is already consuming never resets it.
 ## Limitations
 
 - **SAP:** only create and update are documented. An update without `CurrentValue` fails with a
-  500, and names with hyphens are rejected with a 500; the provider refuses them at plan time.
+  500, and names with characters other than letters, digits, spaces and underscores are rejected
+  with a 500; the provider refuses them at plan time.
 - **Provider:** when an update keeps the counter, a number consumed between the read and the
   `PUT` (one round trip) would be handed out again. Update number ranges that are in heavy use
   outside peak hours. SAP documents a separate path for number ranges on an Edge Integration

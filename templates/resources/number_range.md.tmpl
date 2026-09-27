@@ -65,7 +65,8 @@ content is already consuming never resets it.
 ## Limitations
 
 - **SAP:** only create and update are documented. An update without `CurrentValue` fails with a
-  500, and names with hyphens are rejected with a 500; the provider refuses them at plan time.
+  500, and names with characters other than letters, digits, spaces and underscores are rejected
+  with a 500; the provider refuses them at plan time.
 - **Provider:** when an update keeps the counter, a number consumed between the read and the
   `PUT` (one round trip) would be handed out again. Update number ranges that are in heavy use
   outside peak hours. SAP documents a separate path for number ranges on an Edge Integration

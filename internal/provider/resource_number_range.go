@@ -26,6 +26,10 @@ import (
 // SAP's wire format for every numeric field on this entity (CurrentValue,
 // MinValue, MaxValue, FieldLength) is a JSON string, confirmed verbatim from
 // SAP's own documented example bodies.
+// numberRangeName is the name rule SAP states when it rejects a name: "It can
+// only contain alphanumeric characters, space and underscore."
+var numberRangeName = regexp.MustCompile(`^[A-Za-z0-9 _]+$`)
+
 var numberRangeDigits = regexp.MustCompile(`^(0|[1-9][0-9]*)$`)
 
 const numberRangeInvalidValueSummary = "Invalid Number Range value"
@@ -105,15 +109,15 @@ func (r *numberRangeResource) Schema(_ context.Context, _ resource.SchemaRequest
 			"name": schema.StringAttribute{
 				Required: true,
 				Description: "The Number Range object's name, SAP's OData key. Changing it " +
-					"replaces the number range. Must not contain hyphens: a tenant rejected a " +
-					"create with a hyphenated name and SAP's own example values with a 500, " +
-					"while the same request with the name tfAccProbeNr succeeded.",
+					"replaces the number range. Only letters, digits, spaces and underscores: SAP " +
+					"rejects anything else with a 500 (\"Invalid NRO name input. It can only contain " +
+					"alphanumeric characters, space and underscore.\", tenant test September 2026).",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 				Validators: []validator.String{
-					stringvalidator.RegexMatches(regexp.MustCompile(`^[^-]+$`),
-						"must not contain hyphens; SAP rejects number range names with hyphens"),
+					stringvalidator.RegexMatches(numberRangeName,
+						"may only contain letters, digits, spaces and underscores; SAP rejects anything else"),
 				},
 			},
 			"min_value": schema.StringAttribute{

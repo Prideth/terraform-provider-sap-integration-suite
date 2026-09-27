@@ -147,10 +147,10 @@ the counter deliberately afterwards, change `current_value_wo_version` once more
 
 ### Names
 
-Names must not contain hyphens. A tenant rejected `tf-acc-probe-nr` with a `500` and no
-message, using SAP's own example values, while the same request with the name `tfAccProbeNr`
-succeeded. The provider rejects hyphenated names at plan time. SAP's own example uses spaces
-(`My NRO Object`); other special characters have not been tried.
+Names may only contain letters, digits, spaces and underscores. A tenant rejected
+`tf-acc-probe-nr` with a `500` and the message "Invalid NRO name input. It can only contain
+alphanumeric characters, space and underscore." SAP's own example uses spaces
+(`My NRO Object`). The provider checks the rule at plan time.
 
 ### A UI capability this provider does not expose: multi-runtime deployment
 

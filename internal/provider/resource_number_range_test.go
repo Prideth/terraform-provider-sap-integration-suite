@@ -502,3 +502,21 @@ func TestNumberRangeResource_Create_RefusesExistingName(t *testing.T) {
 		t.Error("Create sent a POST for an existing name")
 	}
 }
+
+// SAP's rule, from its own error message: "It can only contain alphanumeric
+// characters, space and underscore."
+func TestNumberRangeName(t *testing.T) {
+	for name, want := range map[string]bool{
+		"InvoiceNumbers":  true,
+		"My NRO Object":   true,
+		"INV_2026":        true,
+		"tf-acc-probe-nr": false,
+		"INV.2026":        false,
+		"INV/2026":        false,
+		"":                false,
+	} {
+		if got := numberRangeName.MatchString(name); got != want {
+			t.Errorf("%q: valid = %v, want %v", name, got, want)
+		}
+	}
+}
