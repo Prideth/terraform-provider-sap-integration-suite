@@ -53,8 +53,14 @@ found for any capability audited without a lucky primary-source PDF (compare
 examples was found). What is missing, despite substantial effort (the SAP-docs mirror, the
 official "SAP Integration Solution Advisory Methodology" PDF user guide, SAP's own TechEd
 IN262 hands-on sample repository, and in September 2026 the Business Accelerator Hub catalog,
-all checked), is any field-level contract for any entity — so this inventory is classified by
-*shape and described limits*, not by a confirmed wire contract.
+all checked), was any field-level contract. That changed on 2026-09-27: the live `$metadata` of
+both services was read with a service key and is committed as a normalized snapshot
+(`testdata/api-metadata/integration-assessment-entities.json` and `-management.json`). The
+Entities service has 27 entity sets, each keyed by a string `Id`, with one function import
+(`InterfaceRequestReport`); the Management service has `ImportContent` and the function
+`ExportContent`. The document says nothing about which entity sets accept writes (no
+`sap:creatable` or `sap:updatable` annotations), so the classification below rests on the
+confirmed shape plus SAP's descriptions.
 
 ### Master data — SAP-maintained ISA-M taxonomy
 
@@ -73,9 +79,14 @@ association entities (Technology Domain, Technology Style, Technology Key Charac
 is practitioner-authored configuration, not reference data or workflow state, and SAP documents
 concrete per-tenant limits that confirm real, bounded, persisted storage: a maximum of 20,000
 Applications, 20,000 Application Instances, 50 Technologies, 150 Technology Instances, and
-10,000 Vendors. If SAP's field-level Create/Read/Update/Delete contract for this group is ever
-confirmed, it is the first place this provider would look to implement Terraform resources for
-this capability.
+10,000 Vendors. The `$metadata` now confirms their fields: `Application` (`Name` required,
+`ApiHubId`, links to `Vendor` and its instances), `ApplicationInstance` (`Name` required,
+`Description`, links to `Application` and a `DeploymentModel`), `Technology` and
+`TechnologyInstance` (the same pattern for middleware), and `Vendor` (`Name`). What is still
+unconfirmed is write support: whether SAP accepts create, update and delete through the API,
+whether it generates the `Id`s, and how a link such as application to vendor is written. A probe
+(`.specs/ia-probe.ps1 -LandscapeTests`) checks exactly that with objects named `tfacc-probe-*`
+and deletes them again; the resources follow once it passes.
 
 ### Requests and assessment workflow — out of scope regardless
 
@@ -96,19 +107,9 @@ trail, including the specific sources checked and found to contain UI procedures
 
 ## Revisiting this decision
 
-The gap here is narrower than it looks: the entity inventory, the authentication mechanism, and
-the API shape (two OData services) are all confirmed. What is missing is the field-level
-contract: entity set names, properties, keys and types. The specification files on the Business
-Accelerator Hub are still only downloadable after an SAP login; the Hub's anonymous access ends
-at its login page, and no SAP sample repository calls these APIs.
-
-Because both APIs are OData services, the contract can be read from a tenant directly: an OData
-service describes itself at `<service root>/$metadata`. Anyone with a service key of
-*Integration Assessment APIs* can fetch `<entities>/$metadata` and `<management>/$metadata`
-with a client-credentials token. This is how this provider validates every Cloud Integration
-wire struct (see `CONTRIBUTING.md`, "Checking wire contracts against `$metadata`"), and it is
-the concrete step that would unblock an implementation here. Once such a document is
-available, start with Landscape Configuration — the strongest candidate — before Master Data,
-and treat Requests/assessment workflow as settled out of scope rather than reopening it. An
-implementation would also add a `provider.integration_assessment` block, since the credentials
-are a separate service key.
+The field-level contract is no longer the gap: it is in the committed snapshots, and the API
+discovery (`cmd/apidiscovery`, `TestAccMetadata`) compares them with the live services and
+reports any change. The remaining gap is write support for the landscape objects, which the probe
+settles. The order stays: landscape configuration first, the ISA-M taxonomy as data sources
+next, requests and the content import/export out of scope. An implementation adds a
+`provider.integration_assessment` block, since the credentials are a separate service key.

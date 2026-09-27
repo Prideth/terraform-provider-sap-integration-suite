@@ -29,8 +29,8 @@ SAP documentation, official SAP tooling, or a safe verification on a tenant
 | [classic-api-management-virtual-host-request](#classic-api-management-virtual-host-request) | OData V2 | none yet | | | | | | |
 | [edge-integration-cell](#edge-integration-cell) | OData V2 | none yet | | | | | | |
 | [api-composition-configuration](#api-composition-configuration) | OData V4 | none yet | | | | | | |
-| [integration-assessment-entities](#integration-assessment-entities) | OData V2 | none yet | | | | | | |
-| [integration-assessment-management](#integration-assessment-management) | OData V2 | none yet | | | | | | |
+| [integration-assessment-entities](#integration-assessment-entities) | OData V2 | 2026-09-27 | 27 | 1 | 0 | 0 | 18 | 10 |
+| [integration-assessment-management](#integration-assessment-management) | OData V2 | 2026-09-27 | 1 | 1 | 0 | 0 | 0 | 2 |
 | [data-space-integration](#data-space-integration) | OpenAPI | none yet | | | | | | |
 
 ## cloud-integration
@@ -281,7 +281,37 @@ Integration Assessment, entities API (landscape and ISA-M data).
 - Evidence for the service root: Service key of Integration Assessment APIs: field "entities" is the service root (SAP Help, Integration Assessment APIs).
 - Acceptance suites: `SAP_INTEGRATION_SUITE_ACC_INTEGRATION_ASSESSMENT`
 - Configuration: `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_ENTITIES_URL`, `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_TOKEN_URL`, `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_CLIENT_ID`, `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_CLIENT_SECRET`
-- Snapshot: none yet. Create one with `go run ./cmd/apidiscovery -services integration-assessment-entities -update` (with `-spec-dir <dir>` for a specification), then classify what it lists.
+- Snapshot: `testdata/api-metadata/integration-assessment-entities.json`, captured 2026-09-27 from local document
+- Contract: 27 entity sets, 0 singletons, 27 entity types, 0 complex types, 0 enum types, 1 operations; 27 types reachable from the entity sets and operations, 0 unreachable, 0 unresolved references
+
+### Candidates (18)
+
+| Name | Kind | Catalog entry | Catalog status | Note |
+|---|---|---|---|---|
+| Application | entity set | `integration_assessment.landscape_configuration` | unsupported | Customer-authored landscape object with documented per-tenant limits. |
+| ApplicationInstance | entity set | `integration_assessment.landscape_configuration` | unsupported | Customer-authored landscape object with documented per-tenant limits. |
+| Technology | entity set | `integration_assessment.landscape_configuration` | unsupported | Customer-authored landscape object with documented per-tenant limits. |
+| TechnologyDomain | entity set | `integration_assessment.landscape_configuration` | unsupported | Association of a technology profile; would be managed with the technology. |
+| TechnologyInstance | entity set | `integration_assessment.landscape_configuration` | unsupported | Customer-authored landscape object with documented per-tenant limits. |
+| TechnologyKeyCharacteristic | entity set | `integration_assessment.landscape_configuration` | unsupported | Association of a technology profile; would be managed with the technology. |
+| TechnologyStyle | entity set | `integration_assessment.landscape_configuration` | unsupported | Association of a technology profile; would be managed with the technology. |
+| Vendor | entity set | `integration_assessment.landscape_configuration` | unsupported | Customer-authored landscape object with documented per-tenant limits. |
+| DeploymentModel | entity set | `integration_assessment.master_data` | unsupported | Integration Solution Advisory Methodology taxonomy; a data source for references. |
+| Domain | entity set | `integration_assessment.master_data` | unsupported | Integration Solution Advisory Methodology taxonomy; a data source for references. |
+| DomainDetermination | entity set | `integration_assessment.master_data` | unsupported | Integration Solution Advisory Methodology taxonomy; a data source for references. |
+| IntegrationPattern | entity set | `integration_assessment.master_data` | unsupported | Integration Solution Advisory Methodology taxonomy; a data source for references. |
+| KeyCharacteristic | entity set | `integration_assessment.master_data` | unsupported | Integration Solution Advisory Methodology taxonomy; a data source for references. |
+| KeyCharacteristicGroup | entity set | `integration_assessment.master_data` | unsupported | Integration Solution Advisory Methodology taxonomy; a data source for references. |
+| KeyCharacteristicRecommendationDegree | entity set | `integration_assessment.master_data` | unsupported | Integration Solution Advisory Methodology taxonomy; a data source for references. |
+| KeyCharacteristicValue | entity set | `integration_assessment.master_data` | unsupported | Integration Solution Advisory Methodology taxonomy; a data source for references. |
+| Style | entity set | `integration_assessment.master_data` | unsupported | Integration Solution Advisory Methodology taxonomy; a data source for references. |
+| UseCasePattern | entity set | `integration_assessment.master_data` | unsupported | Integration Solution Advisory Methodology taxonomy; a data source for references. |
+
+### Excluded (10)
+
+| Names | Reason | Catalog entry |
+|---|---|---|
+| CreateBusinessSolutionRequest, CreateInterfaceRequest, EntityReference, IntegrationFlow, IntegrationFlowMessageFlow, MessageFlow, Request, RequestLineItem, RequestLineItemTechnologyInstanceDecision, InterfaceRequestReport | Business solution and interface requests with their status workflow and assessment results; workflow state, not configuration. | `integration_assessment.assessment_workflow` |
 
 ## integration-assessment-management
 
@@ -291,7 +321,15 @@ Integration Assessment, management API (requests).
 - Evidence for the service root: Service key of Integration Assessment APIs: field "management" is the service root (SAP Help, Integration Assessment APIs).
 - Acceptance suites: `SAP_INTEGRATION_SUITE_ACC_INTEGRATION_ASSESSMENT`
 - Configuration: `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_MANAGEMENT_URL`, `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_TOKEN_URL`, `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_CLIENT_ID`, `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_CLIENT_SECRET`
-- Snapshot: none yet. Create one with `go run ./cmd/apidiscovery -services integration-assessment-management -update` (with `-spec-dir <dir>` for a specification), then classify what it lists.
+- Snapshot: `testdata/api-metadata/integration-assessment-management.json`, captured 2026-09-27 from local document
+- Contract: 1 entity sets, 0 singletons, 1 entity types, 0 complex types, 0 enum types, 1 operations; 1 types reachable from the entity sets and operations, 0 unreachable, 0 unresolved references
+
+### Excluded (2)
+
+| Names | Reason | Catalog entry |
+|---|---|---|
+| ImportContent | Imports an exported content archive into the tenant; a one-shot transport action, not desired state. |  |
+| ExportContent | Exports the tenant's content as an archive; a one-shot transport action. |  |
 
 ## data-space-integration
 

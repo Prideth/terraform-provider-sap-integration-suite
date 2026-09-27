@@ -20,9 +20,9 @@ And the provider never uses browser endpoints of SAP's UIs.
 | Experimental (`experimental`) | 2 |
 | Partial (`partial`) | 10 |
 | Read-only (`read_only`) | 4 |
-| Public API incomplete (`public_api_incomplete`) | 17 |
+| Public API incomplete (`public_api_incomplete`) | 19 |
 | Unsafe Terraform lifecycle (`unsafe_terraform_lifecycle`) | 1 |
-| Research required (`research_required`) | 3 |
+| Research required (`research_required`) | 1 |
 | No public API (`no_public_api`) | 26 |
 | Out of scope (`out_of_scope`) | 13 |
 | Separate provider (`separate_provider`) | 2 |
@@ -373,6 +373,28 @@ A public API exists, but part of its contract is unconfirmed.
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Hub package sap-int-eic-eic-operations (Jobs, Components, Partner Directory, Message Stores, MPL; created 2026-04-30, modified 2026-09-21)
 
+### Integration Assessment Landscape Configuration
+
+`integration_assessment.landscape_configuration` · checked 2026-09-27
+
+- **Finding:** The live Entities $metadata confirms Application, ApplicationInstance, Technology, TechnologyInstance and Vendor with string Ids and their links; write support is not stated anywhere.
+- **Next step:** .specs/ia-probe.ps1 -LandscapeTests: create, change and delete a tfacc vendor, application and instance. If that passes, implement the landscape resources.
+- **Sources:**
+  - Hub package SAPIntegrationAssessment (EntitiesAPI, ManagementAPI, OData; modified 2025-07-25)
+  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
+  - Integration Assessment Entities and Management $metadata, fetched live on 2026-09-27 (snapshots testdata/api-metadata/integration-assessment-*.json)
+
+### Integration Assessment Master Data
+
+`integration_assessment.master_data` · checked 2026-09-27
+
+- **Finding:** The live Entities $metadata (27 entity sets) confirms the ISA-M taxonomy entities field by field; no write annotations, and SAP Help lists no operations. Read-mostly reference data.
+- **Next step:** Read them through .specs/ia-probe.ps1, then add data sources for the taxonomy the landscape resources reference (deployment models first).
+- **Sources:**
+  - Hub package SAPIntegrationAssessment (EntitiesAPI, ManagementAPI, OData; modified 2025-07-25)
+  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
+  - Integration Assessment Entities and Management $metadata, fetched live on 2026-09-27 (snapshots testdata/api-metadata/integration-assessment-*.json)
+
 ### Certificate Chain
 
 `security.certificate_chain` · checked 2026-09-26
@@ -419,26 +441,6 @@ Not enough evidence yet to say whether a usable API exists.
 - **Next step:** The DSIAPI OpenAPI document, parsed with cmd/apidiscovery -from, to confirm the configuration objects; then tenant tests.
 - **Sources:**
   - Hub package dataspaceintegration (DSIAPI 2.0.0, REST; modified 2026-07-16)
-  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
-
-### Integration Assessment Landscape Configuration
-
-`integration_assessment.landscape_configuration` · checked 2026-09-26
-
-- **Finding:** Practitioner-authored configuration with documented limits; contract unknown without the $metadata.
-- **Next step:** Same $metadata fetch; then classify its entity sets and verify writes on a tenant.
-- **Sources:**
-  - Hub package SAPIntegrationAssessment (EntitiesAPI, ManagementAPI, OData; modified 2025-07-25)
-  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
-
-### Integration Assessment Master Data
-
-`integration_assessment.master_data` · checked 2026-09-26
-
-- **Finding:** Both APIs are OData on the Hub, unchanged since 2025-07-25; no field-level contract without the $metadata.
-- **Next step:** The Entities and Management $metadata through cmd/apidiscovery with an Integration Assessment service key (services integration-assessment-entities and -management).
-- **Sources:**
-  - Hub package SAPIntegrationAssessment (EntitiesAPI, ManagementAPI, OData; modified 2025-07-25)
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
 
 ## No public API

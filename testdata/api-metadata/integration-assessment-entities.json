@@ -1,0 +1,1807 @@
+{
+  "id": "integration-assessment-entities",
+  "protocol": "odata-v2",
+  "capturedAt": "2026-09-27",
+  "source": "local document",
+  "namespaces": [
+    "com.sap.intas.entities"
+  ],
+  "entitySets": [
+    {
+      "name": "Application",
+      "entityType": "com.sap.intas.entities.Application"
+    },
+    {
+      "name": "ApplicationInstance",
+      "entityType": "com.sap.intas.entities.ApplicationInstance"
+    },
+    {
+      "name": "CreateBusinessSolutionRequest",
+      "entityType": "com.sap.intas.entities.CreateBusinessSolutionRequest"
+    },
+    {
+      "name": "CreateInterfaceRequest",
+      "entityType": "com.sap.intas.entities.CreateInterfaceRequest"
+    },
+    {
+      "name": "DeploymentModel",
+      "entityType": "com.sap.intas.entities.DeploymentModel"
+    },
+    {
+      "name": "Domain",
+      "entityType": "com.sap.intas.entities.Domain"
+    },
+    {
+      "name": "DomainDetermination",
+      "entityType": "com.sap.intas.entities.DomainDetermination"
+    },
+    {
+      "name": "EntityReference",
+      "entityType": "com.sap.intas.entities.EntityReference"
+    },
+    {
+      "name": "IntegrationFlow",
+      "entityType": "com.sap.intas.entities.IntegrationFlow"
+    },
+    {
+      "name": "IntegrationFlowMessageFlow",
+      "entityType": "com.sap.intas.entities.IntegrationFlowMessageFlow"
+    },
+    {
+      "name": "IntegrationPattern",
+      "entityType": "com.sap.intas.entities.IntegrationPattern"
+    },
+    {
+      "name": "KeyCharacteristic",
+      "entityType": "com.sap.intas.entities.KeyCharacteristic"
+    },
+    {
+      "name": "KeyCharacteristicGroup",
+      "entityType": "com.sap.intas.entities.KeyCharacteristicGroup"
+    },
+    {
+      "name": "KeyCharacteristicRecommendationDegree",
+      "entityType": "com.sap.intas.entities.KeyCharacteristicRecommendationDegree"
+    },
+    {
+      "name": "KeyCharacteristicValue",
+      "entityType": "com.sap.intas.entities.KeyCharacteristicValue"
+    },
+    {
+      "name": "MessageFlow",
+      "entityType": "com.sap.intas.entities.MessageFlow"
+    },
+    {
+      "name": "Request",
+      "entityType": "com.sap.intas.entities.Request"
+    },
+    {
+      "name": "RequestLineItem",
+      "entityType": "com.sap.intas.entities.RequestLineItem"
+    },
+    {
+      "name": "RequestLineItemTechnologyInstanceDecision",
+      "entityType": "com.sap.intas.entities.RequestLineItemTechnologyInstanceDecision"
+    },
+    {
+      "name": "Style",
+      "entityType": "com.sap.intas.entities.Style"
+    },
+    {
+      "name": "Technology",
+      "entityType": "com.sap.intas.entities.Technology"
+    },
+    {
+      "name": "TechnologyDomain",
+      "entityType": "com.sap.intas.entities.TechnologyDomain"
+    },
+    {
+      "name": "TechnologyInstance",
+      "entityType": "com.sap.intas.entities.TechnologyInstance"
+    },
+    {
+      "name": "TechnologyKeyCharacteristic",
+      "entityType": "com.sap.intas.entities.TechnologyKeyCharacteristic"
+    },
+    {
+      "name": "TechnologyStyle",
+      "entityType": "com.sap.intas.entities.TechnologyStyle"
+    },
+    {
+      "name": "UseCasePattern",
+      "entityType": "com.sap.intas.entities.UseCasePattern"
+    },
+    {
+      "name": "Vendor",
+      "entityType": "com.sap.intas.entities.Vendor"
+    }
+  ],
+  "entityTypes": [
+    {
+      "name": "com.sap.intas.entities.Application",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "ApiHubId",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "CreatedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ModifiedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Name",
+          "type": "Edm.String",
+          "nullable": false
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "ApplicationInstances",
+          "target": "com.sap.intas.entities.ApplicationInstance",
+          "collection": true,
+          "relationship": "com.sap.intas.entities.Application_2_ApplicationInstance",
+          "fromRole": "Application",
+          "toRole": "ApplicationInstance"
+        },
+        {
+          "name": "Vendor",
+          "target": "com.sap.intas.entities.Vendor",
+          "relationship": "com.sap.intas.entities.Application_2_Vendor",
+          "fromRole": "Application",
+          "toRole": "Vendor"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.ApplicationInstance",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "CreatedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Description",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ModifiedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Name",
+          "type": "Edm.String",
+          "nullable": false
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "Application",
+          "target": "com.sap.intas.entities.Application",
+          "relationship": "com.sap.intas.entities.Application_2_ApplicationInstance",
+          "fromRole": "ApplicationInstance",
+          "toRole": "Application"
+        },
+        {
+          "name": "DeploymentModel",
+          "target": "com.sap.intas.entities.DeploymentModel",
+          "relationship": "com.sap.intas.entities.ApplicationInstance_2_DeploymentModel",
+          "fromRole": "ApplicationInstance",
+          "toRole": "DeploymentModel"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.CreateBusinessSolutionRequest",
+      "key": [
+        "Name"
+      ],
+      "properties": [
+        {
+          "name": "Name",
+          "type": "Edm.String",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.CreateInterfaceRequest",
+      "key": [
+        "Name"
+      ],
+      "properties": [
+        {
+          "name": "Name",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "RequestId",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "StyleId",
+          "type": "Edm.String",
+          "nullable": true
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "SourceApplicationInstances",
+          "target": "com.sap.intas.entities.EntityReference",
+          "collection": true,
+          "relationship": "com.sap.intas.entities.CreateInterfaceRequest_2_EntityReference",
+          "fromRole": "CreateInterfaceRequest",
+          "toRole": "EntityReference"
+        },
+        {
+          "name": "TargetApplicationInstances",
+          "target": "com.sap.intas.entities.EntityReference",
+          "collection": true,
+          "relationship": "com.sap.intas.entities.CreateInterfaceRequest_2_EntityReference",
+          "fromRole": "CreateInterfaceRequest",
+          "toRole": "EntityReference"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.DeploymentModel",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "CreatedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Description",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ModifiedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Name",
+          "type": "Edm.String",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.Domain",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "CreatedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Description",
+          "type": "Edm.String",
+          "nullable": false
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ModifiedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Name",
+          "type": "Edm.String",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.DomainDetermination",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "CreatedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ModifiedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "Domain",
+          "target": "com.sap.intas.entities.Domain",
+          "relationship": "com.sap.intas.entities.Domain_2_DomainDetermination",
+          "fromRole": "DomainDetermination",
+          "toRole": "Domain"
+        },
+        {
+          "name": "SourceDeploymentModel",
+          "target": "com.sap.intas.entities.DeploymentModel",
+          "relationship": "com.sap.intas.entities.DeploymentModel_2_DomainDetermination",
+          "fromRole": "DomainDetermination",
+          "toRole": "DeploymentModel"
+        },
+        {
+          "name": "TargetDeploymentModel",
+          "target": "com.sap.intas.entities.DeploymentModel",
+          "relationship": "com.sap.intas.entities.DeploymentModel_2_DomainDetermination",
+          "fromRole": "DomainDetermination",
+          "toRole": "DeploymentModel"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.EntityReference",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.IntegrationFlow",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "CreatedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ModifiedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Name",
+          "type": "Edm.String",
+          "nullable": false
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "IntegrationFlowMessageFlows",
+          "target": "com.sap.intas.entities.IntegrationFlowMessageFlow",
+          "collection": true,
+          "relationship": "com.sap.intas.entities.IntegrationFlow_2_IntegrationFlowMessageFlows",
+          "fromRole": "IntegrationFlow",
+          "toRole": "IntegrationFlowMessageFlows"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.IntegrationFlowMessageFlow",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "CreatedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ModifiedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "IntegrationFlow",
+          "target": "com.sap.intas.entities.IntegrationFlow",
+          "relationship": "com.sap.intas.entities.IntegrationFlow_2_IntegrationFlowMessageFlows",
+          "fromRole": "IntegrationFlowMessageFlows",
+          "toRole": "IntegrationFlow"
+        },
+        {
+          "name": "MessageFlow",
+          "target": "com.sap.intas.entities.MessageFlow",
+          "relationship": "com.sap.intas.entities.IntegrationFlowMessageFlow_2_MessageFlow",
+          "fromRole": "IntegrationFlowMessageFlow",
+          "toRole": "MessageFlow"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.IntegrationPattern",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "CreatedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ModifiedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Name",
+          "type": "Edm.String",
+          "nullable": false
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "Domain",
+          "target": "com.sap.intas.entities.Domain",
+          "relationship": "com.sap.intas.entities.Domain_2_IntegrationPattern",
+          "fromRole": "IntegrationPattern",
+          "toRole": "Domain"
+        },
+        {
+          "name": "Style",
+          "target": "com.sap.intas.entities.Style",
+          "relationship": "com.sap.intas.entities.IntegrationPattern_2_Style",
+          "fromRole": "IntegrationPattern",
+          "toRole": "Style"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.KeyCharacteristic",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "CreatedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Description",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "IsSingle",
+          "type": "Edm.Boolean",
+          "nullable": false
+        },
+        {
+          "name": "ModifiedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Name",
+          "type": "Edm.String",
+          "nullable": false
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "KeyCharacteristicGroup",
+          "target": "com.sap.intas.entities.KeyCharacteristicGroup",
+          "relationship": "com.sap.intas.entities.KeyCharacteristic_2_KeyCharacteristicGroup",
+          "fromRole": "KeyCharacteristic",
+          "toRole": "KeyCharacteristicGroup"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.KeyCharacteristicGroup",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "CreatedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Description",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ModifiedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Name",
+          "type": "Edm.String",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.KeyCharacteristicRecommendationDegree",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "CreatedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "CssColor",
+          "type": "Edm.String",
+          "nullable": false
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ModifiedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Name",
+          "type": "Edm.String",
+          "nullable": false
+        },
+        {
+          "name": "Score",
+          "type": "Edm.Int32",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.KeyCharacteristicValue",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "CreatedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Description",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ModifiedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Name",
+          "type": "Edm.String",
+          "nullable": false
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "KeyCharacteristic",
+          "target": "com.sap.intas.entities.KeyCharacteristic",
+          "relationship": "com.sap.intas.entities.KeyCharacteristic_2_KeyCharacteristicValue",
+          "fromRole": "KeyCharacteristicValue",
+          "toRole": "KeyCharacteristic"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.MessageFlow",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "CreatedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ModifiedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Name",
+          "type": "Edm.String",
+          "nullable": false
+        },
+        {
+          "name": "Status",
+          "type": "Edm.String",
+          "nullable": false
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "Domain",
+          "target": "com.sap.intas.entities.Domain",
+          "relationship": "com.sap.intas.entities.Domain_2_MessageFlow",
+          "fromRole": "MessageFlow",
+          "toRole": "Domain"
+        },
+        {
+          "name": "SourceApplicationInstance",
+          "target": "com.sap.intas.entities.ApplicationInstance",
+          "relationship": "com.sap.intas.entities.MessageFlow_2_SourceApplicationInstance",
+          "fromRole": "MessageFlow",
+          "toRole": "SourceApplicationInstance"
+        },
+        {
+          "name": "Style",
+          "target": "com.sap.intas.entities.Style",
+          "relationship": "com.sap.intas.entities.MessageFlow_2_Style",
+          "fromRole": "MessageFlow",
+          "toRole": "Style"
+        },
+        {
+          "name": "TargetApplicationInstance",
+          "target": "com.sap.intas.entities.ApplicationInstance",
+          "relationship": "com.sap.intas.entities.MessageFlow_2_SourceApplicationInstance",
+          "fromRole": "MessageFlow",
+          "toRole": "SourceApplicationInstance"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.Request",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "CreatedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ModifiedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Name",
+          "type": "Edm.String",
+          "nullable": false
+        },
+        {
+          "name": "Status",
+          "type": "Edm.String",
+          "nullable": false
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "RequestLineItems",
+          "target": "com.sap.intas.entities.RequestLineItem",
+          "collection": true,
+          "relationship": "com.sap.intas.entities.Request_2_RequestLineItems",
+          "fromRole": "Request",
+          "toRole": "RequestLineItems"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.RequestLineItem",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "CreatedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ModifiedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Status",
+          "type": "Edm.String",
+          "nullable": false
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "IntegrationFlow",
+          "target": "com.sap.intas.entities.IntegrationFlow",
+          "relationship": "com.sap.intas.entities.IntegrationFlow_2_RequestLineItem",
+          "fromRole": "RequestLineItem",
+          "toRole": "IntegrationFlow"
+        },
+        {
+          "name": "Request",
+          "target": "com.sap.intas.entities.Request",
+          "relationship": "com.sap.intas.entities.Request_2_RequestLineItems",
+          "fromRole": "RequestLineItems",
+          "toRole": "Request"
+        },
+        {
+          "name": "RequestLineItemTechnologyInstanceDecisions",
+          "target": "com.sap.intas.entities.RequestLineItemTechnologyInstanceDecision",
+          "collection": true,
+          "relationship": "com.sap.intas.entities.RequestLineItem_2_RequestLineItemTechnologyInstanceDecision",
+          "fromRole": "RequestLineItem",
+          "toRole": "RequestLineItemTechnologyInstanceDecision"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.RequestLineItemTechnologyInstanceDecision",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "CreatedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ModifiedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "RecommendationValue",
+          "type": "Edm.Double",
+          "nullable": false
+        },
+        {
+          "name": "Selected",
+          "type": "Edm.Boolean",
+          "nullable": true
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "IntegrationFlow",
+          "target": "com.sap.intas.entities.IntegrationFlow",
+          "relationship": "com.sap.intas.entities.IntegrationFlow_2_RequestLineItemTechnologyInstanceDecision",
+          "fromRole": "RequestLineItemTechnologyInstanceDecision",
+          "toRole": "IntegrationFlow"
+        },
+        {
+          "name": "MessageFlow",
+          "target": "com.sap.intas.entities.MessageFlow",
+          "relationship": "com.sap.intas.entities.MessageFlow_2_RequestLineItemTechnologyInstanceDecision",
+          "fromRole": "RequestLineItemTechnologyInstanceDecision",
+          "toRole": "MessageFlow"
+        },
+        {
+          "name": "RequestLineItem",
+          "target": "com.sap.intas.entities.RequestLineItem",
+          "relationship": "com.sap.intas.entities.RequestLineItem_2_RequestLineItemTechnologyInstanceDecision",
+          "fromRole": "RequestLineItemTechnologyInstanceDecision",
+          "toRole": "RequestLineItem"
+        },
+        {
+          "name": "Technology",
+          "target": "com.sap.intas.entities.Technology",
+          "relationship": "com.sap.intas.entities.RequestLineItemTechnologyInstanceDecision_2_Technology",
+          "fromRole": "RequestLineItemTechnologyInstanceDecision",
+          "toRole": "Technology"
+        },
+        {
+          "name": "TechnologyInstance",
+          "target": "com.sap.intas.entities.TechnologyInstance",
+          "relationship": "com.sap.intas.entities.RequestLineItemTechnologyInstanceDecision_2_TechnologyInstance",
+          "fromRole": "RequestLineItemTechnologyInstanceDecision",
+          "toRole": "TechnologyInstance"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.Style",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "CreatedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Description",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "IsCrossUseCase",
+          "type": "Edm.Boolean",
+          "nullable": false
+        },
+        {
+          "name": "ModifiedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Name",
+          "type": "Edm.String",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.Technology",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "CreatedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ModifiedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Name",
+          "type": "Edm.String",
+          "nullable": false
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "TechnologyDomains",
+          "target": "com.sap.intas.entities.TechnologyDomain",
+          "collection": true,
+          "relationship": "com.sap.intas.entities.Technology_2_TechnologyDomains",
+          "fromRole": "Technology",
+          "toRole": "TechnologyDomains"
+        },
+        {
+          "name": "TechnologyInstances",
+          "target": "com.sap.intas.entities.TechnologyInstance",
+          "collection": true,
+          "relationship": "com.sap.intas.entities.Technology_2_TechnologyInstances",
+          "fromRole": "Technology",
+          "toRole": "TechnologyInstances"
+        },
+        {
+          "name": "TechnologyKeyCharacteristics",
+          "target": "com.sap.intas.entities.TechnologyKeyCharacteristic",
+          "collection": true,
+          "relationship": "com.sap.intas.entities.Technology_2_TechnologyKeyCharacteristics",
+          "fromRole": "Technology",
+          "toRole": "TechnologyKeyCharacteristics"
+        },
+        {
+          "name": "TechnologyStyles",
+          "target": "com.sap.intas.entities.TechnologyStyle",
+          "collection": true,
+          "relationship": "com.sap.intas.entities.Technology_2_TechnologyStyles",
+          "fromRole": "Technology",
+          "toRole": "TechnologyStyles"
+        },
+        {
+          "name": "Vendor",
+          "target": "com.sap.intas.entities.Vendor",
+          "relationship": "com.sap.intas.entities.Technology_2_Vendor",
+          "fromRole": "Technology",
+          "toRole": "Vendor"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.TechnologyDomain",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "CreatedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ModifiedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "Domain",
+          "target": "com.sap.intas.entities.Domain",
+          "relationship": "com.sap.intas.entities.Domain_2_TechnologyDomain",
+          "fromRole": "TechnologyDomain",
+          "toRole": "Domain"
+        },
+        {
+          "name": "Technology",
+          "target": "com.sap.intas.entities.Technology",
+          "relationship": "com.sap.intas.entities.Technology_2_TechnologyDomains",
+          "fromRole": "TechnologyDomains",
+          "toRole": "Technology"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.TechnologyInstance",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "CreatedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ModifiedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Name",
+          "type": "Edm.String",
+          "nullable": false
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "DeploymentModel",
+          "target": "com.sap.intas.entities.DeploymentModel",
+          "relationship": "com.sap.intas.entities.DeploymentModel_2_TechnologyInstance",
+          "fromRole": "TechnologyInstance",
+          "toRole": "DeploymentModel"
+        },
+        {
+          "name": "Technology",
+          "target": "com.sap.intas.entities.Technology",
+          "relationship": "com.sap.intas.entities.Technology_2_TechnologyInstances",
+          "fromRole": "TechnologyInstances",
+          "toRole": "Technology"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.TechnologyKeyCharacteristic",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "CreatedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Description",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ModifiedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "KeyCharacteristicValue",
+          "target": "com.sap.intas.entities.KeyCharacteristicValue",
+          "relationship": "com.sap.intas.entities.KeyCharacteristicValue_2_TechnologyKeyCharacteristic",
+          "fromRole": "TechnologyKeyCharacteristic",
+          "toRole": "KeyCharacteristicValue"
+        },
+        {
+          "name": "RecommendationDegree",
+          "target": "com.sap.intas.entities.KeyCharacteristicRecommendationDegree",
+          "relationship": "com.sap.intas.entities.KeyCharacteristicRecommendationDegree_2_TechnologyKeyCharacteristic",
+          "fromRole": "TechnologyKeyCharacteristic",
+          "toRole": "KeyCharacteristicRecommendationDegree"
+        },
+        {
+          "name": "Technology",
+          "target": "com.sap.intas.entities.Technology",
+          "relationship": "com.sap.intas.entities.Technology_2_TechnologyKeyCharacteristics",
+          "fromRole": "TechnologyKeyCharacteristics",
+          "toRole": "Technology"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.TechnologyStyle",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "CreatedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ModifiedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "Style",
+          "target": "com.sap.intas.entities.Style",
+          "relationship": "com.sap.intas.entities.Style_2_TechnologyStyle",
+          "fromRole": "TechnologyStyle",
+          "toRole": "Style"
+        },
+        {
+          "name": "Technology",
+          "target": "com.sap.intas.entities.Technology",
+          "relationship": "com.sap.intas.entities.Technology_2_TechnologyStyles",
+          "fromRole": "TechnologyStyles",
+          "toRole": "Technology"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.UseCasePattern",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "CreatedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Description",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "Example",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ModifiedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Name",
+          "type": "Edm.String",
+          "nullable": false
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "Style",
+          "target": "com.sap.intas.entities.Style",
+          "relationship": "com.sap.intas.entities.Style_2_UseCasePattern",
+          "fromRole": "UseCasePattern",
+          "toRole": "Style"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.Vendor",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "CreatedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ModifiedAt",
+          "type": "Edm.DateTime",
+          "nullable": true
+        },
+        {
+          "name": "Name",
+          "type": "Edm.String",
+          "nullable": false
+        }
+      ]
+    }
+  ],
+  "associations": [
+    {
+      "name": "com.sap.intas.entities.ApplicationInstance_2_DeploymentModel",
+      "ends": [
+        {
+          "role": "ApplicationInstance",
+          "type": "com.sap.intas.entities.ApplicationInstance",
+          "multiplicity": "1"
+        },
+        {
+          "role": "DeploymentModel",
+          "type": "com.sap.intas.entities.DeploymentModel",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.Application_2_ApplicationInstance",
+      "ends": [
+        {
+          "role": "Application",
+          "type": "com.sap.intas.entities.Application",
+          "multiplicity": "1"
+        },
+        {
+          "role": "ApplicationInstance",
+          "type": "com.sap.intas.entities.ApplicationInstance",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.Application_2_Vendor",
+      "ends": [
+        {
+          "role": "Application",
+          "type": "com.sap.intas.entities.Application",
+          "multiplicity": "1"
+        },
+        {
+          "role": "Vendor",
+          "type": "com.sap.intas.entities.Vendor",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.CreateInterfaceRequest_2_EntityReference",
+      "ends": [
+        {
+          "role": "CreateInterfaceRequest",
+          "type": "com.sap.intas.entities.CreateInterfaceRequest",
+          "multiplicity": "1"
+        },
+        {
+          "role": "EntityReference",
+          "type": "com.sap.intas.entities.EntityReference",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.DeploymentModel_2_DomainDetermination",
+      "ends": [
+        {
+          "role": "DeploymentModel",
+          "type": "com.sap.intas.entities.DeploymentModel",
+          "multiplicity": "1"
+        },
+        {
+          "role": "DomainDetermination",
+          "type": "com.sap.intas.entities.DomainDetermination",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.DeploymentModel_2_TechnologyInstance",
+      "ends": [
+        {
+          "role": "DeploymentModel",
+          "type": "com.sap.intas.entities.DeploymentModel",
+          "multiplicity": "1"
+        },
+        {
+          "role": "TechnologyInstance",
+          "type": "com.sap.intas.entities.TechnologyInstance",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.Domain_2_DomainDetermination",
+      "ends": [
+        {
+          "role": "Domain",
+          "type": "com.sap.intas.entities.Domain",
+          "multiplicity": "1"
+        },
+        {
+          "role": "DomainDetermination",
+          "type": "com.sap.intas.entities.DomainDetermination",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.Domain_2_IntegrationPattern",
+      "ends": [
+        {
+          "role": "Domain",
+          "type": "com.sap.intas.entities.Domain",
+          "multiplicity": "1"
+        },
+        {
+          "role": "IntegrationPattern",
+          "type": "com.sap.intas.entities.IntegrationPattern",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.Domain_2_MessageFlow",
+      "ends": [
+        {
+          "role": "Domain",
+          "type": "com.sap.intas.entities.Domain",
+          "multiplicity": "1"
+        },
+        {
+          "role": "MessageFlow",
+          "type": "com.sap.intas.entities.MessageFlow",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.Domain_2_TechnologyDomain",
+      "ends": [
+        {
+          "role": "Domain",
+          "type": "com.sap.intas.entities.Domain",
+          "multiplicity": "1"
+        },
+        {
+          "role": "TechnologyDomain",
+          "type": "com.sap.intas.entities.TechnologyDomain",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.IntegrationFlowMessageFlow_2_MessageFlow",
+      "ends": [
+        {
+          "role": "IntegrationFlowMessageFlow",
+          "type": "com.sap.intas.entities.IntegrationFlowMessageFlow",
+          "multiplicity": "1"
+        },
+        {
+          "role": "MessageFlow",
+          "type": "com.sap.intas.entities.MessageFlow",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.IntegrationFlow_2_IntegrationFlowMessageFlows",
+      "ends": [
+        {
+          "role": "IntegrationFlow",
+          "type": "com.sap.intas.entities.IntegrationFlow",
+          "multiplicity": "1"
+        },
+        {
+          "role": "IntegrationFlowMessageFlows",
+          "type": "com.sap.intas.entities.IntegrationFlowMessageFlow",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.IntegrationFlow_2_RequestLineItem",
+      "ends": [
+        {
+          "role": "IntegrationFlow",
+          "type": "com.sap.intas.entities.IntegrationFlow",
+          "multiplicity": "1"
+        },
+        {
+          "role": "RequestLineItem",
+          "type": "com.sap.intas.entities.RequestLineItem",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.IntegrationFlow_2_RequestLineItemTechnologyInstanceDecision",
+      "ends": [
+        {
+          "role": "IntegrationFlow",
+          "type": "com.sap.intas.entities.IntegrationFlow",
+          "multiplicity": "1"
+        },
+        {
+          "role": "RequestLineItemTechnologyInstanceDecision",
+          "type": "com.sap.intas.entities.RequestLineItemTechnologyInstanceDecision",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.IntegrationPattern_2_Style",
+      "ends": [
+        {
+          "role": "IntegrationPattern",
+          "type": "com.sap.intas.entities.IntegrationPattern",
+          "multiplicity": "1"
+        },
+        {
+          "role": "Style",
+          "type": "com.sap.intas.entities.Style",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.KeyCharacteristicRecommendationDegree_2_TechnologyKeyCharacteristic",
+      "ends": [
+        {
+          "role": "KeyCharacteristicRecommendationDegree",
+          "type": "com.sap.intas.entities.KeyCharacteristicRecommendationDegree",
+          "multiplicity": "1"
+        },
+        {
+          "role": "TechnologyKeyCharacteristic",
+          "type": "com.sap.intas.entities.TechnologyKeyCharacteristic",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.KeyCharacteristicValue_2_TechnologyKeyCharacteristic",
+      "ends": [
+        {
+          "role": "KeyCharacteristicValue",
+          "type": "com.sap.intas.entities.KeyCharacteristicValue",
+          "multiplicity": "1"
+        },
+        {
+          "role": "TechnologyKeyCharacteristic",
+          "type": "com.sap.intas.entities.TechnologyKeyCharacteristic",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.KeyCharacteristic_2_KeyCharacteristicGroup",
+      "ends": [
+        {
+          "role": "KeyCharacteristic",
+          "type": "com.sap.intas.entities.KeyCharacteristic",
+          "multiplicity": "1"
+        },
+        {
+          "role": "KeyCharacteristicGroup",
+          "type": "com.sap.intas.entities.KeyCharacteristicGroup",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.KeyCharacteristic_2_KeyCharacteristicValue",
+      "ends": [
+        {
+          "role": "KeyCharacteristic",
+          "type": "com.sap.intas.entities.KeyCharacteristic",
+          "multiplicity": "1"
+        },
+        {
+          "role": "KeyCharacteristicValue",
+          "type": "com.sap.intas.entities.KeyCharacteristicValue",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.MessageFlow_2_RequestLineItemTechnologyInstanceDecision",
+      "ends": [
+        {
+          "role": "MessageFlow",
+          "type": "com.sap.intas.entities.MessageFlow",
+          "multiplicity": "1"
+        },
+        {
+          "role": "RequestLineItemTechnologyInstanceDecision",
+          "type": "com.sap.intas.entities.RequestLineItemTechnologyInstanceDecision",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.MessageFlow_2_SourceApplicationInstance",
+      "ends": [
+        {
+          "role": "MessageFlow",
+          "type": "com.sap.intas.entities.MessageFlow",
+          "multiplicity": "1"
+        },
+        {
+          "role": "SourceApplicationInstance",
+          "type": "com.sap.intas.entities.ApplicationInstance",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.MessageFlow_2_Style",
+      "ends": [
+        {
+          "role": "MessageFlow",
+          "type": "com.sap.intas.entities.MessageFlow",
+          "multiplicity": "1"
+        },
+        {
+          "role": "Style",
+          "type": "com.sap.intas.entities.Style",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.RequestLineItemTechnologyInstanceDecision_2_Technology",
+      "ends": [
+        {
+          "role": "RequestLineItemTechnologyInstanceDecision",
+          "type": "com.sap.intas.entities.RequestLineItemTechnologyInstanceDecision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "Technology",
+          "type": "com.sap.intas.entities.Technology",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.RequestLineItemTechnologyInstanceDecision_2_TechnologyInstance",
+      "ends": [
+        {
+          "role": "RequestLineItemTechnologyInstanceDecision",
+          "type": "com.sap.intas.entities.RequestLineItemTechnologyInstanceDecision",
+          "multiplicity": "1"
+        },
+        {
+          "role": "TechnologyInstance",
+          "type": "com.sap.intas.entities.TechnologyInstance",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.RequestLineItem_2_RequestLineItemTechnologyInstanceDecision",
+      "ends": [
+        {
+          "role": "RequestLineItem",
+          "type": "com.sap.intas.entities.RequestLineItem",
+          "multiplicity": "1"
+        },
+        {
+          "role": "RequestLineItemTechnologyInstanceDecision",
+          "type": "com.sap.intas.entities.RequestLineItemTechnologyInstanceDecision",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.Request_2_RequestLineItems",
+      "ends": [
+        {
+          "role": "Request",
+          "type": "com.sap.intas.entities.Request",
+          "multiplicity": "1"
+        },
+        {
+          "role": "RequestLineItems",
+          "type": "com.sap.intas.entities.RequestLineItem",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.Style_2_TechnologyStyle",
+      "ends": [
+        {
+          "role": "Style",
+          "type": "com.sap.intas.entities.Style",
+          "multiplicity": "1"
+        },
+        {
+          "role": "TechnologyStyle",
+          "type": "com.sap.intas.entities.TechnologyStyle",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.Style_2_UseCasePattern",
+      "ends": [
+        {
+          "role": "Style",
+          "type": "com.sap.intas.entities.Style",
+          "multiplicity": "1"
+        },
+        {
+          "role": "UseCasePattern",
+          "type": "com.sap.intas.entities.UseCasePattern",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.Technology_2_TechnologyDomains",
+      "ends": [
+        {
+          "role": "Technology",
+          "type": "com.sap.intas.entities.Technology",
+          "multiplicity": "1"
+        },
+        {
+          "role": "TechnologyDomains",
+          "type": "com.sap.intas.entities.TechnologyDomain",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.Technology_2_TechnologyInstances",
+      "ends": [
+        {
+          "role": "Technology",
+          "type": "com.sap.intas.entities.Technology",
+          "multiplicity": "1"
+        },
+        {
+          "role": "TechnologyInstances",
+          "type": "com.sap.intas.entities.TechnologyInstance",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.Technology_2_TechnologyKeyCharacteristics",
+      "ends": [
+        {
+          "role": "Technology",
+          "type": "com.sap.intas.entities.Technology",
+          "multiplicity": "1"
+        },
+        {
+          "role": "TechnologyKeyCharacteristics",
+          "type": "com.sap.intas.entities.TechnologyKeyCharacteristic",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.Technology_2_TechnologyStyles",
+      "ends": [
+        {
+          "role": "Technology",
+          "type": "com.sap.intas.entities.Technology",
+          "multiplicity": "1"
+        },
+        {
+          "role": "TechnologyStyles",
+          "type": "com.sap.intas.entities.TechnologyStyle",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.intas.entities.Technology_2_Vendor",
+      "ends": [
+        {
+          "role": "Technology",
+          "type": "com.sap.intas.entities.Technology",
+          "multiplicity": "1"
+        },
+        {
+          "role": "Vendor",
+          "type": "com.sap.intas.entities.Vendor",
+          "multiplicity": "1"
+        }
+      ]
+    }
+  ],
+  "operations": [
+    {
+      "name": "InterfaceRequestReport",
+      "kind": "FunctionImport",
+      "httpMethod": "GET",
+      "entitySet": "RequestLineItem",
+      "parameters": [
+        {
+          "name": "RequestLineItemId",
+          "type": "Edm.String",
+          "nullable": false
+        }
+      ],
+      "returnType": "Edm.String"
+    }
+  ],
+  "graph": {
+    "reachable": [
+      "com.sap.intas.entities.Application",
+      "com.sap.intas.entities.ApplicationInstance",
+      "com.sap.intas.entities.CreateBusinessSolutionRequest",
+      "com.sap.intas.entities.CreateInterfaceRequest",
+      "com.sap.intas.entities.DeploymentModel",
+      "com.sap.intas.entities.Domain",
+      "com.sap.intas.entities.DomainDetermination",
+      "com.sap.intas.entities.EntityReference",
+      "com.sap.intas.entities.IntegrationFlow",
+      "com.sap.intas.entities.IntegrationFlowMessageFlow",
+      "com.sap.intas.entities.IntegrationPattern",
+      "com.sap.intas.entities.KeyCharacteristic",
+      "com.sap.intas.entities.KeyCharacteristicGroup",
+      "com.sap.intas.entities.KeyCharacteristicRecommendationDegree",
+      "com.sap.intas.entities.KeyCharacteristicValue",
+      "com.sap.intas.entities.MessageFlow",
+      "com.sap.intas.entities.Request",
+      "com.sap.intas.entities.RequestLineItem",
+      "com.sap.intas.entities.RequestLineItemTechnologyInstanceDecision",
+      "com.sap.intas.entities.Style",
+      "com.sap.intas.entities.Technology",
+      "com.sap.intas.entities.TechnologyDomain",
+      "com.sap.intas.entities.TechnologyInstance",
+      "com.sap.intas.entities.TechnologyKeyCharacteristic",
+      "com.sap.intas.entities.TechnologyStyle",
+      "com.sap.intas.entities.UseCasePattern",
+      "com.sap.intas.entities.Vendor"
+    ]
+  }
+}

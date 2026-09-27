@@ -1,0 +1,45 @@
+{
+  "id": "integration-assessment-management",
+  "protocol": "odata-v2",
+  "capturedAt": "2026-09-27",
+  "source": "local document",
+  "namespaces": [
+    "com.sap.intas.backend.flavor.intas.entity.management"
+  ],
+  "entitySets": [
+    {
+      "name": "ImportContent",
+      "entityType": "com.sap.intas.backend.flavor.intas.entity.management.ImportContent"
+    }
+  ],
+  "entityTypes": [
+    {
+      "name": "com.sap.intas.backend.flavor.intas.entity.management.ImportContent",
+      "hasStream": true,
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": true
+        }
+      ]
+    }
+  ],
+  "operations": [
+    {
+      "name": "ExportContent",
+      "kind": "FunctionImport",
+      "httpMethod": "GET",
+      "entitySet": "ImportContent",
+      "returnType": "Edm.String"
+    }
+  ],
+  "graph": {
+    "reachable": [
+      "com.sap.intas.backend.flavor.intas.entity.management.ImportContent"
+    ]
+  }
+}

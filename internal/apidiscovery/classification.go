@@ -150,8 +150,47 @@ func Classify(s *apimeta.Service) []Row {
 // Exclusion reasons follow the provider's scope rule: Terraform manages
 // desired configuration, not runtime data, monitoring, or workflows.
 var classification = map[string][]rule{
-	"cloud-integration":      cloudIntegrationClassification,
-	"classic-api-management": classicAPIManagementClassification,
+	"cloud-integration":                 cloudIntegrationClassification,
+	"classic-api-management":            classicAPIManagementClassification,
+	"integration-assessment-entities":   integrationAssessmentEntitiesClassification,
+	"integration-assessment-management": integrationAssessmentManagementClassification,
+}
+
+const (
+	featureIALandscape = "integration_assessment.landscape_configuration"
+	featureIAMaster    = "integration_assessment.master_data"
+	featureIAWorkflow  = "integration_assessment.assessment_workflow"
+	reasonIAWorkflow   = "Business solution and interface requests with their status workflow and assessment results; workflow state, not configuration."
+)
+
+// Integration Assessment Entities API (live $metadata, September 2026). The
+// $metadata carries no sap:creatable/updatable annotations, and SAP Help
+// lists the resources without operations, so write support is verified by
+// .specs/ia-probe.ps1 before any resource is built.
+var integrationAssessmentEntitiesClassification = concat(
+	each([]string{"Application", "ApplicationInstance", "Technology", "TechnologyInstance", "Vendor"},
+		func(n string) rule {
+			return candidate(n, featureIALandscape, "Customer-authored landscape object with documented per-tenant limits.")
+		}),
+	each([]string{"TechnologyDomain", "TechnologyStyle", "TechnologyKeyCharacteristic"},
+		func(n string) rule {
+			return candidate(n, featureIALandscape, "Association of a technology profile; would be managed with the technology.")
+		}),
+	each([]string{"Domain", "Style", "UseCasePattern", "IntegrationPattern", "KeyCharacteristic", "KeyCharacteristicGroup",
+		"KeyCharacteristicValue", "KeyCharacteristicRecommendationDegree", "DeploymentModel", "DomainDetermination"},
+		func(n string) rule {
+			return candidate(n, featureIAMaster, "Integration Solution Advisory Methodology taxonomy; a data source for references.")
+		}),
+	each([]string{"Request", "RequestLineItem", "RequestLineItemTechnologyInstanceDecision", "IntegrationFlow", "MessageFlow",
+		"IntegrationFlowMessageFlow", "CreateBusinessSolutionRequest", "CreateInterfaceRequest", "EntityReference",
+		"InterfaceRequestReport"},
+		func(n string) rule { return excludedFor(n, featureIAWorkflow, reasonIAWorkflow) }),
+)
+
+// Integration Assessment Management API: content transport between tenants.
+var integrationAssessmentManagementClassification = []rule{
+	excluded("ImportContent", "Imports an exported content archive into the tenant; a one-shot transport action, not desired state."),
+	excluded("ExportContent", "Exports the tenant's content as an archive; a one-shot transport action."),
 }
 
 const (

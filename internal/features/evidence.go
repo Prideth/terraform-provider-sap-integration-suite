@@ -47,6 +47,7 @@ const (
 	srcTenant      = "tenant probes and acceptance runs on a development tenant (September 2026)"
 	srcExport      = "a package export of the development tenant (2026-09-26): API artifacts and data types travel as package content"
 	srcCatalog     = "earlier catalog research, recorded in the feature's limitations"
+	srcMetaIA      = "Integration Assessment Entities and Management $metadata, fetched live on 2026-09-27 (snapshots testdata/api-metadata/integration-assessment-*.json)"
 	srcHubSearch   = "Business Accelerator Hub: the API artifacts of 173 Integration Suite, API Management, Edge, Graph and BTP packages (308 APIs) searched for API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API deployment, API policy, reusable API, proxy, transport and gateway (2026-09-27); the package list was unchanged since 2026-09-26"
 	srcSDKCheck    = "Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6"
 )
@@ -55,6 +56,13 @@ const checked = "2026-09-26"
 
 func ev(finding, next string, sources ...string) EvidenceRecord {
 	return EvidenceRecord{CheckedOn: checked, Sources: sources, Finding: finding, NextStep: next}
+}
+
+// evOn is ev with an explicit date of the latest check.
+func evOn(date, finding, next string, sources ...string) EvidenceRecord {
+	r := ev(finding, next, sources...)
+	r.CheckedOn = date
+	return r
 }
 
 // reaudited is ev for the current API Management family, checked again on
@@ -368,14 +376,14 @@ var Evidence = map[string]EvidenceRecord{
 		"A general BTP messaging service with its own management APIs (Hub package modified 2026-09-18); a separate provider by design.",
 		"None for this provider.",
 		srcHubPackages, srcHelp),
-	"integration_assessment.master_data": ev(
-		"Both APIs are OData on the Hub, unchanged since 2025-07-25; no field-level contract without the $metadata.",
-		"The Entities and Management $metadata through cmd/apidiscovery with an Integration Assessment service key (services integration-assessment-entities and -management).",
-		srcHubIA, srcHelp),
-	"integration_assessment.landscape_configuration": ev(
-		"Practitioner-authored configuration with documented limits; contract unknown without the $metadata.",
-		"Same $metadata fetch; then classify its entity sets and verify writes on a tenant.",
-		srcHubIA, srcHelp),
+	"integration_assessment.master_data": evOn("2026-09-27",
+		"The live Entities $metadata (27 entity sets) confirms the ISA-M taxonomy entities field by field; no write annotations, and SAP Help lists no operations. Read-mostly reference data.",
+		"Read them through .specs/ia-probe.ps1, then add data sources for the taxonomy the landscape resources reference (deployment models first).",
+		srcHubIA, srcHelp, srcMetaIA),
+	"integration_assessment.landscape_configuration": evOn("2026-09-27",
+		"The live Entities $metadata confirms Application, ApplicationInstance, Technology, TechnologyInstance and Vendor with string Ids and their links; write support is not stated anywhere.",
+		".specs/ia-probe.ps1 -LandscapeTests: create, change and delete a tfacc vendor, application and instance. If that passes, implement the landscape resources.",
+		srcHubIA, srcHelp, srcMetaIA),
 	"integration_assessment.assessment_workflow": ev(
 		"A request status machine; workflow state.",
 		"None; out of scope.",

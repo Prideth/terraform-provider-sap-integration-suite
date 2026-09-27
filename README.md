@@ -199,8 +199,8 @@ Legend: ✅ Supported · ⚠️ Partial support / important limitations · 👁�
 | Feature | Status | Terraform Support |
 |---|:---:|---|
 | Integration Assessment Requests and Assessment Workflow | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
-| Integration Assessment Landscape Configuration | ❌ | Research required — see [feature-support.md](docs/feature-support.md#all-features) |
-| Integration Assessment Master Data | ❌ | Research required — see [feature-support.md](docs/feature-support.md#all-features) |
+| Integration Assessment Landscape Configuration | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
+| Integration Assessment Master Data | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
 
 ### Capability Provisioning
 
