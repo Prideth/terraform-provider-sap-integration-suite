@@ -1,0 +1,31 @@
+---
+page_title: "sapintegrationsuite_integration_assessment_technology Data Source - sapintegrationsuite"
+subcategory: "Integration Assessment"
+description: |-
+  Finds an Integration Assessment technology by name, SAP's own or one maintained in the UI.
+---
+
+# sapintegrationsuite_integration_assessment_technology (Data Source)
+
+Returns the Id of a technology, typically one that SAP delivers, so that technology instances
+can be created for it.
+
+**Status:** unofficial. Needs `enable_unofficial = true` in the provider block. SAP documents the
+Integration Assessment Entities API and this entity, but the field-level specification on the
+Business Accelerator Hub needs an SAP login. The requests follow the service's `$metadata` and
+were verified on a tenant in September 2026; SAP may change them without notice.
+
+Names are compared exactly, including case. The plan fails when no entry or more than one entry
+has the name.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_integration_assessment_technology/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Related
+
+- [`sapintegrationsuite_integration_assessment_technology_instance`](../resources/integration_assessment_technology_instance.md).
+- [`sapintegrationsuite_integration_assessment_technology`](../resources/integration_assessment_technology.md) (resource).
+- [Integration Assessment guide](../guides/integration-assessment.md).

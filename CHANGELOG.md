@@ -9,6 +9,56 @@ contain breaking schema or lifecycle changes; each one is listed under
 "Breaking changes" together with the steps it needs. Patch releases (0.2.1)
 only fix defects in their minor release.
 
+## Unreleased (planned as 0.4.0)
+
+This is the state of `dev` and the current feature branch, planned as
+0.4.0. The Integration Assessment resources still wait for their acceptance
+test, so the list below is not final.
+
+### Highlights
+
+- The Integration Assessment landscape can be maintained with Terraform:
+  vendors, applications, application instances, technologies and technology
+  instances, with lookups for deployment models, vendors and technologies
+  (unofficial, see below).
+
+### New resources
+
+- `sapintegrationsuite_integration_assessment_vendor`,
+  `sapintegrationsuite_integration_assessment_application`,
+  `sapintegrationsuite_integration_assessment_application_instance`,
+  `sapintegrationsuite_integration_assessment_technology` and
+  `sapintegrationsuite_integration_assessment_technology_instance`
+  (unofficial): the landscape that Integration Assessment evaluates
+  integration requests against. They use a new, optional
+  `provider.integration_assessment` block with the service key of an
+  "Integration Assessment APIs" instance. SAP documents the API and its
+  entities, but the field-level specification needs an SAP login, so the
+  requests follow the service's `$metadata`; create, read, update and delete
+  of all five objects, and their links, were verified on a tenant. Names,
+  an application's vendor and an instance's description change in place;
+  changes that were not tested in place replace the object.
+
+### New data sources
+
+- `sapintegrationsuite_integration_assessment_deployment_model`,
+  `sapintegrationsuite_integration_assessment_vendor` and
+  `sapintegrationsuite_integration_assessment_technology` (unofficial) find
+  an existing object by its exact name, for example one of SAP's deployment
+  models or technologies, whose Ids differ between tenants.
+
+### Upgrade notes
+
+Nothing to do. The new types are optional; to use them, set
+`enable_unofficial = true` and add the `integration_assessment` block.
+
+### Known limitations
+
+- Integration Assessment requests and assessment results stay out of scope
+  (workflow state), as do the content import and export. The ISA-M taxonomy
+  other than deployment models, and the domains, styles and key
+  characteristics of a technology, are not exposed yet.
+
 ## 0.3.0 — 2026-09-29
 
 0.3.0 changes how the provider treats anything SAP has not documented, fixes

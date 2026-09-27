@@ -165,19 +165,17 @@ const (
 
 // Integration Assessment Entities API (live $metadata, September 2026). The
 // $metadata carries no sap:creatable/updatable annotations, and SAP Help
-// lists the resources without operations, so write support is verified by
-// .specs/ia-probe.ps1 before any resource is built.
+// lists the resources without operations; .specs/ia-probe.ps1 verified
+// create, read, update and delete of the landscape objects the provider
+// now uses (Vendor, Application, ApplicationInstance, Technology,
+// TechnologyInstance) and reads DeploymentModel.
 var integrationAssessmentEntitiesClassification = concat(
-	each([]string{"Application", "ApplicationInstance", "Technology", "TechnologyInstance", "Vendor"},
-		func(n string) rule {
-			return candidate(n, featureIALandscape, "Customer-authored landscape object with documented per-tenant limits.")
-		}),
 	each([]string{"TechnologyDomain", "TechnologyStyle", "TechnologyKeyCharacteristic"},
 		func(n string) rule {
 			return candidate(n, featureIALandscape, "Association of a technology profile; would be managed with the technology.")
 		}),
 	each([]string{"Domain", "Style", "UseCasePattern", "IntegrationPattern", "KeyCharacteristic", "KeyCharacteristicGroup",
-		"KeyCharacteristicValue", "KeyCharacteristicRecommendationDegree", "DeploymentModel", "DomainDetermination"},
+		"KeyCharacteristicValue", "KeyCharacteristicRecommendationDegree", "DomainDetermination"},
 		func(n string) rule {
 			return candidate(n, featureIAMaster, "Integration Solution Advisory Methodology taxonomy; a data source for references.")
 		}),

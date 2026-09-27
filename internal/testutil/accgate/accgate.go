@@ -84,7 +84,7 @@ var Capabilities = []Info{
 	{Capability: APIComposition, Credentials: []string{"SAP_INTEGRATION_SUITE_API_COMPOSITION_HOST",
 		"SAP_INTEGRATION_SUITE_API_COMPOSITION_TOKEN_URL", "SAP_INTEGRATION_SUITE_API_COMPOSITION_CLIENT_ID",
 		"SAP_INTEGRATION_SUITE_API_COMPOSITION_CLIENT_SECRET"}},
-	{Capability: IntegrationAssessment, Credentials: []string{"SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_TOKEN_URL",
+	{Capability: IntegrationAssessment, Credentials: []string{"SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_ENTITIES_URL", "SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_TOKEN_URL",
 		"SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_CLIENT_ID", "SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_CLIENT_SECRET"}},
 	{Capability: EdgeIntegrationCell, Credentials: append(append([]string{}, mainCredentials...), "SAP_INTEGRATION_SUITE_RUNTIME_LOCATION_ID")},
 	{Capability: DataSpaceIntegration, NoService: "no Data Space Integration service is configured in the provider yet"},

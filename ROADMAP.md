@@ -20,9 +20,10 @@ Priorities:
 ## Next release: 0.4.0
 
 0.3.0 contains API discovery, the contract source of every feature, the opt-in switches, the
-tenant fixes of September 2026 and the rewritten Registry documentation. 0.4.0 is planned around
-the Integration Assessment landscape (P1 item 1). The Classic API proxy is part of neither: it
-waits for the request documented in the official Transport API specification. `v1.0.0` is a
+tenant fixes of September 2026 and the rewritten Registry documentation. 0.4.0 contains the
+Integration Assessment landscape resources (unofficial) and is cut once
+`TestAccIntegrationAssessment_landscape` has passed on a tenant. The Classic API proxy is part of
+neither: it waits for the request documented in the official Transport API specification. `v1.0.0` is a
 separate, explicit decision and not the automatic successor of any 0.x release.
 
 ## P0 — tenant runs that decide promotions
@@ -31,19 +32,18 @@ These need no further research, only a run of the prepared tests:
 
 | Item | Test | Decides |
 |---|---|---|
+| Integration Assessment landscape | `TestAccIntegrationAssessment_landscape` | Terraform-level confirmation of the five landscape resources and the lookups |
 | Classic API proxy | the official Transport API specification, then `TestAccAPIProxy_sample` | Even the tenant's own export, renamed, answered `APIPROXY_ZIP_ERROR`, so the import request is the problem, not the bundle. The resource is implemented but not registered; the specification (`APIPortal_Transport_CF`, needs an SAP login) shows the documented request, after which the resource is registered as experimental |
 | Live contract check | `TestAccMetadata` (`SAP_INTEGRATION_SUITE_ACC_METADATA`) | First comparison of the committed snapshots with a tenant, including the service documents |
 | Deployments with longer timeouts | message mapping and value mapping acceptance tests | Whether slow deployments need more than the documented timeout advice |
 
 ## P1 — public contract, next implementation
 
-1. **Integration Assessment landscape.** The Entities and Management `$metadata` are committed as
-   snapshots and classified (27 entity sets). A tenant test created, read and deleted vendors and
-   applications (2026-09-27). Next: the same test with updates sent as plain `application/json`
-   and links as `{"Id": ...}`, plus technologies and technology instances. If updates and links
-   work, the landscape objects become resources and SAP's taxonomy (technology domains, styles,
-   key characteristics, deployment models) becomes data sources. Requests and assessment
-   results stay out of scope as workflow.
+1. **Integration Assessment, next steps.** The five landscape resources and the lookups for
+   deployment models, vendors and technologies exist (unofficial). Next: the Hub specification
+   of the Entities API, which would make them supported; the domains, styles and key
+   characteristics of a technology; data sources for the rest of the ISA-M taxonomy. Requests
+   and assessment results stay out of scope as workflow.
 2. **API Composition hardening.** `TestAccBusinessDataGraph_basic` needs a service key of plan
    `configuration` and a destination; the Configuration API's `$metadata` goes through
    `cmd/apidiscovery`. Passing both promotes the business data graph from experimental and

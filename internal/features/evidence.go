@@ -53,6 +53,7 @@ const (
 	srcGapProbe    = "tenant-probe -GapTests on a development tenant (2026-09-27), synthetic tfAccProbe* objects only"
 	srcIAProbe     = "ia-probe -LandscapeTests on the development tenant's Integration Assessment (2026-09-27 17:29), synthetic tfacc-probe objects only"
 	srcAccRun      = "acceptance run of 2026-09-27 17:29 on the development tenant"
+	srcIAProbe2    = "ia-probe -LandscapeTests on the development tenant (2026-09-27 19:33), synthetic tfacc-probe objects only"
 )
 
 const checked = "2026-09-26"
@@ -385,12 +386,12 @@ var Evidence = map[string]EvidenceRecord{
 		srcHubPackages, srcHelp),
 	"integration_assessment.master_data": evOn("2026-09-27",
 		"The live Entities $metadata (27 entity sets) confirms the ISA-M taxonomy entities field by field, and every set was read on a tenant (for example 57 technology domains, 34 technology styles, 3 deployment models); no write annotations, and SAP Help lists no operations. Read-mostly reference data.",
-		"Add data sources for the taxonomy the landscape resources reference (deployment models first) together with the landscape resources.",
+		"Deployment models have a data source (lookup by name). SAP publishing the Entities API specification without a login, or its download from the Hub into .specs/specs, would make the contract official; the other taxonomy entities get data sources when a landscape object needs them.",
 		srcHubIA, srcHelp, srcMetaIA, srcIAProbe),
 	"integration_assessment.landscape_configuration": evOn("2026-09-27",
-		"Create (201 with a server-assigned Id), read by Id and delete (204, then 404) work for vendors and applications. PATCH and PUT answered 400 V122 \"Only application/json supported as content type\" because the probe sent a charset parameter, and links sent as __metadata URIs answered 400 V124 \"The navigation property contains no Id field\", so updates, vendor links and application instances are still open.",
-		"ia-probe -LandscapeTests again with plain application/json and links as {\"Id\": ...}, now also for technologies and technology instances. If updates and links work, implement vendors, applications and application instances (and technologies, if they turn out to be customer objects).",
-		srcHubIA, srcHelp, srcMetaIA, srcIAProbe),
+		"A second landscape probe (2026-09-27 19:33) verified create (201 with a UUID Id), read, PATCH and PUT (204) and delete (204, then 404) for vendors, applications, application instances, technologies and technology instances, with links written as {\"Id\": ...}; setting, removing and resetting an application's vendor worked. The first probe had failed only on its own request format (charset parameter, __metadata links).",
+		"TestAccIntegrationAssessment_landscape on a tenant; the Hub specification (EntitiesAPI) would make the contract official and allow the status supported.",
+		srcHubIA, srcHelp, srcMetaIA, srcIAProbe, srcIAProbe2),
 	"integration_assessment.assessment_workflow": ev(
 		"A request status machine; workflow state.",
 		"None; out of scope.",

@@ -17,11 +17,11 @@ And the provider never uses browser endpoints of SAP's UIs.
 
 | Classification | Features |
 |---|---:|
-| Unofficial (`unofficial`) | 2 |
+| Unofficial (`unofficial`) | 4 |
 | Experimental (`experimental`) | 1 |
 | Partial (`partial`) | 10 |
 | Read-only (`read_only`) | 3 |
-| Public API incomplete (`public_api_incomplete`) | 19 |
+| Public API incomplete (`public_api_incomplete`) | 17 |
 | Unsafe Terraform lifecycle (`unsafe_terraform_lifecycle`) | 2 |
 | Research required (`research_required`) | 1 |
 | No public API (`no_public_api`) | 26 |
@@ -41,6 +41,31 @@ Works and verified on a tenant, but the contract is known only from the service'
 - **Sources:**
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
   - tenant probes and acceptance runs on a development tenant (September 2026)
+
+### Integration Assessment Landscape Configuration
+
+`integration_assessment.landscape_configuration` · checked 2026-09-27
+
+- **Finding:** A second landscape probe (2026-09-27 19:33) verified create (201 with a UUID Id), read, PATCH and PUT (204) and delete (204, then 404) for vendors, applications, application instances, technologies and technology instances, with links written as {"Id": ...}; setting, removing and resetting an application's vendor worked. The first probe had failed only on its own request format (charset parameter, __metadata links).
+- **Next step:** TestAccIntegrationAssessment_landscape on a tenant; the Hub specification (EntitiesAPI) would make the contract official and allow the status supported.
+- **Sources:**
+  - Hub package SAPIntegrationAssessment (EntitiesAPI, ManagementAPI, OData; modified 2025-07-25)
+  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
+  - Integration Assessment Entities and Management $metadata, fetched live on 2026-09-27 (snapshots testdata/api-metadata/integration-assessment-*.json)
+  - ia-probe -LandscapeTests on the development tenant's Integration Assessment (2026-09-27 17:29), synthetic tfacc-probe objects only
+  - ia-probe -LandscapeTests on the development tenant (2026-09-27 19:33), synthetic tfacc-probe objects only
+
+### Integration Assessment Master Data
+
+`integration_assessment.master_data` · checked 2026-09-27
+
+- **Finding:** The live Entities $metadata (27 entity sets) confirms the ISA-M taxonomy entities field by field, and every set was read on a tenant (for example 57 technology domains, 34 technology styles, 3 deployment models); no write annotations, and SAP Help lists no operations. Read-mostly reference data.
+- **Next step:** Deployment models have a data source (lookup by name). SAP publishing the Entities API specification without a login, or its download from the Hub into .specs/specs, would make the contract official; the other taxonomy entities get data sources when a landscape object needs them.
+- **Sources:**
+  - Hub package SAPIntegrationAssessment (EntitiesAPI, ManagementAPI, OData; modified 2025-07-25)
+  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
+  - Integration Assessment Entities and Management $metadata, fetched live on 2026-09-27 (snapshots testdata/api-metadata/integration-assessment-*.json)
+  - ia-probe -LandscapeTests on the development tenant's Integration Assessment (2026-09-27 17:29), synthetic tfacc-probe objects only
 
 ### Secure Parameter
 
@@ -379,30 +404,6 @@ A public API exists, but part of its contract is unconfirmed.
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Hub package sap-int-eic-eic-operations (Jobs, Components, Partner Directory, Message Stores, MPL; created 2026-04-30, modified 2026-09-21)
-
-### Integration Assessment Landscape Configuration
-
-`integration_assessment.landscape_configuration` · checked 2026-09-27
-
-- **Finding:** Create (201 with a server-assigned Id), read by Id and delete (204, then 404) work for vendors and applications. PATCH and PUT answered 400 V122 "Only application/json supported as content type" because the probe sent a charset parameter, and links sent as __metadata URIs answered 400 V124 "The navigation property contains no Id field", so updates, vendor links and application instances are still open.
-- **Next step:** ia-probe -LandscapeTests again with plain application/json and links as {"Id": ...}, now also for technologies and technology instances. If updates and links work, implement vendors, applications and application instances (and technologies, if they turn out to be customer objects).
-- **Sources:**
-  - Hub package SAPIntegrationAssessment (EntitiesAPI, ManagementAPI, OData; modified 2025-07-25)
-  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
-  - Integration Assessment Entities and Management $metadata, fetched live on 2026-09-27 (snapshots testdata/api-metadata/integration-assessment-*.json)
-  - ia-probe -LandscapeTests on the development tenant's Integration Assessment (2026-09-27 17:29), synthetic tfacc-probe objects only
-
-### Integration Assessment Master Data
-
-`integration_assessment.master_data` · checked 2026-09-27
-
-- **Finding:** The live Entities $metadata (27 entity sets) confirms the ISA-M taxonomy entities field by field, and every set was read on a tenant (for example 57 technology domains, 34 technology styles, 3 deployment models); no write annotations, and SAP Help lists no operations. Read-mostly reference data.
-- **Next step:** Add data sources for the taxonomy the landscape resources reference (deployment models first) together with the landscape resources.
-- **Sources:**
-  - Hub package SAPIntegrationAssessment (EntitiesAPI, ManagementAPI, OData; modified 2025-07-25)
-  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
-  - Integration Assessment Entities and Management $metadata, fetched live on 2026-09-27 (snapshots testdata/api-metadata/integration-assessment-*.json)
-  - ia-probe -LandscapeTests on the development tenant's Integration Assessment (2026-09-27 17:29), synthetic tfacc-probe objects only
 
 ### Certificate Chain
 

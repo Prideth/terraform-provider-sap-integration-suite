@@ -3,6 +3,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -37,12 +38,13 @@ type sapIntegrationSuiteProvider struct {
 
 // providerModel mirrors the provider block's schema.
 type providerModel struct {
-	Host               types.String         `tfsdk:"host"`
-	EnableExperimental types.Bool           `tfsdk:"enable_experimental"`
-	EnableUnofficial   types.Bool           `tfsdk:"enable_unofficial"`
-	OAuth              *oauthModel          `tfsdk:"oauth"`
-	APIManagement      *apiManagementModel  `tfsdk:"api_management"`
-	APIComposition     *apiCompositionModel `tfsdk:"api_composition"`
+	Host                  types.String                `tfsdk:"host"`
+	EnableExperimental    types.Bool                  `tfsdk:"enable_experimental"`
+	EnableUnofficial      types.Bool                  `tfsdk:"enable_unofficial"`
+	OAuth                 *oauthModel                 `tfsdk:"oauth"`
+	APIManagement         *apiManagementModel         `tfsdk:"api_management"`
+	APIComposition        *apiCompositionModel        `tfsdk:"api_composition"`
+	IntegrationAssessment *integrationAssessmentModel `tfsdk:"integration_assessment"`
 }
 
 type oauthModel struct {
@@ -69,6 +71,13 @@ type apiManagementModel struct {
 // service with plan "configuration". SAP does not document the field names
 // of that instance's service key, so the four values are taken as they are
 // rather than parsed from a key file. See docs/guides/api-composition.md.
+type integrationAssessmentModel struct {
+	EntitiesURL  types.String `tfsdk:"entities_url"`
+	TokenURL     types.String `tfsdk:"token_url"`
+	ClientID     types.String `tfsdk:"client_id"`
+	ClientSecret types.String `tfsdk:"client_secret"`
+}
+
 type apiCompositionModel struct {
 	Host         types.String `tfsdk:"host"`
 	TokenURL     types.String `tfsdk:"token_url"`
@@ -103,6 +112,13 @@ type Data struct {
 	// credential sets.
 	APICompositionHost       string
 	APICompositionHTTPClient *sapthttp.Client
+
+	// IntegrationAssessmentURL and IntegrationAssessmentHTTPClient are the
+	// Entities API service root and client of Integration Assessment, set
+	// only when provider.integration_assessment (or its environment
+	// variables) is complete.
+	IntegrationAssessmentURL        string
+	IntegrationAssessmentHTTPClient *sapthttp.Client
 
 	// EnableExperimental and EnableUnofficial are the provider's opt-ins
 	// for resources and data sources whose catalog status is experimental
@@ -209,6 +225,38 @@ func (p *sapIntegrationSuiteProvider) Schema(_ context.Context, _ provider.Schem
 					},
 				},
 			},
+			"integration_assessment": schema.SingleNestedBlock{
+				Description: "Credentials for the Integration Assessment Entities API, used only by the " +
+					"sapintegrationsuite_integration_assessment_* resources and data sources. They come from a " +
+					"service key of a service instance of \"Integration Assessment APIs\" (plan default); the " +
+					"oauth, api_management and api_composition credentials do not work there. Set all four " +
+					"values, or none. Each can also come from a SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_* " +
+					"environment variable.",
+				Attributes: map[string]schema.Attribute{
+					"entities_url": schema.StringAttribute{
+						Optional: true,
+						Description: "Service root of the Entities API, the service key's \"entities\" value, for " +
+							"example https://intas-api.cfapps.eu10.hana.ondemand.com/intas/entities/v1. Environment " +
+							"variable: SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_ENTITIES_URL.",
+					},
+					"token_url": schema.StringAttribute{
+						Optional: true,
+						Description: "OAuth 2.0 token endpoint: the service key's \"url\" followed by /oauth/token. " +
+							"Environment variable: SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_TOKEN_URL.",
+					},
+					"client_id": schema.StringAttribute{
+						Optional: true,
+						Description: "OAuth 2.0 client ID from the service key. Environment variable: " +
+							"SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_CLIENT_ID.",
+					},
+					"client_secret": schema.StringAttribute{
+						Optional:  true,
+						Sensitive: true,
+						Description: "OAuth 2.0 client secret from the service key. Environment variable: " +
+							"SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_CLIENT_SECRET.",
+					},
+				},
+			},
 			"api_composition": schema.SingleNestedBlock{
 				Description: "Credentials for API Composition's Configuration API, used only by " +
 					"sapintegrationsuite_business_data_graph. The API has its own region-specific host " +
@@ -309,6 +357,10 @@ func (p *sapIntegrationSuiteProvider) Configure(ctx context.Context, req provide
 		return
 	}
 
+	if !p.configureIntegrationAssessment(ctx, config.IntegrationAssessment, data, &resp.Diagnostics) {
+		return
+	}
+
 	resp.DataSourceData = data
 	resp.ResourceData = data
 }
@@ -374,61 +426,91 @@ func (p *sapIntegrationSuiteProvider) configureAPIManagementClassic(ctx context.
 	return true
 }
 
-// configureAPIComposition resolves the optional api_composition block and
-// its environment variables and, when all four values are present, builds
-// the HTTP client for API Composition's Configuration API. It fails only
-// when some but not all values are set; leaving all of them out is fine.
-func (p *sapIntegrationSuiteProvider) configureAPIComposition(ctx context.Context, cfg *apiCompositionModel, data *Data, diags *diag.Diagnostics) bool {
-	var host, tokenURL, clientID, clientSecret types.String
-	if cfg != nil {
-		host = cfg.Host
-		tokenURL = cfg.TokenURL
-		clientID = cfg.ClientID
-		clientSecret = cfg.ClientSecret
+// credentialBlock describes one optional provider block with its own OAuth
+// client: api_composition and integration_assessment.
+type credentialBlock struct {
+	title     string // for messages, for example "API Composition"
+	block     string // the provider block, for example "api_composition"
+	urlAttr   string // the block's URL attribute, for example "host"
+	envPrefix string // for example "SAP_INTEGRATION_SUITE_API_COMPOSITION_"
+	usedBy    string // what stays unconfigured without it
+}
+
+// resolve reads the block's four values, each falling back to its
+// environment variable, and builds the authenticated HTTP client when all
+// four are present. It returns a nil client when none is set, and fails only
+// when some but not all are.
+func (b credentialBlock) resolve(ctx context.Context, version string, url, tokenURL, clientID, clientSecret types.String, diags *diag.Diagnostics) (string, *sapthttp.Client, bool) {
+	values := []string{
+		stringOrEnv(url, b.envPrefix+strings.ToUpper(b.urlAttr)),
+		stringOrEnv(tokenURL, b.envPrefix+"TOKEN_URL"),
+		stringOrEnv(clientID, b.envPrefix+"CLIENT_ID"),
+		stringOrEnv(clientSecret, b.envPrefix+"CLIENT_SECRET"),
 	}
-
-	resolvedHost := stringOrEnv(host, "SAP_INTEGRATION_SUITE_API_COMPOSITION_HOST")
-	resolvedTokenURL := stringOrEnv(tokenURL, "SAP_INTEGRATION_SUITE_API_COMPOSITION_TOKEN_URL")
-	resolvedClientID := stringOrEnv(clientID, "SAP_INTEGRATION_SUITE_API_COMPOSITION_CLIENT_ID")
-	resolvedClientSecret := stringOrEnv(clientSecret, "SAP_INTEGRATION_SUITE_API_COMPOSITION_CLIENT_SECRET")
-
 	present := 0
-	for _, v := range []string{resolvedHost, resolvedTokenURL, resolvedClientID, resolvedClientSecret} {
+	for _, v := range values {
 		if v != "" {
 			present++
 		}
 	}
 	if present == 0 {
-		return true
+		return "", nil, true
 	}
-	if present < 4 {
+	if present < len(values) {
 		diags.AddError(
-			"Incomplete API Composition configuration",
-			"provider.api_composition requires host, token_url, client_id, and client_secret (or their "+
-				"SAP_INTEGRATION_SUITE_API_COMPOSITION_* environment variable equivalents) to be supplied "+
-				"together. Supply all four, or omit the block entirely to leave "+
-				"sapintegrationsuite_business_data_graph unconfigured.",
+			"Incomplete "+b.title+" configuration",
+			fmt.Sprintf("provider.%s requires %s, token_url, client_id, and client_secret (or their "+
+				"%s* environment variable equivalents) to be supplied together. Supply all four, or omit "+
+				"the block entirely to leave %s unconfigured.", b.block, b.urlAttr, b.envPrefix, b.usedBy),
 		)
-		return false
+		return "", nil, false
 	}
-
 	authenticatedClient, invalidateToken, err := auth.Config{
-		TokenURL:     resolvedTokenURL,
-		ClientID:     resolvedClientID,
-		ClientSecret: resolvedClientSecret,
+		TokenURL:     values[1],
+		ClientID:     values[2],
+		ClientSecret: values[3],
 	}.HTTPClient(ctx, http.DefaultClient)
 	if err != nil {
-		diags.AddError("Unable to configure API Composition authentication", err.Error())
-		return false
+		diags.AddError("Unable to configure "+b.title+" authentication", err.Error())
+		return "", nil, false
 	}
-
-	data.APICompositionHost = resolvedHost
-	data.APICompositionHTTPClient = sapthttp.New(sapthttp.Config{
+	return values[0], sapthttp.New(sapthttp.Config{
 		Transport:       authenticatedClient,
-		UserAgent:       sapthttp.UserAgent(p.version),
+		UserAgent:       sapthttp.UserAgent(version),
 		InvalidateToken: invalidateToken,
-	})
-	return true
+	}), true
+}
+
+// configureAPIComposition resolves the optional api_composition block for
+// API Composition's Configuration API.
+func (p *sapIntegrationSuiteProvider) configureAPIComposition(ctx context.Context, cfg *apiCompositionModel, data *Data, diags *diag.Diagnostics) bool {
+	var host, tokenURL, clientID, clientSecret types.String
+	if cfg != nil {
+		host, tokenURL, clientID, clientSecret = cfg.Host, cfg.TokenURL, cfg.ClientID, cfg.ClientSecret
+	}
+	block := credentialBlock{
+		title: "API Composition", block: "api_composition", urlAttr: "host",
+		envPrefix: "SAP_INTEGRATION_SUITE_API_COMPOSITION_", usedBy: "sapintegrationsuite_business_data_graph",
+	}
+	resolved, client, ok := block.resolve(ctx, p.version, host, tokenURL, clientID, clientSecret, diags)
+	data.APICompositionHost, data.APICompositionHTTPClient = resolved, client
+	return ok
+}
+
+// configureIntegrationAssessment resolves the optional
+// integration_assessment block for the Integration Assessment Entities API.
+func (p *sapIntegrationSuiteProvider) configureIntegrationAssessment(ctx context.Context, cfg *integrationAssessmentModel, data *Data, diags *diag.Diagnostics) bool {
+	var entitiesURL, tokenURL, clientID, clientSecret types.String
+	if cfg != nil {
+		entitiesURL, tokenURL, clientID, clientSecret = cfg.EntitiesURL, cfg.TokenURL, cfg.ClientID, cfg.ClientSecret
+	}
+	block := credentialBlock{
+		title: "Integration Assessment", block: "integration_assessment", urlAttr: "entities_url",
+		envPrefix: "SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_", usedBy: "the integration_assessment resources and data sources",
+	}
+	resolved, client, ok := block.resolve(ctx, p.version, entitiesURL, tokenURL, clientID, clientSecret, diags)
+	data.IntegrationAssessmentURL, data.IntegrationAssessmentHTTPClient = resolved, client
+	return ok
 }
 
 func (p *sapIntegrationSuiteProvider) Resources(_ context.Context) []func() resource.Resource {
@@ -464,6 +546,11 @@ func (p *sapIntegrationSuiteProvider) Resources(_ context.Context) []func() reso
 		NewAPIManagementCertificateStoreReferenceResource,
 		NewAPIKeyValueMapResource,
 		NewBusinessDataGraphResource,
+		NewIntegrationAssessmentVendorResource,
+		NewIntegrationAssessmentApplicationResource,
+		NewIntegrationAssessmentApplicationInstanceResource,
+		NewIntegrationAssessmentTechnologyResource,
+		NewIntegrationAssessmentTechnologyInstanceResource,
 	}
 }
 
@@ -498,6 +585,9 @@ func (p *sapIntegrationSuiteProvider) DataSources(_ context.Context) []func() da
 		NewAPIManagementCertificateStoreReferenceDataSource,
 		NewAPIKeyValueMapDataSource,
 		NewBusinessDataGraphDataSource,
+		NewIntegrationAssessmentDeploymentModelDataSource,
+		NewIntegrationAssessmentVendorDataSource,
+		NewIntegrationAssessmentTechnologyDataSource,
 	}
 }
 

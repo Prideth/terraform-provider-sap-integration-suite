@@ -8,6 +8,7 @@ import (
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/apimeta"
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/apimanagementclassic"
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/cloudintegration"
+	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/integrationassessment"
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/partnerdirectory"
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/securitycontent"
 )
@@ -19,6 +20,7 @@ func Contracts() []apimeta.Contract {
 		securitycontent.Contract,
 		partnerdirectory.Contract,
 		apimanagementclassic.Contract,
+		integrationassessment.Contract,
 	}
 }
 

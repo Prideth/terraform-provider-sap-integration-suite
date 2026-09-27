@@ -165,3 +165,17 @@ func alignUploadBundleID(content []byte, id, file string, diags *diag.Diagnostic
 	}
 	return aligned
 }
+
+// requireIntegrationAssessmentHTTPClient is the Integration Assessment
+// counterpart of requireHTTPClient.
+func requireIntegrationAssessmentHTTPClient(data *Data, noun string, diags *diag.Diagnostics) bool {
+	if data.IntegrationAssessmentHTTPClient != nil {
+		return true
+	}
+	diags.AddError(
+		"Integration Assessment configuration is required for this "+noun+".",
+		"Configure provider.integration_assessment (entities_url, token_url, client_id, client_secret) or the "+
+			"corresponding SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_* environment variables.",
+	)
+	return false
+}

@@ -1,115 +1,120 @@
 ---
 page_title: "Integration Assessment"
-subcategory: "Additional Capabilities"
+subcategory: "Integration Assessment"
 description: |-
-  Integration Assessment's confirmed API surface, its full entity inventory classified by
-  Terraform suitability, and exactly why this provider implements none of it yet.
+  Maintaining the Integration Assessment landscape (vendors, applications, technologies and
+  their instances) with Terraform: setup, the object model, status and what stays out of scope.
 ---
 
 # Integration Assessment
 
-Integration Assessment implements SAP's Integration Solution Advisory Methodology (ISA-M): a
-guided approach to assessing an organization's integration landscape and strategy, and to
-recording decisions about which integration technology should handle which kind of integration.
-It is a separate SAP BTP service subscription (entitlement `integration-assessment`), not a
-sub-feature of Cloud Integration or either API Management model.
+Integration Assessment implements SAP's Integration Solution Advisory Methodology (ISA-M). Its
+assessments recommend integration technologies for interfaces between the systems of a
+landscape, so the landscape has to be described first: which applications exist, where their
+instances run, and which technologies are available. That description changes slowly and is
+often kept in several places. Managing it with Terraform keeps it in one reviewed source.
 
-If you came here looking for `sapintegrationsuite_integration_assessment_application` or
-similar: **nothing in this capability is implemented yet, and this guide explains exactly why**,
-together with the confirmed entity inventory this provider's decision rests on.
+## Status
 
-## Authentication is confirmed, and genuinely separate again
+The resources and data sources of this capability are **unofficial** and need
+`enable_unofficial = true`. SAP documents the Integration Assessment APIs, their entities and
+their per-tenant limits, and lists the Entities API on the Business Accelerator Hub, but the
+field-level specification there needs an SAP login. The provider's requests follow the service's
+`$metadata`, committed as a snapshot and compared with the live service by the API discovery,
+and every operation was verified on a tenant in September 2026. They become supported once the
+specification confirms them.
 
-Integration Assessment authenticates through its own BTP service instance — **Integration
-Assessment APIs**, plan `default` — provisioned independently of the Integration Suite
-subscription this provider otherwise assumes. Its service key is confirmed to contain:
+## Setup
 
-- `entities` — base URL for the Entities API
-- `management` — base URL for the Management API
-- `clientid` / `clientsecret` / `url` (token server; SAP says to append `/oauth/token` to it) —
-  the same OAuth 2.0 client-credentials shape this provider already uses for Cloud Integration,
-  current API Management, and Classic API Management
+Integration Assessment is its own BTP service with its own credentials:
 
-The SAP Business Accelerator Hub's public catalog (re-audit September 2026) lists exactly two API
-artifacts in the package `SAPIntegrationAssessment`, both of type **OData**, version 1.0.0:
-**Entities** (`EntitiesAPI`, "Access entities of Integration Assessment") and **Management**
-(`ManagementAPI`, "Manage content of Integration Assessment"). The entity inventory below
-therefore belongs to the Entities API. The Management API is about content, which matches the
-UI's *Content Management* page: updating SAP-delivered content and importing and exporting a
-tenant's data. That is an operation, not desired state.
+1. Subscribe to Integration Assessment in the subaccount (SAP/btp provider or cockpit).
+2. Create a service instance of **Integration Assessment APIs**, plan `default`, and a service
+   key. The key has `entities`, `management`, `clientid`, `clientsecret` and `url`.
+3. Configure the provider:
 
-This provider does not add a `provider.integration_assessment` configuration block in this
-phase. Adding provider schema with nothing behind it to configure would be dead surface area —
-the same discipline this provider already applies elsewhere (see `docs/provider-scope.md`). If
-and when a resource or data source is implemented here, the block will be added alongside it,
-following the same pattern as `provider.api_management`.
+```terraform
+provider "sapintegrationsuite" {
+  enable_unofficial = true
 
-## The confirmed entity inventory
+  integration_assessment {
+    entities_url  = var.integration_assessment.entities
+    token_url     = "${var.integration_assessment.url}/oauth/token"
+    client_id     = var.integration_assessment.clientid
+    client_secret = var.integration_assessment.clientsecret
+  }
+}
+```
 
-SAP's own "Integration Assessment APIs" documentation page lists every entity in this capability,
-each with a one-paragraph description — genuinely the most complete *inventory* this provider has
-found for any capability audited without a lucky primary-source PDF (compare
-`docs/guides/classic-api-management.md`, where a complete official user guide with worked
-examples was found). What is missing, despite substantial effort (the SAP-docs mirror, the
-official "SAP Integration Solution Advisory Methodology" PDF user guide, SAP's own TechEd
-IN262 hands-on sample repository, and in September 2026 the Business Accelerator Hub catalog,
-all checked), was any field-level contract. That changed on 2026-09-27: the live `$metadata` of
-both services was read with a service key and is committed as a normalized snapshot
-(`testdata/api-metadata/integration-assessment-entities.json` and `-management.json`). The
-Entities service has 27 entity sets, each keyed by a string `Id`, with one function import
-(`InterfaceRequestReport`); the Management service has `ImportContent` and the function
-`ExportContent`. The document says nothing about which entity sets accept writes (no
-`sap:creatable` or `sap:updatable` annotations), so the classification below rests on the
-confirmed shape plus SAP's descriptions.
+The block is independent of `oauth`: a configuration that only maintains the landscape needs
+no Cloud Integration credentials. The values can also come from the
+`SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_*` environment variables.
 
-### Master data — SAP-maintained ISA-M taxonomy
+## The landscape model
 
-Domain, Style, Use Case Pattern, Integration Pattern, Key Characteristic (with its own Group,
-Value, and Recommendation sub-entities), Deployment Model, Domain Determination. This is the
-reference taxonomy the whole methodology is built on — SAP ships it, and a tenant can review and
-adjust it (SAP's documentation includes a dedicated "Update Content Maintained by SAP" procedure).
-If a public API is ever confirmed for it, this looks like a genuine data-source candidate at
-minimum; whether the "adjust" capability rises to full resource-level suitability would need its
-own suitability check once the API itself is confirmed.
+| Object | Resource | Links to |
+|---|---|---|
+| Vendor | [`integration_assessment_vendor`](../resources/integration_assessment_vendor.md) | — |
+| Application | [`integration_assessment_application`](../resources/integration_assessment_application.md) | a vendor (optional) |
+| Application instance | [`integration_assessment_application_instance`](../resources/integration_assessment_application_instance.md) | an application and a deployment model |
+| Technology | [`integration_assessment_technology`](../resources/integration_assessment_technology.md) | a vendor |
+| Technology instance | [`integration_assessment_technology_instance`](../resources/integration_assessment_technology_instance.md) | a technology and a deployment model |
 
-### Landscape configuration — the strongest resource candidate
+Every object gets a UUID from the service. Configurations never write Ids literally: they
+reference the resources, or look up objects that already exist by name with the
+[vendor](../data-sources/integration_assessment_vendor.md),
+[technology](../data-sources/integration_assessment_technology.md) and
+[deployment model](../data-sources/integration_assessment_deployment_model.md) data sources.
+SAP delivers its own technologies and the deployment models; look them up instead of creating
+them.
 
-Application, Application Instance, Technology, Technology Instance, Vendor, and their
-association entities (Technology Domain, Technology Style, Technology Key Characteristic). This
-is practitioner-authored configuration, not reference data or workflow state, and SAP documents
-concrete per-tenant limits that confirm real, bounded, persisted storage: a maximum of 20,000
-Applications, 20,000 Application Instances, 50 Technologies, 150 Technology Instances, and
-10,000 Vendors. The `$metadata` now confirms their fields: `Application` (`Name` required,
-`ApiHubId`, links to `Vendor` and its instances), `ApplicationInstance` (`Name` required,
-`Description`, links to `Application` and a `DeploymentModel`), `Technology` and
-`TechnologyInstance` (the same pattern for middleware), and `Vendor` (`Name`). What is still
-unconfirmed is write support: whether SAP accepts create, update and delete through the API,
-whether it generates the `Id`s, and how a link such as application to vendor is written. A probe
-(`.specs/ia-probe.ps1 -LandscapeTests`) checks exactly that with objects named `tfacc-probe-*`
-and deletes them again; the resources follow once it passes.
+```terraform
+variable "deployment_model_name" {
+  type = string
+}
 
-### Requests and assessment workflow — out of scope regardless
+data "sapintegrationsuite_integration_assessment_deployment_model" "selected" {
+  name = var.deployment_model_name
+}
 
-Request and Request Line Item, the entry points for a business solution/interface request
-workflow, plus the Integration Flow/Message Flow content a request references and Request Line
-Item Technology Instance Decision. SAP documents an explicit status machine for Request: `draft`
-(automatic on Create) → `new` (Submit) → `in progress` (automatic, once interface requests are
-assessed, or via Reopen) → `completed` (Complete). This is workflow/project state, the same
-category this provider already excludes for Cloud Integration's Message Processing Logs and
-Developer Hub's Subscription object — out of scope by its nature, independent of whether a field
-contract is ever confirmed for it.
+resource "sapintegrationsuite_integration_assessment_vendor" "acme" {
+  name = "ACME Logistics"
+}
 
-## What this provider manages today
+resource "sapintegrationsuite_integration_assessment_application" "warehouse" {
+  name      = "ACME Warehouse Management"
+  vendor_id = sapintegrationsuite_integration_assessment_vendor.acme.id
+}
 
-Nothing. See `internal/features/catalog.go`'s `integration_assessment.*` entries for the
-per-group classification recorded above, and `docs/sap-api-references.md` for the full research
-trail, including the specific sources checked and found to contain UI procedures only.
+resource "sapintegrationsuite_integration_assessment_application_instance" "warehouse_prd" {
+  name                = "ACME Warehouse Management PRD"
+  application_id      = sapintegrationsuite_integration_assessment_application.warehouse.id
+  deployment_model_id = data.sapintegrationsuite_integration_assessment_deployment_model.selected.id
+}
+```
 
-## Revisiting this decision
+## What changes in place
 
-The field-level contract is no longer the gap: it is in the committed snapshots, and the API
-discovery (`cmd/apidiscovery`, `TestAccMetadata`) compares them with the live services and
-reports any change. The remaining gap is write support for the landscape objects, which the probe
-settles. The order stays: landscape configuration first, the ISA-M taxonomy as data sources
-next, requests and the content import/export out of scope. An implementation adds a
-`provider.integration_assessment` block, since the credentials are a separate service key.
+Names change in place for vendors, applications, application instances and technologies. An
+application's vendor can be set, changed and removed in place, and an instance's description
+changes in place. Moving an instance to another application or deployment model, changing a
+technology's vendor and any change of a technology instance were not tested on a tenant, so
+they replace the object. The service's limits apply: 20,000 applications, 20,000 application
+instances, 50 technologies, 150 technology instances and 10,000 vendors per tenant.
+
+## What stays out of scope
+
+- **Requests and assessment results.** Business solution and interface requests follow a
+  status workflow (`draft`, `new`, `in progress`, `completed`), and their results are reports.
+  That is project state, not configuration.
+- **Content import and export.** The Management API's `ImportContent` and `ExportContent`
+  are one-shot transport actions.
+- **The rest of the ISA-M taxonomy** (domains, styles, patterns, key characteristics) has no
+  data source yet, and the domains, styles and key characteristics of a technology are not
+  managed yet; maintain them in the UI.
+
+## Importing existing objects
+
+Every resource imports by the Id the service assigned. List existing objects in the UI or read
+them with the data sources, then import them; see
+[Importing Existing Content](importing-existing-content.md).

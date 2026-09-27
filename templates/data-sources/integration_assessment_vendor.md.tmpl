@@ -1,0 +1,30 @@
+---
+page_title: "sapintegrationsuite_integration_assessment_vendor Data Source - sapintegrationsuite"
+subcategory: "Integration Assessment"
+description: |-
+  Finds an Integration Assessment vendor by name.
+---
+
+# sapintegrationsuite_integration_assessment_vendor (Data Source)
+
+Returns the Id of a vendor that exists on the tenant, for example one maintained in the UI, so
+that applications and technologies can link to it without Terraform managing it.
+
+**Status:** unofficial. Needs `enable_unofficial = true` in the provider block. SAP documents the
+Integration Assessment Entities API and this entity, but the field-level specification on the
+Business Accelerator Hub needs an SAP login. The requests follow the service's `$metadata` and
+were verified on a tenant in September 2026; SAP may change them without notice.
+
+Names are compared exactly, including case. The plan fails when no entry or more than one entry
+has the name.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_integration_assessment_vendor/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Related
+
+- [`sapintegrationsuite_integration_assessment_vendor`](../resources/integration_assessment_vendor.md) (resource).
+- [Integration Assessment guide](../guides/integration-assessment.md).

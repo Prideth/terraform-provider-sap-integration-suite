@@ -26,6 +26,7 @@ deployed integration flow and its endpoint URL.
 | Access policies | policies and their artifact references | `oauth` block |
 | Classic API Management | API providers, API products, API proxies, certificate store references, key value maps | `api_management` block |
 | API Composition | business data graphs (experimental) | `api_composition` block |
+| Integration Assessment | vendors, applications, application instances, technologies, technology instances (unofficial) | `integration_assessment` block |
 
 Data sources exist for most of these, plus discovery data sources for deployed service
 endpoints, keystore entries, partners, and the provider's own feature catalog.
@@ -73,6 +74,7 @@ reuses one client for another area, because SAP issues them from different servi
 | `host` + `oauth` | Process Integration Runtime (`it-rt`) | `api` | Cloud Integration, Security Content, Partner Directory, access policies |
 | `api_management` | API Management, API portal | `apiportal-apiaccess` | Classic API Management |
 | `api_composition` | API Composition | `configuration` | business data graphs |
+| `integration_assessment` | Integration Assessment APIs | `default` | the Integration Assessment landscape |
 
 Where the values come from:
 
@@ -101,12 +103,14 @@ block wins; an attribute that is unset or an empty string falls back to its vari
 | `oauth.client_secret` | `SAP_INTEGRATION_SUITE_CLIENT_SECRET` |
 | `api_management.*` | `SAP_INTEGRATION_SUITE_API_MANAGEMENT_HOST`, `_TOKEN_URL`, `_CLIENT_ID`, `_CLIENT_SECRET` |
 | `api_composition.*` | `SAP_INTEGRATION_SUITE_API_COMPOSITION_HOST`, `_TOKEN_URL`, `_CLIENT_ID`, `_CLIENT_SECRET` |
+| `integration_assessment.*` | `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_ENTITIES_URL`, `_TOKEN_URL`, `_CLIENT_ID`, `_CLIENT_SECRET` |
 | `enable_experimental` | `SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL` |
 | `enable_unofficial` | `SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL` |
 
 Missing Cloud Integration credentials do not fail the provider configuration; a resource or
 data source that needs them fails with an error that says what is missing. The `api_management`
-and `api_composition` blocks must have all four values or none; a partial block fails at once.
+`api_composition` and `integration_assessment` blocks must have all four values or none; a
+partial block fails at once.
 The feature catalog data sources work without any credentials.
 
 ## Example usage
@@ -295,6 +299,7 @@ The [Troubleshooting guide](guides/troubleshooting.md) covers more cases, and
 - `enable_experimental` (Boolean) Allows resources and data sources whose support status is "experimental": implemented on a documented API, but their lifecycle has not yet passed an acceptance test on a tenant, so behavior or schema may still change. Off by default; a configuration that uses one fails until this is true. Can also be set via the SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL environment variable. See docs/feature-support.md for which ones they are.
 - `enable_unofficial` (Boolean) Allows resources and data sources whose support status is "unofficial": they work and were verified on a tenant, but SAP does not document the API behind them (it is known only from the service's $metadata), so SAP may change it without notice. It also allows the unofficial operations of otherwise documented resources, for example updating a message mapping's content in place or deleting a number range. Off by default; a configuration or plan that needs one fails until this is true. Can also be set via the SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL environment variable.
 - `host` (String) Base URL of the SAP Integration Suite tenant used for Cloud Integration APIs, for example https://<tenant>.it-cpi<...>.cfapps.<region>.hana.ondemand.com. Can also be set via the SAP_INTEGRATION_SUITE_HOST environment variable.
+- `integration_assessment` (Block, Optional) Credentials for the Integration Assessment Entities API, used only by the sapintegrationsuite_integration_assessment_* resources and data sources. They come from a service key of a service instance of "Integration Assessment APIs" (plan default); the oauth, api_management and api_composition credentials do not work there. Set all four values, or none. Each can also come from a SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_* environment variable. (see [below for nested schema](#nestedblock--integration_assessment))
 - `oauth` (Block, Optional) OAuth 2.0 client credentials used to authenticate against the SAP Integration Suite APIs. (see [below for nested schema](#nestedblock--oauth))
 
 <a id="nestedblock--api_composition"></a>
@@ -317,6 +322,17 @@ Optional:
 - `client_secret` (String, Sensitive) OAuth 2.0 client secret from the apiportal-apiaccess service key. Can also be set via the SAP_INTEGRATION_SUITE_API_MANAGEMENT_CLIENT_SECRET environment variable.
 - `host` (String) Base URL of the API Portal application, for example https://<tenant>.prod-eu10.apiportal.cfapps.eu10.hana.ondemand.com, as returned by the apiportal-apiaccess service key's "url" field. Can also be set via the SAP_INTEGRATION_SUITE_API_MANAGEMENT_HOST environment variable.
 - `token_url` (String) OAuth 2.0 token endpoint URL from the apiportal-apiaccess service key's "tokenUrl" field. Can also be set via the SAP_INTEGRATION_SUITE_API_MANAGEMENT_TOKEN_URL environment variable.
+
+
+<a id="nestedblock--integration_assessment"></a>
+### Nested Schema for `integration_assessment`
+
+Optional:
+
+- `client_id` (String) OAuth 2.0 client ID from the service key. Environment variable: SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_CLIENT_ID.
+- `client_secret` (String, Sensitive) OAuth 2.0 client secret from the service key. Environment variable: SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_CLIENT_SECRET.
+- `entities_url` (String) Service root of the Entities API, the service key's "entities" value, for example https://intas-api.cfapps.eu10.hana.ondemand.com/intas/entities/v1. Environment variable: SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_ENTITIES_URL.
+- `token_url` (String) OAuth 2.0 token endpoint: the service key's "url" followed by /oauth/token. Environment variable: SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_TOKEN_URL.
 
 
 <a id="nestedblock--oauth"></a>

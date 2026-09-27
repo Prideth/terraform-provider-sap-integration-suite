@@ -2155,31 +2155,23 @@ var Catalog = []Feature{
 			"Style, Use Case Pattern, Integration Pattern, Key Characteristic (and its Group/Value/" +
 			"Recommendation), Deployment Model, Domain Determination — largely SAP-maintained " +
 			"reference content a tenant can review and adjust.",
-		SupportStatus: StatusUnsupported,
-		SupportReason: ReasonPublicAPIIncomplete,
-		PublicAPI:     true,
-		APIProtocol:   "OData V2",
+		SupportStatus:   StatusUnofficial,
+		SupportReason:   ReasonPublicAPIIncomplete,
+		ContractSource:  SourceMetadataOnly,
+		DataSourceTypes: []string{"sapintegrationsuite_integration_assessment_deployment_model"},
+		PublicAPI:       true,
+		APIProtocol:     "OData V2",
+		Operations:      Operations{Read: true},
 		Limitations: []string{
-			"Contract confirmed on 2026-09-27 from the live $metadata of the Entities API " +
-				"(snapshot testdata/api-metadata/integration-assessment-entities.json): Domain, Style, " +
-				"UseCasePattern, IntegrationPattern, KeyCharacteristic, KeyCharacteristicGroup, " +
-				"KeyCharacteristicValue, KeyCharacteristicRecommendationDegree, DeploymentModel and " +
-				"DomainDetermination, each keyed by a string Id with Name, Description and timestamps. " +
-				"The document carries no sap:creatable or sap:updatable annotations, and SAP Help " +
-				"lists the resources without operations. These are read-mostly references, so the " +
-				"planned shape is data sources; the probe .specs/ia-probe.ps1 reads them first.",
-			"A confirmed, separate BTP service (\"Integration Assessment APIs\", entitlement " +
-				"integration-assessment) exposes these entities through two OAuth 2.0-secured base " +
-				"URLs (\"entities\" and \"management\") from its own service key — the general shape " +
-				"and full entity list are confirmed from SAP's own \"Integration Assessment APIs\" " +
-				"documentation page — but no worked request/response example was found in any " +
-				"reachable primary source (the SAP-docs mirror, an official PDF user guide, and an " +
-				"SAP TechEd hands-on sample repository were all checked and cover only UI procedures), " +
-				"so no field-level JSON schema could be confirmed for any entity in this group.",
-			"Re-audit September 2026: the Business Accelerator Hub lists both APIs (Entities and " +
-				"Management) as OData services, but their specifications need an SAP login. The " +
-				"services' $metadata, fetched with an Integration Assessment service key, would " +
-				"settle the contract.",
+			"SAP documents the Entities API and lists these entities with a description each; the " +
+				"field-level specification on the Business Accelerator Hub needs an SAP login. The " +
+				"contract comes from the live $metadata (snapshot testdata/api-metadata/integration-" +
+				"assessment-entities.json), and every entity set was read on a tenant in September 2026.",
+			"Only deployment models have a data source, looked up by name, because the landscape " +
+				"instances link to them. The rest of the taxonomy (domains, styles, patterns, key " +
+				"characteristics) is not exposed yet.",
+			"Needs provider.integration_assessment: the service key of an \"Integration Assessment " +
+				"APIs\" service instance; the other credential sets do not work there.",
 		},
 	},
 	{
@@ -2189,32 +2181,39 @@ var Catalog = []Feature{
 		Description: "Tenant-owned integration landscape inventory: Application, Application " +
 			"Instance, Technology, Technology Instance, Vendor, and their association entities " +
 			"(Technology Domain, Technology Style, Technology Key Characteristic).",
-		SupportStatus: StatusUnsupported,
-		SupportReason: ReasonPublicAPIIncomplete,
-		PublicAPI:     true,
-		APIProtocol:   "OData V2",
-		Planned:       true,
+		SupportStatus:  StatusUnofficial,
+		SupportReason:  ReasonPublicAPIIncomplete,
+		ContractSource: SourceMetadataOnly,
+		ResourceTypes: []string{
+			"sapintegrationsuite_integration_assessment_vendor",
+			"sapintegrationsuite_integration_assessment_application",
+			"sapintegrationsuite_integration_assessment_application_instance",
+			"sapintegrationsuite_integration_assessment_technology",
+			"sapintegrationsuite_integration_assessment_technology_instance",
+		},
+		DataSourceTypes: []string{
+			"sapintegrationsuite_integration_assessment_vendor",
+			"sapintegrationsuite_integration_assessment_technology",
+		},
+		PublicAPI:   true,
+		APIProtocol: "OData V2",
+		Operations:  Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
 		Limitations: []string{
-			"Contract confirmed on 2026-09-27 from the live $metadata of the Entities API: " +
-				"Application (Id, Name required, ApiHubId; navigation to Vendor and ApplicationInstances), " +
-				"ApplicationInstance (Id, Name required, Description; navigation to Application and " +
-				"DeploymentModel), Technology (Id, Name; navigation to Vendor, TechnologyInstances and the " +
-				"association sets TechnologyDomains, TechnologyStyles, TechnologyKeyCharacteristics), " +
-				"TechnologyInstance (Id, Name; navigation to Technology and DeploymentModel) and Vendor " +
-				"(Id, Name). All keys are string Ids; the document has no creatable or updatable " +
-				"annotations.",
-			"What is still open is write support: whether create, update and delete are accepted, " +
-				"whether Ids are generated by SAP, and how links such as Application to Vendor are " +
-				"written (deep link or $links). .specs/ia-probe.ps1 -LandscapeTests exercises exactly " +
-				"that with tfacc-probe objects. Once it passes, sapintegrationsuite_integration_assessment_* " +
-				"resources follow.",
-			"The strongest Terraform-candidate family in this capability: these are practitioner-" +
-				"authored configuration, not workflow or reporting data, and SAP documents concrete " +
-				"per-tenant limits confirming real, bounded storage (maximum 20000 Applications, 20000 " +
-				"Application Instances, 50 Technologies, 150 Technology Instances, 10000 Vendors) — " +
-				"but, as with integration_assessment.master_data, no field-level JSON schema for any " +
-				"Create/Read/Update/Delete operation was found in any reachable primary source. The " +
-				"Entities API is an OData service, so its $metadata is the next evidence to obtain.",
+			"SAP documents the Entities API, these entities and their per-tenant limits (20,000 " +
+				"applications, 20,000 application instances, 50 technologies, 150 technology instances, " +
+				"10,000 vendors), but the field-level specification on the Business Accelerator Hub needs " +
+				"an SAP login. The requests follow the live $metadata and were verified on a tenant on " +
+				"2026-09-27: create (201 with a UUID Id), read, PATCH and PUT (204), delete (204) for all " +
+				"five objects, and links written as {\"Id\": ...}; the service rejects links written as " +
+				"__metadata URIs (V124) and a Content-Type with a charset parameter (V122).",
+			"Vendor and application change their name, and the application its vendor, in place. " +
+				"Application instances change name and description in place. Moving an instance to " +
+				"another application or deployment model, changing a technology's vendor and any change " +
+				"of a technology instance were not tested, so they replace the object.",
+			"The association sets of a technology (TechnologyDomain, TechnologyStyle, " +
+				"TechnologyKeyCharacteristic) are not managed yet.",
+			"Needs provider.integration_assessment: the service key of an \"Integration Assessment " +
+				"APIs\" service instance; the other credential sets do not work there.",
 		},
 	},
 	{
