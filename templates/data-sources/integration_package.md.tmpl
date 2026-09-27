@@ -1,0 +1,25 @@
+---
+page_title: "sapintegrationsuite_integration_package Data Source - sapintegrationsuite"
+subcategory: "Cloud Integration"
+description: |-
+  Reads an integration package by ID.
+---
+
+# sapintegrationsuite_integration_package (Data Source)
+
+Looks up an integration package by its technical ID, for example to attach artifacts to a
+package that another team or configuration owns.
+
+**Status:** supported.
+
+If the object does not exist, the plan fails with SAP's `404`.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_integration_package/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Related
+
+- [`sapintegrationsuite_integration_package`](../resources/integration_package.md) (resource)

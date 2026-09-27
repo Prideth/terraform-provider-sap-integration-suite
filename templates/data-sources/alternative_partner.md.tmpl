@@ -1,0 +1,28 @@
+---
+page_title: "sapintegrationsuite_alternative_partner Data Source - sapintegrationsuite"
+subcategory: "Partner Directory"
+description: |-
+  Resolves an external partner identity to its partner ID.
+---
+
+# sapintegrationsuite_alternative_partner (Data Source)
+
+Resolves agency, scheme and external identifier to the partner ID they map to.
+
+**Status:** supported.
+
+If the object does not exist, the plan fails with SAP's `404`.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_alternative_partner/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Limitations
+
+`runtime_location_id` (Edge Integration Cell targeting) is not supported; leave it unset.
+
+## Related
+
+- [`sapintegrationsuite_alternative_partner`](../resources/alternative_partner.md) (resource)

@@ -1,0 +1,59 @@
+---
+page_title: "sapintegrationsuite_integration_adapter_deployment Resource - sapintegrationsuite"
+subcategory: "Cloud Integration"
+description: |-
+  Deploys a custom integration adapter to the Cloud Integration runtime.
+---
+
+# sapintegrationsuite_integration_adapter_deployment (Resource)
+
+Deploys a custom adapter imported with
+[`sapintegrationsuite_integration_adapter`](integration_adapter.md). SAP requires the adapter to
+be deployed before any integration flow that uses it; the provider cannot see that dependency
+in the flow's content, so declare it with `depends_on` on the flow deployment.
+
+**Status:** partial. SAP documents the deploy request. Status polling and undeploy use the
+runtime artifact API that all other deployments use; that adapters appear there was inferred,
+not documented.
+
+## Prerequisites
+
+- The adapter on the tenant.
+- An OAuth client with `WorkspaceArtifactsDeploy` and `MonitoringDataRead`.
+
+## Lifecycle
+
+| Operation | What happens |
+|---|---|
+| Create | Deploys the adapter (SAP's deploy takes no version) and polls the runtime status until `STARTED` or `ERROR`, or `timeouts.create` (default 10 minutes) elapses. |
+| Read | Reads the runtime artifact; an undeployed adapter drops out of state. |
+| Update | None. |
+| Replacement | Changing `adapter_id` or `runtime_location_id` undeploys and deploys anew. To redeploy after a new import of the same adapter, use `terraform apply -replace` on this resource. |
+| Delete | Sends the undeploy request (bounded by `timeouts.delete`, default 10 minutes). |
+
+A deploy that does not reach `STARTED` in time, or ends in `ERROR`, stays in state with SAP's
+last status and is marked tainted, so the next apply deploys again.
+
+## Example Usage
+
+{{ tffile "examples/resources/sapintegrationsuite_integration_adapter_deployment/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ codefile "shell" "examples/resources/sapintegrationsuite_integration_adapter_deployment/import.sh" }}
+
+The ID is the adapter ID.
+
+## Limitations
+
+- **SAP:** no version parameter on deploy; whatever design-time adapter exists is deployed.
+- **Provider:** whether adapters need longer than content to appear in the runtime status has
+  not been measured. Edge Integration Cell targeting is not supported.
+
+## Related
+
+- [`sapintegrationsuite_integration_adapter`](integration_adapter.md): the design-time adapter.
+- [`sapintegrationsuite_integration_flow_deployment`](integration_flow_deployment.md): flows that use the adapter.
+- [Integration Adapters guide](../guides/integration-adapters.md).

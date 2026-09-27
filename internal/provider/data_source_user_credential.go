@@ -46,7 +46,7 @@ func (d *userCredentialDataSource) Schema(_ context.Context, _ datasource.Schema
 			},
 			"kind": schema.StringAttribute{
 				Computed:    true,
-				Description: "The credential's system-specific type (unset, \"SuccessFactors\", or \"OpenConnectors\").",
+				Description: "The credential's system-specific type as SAP reports it: \"default\" for a generic credential, \"SuccessFactors\" or \"OpenConnectors\".",
 			},
 			"description": schema.StringAttribute{
 				Computed:    true,

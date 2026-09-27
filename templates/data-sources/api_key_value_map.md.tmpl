@@ -1,0 +1,25 @@
+---
+page_title: "sapintegrationsuite_api_key_value_map Data Source - sapintegrationsuite"
+subcategory: "API Management"
+description: |-
+  Reads a Classic API Management key value map by name, scope and scope ID.
+---
+
+# sapintegrationsuite_api_key_value_map (Data Source)
+
+Reads a key value map and its entries. Entry values are marked sensitive, because maps can
+carry runtime credentials. Needs the `api_management` block in the provider configuration.
+
+**Status:** partial, like the resource.
+
+If the object does not exist, the plan fails with SAP's `404`.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_api_key_value_map/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Related
+
+- [`sapintegrationsuite_api_key_value_map`](../resources/api_key_value_map.md) (resource)

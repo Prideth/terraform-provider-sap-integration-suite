@@ -1,0 +1,29 @@
+---
+page_title: "sapintegrationsuite_provider_features Data Source - sapintegrationsuite"
+subcategory: "Provider"
+description: |-
+  The provider's built-in feature catalog: every SAP Integration Suite capability with its support status.
+---
+
+# sapintegrationsuite_provider_features (Data Source)
+
+Returns the feature catalog compiled into this provider version: every SAP Integration Suite
+capability that was evaluated, with its support status, the contract it rests on, the operations
+implemented and the known limitations. It describes the provider, not your tenant, and needs no
+SAP credentials. Use it to check in a pipeline that the features a configuration relies on are
+supported by the pinned provider version.
+
+**Status:** supported. Needs no SAP connection.
+
+Always returns the whole catalog.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_provider_features/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Related
+
+- [`sapintegrationsuite_provider_feature`](provider_feature.md)
+- [Feature Support](https://github.com/Prideth/terraform-provider-sap-integration-suite/blob/master/docs/feature-support.md)

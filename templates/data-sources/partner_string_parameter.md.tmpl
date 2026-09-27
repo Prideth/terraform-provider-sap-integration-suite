@@ -1,0 +1,28 @@
+---
+page_title: "sapintegrationsuite_partner_string_parameter Data Source - sapintegrationsuite"
+subcategory: "Partner Directory"
+description: |-
+  Reads one string parameter of a partner.
+---
+
+# sapintegrationsuite_partner_string_parameter (Data Source)
+
+Reads one string parameter by partner ID and parameter ID without managing it.
+
+**Status:** supported.
+
+If the object does not exist, the plan fails with SAP's `404`.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_partner_string_parameter/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Limitations
+
+`runtime_location_id` (Edge Integration Cell targeting) is not supported; leave it unset.
+
+## Related
+
+- [`sapintegrationsuite_partner_string_parameter`](../resources/partner_string_parameter.md) (resource)

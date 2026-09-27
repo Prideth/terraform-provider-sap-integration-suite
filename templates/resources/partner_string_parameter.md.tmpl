@@ -1,0 +1,57 @@
+---
+page_title: "sapintegrationsuite_partner_string_parameter Resource - sapintegrationsuite"
+subcategory: "Partner Directory"
+description: |-
+  A text value in the Partner Directory, scoped to a partner ID, that integration flows read at runtime.
+---
+
+# sapintegrationsuite_partner_string_parameter (Resource)
+
+A string parameter is a named text value stored for one partner ID (Pid), for example a
+receiver address or a document format. Integration flows read it at runtime with the Partner
+Directory steps, so one flow can serve many partners. Partner Directory data is stored
+unencrypted: never put passwords, tokens or keys into a string parameter; use
+[`sapintegrationsuite_partner_user_credential_parameter`](partner_user_credential_parameter.md)
+for credentials.
+
+**Status:** supported. Backed by `StringParameters` of the Partner Directory API.
+
+## Prerequisites
+
+- An OAuth client with the role `AuthGroup_TenantPartnerDirectoryConfigurator`.
+- A partner ID (Pid) chosen by you. It does not have to exist: SAP creates a Pid the first time
+  an entry references it, and there is no resource for partners themselves.
+
+## Lifecycle
+
+| Operation | What happens |
+|---|---|
+| Create | Creates the parameter under `partner_id` and `parameter_id`; SAP creates the Pid if it is new. |
+| Read | Reads the value. A value changed in the UI or by another process shows as drift. |
+| Update | A changed `value` is written in place. |
+| Replacement | Changing `partner_id`, `parameter_id` or `runtime_location_id` creates a new parameter. |
+| Delete | Deletes this parameter only. Other entries of the same Pid are not touched. |
+
+## Example Usage
+
+{{ tffile "examples/resources/sapintegrationsuite_partner_string_parameter/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ codefile "shell" "examples/resources/sapintegrationsuite_partner_string_parameter/import.sh" }}
+
+The ID is `<partner_id>/<parameter_id>`. Everything is recovered.
+
+## Limitations
+
+- **SAP:** values are stored unencrypted.
+- **Provider:** Edge Integration Cell targeting through `runtime_location_id` is not supported and has not
+  been tested; leave it unset.
+
+## Related
+
+- [`sapintegrationsuite_partner_string_parameters`](../data-sources/partner_string_parameters.md): all string parameters of one partner, for discovery.
+- [`sapintegrationsuite_partners`](../data-sources/partners.md): every Pid on the tenant.
+- [Partner Directory guide](../guides/partner-directory.md): entity model and why partners have no resource.

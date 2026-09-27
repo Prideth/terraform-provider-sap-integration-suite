@@ -1,0 +1,69 @@
+---
+page_title: "sapintegrationsuite_business_data_graph Resource - sapintegrationsuite"
+subcategory: "API Management"
+description: |-
+  An API Composition business data graph that exposes several business systems as one API.
+  Experimental; needs enable_experimental.
+---
+
+# sapintegrationsuite_business_data_graph (Resource)
+
+A business data graph combines the business systems of a landscape, for example SAP S/4HANA and
+SAP Sales Cloud, into one connected API. Its configuration says which systems it reads from,
+which system leads for which entity, and how keys translate between systems. Client
+applications then query the graph; that query traffic is not configuration and is outside
+Terraform.
+
+**Status:** experimental. Needs `enable_experimental = true` in the provider block. SAP documents
+the create body, reading, the PATCH URL and the status model of API Composition's Configuration
+API. It shows no PATCH body and no delete request, so updating and deleting a graph are
+unofficial operations that also need `enable_unofficial = true`. The resource has not run
+against a live system yet, and its schema may change before it is promoted.
+
+## Prerequisites
+
+- `enable_experimental = true`, and `enable_unofficial = true` to update or destroy graphs.
+- The `api_composition` block in the provider configuration, with a key of an API Composition
+  service instance of plan `configuration`. The Cloud Integration and API portal credentials do
+  not work for this API.
+- The BTP destinations each data source reads from, in the subaccount, with the additional
+  property `IntegrationCell.Include = true`. Destinations belong to the SAP/btp provider.
+
+## Lifecycle
+
+| Operation | What happens |
+|---|---|
+| Create | Sends the configuration and waits while SAP reports `PROCESSING`, until `DEPLOYMENT_INITIATED` or `FAILED` (`timeouts.create`, default 20 minutes). |
+| Read | Reads the configuration and the processing status, with `status_details` and `log_messages`. |
+| Update | **Needs `enable_unofficial`.** Sends the writable properties with `PATCH` and waits again. `exclude` is always sent, so removing it in the configuration also removes it in SAP. |
+| Replacement | Changing `business_data_graph_identifier` deletes the graph and creates a new one; needs `enable_unofficial`. Client applications use the identifier in their URL. |
+| Delete | **Needs `enable_unofficial`.** Sends `DELETE` to the graph's URL. Without the switch, destroy plans fail. |
+
+A graph that ends in `FAILED` stays in state with SAP's explanation, and Terraform marks it
+tainted.
+
+## Example Usage
+
+{{ tffile "examples/resources/sapintegrationsuite_business_data_graph/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ codefile "shell" "examples/resources/sapintegrationsuite_business_data_graph/import.sh" }}
+
+The ID is the graph identifier. The configuration and status are read from SAP.
+
+## Limitations
+
+- **SAP:** extensions cannot be managed through the Configuration API; `extensions` is read-only
+  and left alone on update. Cue-scoped key mappings and the OData containment setting have no
+  property name in SAP's documentation and cannot be set. SAP does not describe a log entry, so
+  each is the JSON SAP returned.
+- **Provider:** not yet verified against a live system. The PATCH body and the delete request
+  are the provider's inference from SAP's description.
+
+## Related
+
+- [`sapintegrationsuite_business_data_graph`](../data-sources/business_data_graph.md) (data source).
+- [API Composition guide](../guides/api-composition.md).

@@ -1,0 +1,64 @@
+---
+page_title: "sapintegrationsuite_integration_adapter Resource - sapintegrationsuite"
+subcategory: "Cloud Integration"
+description: |-
+  A custom integration adapter (.esa file built with the SAP Adapter SDK) in an integration
+  package. Replace-only.
+---
+
+# sapintegrationsuite_integration_adapter (Resource)
+
+Imports a custom adapter, an `.esa` archive built with the SAP Adapter SDK, into an integration
+package. This is not the way to use adapters from the Business Accelerator Hub, which are
+imported from inside the integration flow editor, and it does not activate Integration Suite
+capabilities. Cloud Foundry environment only.
+
+**Status:** partial. SAP documents deploying and deleting adapters with example requests; the
+create and read contract comes from the service's `$metadata` and the sibling artifact types.
+There is no update: every change replaces the adapter.
+
+## Prerequisites
+
+- An integration package, usually [`sapintegrationsuite_integration_package`](integration_package.md).
+- The adapter as an `.esa` file.
+- An OAuth client with `WorkspacePackagesEdit`.
+
+## Lifecycle
+
+| Operation | What happens |
+|---|---|
+| Create | Uploads the `.esa` file into the package. SAP rejects an ID that already exists on the tenant. |
+| Read | Reads name, version and the description SAP took from the file. |
+| Update | None. |
+| Replacement | Any change of `id`, `name`, `package_id`, `content` or `content_hash` deletes the adapter and imports it again. A deployment that references the unchanged `id` is not replaced with it and has no redeploy trigger; redeploy it with `terraform apply -replace` on the deployment resource. |
+| Delete | Deletes the design-time artifact. |
+
+## Example Usage
+
+{{ tffile "examples/resources/sapintegrationsuite_integration_adapter/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ codefile "shell" "examples/resources/sapintegrationsuite_integration_adapter/import.sh" }}
+
+The ID is `<package_id>/<id>`, although SAP identifies the adapter by `id` alone: the package
+cannot be read back reliably, and without it the first plan would replace the adapter. The
+[`sapintegrationsuite_integration_adapter`](../data-sources/integration_adapter.md) data source
+returns the `package_id` to use. Setting `content` after an import replaces the adapter; leave
+it out to adopt the adapter unchanged.
+
+## Limitations
+
+- **SAP:** importing an ID that exists is an error, so there is no update by re-import. The
+  type and application shown in SAP's import dialog have no API property and cannot be set.
+  The adapter ID is unique across the tenant, not only within the package.
+- **Provider:** there is no data source that lists all adapters, because no list contract is
+  documented. Files up to 32 MiB.
+
+## Related
+
+- [`sapintegrationsuite_integration_adapter_deployment`](integration_adapter_deployment.md): deploys the adapter.
+- [`sapintegrationsuite_integration_adapter`](../data-sources/integration_adapter.md) (data source).
+- [Integration Adapters guide](../guides/integration-adapters.md).

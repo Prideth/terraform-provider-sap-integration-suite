@@ -1,0 +1,27 @@
+---
+page_title: "sapintegrationsuite_integration_adapter Data Source - sapintegrationsuite"
+subcategory: "Cloud Integration"
+description: |-
+  Reads a custom integration adapter by its tenant-wide ID.
+---
+
+# sapintegrationsuite_integration_adapter (Data Source)
+
+Reads a custom adapter, including the `package_id` that an import of
+[`sapintegrationsuite_integration_adapter`](../resources/integration_adapter.md) needs. Useful
+before adopting an adapter, or to deploy one that this configuration does not own.
+
+**Status:** partial, like the adapter resource.
+
+If the object does not exist, the plan fails with SAP's `404`.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_integration_adapter/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Related
+
+- [`sapintegrationsuite_integration_adapter`](../resources/integration_adapter.md) (resource)
+- [`sapintegrationsuite_integration_adapter_deployment`](../resources/integration_adapter_deployment.md)

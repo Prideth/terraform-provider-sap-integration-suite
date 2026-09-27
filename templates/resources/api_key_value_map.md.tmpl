@@ -1,0 +1,58 @@
+---
+page_title: "sapintegrationsuite_api_key_value_map Resource - sapintegrationsuite"
+subcategory: "API Management"
+description: |-
+  A Classic API Management key value map that API proxy policies read at runtime. Unencrypted
+  maps only; replace-only.
+---
+
+# sapintegrationsuite_api_key_value_map (Resource)
+
+A key value map holds key/value pairs that API proxy policies read at runtime with the Key
+Value Map Operations policy, for example endpoint addresses or feature switches that differ per
+environment. Maps are scoped, for example to one API proxy.
+
+**Status:** partial. Backed by `GenericKeyMapEntries` of the API portal's `Management.svc`. SAP
+shows only the create request, so there is no update, and encrypted maps are not supported.
+
+## Prerequisites
+
+- The `api_management` block in the provider configuration, with the role
+  `APIPortal.Administrator`.
+- For `scope = "APIPROXY"`, the name of the API proxy in `scope_id`.
+
+## Lifecycle
+
+| Operation | What happens |
+|---|---|
+| Create | Creates the map with all its entries. |
+| Read | Reads the map and its entries, so a change made in the UI shows as drift. |
+| Update | None. |
+| Replacement | Any change, including a single entry, deletes the map and creates it again. Proxies that read it at that moment find no value. |
+| Delete | Deletes the map. |
+
+## Example Usage
+
+{{ tffile "examples/resources/sapintegrationsuite_api_key_value_map/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ codefile "shell" "examples/resources/sapintegrationsuite_api_key_value_map/import.sh" }}
+
+The ID is `<name>/<scope>/<scope_id>`. Entries are read from SAP.
+
+## Limitations
+
+- **SAP:** only the create request is documented; per-entry updates are not. `scope` is only
+  confirmed for `APIPROXY`.
+- **Provider:** `encrypted` must be `false`. It is not documented whether SAP returns an
+  encrypted value in clear text, masked or not at all, and guessing wrong would either leak a
+  secret into state or cause permanent drift. Keep secrets out of key value maps managed here.
+
+## Related
+
+- [`sapintegrationsuite_api_proxy`](api_proxy.md): the proxies whose policies read the map.
+- [`sapintegrationsuite_api_key_value_map`](../data-sources/api_key_value_map.md) (data source).
+- [Classic API Management guide](../guides/classic-api-management.md).

@@ -1,0 +1,29 @@
+---
+page_title: "sapintegrationsuite_partner_binary_parameter Data Source - sapintegrationsuite"
+subcategory: "Partner Directory"
+description: |-
+  Reads one binary parameter of a partner, base64-encoded.
+---
+
+# sapintegrationsuite_partner_binary_parameter (Data Source)
+
+Reads one binary parameter by partner ID and parameter ID. `value` is the base64-encoded content
+exactly as SAP returns it; decode it with `base64decode()` for text content.
+
+**Status:** supported.
+
+If the object does not exist, the plan fails with SAP's `404`.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_partner_binary_parameter/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Limitations
+
+`runtime_location_id` (Edge Integration Cell targeting) is not supported; leave it unset.
+
+## Related
+
+- [`sapintegrationsuite_partner_binary_parameter`](../resources/partner_binary_parameter.md) (resource)

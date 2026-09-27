@@ -1,0 +1,58 @@
+---
+page_title: "sapintegrationsuite_partner_binary_parameter Resource - sapintegrationsuite"
+subcategory: "Partner Directory"
+description: |-
+  A binary value in the Partner Directory (for example an XSD schema or XSLT), scoped to a partner ID.
+---
+
+# sapintegrationsuite_partner_binary_parameter (Resource)
+
+A binary parameter stores a file for one partner ID (Pid): a schema, a mapping, a certificate
+or other content that integration flows read at runtime, for example in the XML Validator or
+XSLT Mapping step. The file is uploaded from local disk. Partner Directory data is stored
+unencrypted: never store private keys or secrets here.
+
+**Status:** supported. Backed by `BinaryParameters` of the Partner Directory API.
+
+## Prerequisites
+
+- An OAuth client with the role `AuthGroup_TenantPartnerDirectoryConfigurator`.
+- A partner ID (Pid) chosen by you. It does not have to exist: SAP creates a Pid the first time
+  an entry references it, and there is no resource for partners themselves.
+
+## Lifecycle
+
+| Operation | What happens |
+|---|---|
+| Create | Uploads the file under `partner_id` and `parameter_id` with `content_type`. |
+| Read | Reads the content type. The stored file is not compared, so content changed outside Terraform is not detected; `content_hash` keeps the value of the last apply. |
+| Update | A new `content_hash` or `content_type` uploads the file again in place. |
+| Replacement | Changing `partner_id`, `parameter_id` or `runtime_location_id` creates a new parameter. |
+| Delete | Deletes this parameter only. |
+
+## Example Usage
+
+{{ tffile "examples/resources/sapintegrationsuite_partner_binary_parameter/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ codefile "shell" "examples/resources/sapintegrationsuite_partner_binary_parameter/import.sh" }}
+
+The ID is `<partner_id>/<parameter_id>`. The file path and hash cannot be recovered; the
+first apply after an import uploads the configured file once.
+
+## Limitations
+
+- **SAP:** values up to 1,572,864 bytes (the `MaxLength` in the tenant `$metadata`; older SAP
+  pages still say 260 KB). Larger XML content can be stored zipped with `content_type = "zip"`,
+  which the XML Validator and XSLT Mapping steps unzip.
+- **Provider:** the size is checked before upload. Edge Integration Cell targeting through `runtime_location_id` is not supported and has not
+  been tested; leave it unset.
+
+## Related
+
+- [`sapintegrationsuite_partner_binary_parameter`](../data-sources/partner_binary_parameter.md) (data source).
+- [`sapintegrationsuite_partners`](../data-sources/partners.md): every Pid on the tenant.
+- [Partner Directory guide](../guides/partner-directory.md): entity model and why partners have no resource.

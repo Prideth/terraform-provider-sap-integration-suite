@@ -1,0 +1,27 @@
+---
+page_title: "sapintegrationsuite_access_policy Data Source - sapintegrationsuite"
+subcategory: "Security"
+description: |-
+  Looks up an access policy by role name or numeric ID.
+---
+
+# sapintegrationsuite_access_policy (Data Source)
+
+Finds an access policy by `role_name` or by `id`. The role name is the portable choice: the same
+policy has a different numeric ID in every tenant. Use it to attach references to a policy owned
+elsewhere, or to find the ID for an import.
+
+**Status:** supported.
+
+If no policy matches, the plan fails.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_access_policy/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Related
+
+- [`sapintegrationsuite_access_policy`](../resources/access_policy.md) (resource)
+- [`sapintegrationsuite_access_policy_reference`](../resources/access_policy_reference.md)

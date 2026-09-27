@@ -31,8 +31,8 @@ func (d *apiManagementCertificateStoreReferenceDataSource) Schema(_ context.Cont
 		Attributes: map[string]schema.Attribute{
 			"id":                     schema.StringAttribute{Computed: true, Description: "Always equal to name."},
 			"name":                   schema.StringAttribute{Required: true, Description: "The certificate store reference's name to look up."},
-			"certificate_store_name": schema.StringAttribute{Computed: true},
-			"store_type":             schema.StringAttribute{Computed: true},
+			"certificate_store_name": schema.StringAttribute{Computed: true, Description: "The keystore or truststore the reference points to."},
+			"store_type":             schema.StringAttribute{Computed: true, Description: "The referenced store's type as SAP reports it, for example \"TRUSTSTORE\"."},
 		},
 	}
 }

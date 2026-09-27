@@ -1,0 +1,63 @@
+---
+page_title: "sapintegrationsuite_script_collection Resource - sapintegrationsuite"
+subcategory: "Cloud Integration"
+description: |-
+  A reusable script collection (Groovy and JavaScript files) in an integration package.
+---
+
+# sapintegrationsuite_script_collection (Resource)
+
+Manages a script collection: Groovy and JavaScript files that several integration flows share
+instead of each carrying its own copy. Flows reference the collection by ID; it has to be
+deployed before the flows that use it.
+
+**Status:** supported. Backed by `ScriptCollectionDesigntimeArtifacts` of the Integration
+Content API. SAP documents creating, reading and deleting script collections. The in-place
+content update and `save_as_version` work on a tenant but are not documented, so they need
+`enable_unofficial = true`.
+
+## Prerequisites
+
+- An integration package, usually [`sapintegrationsuite_integration_package`](integration_package.md).
+- The collection as a ZIP file, as the UI downloads it.
+- An OAuth client with `WorkspacePackagesEdit`.
+
+## Lifecycle
+
+| Operation | What happens |
+|---|---|
+| Create | Uploads the ZIP. `save_as_version` on create needs `enable_unofficial`. |
+| Read | Reads name and version. `content` and `content_hash` keep the values of the last apply. |
+| Update | **Needs `enable_unofficial`.** A new `content_hash` or `name` sends the content with `PUT`; a changed `save_as_version` saves a new version. Without the switch, the plan fails with an error that names the operation. |
+| Replacement | Changing `script_collection_id` or `package_id` creates a new collection. |
+| Delete | Deletes the design-time artifact. |
+
+SAP rejects uploads whose `Bundle-SymbolicName` differs from the ID the collection was created
+with. Unlike for flows and message mappings, the provider uploads script collections
+unchanged: keep `Bundle-SymbolicName` in the ZIP equal to `script_collection_id`.
+
+## Example Usage
+
+{{ tffile "examples/resources/sapintegrationsuite_script_collection/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ codefile "shell" "examples/resources/sapintegrationsuite_script_collection/import.sh" }}
+
+The ID is `<package_id>/<script_collection_id>`. SAP returns no file, so setting `content` in
+the configuration makes the first apply upload it, which needs `enable_unofficial`. Leave
+`content` and `content_hash` out to adopt a collection with documented operations only.
+
+## Limitations
+
+- **SAP:** no documented update and no documented `SaveAsVersion` for script collections. The
+  ID must be unique across the whole tenant, not only within the package.
+- **Provider:** files up to 32 MiB from local disk; the bundle ID in the ZIP is not aligned.
+
+## Related
+
+- [`sapintegrationsuite_script_collection_deployment`](script_collection_deployment.md): deploys the collection.
+- [`sapintegrationsuite_script_collection`](../data-sources/script_collection.md) (data source).
+- [Integration Content and Deployments](../guides/integration-content.md).

@@ -44,15 +44,16 @@ func (d *apiKeyValueMapDataSource) Schema(_ context.Context, _ datasource.Schema
 			"values are marked sensitive since a Key Value Map can carry runtime credentials, even " +
 			"though this data source only supports unencrypted maps.",
 		Attributes: map[string]schema.Attribute{
-			"name":     schema.StringAttribute{Required: true},
-			"scope":    schema.StringAttribute{Required: true},
-			"scope_id": schema.StringAttribute{Required: true},
+			"name":     schema.StringAttribute{Required: true, Description: "The map's name."},
+			"scope":    schema.StringAttribute{Required: true, Description: "The map's scope, for example \"APIPROXY\"."},
+			"scope_id": schema.StringAttribute{Required: true, Description: "The object the scope refers to; for \"APIPROXY\", the proxy's name."},
 			"entries": schema.ListNestedAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "The map's entries.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"key":   schema.StringAttribute{Computed: true},
-						"value": schema.StringAttribute{Computed: true, Sensitive: true},
+						"key":   schema.StringAttribute{Computed: true, Description: "The entry's key."},
+						"value": schema.StringAttribute{Computed: true, Sensitive: true, Description: "The entry's value. Sensitive, because maps can carry runtime credentials."},
 					},
 				},
 			},

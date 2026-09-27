@@ -1,0 +1,24 @@
+---
+page_title: "sapintegrationsuite_api_management_certificate_store_reference Data Source - sapintegrationsuite"
+subcategory: "API Management"
+description: |-
+  Reads a Classic API Management certificate store reference by name.
+---
+
+# sapintegrationsuite_api_management_certificate_store_reference (Data Source)
+
+Reads which keystore or truststore a certificate store reference points to. Needs the `api_management` block in the provider configuration.
+
+**Status:** supported.
+
+If the object does not exist, the plan fails with SAP's `404`.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_api_management_certificate_store_reference/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Related
+
+- [`sapintegrationsuite_api_management_certificate_store_reference`](../resources/api_management_certificate_store_reference.md) (resource)

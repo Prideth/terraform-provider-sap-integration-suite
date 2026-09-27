@@ -1,6 +1,6 @@
 ---
 page_title: "Authorization and Roles"
-subcategory: ""
+subcategory: "Getting Started"
 description: |-
   Which SAP role templates the OAuth clients behind this provider need for each resource
   family, how to assign them, and how to diagnose a 403 Forbidden.

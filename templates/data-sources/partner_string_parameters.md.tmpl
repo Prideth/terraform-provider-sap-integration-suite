@@ -1,0 +1,29 @@
+---
+page_title: "sapintegrationsuite_partner_string_parameters Data Source - sapintegrationsuite"
+subcategory: "Partner Directory"
+description: |-
+  Lists every string parameter of a partner.
+---
+
+# sapintegrationsuite_partner_string_parameters (Data Source)
+
+Lists every string parameter of one partner ID, following SAP's paging to the end, for example
+before importing them as resources.
+
+**Status:** supported.
+
+A partner without string parameters returns an empty list.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_partner_string_parameters/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Limitations
+
+`runtime_location_id` (Edge Integration Cell targeting) is not supported; leave it unset.
+
+## Related
+
+- [`sapintegrationsuite_partner_string_parameter`](../resources/partner_string_parameter.md) (resource)

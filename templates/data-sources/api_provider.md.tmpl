@@ -1,0 +1,25 @@
+---
+page_title: "sapintegrationsuite_api_provider Data Source - sapintegrationsuite"
+subcategory: "API Management"
+description: |-
+  Reads a Classic API Management API provider by name.
+---
+
+# sapintegrationsuite_api_provider (Data Source)
+
+Reads the connection settings of an API provider. The password is never returned. Needs the `api_management` block in the provider configuration.
+
+**Status:** partial, like the resource.
+
+If the object does not exist, the plan fails with SAP's `404`.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_api_provider/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Related
+
+- [`sapintegrationsuite_api_provider`](../resources/api_provider.md) (resource)
+- [`sapintegrationsuite_api_providers`](api_providers.md)

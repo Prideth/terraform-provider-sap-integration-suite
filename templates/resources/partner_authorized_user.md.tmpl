@@ -1,0 +1,56 @@
+---
+page_title: "sapintegrationsuite_partner_authorized_user Resource - sapintegrationsuite"
+subcategory: "Partner Directory"
+description: |-
+  Authorizes an inbound communication user to act as a partner ID in the Partner Directory.
+---
+
+# sapintegrationsuite_partner_authorized_user (Resource)
+
+An authorized user maps an inbound communication user (the user or client that sends messages
+to your tenant) to the partner ID (Pid) it may act as. A user maps to exactly one Pid; a Pid can
+have several users. This resource manages only the mapping; the user itself, its OAuth client
+or certificate belong to BTP and are not managed here.
+
+**Status:** supported. Backed by `AuthorizedUsers` of the Partner Directory API.
+
+## Prerequisites
+
+- An OAuth client with the role `AuthGroup_TenantPartnerDirectoryConfigurator`.
+- A partner ID (Pid) chosen by you. It does not have to exist: SAP creates a Pid the first time
+  an entry references it, and there is no resource for partners themselves.
+
+## Lifecycle
+
+| Operation | What happens |
+|---|---|
+| Create | Creates the mapping for `user`. |
+| Read | Reads the Pid the user is authorized for. |
+| Update | A changed `partner_id` repoints the mapping in place. |
+| Replacement | Changing `user` or `runtime_location_id` creates a new mapping. |
+| Delete | Deletes this mapping only. |
+
+## Example Usage
+
+{{ tffile "examples/resources/sapintegrationsuite_partner_authorized_user/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ codefile "shell" "examples/resources/sapintegrationsuite_partner_authorized_user/import.sh" }}
+
+The ID is the user, in lowercase. Everything is recovered.
+
+## Limitations
+
+- **SAP:** users are stored lowercased (SAP's own example creates `MyUser` and returns
+  `myuser`); the provider rejects uppercase letters at plan time.
+- **Provider:** Edge Integration Cell targeting through `runtime_location_id` is not supported and has not
+  been tested; leave it unset.
+
+## Related
+
+- [`sapintegrationsuite_partner_authorized_user`](../data-sources/partner_authorized_user.md) (data source).
+- [`sapintegrationsuite_partners`](../data-sources/partners.md): every Pid on the tenant.
+- [Partner Directory guide](../guides/partner-directory.md): entity model and why partners have no resource.

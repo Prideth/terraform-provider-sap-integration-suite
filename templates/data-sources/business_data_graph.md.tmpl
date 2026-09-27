@@ -1,0 +1,26 @@
+---
+page_title: "sapintegrationsuite_business_data_graph Data Source - sapintegrationsuite"
+subcategory: "API Management"
+description: |-
+  Reads the configuration and processing status of an API Composition business data graph. Experimental.
+---
+
+# sapintegrationsuite_business_data_graph (Data Source)
+
+Reads a business data graph's configuration and processing status, with the same attributes as
+the resource. Needs the `api_composition` block in the provider configuration.
+
+**Status:** experimental. Needs `enable_experimental = true`; see the resource page for why.
+
+If the object does not exist, the plan fails with SAP's `404`.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_business_data_graph/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Related
+
+- [`sapintegrationsuite_business_data_graph`](../resources/business_data_graph.md) (resource)
+- [API Composition guide](../guides/api-composition.md)

@@ -1,0 +1,30 @@
+---
+page_title: "sapintegrationsuite_partners Data Source - sapintegrationsuite"
+subcategory: "Partner Directory"
+description: |-
+  Lists every partner ID in the Partner Directory.
+---
+
+# sapintegrationsuite_partners (Data Source)
+
+Lists every partner ID (Pid), following SAP's paging to the end. This is the starting point for
+adopting existing Partner Directory content.
+
+**Status:** read_only.
+
+An empty Partner Directory returns an empty list.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_partners/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Limitations
+
+`runtime_location_id` (Edge Integration Cell targeting) is not supported; leave it unset.
+
+## Related
+
+- [`sapintegrationsuite_partner_string_parameters`](partner_string_parameters.md)
+- [Importing Existing Content](../guides/importing-existing-content.md)

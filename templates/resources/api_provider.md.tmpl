@@ -1,0 +1,63 @@
+---
+page_title: "sapintegrationsuite_api_provider Resource - sapintegrationsuite"
+subcategory: "API Management"
+description: |-
+  A Classic API Management API provider: the backend connection that API proxies target.
+  Internet connections only; replace-only.
+---
+
+# sapintegrationsuite_api_provider (Resource)
+
+An API provider describes a backend system that API proxies forward requests to: host, port,
+TLS and credentials. Proxies reference it by name instead of carrying the backend details
+themselves, so a backend can move without touching every proxy.
+
+**Status:** partial. Backed by `APIProviders` of the API portal's `Management.svc`. SAP's own
+tooling supports only creating API providers through the API, so there is no update, and only
+the Internet connection type is implemented.
+
+## Prerequisites
+
+- The `api_management` block in the provider configuration, with a key of the API portal
+  service plan `apiportal-apiaccess` and the role `APIPortal.Administrator`.
+- A backend reachable over the internet.
+
+## Lifecycle
+
+| Operation | What happens |
+|---|---|
+| Create | Creates the provider, then waits until it is readable; SAP caches reads for about 20 seconds. |
+| Read | Reads the connection settings. The password is never read. |
+| Update | None. |
+| Replacement | Any change deletes the provider and creates it again. Proxies that use it are briefly without a backend. |
+| Delete | Deletes the provider. |
+
+The password (`password_wo`) is write-only and sent only when the provider is created; it has no
+version attribute, because the provider cannot be updated anyway.
+
+## Example Usage
+
+{{ tffile "examples/resources/sapintegrationsuite_api_provider/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ codefile "shell" "examples/resources/sapintegrationsuite_api_provider/import.sh" }}
+
+The ID is the provider's name. Everything except the password is recovered; the imported
+provider keeps the password SAP holds.
+
+## Limitations
+
+- **SAP:** no update through the API. Reserved names (for example `DEST_CI`, `APIMGMT_PORTAL`,
+  `TC_*`) are rejected by SAP at apply time.
+- **Provider:** only the Internet connection type. On-premise (Cloud Connector), Open
+  Connectors and Cloud Integration connections have field sets that could not be confirmed and
+  are configured in the UI. `auth_type` is only confirmed for `BASIC`.
+
+## Related
+
+- [`sapintegrationsuite_api_proxy`](api_proxy.md): proxies that target the provider.
+- [`sapintegrationsuite_api_providers`](../data-sources/api_providers.md): every provider on the API portal.
+- [Classic API Management guide](../guides/classic-api-management.md).

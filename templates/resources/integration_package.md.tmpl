@@ -1,0 +1,62 @@
+---
+page_title: "sapintegrationsuite_integration_package Resource - sapintegrationsuite"
+subcategory: "Cloud Integration"
+description: |-
+  An integration package, the container for integration flows, mappings, script collections
+  and adapters.
+---
+
+# sapintegrationsuite_integration_package (Resource)
+
+An integration package groups design-time artifacts: integration flows, message mappings,
+value mappings, script collections and custom adapters. Every artifact resource of this
+provider names its package in `package_id`, so the package is usually the first resource in a
+configuration.
+
+**Status:** supported. Backed by `IntegrationPackages` of the Integration Content API.
+
+## Prerequisites
+
+- Cloud Integration activated in the SAP Integration Suite subscription.
+- An OAuth client with `WorkspacePackagesEdit` (`WorkspacePackagesRead` for the data source).
+
+## Lifecycle
+
+| Operation | What happens |
+|---|---|
+| Create | Creates a customer package. SAP requires `short_text`. |
+| Read | Reads name, texts and version. SAP stores the description as HTML and wraps plain text in `<p>...</p>`; the provider removes that wrapper, so a plain description does not show as drift. |
+| Update | `name`, `short_text` and `description` change in place with a `PUT`. The provider reads the package first and sends its version, vendor and tag fields back unchanged, because a `PUT` without them resets them. |
+| Replacement | Changing `id` creates a new package. SAP identifies a package by its ID and offers no rename. |
+| Delete | Deletes the package. Artifacts managed in the same configuration reference the package, so Terraform deletes them first. |
+
+## Example Usage
+
+{{ tffile "examples/resources/sapintegrationsuite_integration_package/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ codefile "shell" "examples/resources/sapintegrationsuite_integration_package/import.sh" }}
+
+Everything is recovered from SAP.
+
+## Limitations
+
+- SAP-delivered packages (from the Business Accelerator Hub) are read-only by SAP's design;
+  manage only packages you create.
+- The package's version, vendor and tag values are kept as SAP holds them; this resource
+  cannot set them.
+
+## Related
+
+- [`sapintegrationsuite_integration_flow`](integration_flow.md),
+  [`sapintegrationsuite_message_mapping`](message_mapping.md),
+  [`sapintegrationsuite_value_mapping`](value_mapping.md),
+  [`sapintegrationsuite_script_collection`](script_collection.md): the artifacts a package
+  holds.
+- [`sapintegrationsuite_custom_tag_configuration`](custom_tag_configuration.md): the tenant's
+  custom tags that packages are classified with.
+- [Getting Started](../guides/getting-started.md) and
+  [Integration Content and Deployments](../guides/integration-content.md).

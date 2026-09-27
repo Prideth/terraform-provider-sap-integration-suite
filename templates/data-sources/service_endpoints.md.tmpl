@@ -1,0 +1,31 @@
+---
+page_title: "sapintegrationsuite_service_endpoints Data Source - sapintegrationsuite"
+subcategory: "Cloud Integration"
+description: |-
+  Discovers the endpoint URLs and API definitions of deployed integration content.
+---
+
+# sapintegrationsuite_service_endpoints (Data Source)
+
+Lists the service endpoints SAP generates for deployed content with an HTTP-based sender
+adapter: their entry point URLs and API definition links. Endpoints exist only while the
+content is deployed, so there is no resource for them. `name` and `protocol` filter on SAP's
+side; without them, every endpoint is returned. Results are sorted by name and protocol.
+
+The data source has no reference to a deployment. Add `depends_on` on the deployment resource,
+or it may read before the flow is deployed.
+
+**Status:** read_only. Backed by `ServiceEndpoints` of the Integration Content API.
+
+No match returns an empty `endpoints` list, not an error.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_service_endpoints/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Related
+
+- [`sapintegrationsuite_integration_flow_deployment`](../resources/integration_flow_deployment.md)
+- [Service Endpoints guide](../guides/service-endpoints.md)

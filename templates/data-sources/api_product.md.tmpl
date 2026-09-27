@@ -1,0 +1,25 @@
+---
+page_title: "sapintegrationsuite_api_product Data Source - sapintegrationsuite"
+subcategory: "API Management"
+description: |-
+  Reads a Classic API Management API product by name, with its linked proxies.
+---
+
+# sapintegrationsuite_api_product (Data Source)
+
+Reads an API product and the names of the proxies it bundles. Needs the `api_management` block in the provider configuration.
+
+**Status:** supported.
+
+If the object does not exist, the plan fails with SAP's `404`.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_api_product/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Related
+
+- [`sapintegrationsuite_api_product`](../resources/api_product.md) (resource)
+- [`sapintegrationsuite_api_proxy`](../resources/api_proxy.md)

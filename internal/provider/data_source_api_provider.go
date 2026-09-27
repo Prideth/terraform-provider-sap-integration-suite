@@ -37,18 +37,22 @@ type apiProviderDataSourceModel struct {
 
 func apiProviderDataSourceSchema() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
-		"name":                   schema.StringAttribute{Computed: true},
-		"title":                  schema.StringAttribute{Computed: true},
-		"description":            schema.StringAttribute{Computed: true},
-		"dest_type":              schema.StringAttribute{Computed: true},
-		"host":                   schema.StringAttribute{Computed: true},
-		"port":                   schema.Int64Attribute{Computed: true},
-		"use_ssl":                schema.BoolAttribute{Computed: true},
-		"trust_all":              schema.BoolAttribute{Computed: true},
-		"path_prefix":            schema.StringAttribute{Computed: true},
-		"service_collection_url": schema.StringAttribute{Computed: true},
-		"auth_type":              schema.StringAttribute{Computed: true},
-		"user_name":              schema.StringAttribute{Computed: true},
+		"name":        schema.StringAttribute{Computed: true, Description: "The API provider's name, its key."},
+		"title":       schema.StringAttribute{Computed: true, Description: "Display title of the provider."},
+		"description": schema.StringAttribute{Computed: true, Description: "Free-text description of the provider."},
+		"dest_type": schema.StringAttribute{Computed: true, Description: "Connection type as SAP stores it in destType, " +
+			"for example \"INTERNET\". The data sources also return providers of the connection types the resource " +
+			"does not manage."},
+		"host":      schema.StringAttribute{Computed: true, Description: "Backend host, without scheme."},
+		"port":      schema.Int64Attribute{Computed: true, Description: "Backend port."},
+		"use_ssl":   schema.BoolAttribute{Computed: true, Description: "Whether the connection to the backend uses TLS."},
+		"trust_all": schema.BoolAttribute{Computed: true, Description: "Whether API Management accepts any TLS certificate the backend presents."},
+		"path_prefix": schema.StringAttribute{Computed: true, Description: "Path prefix for SAP Gateway catalog service " +
+			"discovery, if set."},
+		"service_collection_url": schema.StringAttribute{Computed: true, Description: "Relative path of the SAP Gateway " +
+			"catalog service, if set."},
+		"auth_type": schema.StringAttribute{Computed: true, Description: "Authentication method for the backend, for example \"BASIC\"."},
+		"user_name": schema.StringAttribute{Computed: true, Description: "User for basic authentication. The password is never returned."},
 	}
 }
 

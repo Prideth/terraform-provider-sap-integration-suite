@@ -1,0 +1,26 @@
+---
+page_title: "sapintegrationsuite_message_mapping Data Source - sapintegrationsuite"
+subcategory: "Cloud Integration"
+description: |-
+  Reads a message mapping's metadata by package and ID.
+---
+
+# sapintegrationsuite_message_mapping (Data Source)
+
+Reads the name and version of a package-level message mapping, for example to deploy a mapping
+that is maintained in the UI.
+
+**Status:** supported.
+
+If the object does not exist, the plan fails with SAP's `404`.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_message_mapping/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Related
+
+- [`sapintegrationsuite_message_mapping`](../resources/message_mapping.md) (resource)
+- [`sapintegrationsuite_message_mapping_deployment`](../resources/message_mapping_deployment.md)

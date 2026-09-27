@@ -1,0 +1,59 @@
+---
+page_title: "sapintegrationsuite_api_product Resource - sapintegrationsuite"
+subcategory: "API Management"
+description: |-
+  A Classic API Management API product: a bundle of API proxies that developers subscribe to.
+  Replace-only.
+---
+
+# sapintegrationsuite_api_product (Resource)
+
+An API product bundles one or more API proxies into what application developers find and
+subscribe to in the API business hub enterprise, with an optional quota and OAuth scopes.
+Proxies do the work; the product decides who may call them and how often.
+
+**Status:** supported. Backed by `APIProducts` of the API portal's `Management.svc`; create,
+read and delete were run on a tenant.
+
+## Prerequisites
+
+- The `api_management` block in the provider configuration, with the role
+  `APIPortal.Administrator`.
+- At least one API proxy, for example from [`sapintegrationsuite_api_proxy`](api_proxy.md). SAP
+  refuses a product without one.
+
+## Lifecycle
+
+| Operation | What happens |
+|---|---|
+| Create | Creates the product with its linked proxies and additional properties in one request. `status_code` defaults to `PUBLISHED`; `DRAFT` creates an unpublished product. |
+| Read | Reads the product, its linked proxies and its additional properties, so drift in each is detected. |
+| Update | None. SAP answers every update of a product (`PUT`, `PATCH`, `MERGE`) with 405. |
+| Replacement | **Any change** deletes the product and creates it again. Applications subscribed to the old product lose that subscription. Read plans that replace a product carefully. |
+| Delete | Deletes the product. |
+
+## Example Usage
+
+{{ tffile "examples/resources/sapintegrationsuite_api_product/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ codefile "shell" "examples/resources/sapintegrationsuite_api_product/import.sh" }}
+
+The ID is the product's name. Everything is recovered, including linked proxies and additional
+properties.
+
+## Limitations
+
+- **SAP:** products cannot be changed after creation; additional properties can only be sent with
+  the create request.
+- **Provider:** `version`, `title`, `is_published` and `is_restricted` take the values SAP sets
+  when left out (version `1` on the tested tenant).
+
+## Related
+
+- [`sapintegrationsuite_api_proxy`](api_proxy.md): the proxies a product bundles.
+- [`sapintegrationsuite_api_product`](../data-sources/api_product.md) (data source).
+- [Classic API Management guide](../guides/classic-api-management.md).

@@ -1,0 +1,76 @@
+---
+page_title: "sapintegrationsuite_number_range Resource - sapintegrationsuite"
+subcategory: "Cloud Integration"
+description: |-
+  A number range object that generates unique interchange numbers for outbound EDI documents.
+  The runtime counter is set explicitly, never by accident.
+---
+
+# sapintegrationsuite_number_range (Resource)
+
+A number range hands out unique, increasing numbers, typically interchange control numbers for
+outbound EDIFACT or X12 documents. It has two kinds of data: the static configuration (range,
+rotation, padding), which Terraform manages like any other attribute, and the live counter,
+which deployed content advances with every message. The resource separates the two so that an
+ordinary apply never resets a counter that is in use.
+
+**Status:** supported. Backed by `NumberRanges` of the Message Stores API. SAP documents only
+create and update. Reading by name, delete and import work on a tenant but are not documented,
+so they need `enable_unofficial = true`.
+
+## Prerequisites
+
+- An OAuth client with `MonitoringArtifactsDeploy`.
+- Terraform 1.11 or later, because `current_value_wo` is write-only.
+
+## Lifecycle
+
+With `enable_unofficial = true`:
+
+| Operation | What happens |
+|---|---|
+| Create | Stops if a number range of that name exists (SAP does not document what a create over it does), then creates it with the counter from `current_value_wo`. |
+| Read | Reads the static fields and the live counter into `current_value`. Changes made in the UI show as drift; a number range deleted outside Terraform drops out of state. |
+| Update | Sends the static fields. The counter is sent from `current_value_wo` only when `current_value_wo_version` changed; otherwise the provider reads the live counter right before the `PUT` and sends it back, because SAP rejects an update without one. |
+| Replacement | Changing `name` deletes the number range and creates a new one. |
+| Delete | Deletes the number range. Content that still uses it fails at runtime afterwards. |
+
+Without the switch, only the documented create and update run:
+
+| Operation | What happens |
+|---|---|
+| Create | Creates the number range without checking whether the name exists. `current_value` is the counter that was sent; `deployed_by` and `deployed_on` stay empty. |
+| Read | Keeps the state as it is. Drift is not detected. |
+| Update | Only allowed together with a new `current_value_wo_version`, which sets the counter to `current_value_wo`. A plan that changes only the static fields fails, because keeping the live counter would require reading it. |
+| Replacement, delete | Refused at plan time. Use `terraform state rm` to stop managing a number range. |
+
+**Setting the counter deliberately.** Change `current_value_wo_version` (for example to a date)
+together with `current_value_wo`. That is the only way the configured counter reaches SAP after
+the number range exists.
+
+## Example Usage
+
+{{ tffile "examples/resources/sapintegrationsuite_number_range/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ codefile "shell" "examples/resources/sapintegrationsuite_number_range/import.sh" }}
+
+Needs `enable_unofficial`. The ID is the name. After an import, `current_value_wo_version` is
+empty; the first apply records it without touching the counter, so adopting a number range that
+content is already consuming never resets it.
+
+## Limitations
+
+- **SAP:** only create and update are documented. An update without `CurrentValue` fails with a
+  500, and names with hyphens are rejected with a 500; the provider refuses them at plan time.
+- **Provider:** when an update keeps the counter, a number consumed between the read and the
+  `PUT` (one round trip) would be handed out again. Update number ranges that are in heavy use
+  outside peak hours. SAP documents a separate path for number ranges on an Edge Integration
+  Cell; this resource does not target it.
+
+## Related
+
+- [Number Ranges, Variables, and Data Stores guide](../guides/runtime-stores-and-number-ranges.md).

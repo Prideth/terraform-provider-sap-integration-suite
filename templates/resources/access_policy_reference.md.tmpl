@@ -1,0 +1,62 @@
+---
+page_title: "sapintegrationsuite_access_policy_reference Resource - sapintegrationsuite"
+subcategory: "Security"
+description: |-
+  One artifact reference of an access policy: which artifacts, by type and by name or ID, the
+  policy protects. Replace-only.
+---
+
+# sapintegrationsuite_access_policy_reference (Resource)
+
+A reference is one rule of an access policy: artifacts of a type whose name or ID matches a
+value, exactly or as a regular expression. A policy usually has several. Each reference is its
+own entity with an ID that SAP assigns, which is why it is a separate resource and not a block of
+[`sapintegrationsuite_access_policy`](access_policy.md).
+
+**Status:** supported. The wire contract (`Name`, `Type`, `ConditionAttribute`, `ConditionType`,
+`ConditionValue`) and the constants come from SAP's own access policy automation.
+
+## Prerequisites
+
+- The access policy, usually from [`sapintegrationsuite_access_policy`](access_policy.md).
+- An OAuth client with `AccessPoliciesEdit`.
+
+## Lifecycle
+
+| Operation | What happens |
+|---|---|
+| Create | Creates the reference in the policy. SAP assigns its ID; the provider finds it by content when SAP answers without a body. |
+| Read | Reads the reference with SAP's constants. |
+| Update | None. |
+| Replacement | Any change deletes the reference and creates it again. In between, the matched artifacts are briefly not protected by it. |
+| Delete | Deletes the reference. |
+
+`artifact_type`, `attribute` and `operator` take SAP's constants and pass them through
+unchanged. Confirmed values are `INTEGRATION_FLOW`, `Name` and `exactString`. For other types
+and the regular-expression operator, create a reference in the UI and read it with the
+[`sapintegrationsuite_access_policy_reference`](../data-sources/access_policy_reference.md)
+data source; the Access Policies guide explains how.
+
+## Example Usage
+
+{{ tffile "examples/resources/sapintegrationsuite_access_policy_reference/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ codefile "shell" "examples/resources/sapintegrationsuite_access_policy_reference/import.sh" }}
+
+The ID is `<access_policy_id>/<reference_id>`, both numeric. Everything is recovered.
+
+## Limitations
+
+- **SAP:** SAP publishes no complete list of the constants. The UI can edit a reference, but the
+  public contract only creates and deletes.
+- **Provider:** constants are not validated against a list, apart from rejecting the wrong
+  spellings `IntegrationFlow` and `EQUALS` that earlier releases used.
+
+## Related
+
+- [`sapintegrationsuite_access_policy`](access_policy.md).
+- [Access Policies guide](../guides/access-policies.md).

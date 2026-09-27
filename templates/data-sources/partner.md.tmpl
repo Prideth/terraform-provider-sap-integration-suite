@@ -1,0 +1,30 @@
+---
+page_title: "sapintegrationsuite_partner Data Source - sapintegrationsuite"
+subcategory: "Partner Directory"
+description: |-
+  Checks that a partner ID exists in the Partner Directory.
+---
+
+# sapintegrationsuite_partner (Data Source)
+
+Confirms that a partner ID (Pid) exists. There is no partner resource: SAP creates a Pid when
+the first entry references it, and deleting a partner deletes everything it holds.
+
+**Status:** read_only.
+
+If the Pid is not in the Partner Directory, the plan fails.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_partner/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Limitations
+
+`runtime_location_id` (Edge Integration Cell targeting) is not supported; leave it unset.
+
+## Related
+
+- [`sapintegrationsuite_partners`](partners.md)
+- [Partner Directory guide](../guides/partner-directory.md)

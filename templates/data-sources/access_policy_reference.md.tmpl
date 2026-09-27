@@ -1,0 +1,27 @@
+---
+page_title: "sapintegrationsuite_access_policy_reference Data Source - sapintegrationsuite"
+subcategory: "Security"
+description: |-
+  Reads one artifact reference of an access policy with SAP's exact constants.
+---
+
+# sapintegrationsuite_access_policy_reference (Data Source)
+
+Reads a reference exactly as SAP stores it. Because the values are SAP's wire constants, this is
+the reliable way to learn the `artifact_type` and `operator` values for a kind of reference
+that was created in the UI.
+
+**Status:** supported.
+
+If the object does not exist, the plan fails with SAP's `404`.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_access_policy_reference/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Related
+
+- [`sapintegrationsuite_access_policy_reference`](../resources/access_policy_reference.md) (resource)
+- [Access Policies guide](../guides/access-policies.md)

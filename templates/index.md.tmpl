@@ -1,0 +1,201 @@
+---
+page_title: "Provider: SAP Integration Suite"
+description: |-
+  Manage design-time content, deployments, security material, the Partner Directory, access
+  policies and Classic API Management inside an existing SAP Integration Suite tenant.
+---
+
+# SAP Integration Suite Provider
+
+The `sapintegrationsuite` provider manages what lives *inside* an SAP Integration Suite tenant:
+integration packages and their artifacts, deployments to the Cloud Integration runtime,
+externalized parameters, credentials and keystore entries, the Partner Directory, access
+policies, and Classic API Management objects. It talks to SAP's public OData and REST APIs
+only; it never calls the endpoints behind the SAP Integration Suite user interface.
+
+New here? The [Getting Started guide](guides/getting-started.md) goes from a service key to a
+deployed integration flow and its endpoint URL.
+
+## What the provider manages
+
+| Area | Resources | Credentials |
+|---|---|---|
+| Cloud Integration content | integration packages, integration flows, message mappings, value mappings, script collections, custom adapters, each with a separate `*_deployment` resource; externalized flow parameters; custom tags; number ranges | `oauth` block |
+| Security material | user and OAuth2 client credentials, secure parameters, certificates, generated key pairs | `oauth` block |
+| Partner Directory | string and binary parameters, alternative partners, authorized users, user credential parameters | `oauth` block |
+| Access policies | policies and their artifact references | `oauth` block |
+| Classic API Management | API providers, API products, API proxies, certificate store references, key value maps | `api_management` block |
+| API Composition | business data graphs (experimental) | `api_composition` block |
+
+Data sources exist for most of these, plus discovery data sources for deployed service
+endpoints, keystore entries, partners, and the provider's own feature catalog.
+[Feature Support](https://github.com/Prideth/terraform-provider-sap-integration-suite/blob/master/docs/feature-support.md)
+lists every SAP Integration Suite capability with its status, including those the provider
+deliberately does not manage and why.
+
+## What the provider does not manage
+
+The provider starts from a subaccount in which SAP Integration Suite is already subscribed and
+its capabilities are activated. Everything around the tenant belongs to other tools:
+
+| Object | Managed with |
+|---|---|
+| Subaccount, entitlements, the Integration Suite subscription | [SAP/btp](https://registry.terraform.io/providers/SAP/btp/latest) provider |
+| Service instances and service keys (plans `api`, `apiportal-apiaccess`, `configuration`) | SAP/btp or [cloudfoundry/cloudfoundry](https://registry.terraform.io/providers/cloudfoundry/cloudfoundry/latest) provider |
+| Role collections and their assignment to users | SAP/btp provider |
+| BTP destinations (used by API providers and business data graphs) | SAP/btp provider or the BTP cockpit |
+| Activating Integration Suite capabilities | the Integration Suite application (a manual step) |
+| Edge Integration Cell installation on Kubernetes | SAP's Edge Lifecycle Management |
+| Event Mesh queues and topics | outside this provider; Event Mesh has its own management API and tooling |
+| Developer Hub | outside this provider; planned as a separate provider |
+
+Runtime data is out of scope as well: message processing logs, message stores, data store
+entries, variables and assessment results are not desired-state configuration.
+
+The provider has no dependency on the SAP/btp provider. Pass values between the two through
+ordinary Terraform references or variables.
+
+## Requirements
+
+- Terraform 1.5 or later. Resources with write-only secrets (`*_wo` attributes) need
+  Terraform **1.11** or later; set `required_version = ">= 1.11"` if you use one of them.
+- An SAP Integration Suite subscription (Cloud Foundry environment) with Cloud Integration
+  activated.
+- A service key for each API area you manage, see below.
+
+## Authentication
+
+Each API area has its own OAuth 2.0 client (client credentials grant). The provider never
+reuses one client for another area, because SAP issues them from different services.
+
+| Provider block | Service instance | Plan | Used for |
+|---|---|---|---|
+| `host` + `oauth` | Process Integration Runtime (`it-rt`) | `api` | Cloud Integration, Security Content, Partner Directory, access policies |
+| `api_management` | API Management, API portal | `apiportal-apiaccess` | Classic API Management |
+| `api_composition` | API Composition | `configuration` | business data graphs |
+
+Where the values come from:
+
+| Attribute | Plan `api` key | Plan `apiportal-apiaccess` key |
+|---|---|---|
+| `host` | `oauth.url` | `url` |
+| `token_url` | `oauth.tokenurl` | `tokenUrl` |
+| `client_id` | `oauth.clientid` | `clientId` |
+| `client_secret` | `oauth.clientsecret` | `clientSecret` |
+
+What a client may do is decided by the roles on its service instance, for example
+`WorkspacePackagesEdit` for content or `AccessPoliciesEdit` for access policies. A missing role
+shows up as `403 Forbidden`. The [Authorization and Roles guide](guides/authorization-and-roles.md)
+lists the roles per resource family.
+
+### Environment variables and precedence
+
+Every attribute can come from an environment variable instead. A value set in the provider
+block wins; an attribute that is unset or an empty string falls back to its variable.
+
+| Attribute | Environment variable |
+|---|---|
+| `host` | `SAP_INTEGRATION_SUITE_HOST` |
+| `oauth.token_url` | `SAP_INTEGRATION_SUITE_TOKEN_URL` |
+| `oauth.client_id` | `SAP_INTEGRATION_SUITE_CLIENT_ID` |
+| `oauth.client_secret` | `SAP_INTEGRATION_SUITE_CLIENT_SECRET` |
+| `api_management.*` | `SAP_INTEGRATION_SUITE_API_MANAGEMENT_HOST`, `_TOKEN_URL`, `_CLIENT_ID`, `_CLIENT_SECRET` |
+| `api_composition.*` | `SAP_INTEGRATION_SUITE_API_COMPOSITION_HOST`, `_TOKEN_URL`, `_CLIENT_ID`, `_CLIENT_SECRET` |
+| `enable_experimental` | `SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL` |
+| `enable_unofficial` | `SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL` |
+
+Missing Cloud Integration credentials do not fail the provider configuration; a resource or
+data source that needs them fails with an error that says what is missing. The `api_management`
+and `api_composition` blocks must have all four values or none; a partial block fails at once.
+The feature catalog data sources work without any credentials.
+
+## Example usage
+
+A minimal configuration that takes the credentials from the environment:
+
+{{ tffile "examples/provider/minimal.tf" }}
+
+A configuration for a pipeline that manages Cloud Integration content and Classic API
+Management, with the service keys passed in as sensitive variables:
+
+{{ tffile "examples/provider/provider.tf" }}
+
+Keep client secrets out of `.tf` files and out of version control. Pass them through a secret
+store, `TF_VAR_` variables or the `SAP_INTEGRATION_SUITE_*` environment variables of the
+pipeline. The provider never writes them to state, but Terraform stores the values of input
+variables in saved plan files (`terraform plan -out`); the `SAP_INTEGRATION_SUITE_*`
+environment variables are not stored anywhere.
+
+## Support status and opt-in switches
+
+Every resource and data source has a support status, listed on its page and in Feature
+Support:
+
+- **supported**: the full lifecycle is backed by an official SAP contract and was run on a
+  tenant.
+- **partial**: official, but some operations are missing because SAP does not offer them; the
+  page says which.
+- **experimental**: implemented on a documented API, but the lifecycle has not passed an
+  acceptance test on a tenant. The schema may still change. Needs `enable_experimental = true`.
+- **unofficial**: works on a tenant, but SAP documents the API nowhere (it is known only from
+  the service's `$metadata`), so SAP can change it without notice. Needs
+  `enable_unofficial = true`.
+
+A few documented resources use one operation that SAP does not document, for example the
+in-place content update of a message mapping. `enable_unofficial` allows those operations too;
+without it, a plan that needs one fails with an error that names it, and the resource stays
+usable with its documented operations. The resource pages list these operations.
+
+## Runtimes
+
+SAP Integration Suite can run content in three places: the Cloud Integration runtime, the
+Integration Cell (part of the current API Management), and Edge Integration Cells in your own
+Kubernetes clusters.
+
+- The `*_deployment` resources deploy to the **Cloud Integration runtime**. An integration flow
+  whose externalized parameter `SAP_ProfileId` is `integrationcell` is deployed to the
+  Integration Cell instead; the deployment resource detects this and stops with an
+  explanation. Set `SAP_ProfileId` to `iflmap` with
+  [`sapintegrationsuite_integration_flow_configuration`](resources/integration_flow_configuration.md).
+- **Edge Integration Cell** targeting (`runtime_location_id`) exists in the schema but is not
+  supported: it has never been run against a tenant with an Edge Integration Cell. Leave it
+  unset. See the [Edge Integration Cell guide](guides/edge-integration-cell.md).
+
+## Secrets and state
+
+Secrets you supply (passwords, client secrets, secure parameter values) are **write-only**
+attributes named `*_wo`. Terraform sends them to SAP but never writes them to the plan or
+the state, and the provider never reads them back. Each has a companion `*_wo_version`, a
+plain value such as a date or counter: change it to send a new secret, because Terraform cannot
+see a change of the write-only value itself. Marking an attribute sensitive would only hide it
+in the CLI output; write-only keeps it out of the state file.
+
+The provider does not manage objects whose secret SAP generates and would have to be stored in
+state. Key pairs are generated by SAP and their private key never leaves the tenant.
+
+## Asynchronous operations and timeouts
+
+Deployments, API proxy imports and business data graphs are processed asynchronously by SAP.
+Their resources poll until SAP reports a final state and accept a `timeouts` block. A
+deployment that does not start in time stays in state with its last status and is marked
+tainted, so the next apply or destroy handles it instead of leaving it running untracked.
+
+## Troubleshooting
+
+| Symptom | Cause |
+|---|---|
+| `401 Unauthorized` on every request | Wrong token URL, client ID or secret, or a client from another service. Check the table under Authentication. |
+| `403 Forbidden`, often with an empty body | The client lacks a role. See the [Authorization and Roles guide](guides/authorization-and-roles.md). |
+| `context canceled` on the token URL | Provider 0.1.0. Upgrade to 0.2.0 or later. |
+| `... is experimental` / `... is unofficial` | The resource or operation needs `enable_experimental` or `enable_unofficial`. |
+| A deployment times out and the resource is tainted | SAP needed longer than `timeouts.create`, or the flow went to another runtime (`SAP_ProfileId`). The [Integration Content guide](guides/integration-content.md) lists typical deploy times. |
+| `Could not update artifact ... Bundle-symbolicName` | The ZIP was exported under another artifact ID. The provider aligns flows and message mappings; for script collections and value mappings, fix `Bundle-SymbolicName` in the ZIP. |
+
+Errors carry the HTTP status, SAP's error code and SAP's message, which usually name the
+field or rule that failed. The provider writes no request log, and neither errors nor state
+ever contain tokens or client secrets.
+
+The [Troubleshooting guide](guides/troubleshooting.md) covers more cases, and
+[Provider Upgrades](guides/provider-upgrades.md) describes what changed between versions.
+
+{{ .SchemaMarkdown | trimspace }}

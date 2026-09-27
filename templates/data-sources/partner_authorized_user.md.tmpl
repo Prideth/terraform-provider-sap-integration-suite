@@ -1,0 +1,29 @@
+---
+page_title: "sapintegrationsuite_partner_authorized_user Data Source - sapintegrationsuite"
+subcategory: "Partner Directory"
+description: |-
+  Reads which partner ID a communication user is authorized for.
+---
+
+# sapintegrationsuite_partner_authorized_user (Data Source)
+
+Reads the partner ID an inbound communication user is authorized to act as. Look the user up
+in lowercase, the form SAP stores it in.
+
+**Status:** supported.
+
+If the object does not exist, the plan fails with SAP's `404`.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_partner_authorized_user/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Limitations
+
+`runtime_location_id` (Edge Integration Cell targeting) is not supported; leave it unset.
+
+## Related
+
+- [`sapintegrationsuite_partner_authorized_user`](../resources/partner_authorized_user.md) (resource)

@@ -1,0 +1,26 @@
+---
+page_title: "sapintegrationsuite_script_collection Data Source - sapintegrationsuite"
+subcategory: "Cloud Integration"
+description: |-
+  Reads a script collection's metadata by package and ID.
+---
+
+# sapintegrationsuite_script_collection (Data Source)
+
+Reads the name and version of a script collection, for example to deploy a collection that
+another configuration uploads.
+
+**Status:** supported.
+
+If the object does not exist, the plan fails with SAP's `404`.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_script_collection/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Related
+
+- [`sapintegrationsuite_script_collection`](../resources/script_collection.md) (resource)
+- [`sapintegrationsuite_script_collection_deployment`](../resources/script_collection_deployment.md)

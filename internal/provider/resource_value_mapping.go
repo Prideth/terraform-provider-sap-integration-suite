@@ -55,7 +55,7 @@ func (r *valueMappingResource) Schema(_ context.Context, _ resource.SchemaReques
 			"sapintegrationsuite_value_mapping_deployment resource. Individual mapping entries " +
 			"are not yet independently manageable through this provider — see " +
 			"docs/resource-design.md for why. Changing name, content, or content_hash replaces " +
-			"the value mapping (create a new artifact, then delete the old one) rather than " +
+			"the value mapping (Terraform deletes the artifact and uploads it again) rather than " +
 			"updating it in place, since SAP's Value Mapping API does not have a confirmed " +
 			"in-place update path — see docs/sap-api-references.md.",
 		Attributes: map[string]schema.Attribute{
@@ -84,8 +84,8 @@ func (r *valueMappingResource) Schema(_ context.Context, _ resource.SchemaReques
 				Required: true,
 				Description: "The value mapping's display name. Changing it replaces the value " +
 					"mapping: SAP's Value Mapping API does not have a confirmed in-place update " +
-					"path (see docs/sap-api-references.md), so this provider creates a new " +
-					"artifact and deletes the old one rather than retaining an unverified update " +
+					"path (see docs/sap-api-references.md), so Terraform deletes the " +
+					"artifact and uploads it again rather than retaining an unverified update " +
 					"call.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),

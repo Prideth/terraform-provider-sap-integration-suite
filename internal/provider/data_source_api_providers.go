@@ -32,7 +32,8 @@ func (d *apiProvidersDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 		Description: "Lists every Classic API Management API provider (APIProviders) visible to the configured credentials.",
 		Attributes: map[string]schema.Attribute{
 			"providers": schema.ListNestedAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Every API provider, with the same attributes as the sapintegrationsuite_api_provider data source.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: apiProviderDataSourceSchema(),
 				},

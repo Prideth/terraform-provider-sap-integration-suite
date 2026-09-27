@@ -1,0 +1,26 @@
+---
+page_title: "sapintegrationsuite_custom_tag_configuration Data Source - sapintegrationsuite"
+subcategory: "Cloud Integration"
+description: |-
+  Reads the tenant's custom tag configuration.
+---
+
+# sapintegrationsuite_custom_tag_configuration (Data Source)
+
+Reads every custom tag and its permitted values. Takes no arguments: a tenant has exactly one
+configuration. Use it to read the tags without owning them, or to prepare an import of
+[`sapintegrationsuite_custom_tag_configuration`](../resources/custom_tag_configuration.md).
+
+**Status:** partial, like the resource (SAP offers no delete).
+
+What SAP returns for a tenant that never had a custom tag configuration has not been tested.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_custom_tag_configuration/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Related
+
+- [`sapintegrationsuite_custom_tag_configuration`](../resources/custom_tag_configuration.md) (resource)

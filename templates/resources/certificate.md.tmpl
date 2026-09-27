@@ -1,0 +1,63 @@
+---
+page_title: "sapintegrationsuite_certificate Resource - sapintegrationsuite"
+subcategory: "Security"
+description: |-
+  A trusted X.509 certificate in the tenant keystore, for example a partner's root CA.
+---
+
+# sapintegrationsuite_certificate (Resource)
+
+Adds a trusted X.509 certificate to the tenant keystore under an alias. Adapters use trusted
+certificates to validate the TLS certificates of receivers and to verify signatures. The
+certificate is public data and is not marked sensitive; private keys never go into this
+resource.
+
+**Status:** supported. Backed by `CertificateResources` and the keystore operations of the
+Security Content API.
+
+## Prerequisites
+
+- An OAuth client with `SecurityMaterialEdit` (`MonitoringDataRead` for the data sources).
+- The certificate in PEM format, and the fingerprint your partner gave you to compare it with.
+
+## Lifecycle
+
+| Operation | What happens |
+|---|---|
+| Create | Imports the certificate under `alias`. Fails if the alias exists; import it instead. |
+| Read | Reads the certificate SAP holds and compares its SHA-256 fingerprint with `certificate_sha256`. A different certificate on the tenant shows as drift; different line wrapping or line endings of the same certificate do not. |
+| Update | A new `certificate` replaces the certificate under the same alias (`update=true`). The fingerprint, subject, issuer and serial number are recomputed from the new PEM at plan time. |
+| Replacement | Changing `alias` or `runtime_location_id` creates a new entry. SAP has a rename operation, which this resource does not use. |
+| Delete | Removes exactly this alias from the keystore, using SAP's keystore delete operation with a one-entry list. |
+
+**Trust decision.** SAP asks for fingerprint confirmation when a certificate is self-signed or
+not trusted. The provider confirms it (`fingerprintVerified=true`), so listing a certificate in
+the configuration is the decision to trust it. Compare `certificate_sha256` in the plan with the
+fingerprint you expect before applying.
+
+## Example Usage
+
+{{ tffile "examples/resources/sapintegrationsuite_certificate/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ codefile "shell" "examples/resources/sapintegrationsuite_certificate/import.sh" }}
+
+The ID is the alias. The certificate is read from SAP, so an import recovers everything.
+
+## Limitations
+
+- **SAP:** there is no per-entry delete; the provider uses the documented keystore mass delete
+  with exactly the one alias it owns.
+- **Provider:** SAP-owned entries (owner `SAP`, for example SAP's root certificates) should not
+  be managed. Edge Integration Cell targeting is not supported.
+
+## Related
+
+- [`sapintegrationsuite_key_pair`](key_pair.md): key pairs that SAP generates.
+- [`sapintegrationsuite_keystore_entry`](../data-sources/keystore_entry.md) and
+  [`sapintegrationsuite_keystore_entries`](../data-sources/keystore_entries.md): discovery,
+  including expiry dates.
+- [Security Content guide](../guides/security-content.md).

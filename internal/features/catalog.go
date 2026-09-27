@@ -181,7 +181,7 @@ var Catalog = []Feature{
 		PublicAPI:   true,
 		APIProtocol: "OData V2",
 		Limitations: []string{
-			"No confirmed in-place update: changing name, content, or content_hash replaces the resource (create a new artifact, then delete the old one) instead of calling an unverified PUT.",
+			"No confirmed in-place update: changing name, content, or content_hash replaces the resource (Terraform deletes the artifact and uploads it again) instead of calling an unverified PUT.",
 			"Explicit versions (ValueMappingDesigntimeArtifactSaveAsVersion) are not used yet; see cloud_integration.design_time_versioning.",
 			"Whether Delete removes only the active version or every version of the artifact is unconfirmed against a primary source.",
 		},
@@ -771,10 +771,10 @@ var Catalog = []Feature{
 				"resource (SAP documents re-entering the secret on every edit for the sibling OAuth2 " +
 				"Client Credentials artifact; this provider assumes the same requirement here since it " +
 				"could not find a documented exception for User Credentials).",
-			"The Kind and CompanyId field names are corroborated by a documented third-party example " +
-				"payload, not by this project's own inspection of a live tenant's OData $metadata; " +
-				"verify against your tenant before relying on kind=\"SuccessFactors\"/\"OpenConnectors\" " +
-				"in production. See docs/guides/security-content.md.",
+			"Kind and CompanyId are properties of UserCredential in the tenant $metadata, and a tenant " +
+				"rejected a create without Kind. SAP does not document the accepted Kind values beyond " +
+				"the UI's types; kind=\"SuccessFactors\" and \"OpenConnectors\" were not tested against those " +
+				"systems. See docs/guides/security-content.md.",
 			"Deployment status (SAP's UI shows Stored/Deployed/Error) is not exposed: this project could " +
 				"not confirm the OData property name for it, and would rather omit a computed attribute " +
 				"than expose one that is silently always empty.",
@@ -1394,8 +1394,8 @@ var Catalog = []Feature{
 				"existing product with 405 \"UPDATE operation not supported on APIProduct entity\". " +
 				"Every attribute forces a new product, which drops the subscriptions of the old one.",
 			"At least one existing API proxy is required (SAP: \"At least one API Proxy should be " +
-				"linked to an API Product\"). Proxies are created in the SAP Integration Suite UI; see " +
-				"api_management.classic.api_proxy.",
+				"linked to an API Product\"). Proxies come from the UI or from sapintegrationsuite_api_proxy " +
+				"(experimental); see api_management.classic.api_proxy.",
 			"status_code is required by SAP on create and defaults to PUBLISHED; DRAFT creates an " +
 				"unpublished product. Both were confirmed on a tenant.",
 			"Additional properties can only be sent inside the create request, each with the " +

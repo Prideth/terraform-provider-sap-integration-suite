@@ -1,0 +1,58 @@
+---
+page_title: "sapintegrationsuite_api_management_certificate_store_reference Resource - sapintegrationsuite"
+subcategory: "API Management"
+description: |-
+  A named pointer to a keystore or truststore of Classic API Management, used to rotate TLS
+  certificates of a virtual host without editing it.
+---
+
+# sapintegrationsuite_api_management_certificate_store_reference (Resource)
+
+A certificate store reference is a name that points at a keystore or truststore of the API
+portal. Virtual hosts and target endpoints use the reference instead of the store name, so a
+certificate rotation is a change of this pointer: upload a new store, point the reference at
+it, and nothing else has to be edited.
+
+**Status:** supported. Backed by `CertificateStoreReferences` of the API portal's
+`Management.svc`, with SAP's worked examples for create, read, update and delete.
+
+## Prerequisites
+
+- The `api_management` block in the provider configuration, with the role
+  `APIPortal.Administrator`.
+- The keystore or truststore itself. Creating a store and uploading certificates into it is a UI
+  operation without an API; this resource only points at it.
+
+## Lifecycle
+
+| Operation | What happens |
+|---|---|
+| Create | Creates the reference to `certificate_store_name`. |
+| Read | Reads the store name and type. |
+| Update | A changed `certificate_store_name` repoints the reference in place; that is the rotation step. |
+| Replacement | Changing `name` creates a new reference. |
+| Delete | Deletes the reference, not the store. |
+
+## Example Usage
+
+{{ tffile "examples/resources/sapintegrationsuite_api_management_certificate_store_reference/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ codefile "shell" "examples/resources/sapintegrationsuite_api_management_certificate_store_reference/import.sh" }}
+
+The ID is the reference's name. Everything is recovered.
+
+## Limitations
+
+- **SAP:** stores and their certificates can only be managed in the UI.
+- **Provider:** this is unrelated to the Cloud Integration keystore that
+  [`sapintegrationsuite_certificate`](certificate.md) and
+  [`sapintegrationsuite_key_pair`](key_pair.md) manage; API Management has its own stores.
+
+## Related
+
+- [`sapintegrationsuite_api_management_certificate_store_reference`](../data-sources/api_management_certificate_store_reference.md) (data source).
+- [Classic API Management guide](../guides/classic-api-management.md).

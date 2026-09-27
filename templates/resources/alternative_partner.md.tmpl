@@ -1,0 +1,57 @@
+---
+page_title: "sapintegrationsuite_alternative_partner Resource - sapintegrationsuite"
+subcategory: "Partner Directory"
+description: |-
+  Maps an external partner identity (agency, scheme, identifier) to a partner ID in the Partner Directory.
+---
+
+# sapintegrationsuite_alternative_partner (Resource)
+
+An alternative partner maps how a partner is identified in incoming messages, as the triple of
+agency, scheme and identifier (for example a GLN or a sender interface), to the internal partner
+ID (Pid) that its Partner Directory entries are stored under. Integration flows use it to find
+the right Pid for an incoming message.
+
+**Status:** supported. Backed by `AlternativePartners` of the Partner Directory API.
+
+## Prerequisites
+
+- An OAuth client with the role `AuthGroup_TenantPartnerDirectoryConfigurator`.
+- A partner ID (Pid) chosen by you. It does not have to exist: SAP creates a Pid the first time
+  an entry references it, and there is no resource for partners themselves.
+
+## Lifecycle
+
+| Operation | What happens |
+|---|---|
+| Create | Creates the mapping. SAP's key is the hex encoding of agency, scheme and identifier; the provider computes it. |
+| Read | Reads the Pid the identity resolves to. |
+| Update | A changed `partner_id` repoints the mapping in place. |
+| Replacement | Changing `agency`, `scheme`, `external_id` or `runtime_location_id` creates a new mapping. |
+| Delete | Deletes this mapping only. |
+
+## Example Usage
+
+{{ tffile "examples/resources/sapintegrationsuite_alternative_partner/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ codefile "shell" "examples/resources/sapintegrationsuite_alternative_partner/import.sh" }}
+
+The ID is the three key parts hex-encoded and joined with `/`, because the parts themselves
+may contain `/`. `printf 'Sender_1' | xxd -p` prints the hex form of one part. Everything is
+recovered.
+
+## Limitations
+
+- **SAP:** the key is hex-encoded; the provider hides that except in the import ID.
+- **Provider:** Edge Integration Cell targeting through `runtime_location_id` is not supported and has not
+  been tested; leave it unset.
+
+## Related
+
+- [`sapintegrationsuite_alternative_partner`](../data-sources/alternative_partner.md) (data source).
+- [`sapintegrationsuite_partners`](../data-sources/partners.md): every Pid on the tenant.
+- [Partner Directory guide](../guides/partner-directory.md): entity model and why partners have no resource.

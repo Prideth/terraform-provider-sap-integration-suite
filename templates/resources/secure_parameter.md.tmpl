@@ -1,0 +1,65 @@
+---
+page_title: "sapintegrationsuite_secure_parameter Resource - sapintegrationsuite"
+subcategory: "Security"
+description: |-
+  A secure parameter: a confidential value that custom adapters and scripts read by alias.
+  Unofficial; needs enable_unofficial.
+---
+
+# sapintegrationsuite_secure_parameter (Resource)
+
+A secure parameter stores one confidential value, such as an API key, under a name that
+custom adapters and scripts use as an alias. The value is write-only: Terraform sends it to SAP
+but never stores it, and SAP returns it as null.
+
+**Status:** unofficial. Needs `enable_unofficial = true` in the provider block. SAP Help
+describes secure parameters only in the Monitor UI, and `SecureParameters` is not among the API
+resources SAP lists. The entity set comes from the Security Content service's `$metadata`;
+create, read, update and delete were verified on a tenant in September 2026. SAP can change it
+without notice.
+
+## Prerequisites
+
+- `enable_unofficial = true`.
+- An OAuth client with `CredentialsEdit`.
+- Terraform 1.11 or later for `secure_param_wo`.
+
+## Lifecycle
+
+| Operation | What happens |
+|---|---|
+| Create | Stops if a parameter of that name exists (SAP does not document what a create over it does), then creates and deploys it. |
+| Read | Reads description, status and who deployed it when. The value is never returned. |
+| Update | Any change redeploys the parameter with `PUT`, sending the configured value, because the update replaces the artifact. |
+| Replacement | Changing `id` creates a new parameter. |
+| Delete | Deletes the parameter. |
+
+**Changing the value.** Put the new value into `secure_param_wo` and change
+`secure_param_wo_version`.
+
+## Example Usage
+
+{{ tffile "examples/resources/sapintegrationsuite_secure_parameter/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ codefile "shell" "examples/resources/sapintegrationsuite_secure_parameter/import.sh" }}
+
+The ID is the name. Name and description are recovered; the first apply after an import sends
+the configured value.
+
+## Limitations
+
+- **SAP:** the API is undocumented. Every write answered `202` without a body on the tenant; the
+  provider reads the parameter back afterwards.
+- **Provider:** Edge Integration Cell targeting is not offered. Values are limited to 4,096
+  characters and names to 150, as the `$metadata` declares.
+
+## Related
+
+- [`sapintegrationsuite_user_credential`](user_credential.md) and
+  [`sapintegrationsuite_oauth2_client_credential`](oauth2_client_credential.md): documented
+  credential types for standard adapters.
+- [Security Content guide](../guides/security-content.md).

@@ -86,10 +86,12 @@ func (r *apiProviderResource) Schema(_ context.Context, _ resource.SchemaRequest
 			},
 			"title": schema.StringAttribute{
 				Optional:      true,
+				Description:   "Display title of the provider. Changing it replaces the provider.",
 				PlanModifiers: replace,
 			},
 			"description": schema.StringAttribute{
 				Optional:      true,
+				Description:   "Free-text description of the provider. Changing it replaces the provider.",
 				PlanModifiers: replace,
 			},
 			"host": schema.StringAttribute{
