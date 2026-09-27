@@ -154,22 +154,25 @@ reads the number range and fills in what the state is missing.
   SAP does not return either value, so state held null. When the prior value
   is unknown, both now only record the configured value; changing a known
   value still generates a new key pair.
+- `sapintegrationsuite_number_range` names are checked against the rule SAP
+  states when it rejects one: letters, digits, spaces and underscores only.
+  Earlier releases rejected only hyphens, so a name such as `INV.2026` passed
+  the plan and failed on apply with a 500.
 
 ### Known limitations
 
-- Integration Assessment has no resources yet. The entities service has
-  entity sets for vendors, applications and application instances, but
-  whether they can be created, changed and deleted has not been tested on a
-  tenant.
+- Integration Assessment has no resources yet. A tenant test created, read
+  and deleted vendors and applications; updates and the links between
+  landscape objects are still being tested.
 - Tenant checks of value mapping entries (September 2026) showed that
   `UpsertValMaps` dropped design-time values, a duplicate source value became
   the new default, and `DeleteValMaps` answered 202 without deleting
   anything. Value mapping entries are therefore classified as unsafe for a
   Terraform lifecycle and stay unimplemented.
-- Creating a data type through `DataTypeDesigntimeArtifacts` failed on a
-  tenant with a 500 ("map is null"); the remaining design-time types (message
-  types, fault message types, service interfaces) stay unimplemented until
-  a create works.
+- Data types can be created on a tenant only without content; every request
+  that carries content failed with a 500 ("map is null"). Data types and the
+  other design-time types (message types, fault message types, service
+  interfaces) stay unimplemented until content can be written.
 
 ### Documentation
 

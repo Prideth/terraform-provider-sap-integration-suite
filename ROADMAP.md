@@ -31,20 +31,19 @@ These need no further research, only a run of the prepared tests:
 
 | Item | Test | Decides |
 |---|---|---|
-| Classic API proxy | `TestAccAPIProxy_sample` | `sapintegrationsuite_api_proxy` from experimental to supported (replace-only) |
-| Certificates and key pairs | `TestAccCertificate_selfSignedAndReplace`, `TestAccKeyPair_basic` | Confirms the replacement and import fixes of 0.3.0 |
-| Number ranges without `enable_unofficial` | `TestAccNumberRange_documentedOnly` | Confirms that the documented POST and PUT alone keep a number range consistent |
+| Classic API proxy | `apim-probe -ProxyTests`, then `TestAccAPIProxy_sample` | Why the import answers `APIPROXY_ZIP_ERROR` (the tenant's own export shows the expected layout); then `sapintegrationsuite_api_proxy` from experimental to supported (replace-only) |
 | Live contract check | `TestAccMetadata` (`SAP_INTEGRATION_SUITE_ACC_METADATA`) | First comparison of the committed snapshots with a tenant, including the service documents |
 | Deployments with longer timeouts | message mapping and value mapping acceptance tests | Whether slow deployments need more than the documented timeout advice |
 
 ## P1 — public contract, next implementation
 
 1. **Integration Assessment landscape.** The Entities and Management `$metadata` are committed as
-   snapshots and classified (27 entity sets). Next: a tenant test that creates, changes and
-   deletes a vendor, an application and an application instance (`ia-probe -LandscapeTests`).
-   If writes work, the landscape objects become resources and SAP's taxonomy (technology
-   domains, styles, key characteristics) becomes data sources. Requests and assessment results
-   stay out of scope as workflow.
+   snapshots and classified (27 entity sets). A tenant test created, read and deleted vendors and
+   applications (2026-09-27). Next: the same test with updates sent as plain `application/json`
+   and links as `{"Id": ...}`, plus technologies and technology instances. If updates and links
+   work, the landscape objects become resources and SAP's taxonomy (technology domains, styles,
+   key characteristics, deployment models) becomes data sources. Requests and assessment
+   results stay out of scope as workflow.
 2. **API Composition hardening.** `TestAccBusinessDataGraph_basic` needs a service key of plan
    `configuration` and a destination; the Configuration API's `$metadata` goes through
    `cmd/apidiscovery`. Passing both promotes the business data graph from experimental and
@@ -53,10 +52,10 @@ These need no further research, only a run of the prepared tests:
    needs a tenant with an Edge Integration Cell. Passing it makes `runtime_location_id`
    supported for the tested resources; the deployment resources follow with their own test.
 4. **Data types, message types, fault message types, service interfaces.** The `$metadata`
-   defines all four with `SaveAsVersion`, and reading works. A create with the message mapping's
-   body failed with 500; the next probe adds `Namespace`, `Description` and `IsSimpleType`. If
-   create, update, version and delete then work, the four resources reuse the shared
-   design-time client.
+   defines all four with `SaveAsVersion`. For data types, reading, a create without content and
+   `SaveAsVersion` work; every request with content failed with 500 ("map is null"). The next
+   probe sends the content the API's own `$value` returns for an existing data type. If content
+   can be written, the four resources reuse the shared design-time client.
 
 ## P2 — partly confirmed, more evidence first
 

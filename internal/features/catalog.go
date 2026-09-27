@@ -581,8 +581,8 @@ var Catalog = []Feature{
 				"reads the live counter right before the PUT and sends it back; a number consumed " +
 				"during that round trip would be handed out again.",
 			"With enable_unofficial, create stops when the name already exists, because SAP does not " +
-				"document what a create on an existing name does. Names must not contain hyphens: a tenant rejected one with " +
-				"a 500 while the same request with a plain name succeeded.",
+				"document what a create on an existing name does. Names may only contain letters, digits, " +
+				"spaces and underscores; SAP rejects anything else with a 500 and says so in its message.",
 			"SAP documents an Edge Integration Cell path (/location/<id>/api/v1/NumberRanges); " +
 				"runtime_location_id is not offered; Edge Integration Cell targeting is not supported.",
 		},
@@ -1096,9 +1096,10 @@ var Catalog = []Feature{
 				"keyring holds private keys, so a Terraform design would need a confirmed upload format " +
 				"and write-only handling of the secret keyring before anything is implemented.",
 			"Tenant check of 2026-09-27: PgpPublicKeyrings answers 200, but PgpKeyrings answers 404 " +
-				"\"Could not find an entity set or function import\" although $metadata declares it; the " +
-				"service document of /api/v1 lists only 25 of the 131 declared entity sets. A design has " +
-				"to start from the sets that are addressable on their own.",
+				"\"Could not find an entity set or function import\" although $metadata declares it. " +
+				"Neither $metadata nor the service document decides whether a set can be addressed " +
+				"(the provider uses several sets the service document does not list); only a tenant " +
+				"check does.",
 		},
 	},
 

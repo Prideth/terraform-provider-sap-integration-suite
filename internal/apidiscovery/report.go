@@ -105,8 +105,9 @@ func renderService(b *strings.Builder, svc Service, snap *apimeta.Service, rows 
 	}
 	if hidden := notInServiceDocument(snap); len(hidden) > 0 {
 		fmt.Fprintf(b, "The service document lists %d of the %d entity sets. The other %d are declared in "+
-			"`$metadata` but not addressable on their own (a tenant check answered such a set with 404); "+
-			"they are reachable only through navigation, if at all: %s.\n\n",
+			"`$metadata` only. The list does not decide whether a set can be addressed: the provider reads "+
+			"and writes several of them on a tenant (for example UserCredentials and StringParameters), while "+
+			"others answered 404 (PgpKeyrings). Only a tenant check settles it: %s.\n\n",
 			len(snap.EntitySets)-len(hidden), len(snap.EntitySets), len(hidden), strings.Join(hidden, ", "))
 	}
 

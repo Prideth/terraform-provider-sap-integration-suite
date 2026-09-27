@@ -51,6 +51,8 @@ const (
 	srcHubSearch   = "Business Accelerator Hub: the API artifacts of 173 Integration Suite, API Management, Edge, Graph and BTP packages (308 APIs) searched for API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API deployment, API policy, reusable API, proxy, transport and gateway (2026-09-27); the package list was unchanged since 2026-09-26"
 	srcSDKCheck    = "Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6"
 	srcGapProbe    = "tenant-probe -GapTests on a development tenant (2026-09-27), synthetic tfAccProbe* objects only"
+	srcIAProbe     = "ia-probe -LandscapeTests on the development tenant's Integration Assessment (2026-09-27 17:29), synthetic tfacc-probe objects only"
+	srcAccRun      = "acceptance run of 2026-09-27 17:29 on the development tenant"
 )
 
 const checked = "2026-09-26"
@@ -90,8 +92,8 @@ var Evidence = map[string]EvidenceRecord{
 		"Value mappings need an in-place update first (see cloud_integration.value_mapping); the other types need their own resources.",
 		srcHelp, srcMetaCI, srcTenant),
 	"cloud_integration.data_type": evOn("2026-09-27",
-		"Reading works (collection and package navigation). A create with the message mapping's body failed with 500 (\"map is null\"); SAP Help still documents no request.",
-		"The next gap probe tries Namespace, Description and IsSimpleType; a successful create, update, SaveAsVersion and delete would allow a resource on the shared design-time client.",
+		"Reading works (collection and package navigation). A create without content works (201), and SaveAsVersion works (202). Every request that carries content failed with 500 (\"map is null\"): the create with the package export's data type, with or without Namespace, Description and IsSimpleType, and the update. SAP Help documents no request.",
+		"The next gap probe sends the content that the API's own $value returns for an existing data type. A data type without content has no use in Terraform, so a resource needs a create or update with content that works.",
 		srcHelp, srcMetaCI, srcExport, srcGapProbe),
 	"cloud_integration.message_type": ev(
 		"$metadata has MessageTypeDesigntimeArtifacts and FaultMessageTypeDesigntimeArtifacts with SaveAsVersion; SAP Help documents neither.",
@@ -208,9 +210,9 @@ var Evidence = map[string]EvidenceRecord{
 		"Whether the create works on the tenant through the UI (pending tenant check #6), and field mappings for the other connection types.",
 		srcHelp, srcMetaAPIM, srcTenant),
 	"api_management.classic.api_proxy": reaudited(
-		"Upload through Transport.svc as SAP's Client SDK does it, read and delete through Management.svc; the update semantics of an import over an existing proxy are undocumented.",
-		"TestAccAPIProxy_sample passing on a tenant promotes the resource from experimental.",
-		srcSDK, srcHubAPIM, srcMetaAPIM, srcRecipes, srcTenant),
+		"Upload through Transport.svc as SAP's Client SDK does it, read and delete through Management.svc; the update semantics of an import over an existing proxy are undocumented. The acceptance run of 2026-09-27 17:29 answered the import of SAP's sample bundle, renamed to a tfacc proxy, with 400 APIPROXY_ZIP_ERROR (\"Verify the directory structure inside the zip\"); the request itself matches the SDK.",
+		"apim-probe -ProxyTests exports an existing proxy from the tenant to learn the layout the API portal produces, and imports renamed copies of that export and of the sample. TestAccAPIProxy_sample passing promotes the resource.",
+		srcSDK, srcHubAPIM, srcMetaAPIM, srcRecipes, srcTenant, srcAccRun),
 	"api_management.classic.api_proxy_deployment": reaudited(
 		"Imported proxies are deployed by default; no public call deploys or undeploys an existing proxy.",
 		"A documented deploy or undeploy call.",
@@ -382,13 +384,13 @@ var Evidence = map[string]EvidenceRecord{
 		"None for this provider.",
 		srcHubPackages, srcHelp),
 	"integration_assessment.master_data": evOn("2026-09-27",
-		"The live Entities $metadata (27 entity sets) confirms the ISA-M taxonomy entities field by field; no write annotations, and SAP Help lists no operations. Read-mostly reference data.",
-		"Read them through .specs/ia-probe.ps1, then add data sources for the taxonomy the landscape resources reference (deployment models first).",
-		srcHubIA, srcHelp, srcMetaIA),
+		"The live Entities $metadata (27 entity sets) confirms the ISA-M taxonomy entities field by field, and every set was read on a tenant (for example 57 technology domains, 34 technology styles, 3 deployment models); no write annotations, and SAP Help lists no operations. Read-mostly reference data.",
+		"Add data sources for the taxonomy the landscape resources reference (deployment models first) together with the landscape resources.",
+		srcHubIA, srcHelp, srcMetaIA, srcIAProbe),
 	"integration_assessment.landscape_configuration": evOn("2026-09-27",
-		"The live Entities $metadata confirms Application, ApplicationInstance, Technology, TechnologyInstance and Vendor with string Ids and their links; write support is not stated anywhere.",
-		".specs/ia-probe.ps1 -LandscapeTests: create, change and delete a tfacc vendor, application and instance. If that passes, implement the landscape resources.",
-		srcHubIA, srcHelp, srcMetaIA),
+		"Create (201 with a server-assigned Id), read by Id and delete (204, then 404) work for vendors and applications. PATCH and PUT answered 400 V122 \"Only application/json supported as content type\" because the probe sent a charset parameter, and links sent as __metadata URIs answered 400 V124 \"The navigation property contains no Id field\", so updates, vendor links and application instances are still open.",
+		"ia-probe -LandscapeTests again with plain application/json and links as {\"Id\": ...}, now also for technologies and technology instances. If updates and links work, implement vendors, applications and application instances (and technologies, if they turn out to be customer objects).",
+		srcHubIA, srcHelp, srcMetaIA, srcIAProbe),
 	"integration_assessment.assessment_workflow": ev(
 		"A request status machine; workflow state.",
 		"None; out of scope.",
