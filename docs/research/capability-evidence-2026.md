@@ -20,8 +20,8 @@ And the provider never uses browser endpoints of SAP's UIs.
 | Experimental (`experimental`) | 2 |
 | Partial (`partial`) | 10 |
 | Read-only (`read_only`) | 4 |
-| Public API incomplete (`public_api_incomplete`) | 19 |
-| Unsafe Terraform lifecycle (`unsafe_terraform_lifecycle`) | 1 |
+| Public API incomplete (`public_api_incomplete`) | 18 |
+| Unsafe Terraform lifecycle (`unsafe_terraform_lifecycle`) | 2 |
 | Research required (`research_required`) | 1 |
 | No public API (`no_public_api`) | 26 |
 | Out of scope (`out_of_scope`) | 13 |
@@ -323,15 +323,15 @@ A public API exists, but part of its contract is unconfirmed.
 
 ### Data Type
 
-`cloud_integration.data_type` · checked 2026-09-26
+`cloud_integration.data_type` · checked 2026-09-27
 
-- **Finding:** $metadata has DataTypeDesigntimeArtifacts with SaveAsVersion, and a package export carries data types as bundles with Provide-Capability datatype.<id>, like message mappings. SAP Help's Integration Content resource table still lists no data type resource.
-- **Next step:** tenant-probe -GapTests creates, updates, versions and deletes a tfacc data type with the message mapping's requests; if all pass, a resource can reuse the design-time client.
+- **Finding:** Reading works (collection and package navigation). A create with the message mapping's body failed with 500 ("map is null"); SAP Help still documents no request.
+- **Next step:** The next gap probe tries Namespace, Description and IsSimpleType; a successful create, update, SaveAsVersion and delete would allow a resource on the shared design-time client.
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
   - a package export of the development tenant (2026-09-26): API artifacts and data types travel as package content
-  - Hub package CloudIntegrationAPI (Integration Content, Security Content, Partner Directory, Message Stores, MPL, Log Files, B2B Scenarios; modified 2026-08-07)
+  - tenant-probe -GapTests on a development tenant (2026-09-27), synthetic tfAccProbe* objects only
 
 ### Message Type
 
@@ -349,16 +349,6 @@ A public API exists, but part of its contract is unconfirmed.
 
 - **Finding:** $metadata has ServiceInterfaceDesigntimeArtifacts with SaveAsVersion and a Resources navigation; SAP Help documents only the UI and ESR import.
 - **Next step:** Same as message types, after data types are settled.
-- **Sources:**
-  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
-  - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
-
-### Value Mapping Entry
-
-`cloud_integration.value_mapping_entry` · checked 2026-09-26
-
-- **Finding:** UpsertValMaps is documented with an example; UpdateDefaultValMap and DeleteValMaps are listed as public API resources without semantics, and DeleteValMaps takes no value ID, so it can only clear a whole agency/identifier pair.
-- **Next step:** tenant-probe -GapTests: what DeleteValMaps leaves behind and how UpsertValMaps treats an existing source value. Only then a resource that owns one whole agency pair.
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
@@ -397,23 +387,25 @@ A public API exists, but part of its contract is unconfirmed.
 
 ### Certificate Chain
 
-`security.certificate_chain` · checked 2026-09-26
+`security.certificate_chain` · checked 2026-09-27
 
-- **Finding:** $metadata has the CertificateChainResources media entity and ChainCertificates; SAP Help documents chain import only in the UI, without the media type.
-- **Next step:** tenant-probe -GapTests reads ChainCertificates of an existing key pair; an upload test needs a documented media type.
+- **Finding:** $metadata has the CertificateChainResources media entity and ChainCertificates; SAP Help documents chain import only in the UI. The tenant returns a key pair's chain through KeystoreEntries('<hexalias>')/ChainCertificates.
+- **Next step:** A read-only chain attribute on key pairs or a data source; an upload needs a documented media type.
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
+  - tenant-probe -GapTests on a development tenant (2026-09-27), synthetic tfAccProbe* objects only
 
 ### PGP Keyrings
 
-`security.pgp_keyring` · checked 2026-09-26
+`security.pgp_keyring` · checked 2026-09-27
 
-- **Finding:** $metadata has keyrings, keys, sub keys, user IDs and upload media entities; SAP Help documents no request.
-- **Next step:** Documented upload format; the secret keyring would be write-only. tenant-probe -GapTests reads the keyring sets.
+- **Finding:** $metadata declares keyrings, keys, sub keys, user IDs and upload media entities; SAP Help documents no request. On the tenant PgpPublicKeyrings answers 200 but PgpKeyrings 404: not every declared set is addressable.
+- **Next step:** A documented upload format; the secret keyring would be write-only.
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
+  - tenant-probe -GapTests on a development tenant (2026-09-27), synthetic tfAccProbe* objects only
 
 ## Unsafe Terraform lifecycle
 
@@ -428,6 +420,17 @@ A public API exists, but a Terraform resource could not implement its lifecycle 
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
+
+### Value Mapping Entry
+
+`cloud_integration.value_mapping_entry` · checked 2026-09-27
+
+- **Finding:** On a synthetic value mapping, the first UpsertValMaps (IsConfigured=true) dropped the pair's design-time values, a second upsert of the same source value added a duplicate that SAP made the default, and DeleteValMaps answered 202 without removing anything. There is no safe update or destroy.
+- **Next step:** None within Terraform unless SAP documents an entry update and a delete that works; revisit when the Integration Content API reference changes.
+- **Sources:**
+  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
+  - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
+  - tenant-probe -GapTests on a development tenant (2026-09-27), synthetic tfAccProbe* objects only
 
 ## Research required
 

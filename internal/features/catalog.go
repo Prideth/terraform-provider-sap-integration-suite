@@ -194,11 +194,17 @@ var Catalog = []Feature{
 			"agency/identifier pair, managed through UpsertValMaps, UpdateDefaultValMap and " +
 			"DeleteValMaps.",
 		SupportStatus: StatusUnsupported,
-		SupportReason: ReasonPublicAPIIncomplete,
+		SupportReason: ReasonUnsafeTerraformLifecycle,
 		PublicAPI:     true,
 		APIProtocol:   "OData V2 (function imports)",
-		Planned:       true,
 		Limitations: []string{
+			"Tenant check of 2026-09-27 on a synthetic value mapping: the first UpsertValMaps with " +
+				"IsConfigured=true switched the agency pair to State Configured and dropped the two " +
+				"values the design-time content had defined; a second UpsertValMaps with the same " +
+				"source value added a second entry instead of changing the first, and SAP made the " +
+				"newest one the default; DeleteValMaps for the pair answered 202 and removed nothing; " +
+				"every call left the artifact in version Draft. A resource could neither update an " +
+				"entry in place nor destroy what it created, so entries stay unmanaged.",
 			"Create and update are documented (POST /UpsertValMaps?Id=&Version=&SrcAgency=&SrcId=" +
 				"&TgtAgency=&TgtId=&SrcValue=&TgtValue=&IsConfigured=, returning a ValMap with Id " +
 				"and Value{SrcValue, TgtValue}), and reading goes through ValMapSchema(...)/ValMaps. " +
@@ -257,6 +263,12 @@ var Catalog = []Feature{
 				"DataTypeDesigntimeArtifactSaveAsVersion function import. SAP Help documents only the " +
 				"UI and lists no API resource or example request for data types, so create, update " +
 				"and delete are unverified.",
+			"Tenant check of 2026-09-27: reading works (the collection and " +
+				"IntegrationPackages('<id>')/DataTypeDesigntimeArtifacts return the package's data " +
+				"type). A create with the message mapping's body (Id, Name, PackageId, ArtifactContent " +
+				"as the exported bundle) failed with 500 \"Cannot invoke java.util.Map.containsKey(Object) " +
+				"because map is null\". The next probe adds Namespace, Description and IsSimpleType; " +
+				"until a create succeeds, there is no resource.",
 		},
 	},
 	{
@@ -907,6 +919,10 @@ var Catalog = []Feature{
 			"Once the upload contract is confirmed, the intended shape is a resource scoped to one " +
 				"key pair alias (for example sapintegrationsuite_key_pair_certificate_chain), not a " +
 				"standalone global resource.",
+			"Tenant check of 2026-09-27: KeystoreEntries('<hexalias>')/ChainCertificates returns the " +
+				"chain of an SAP key pair (Hexalias, Index, subject, issuer, validity, fingerprints), so " +
+				"reading is confirmed and a read-only chain attribute or data source is possible; " +
+				"uploading a chain still has no documented media type.",
 		},
 	},
 	{
@@ -1036,6 +1052,10 @@ var Catalog = []Feature{
 				"documents no request for any of them. Keyrings are whole-file objects, and the secret " +
 				"keyring holds private keys, so a Terraform design would need a confirmed upload format " +
 				"and write-only handling of the secret keyring before anything is implemented.",
+			"Tenant check of 2026-09-27: PgpPublicKeyrings answers 200, but PgpKeyrings answers 404 " +
+				"\"Could not find an entity set or function import\" although $metadata declares it; the " +
+				"service document of /api/v1 lists only 25 of the 131 declared entity sets. A design has " +
+				"to start from the sets that are addressable on their own.",
 		},
 	},
 

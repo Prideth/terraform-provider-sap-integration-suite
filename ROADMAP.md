@@ -53,9 +53,10 @@ These need no further research, only a run of the prepared tests (`.specs/run-al
 
 1. **Data types, message types, fault message types, service interfaces.** The `$metadata`
    defines all four with `SaveAsVersion`, and a package export carries data types in the same
-   bundle format as message mappings. If the gap probe confirms create, update, version and
-   delete with the message mapping's requests, the four resources reuse the shared design-time
-   client and the `save_as_version` attribute.
+   bundle format as message mappings. The first gap probe (2026-09-27) confirmed reading, but a
+   create with the message mapping's body failed with 500; the next probe adds `Namespace`,
+   `Description` and `IsSimpleType`. If create, update, version and delete then work, the four
+   resources reuse the shared design-time client and the `save_as_version` attribute.
 2. **API Composition hardening.** `TestAccBusinessDataGraph_basic` needs a service key of plan
    `configuration` and a destination; the service's `$metadata` goes through
    `cmd/apidiscovery` (service `api-composition-configuration`). Passing both promotes the
@@ -71,11 +72,11 @@ These need no further research, only a run of the prepared tests (`.specs/run-al
 
 ## P2 — partly confirmed, more evidence first
 
-5. **Value mapping entries.** `UpsertValMaps` is documented; `DeleteValMaps` can only clear a
-   whole agency/identifier pair. If the gap probe shows that it clears the values and leaves the
-   pair (and that upserts do not duplicate source values), a resource that owns one complete
-   agency pair is safe. Entries written through the API would still be replaced by a content
-   upload of the value mapping, which the resource must document.
+5. **Value mapping entries — settled, not manageable.** The gap probe of 2026-09-27 showed that
+   the first `UpsertValMaps` drops the pair's design-time values, a repeated source value adds a
+   duplicate instead of an update, and `DeleteValMaps` removes nothing. Entries stay part of the
+   value mapping's content; this item moves to WATCH until SAP documents an update and a delete
+   that work.
 6. **Security content.** Certificate chains (upload media type), PGP keyrings (upload format;
    secret keyrings write-only) and OAuth2 client credential custom parameters (write path). The
    OAuth2 password and SAML bearer artifacts become user credential kinds if the gap probe finds

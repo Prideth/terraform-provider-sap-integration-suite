@@ -33,3 +33,14 @@ func TestReportHasNoURLs(t *testing.T) {
 		t.Error("the report contains a URL")
 	}
 }
+
+func TestNotInServiceDocument(t *testing.T) {
+	s := &apimeta.Service{EntitySets: []apimeta.EntitySet{{Name: "A"}, {Name: "B"}, {Name: "C"}}}
+	if got := notInServiceDocument(s); got != nil {
+		t.Errorf("without a service document: %v", got)
+	}
+	s.ServiceDocument = []string{"A", "C"}
+	if got := notInServiceDocument(s); len(got) != 1 || got[0] != "B" {
+		t.Errorf("got %v, want [B]", got)
+	}
+}

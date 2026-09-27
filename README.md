@@ -105,7 +105,7 @@ Legend: ✅ Supported · ⚠️ Partial support / important limitations · 👁�
 | Service Interface | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
 | Value Mapping | ⚠️ | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
 | Value Mapping Deployment | ✅ | Resource |
-| Value Mapping Entry | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
+| Value Mapping Entry | ❌ | No safe Terraform lifecycle confirmed — see [feature-support.md](docs/feature-support.md#all-features) |
 | Variable | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
 
 ### Security & Access Policies
@@ -405,9 +405,11 @@ See [`ROADMAP.md`](ROADMAP.md).
   configurable directly inside an integration flow — see
   `docs/resource-design.md` for the distinction.
 - Individual value mapping entries (`UpsertValMaps`, `UpdateDefaultValMap`,
-  `DeleteValMaps`) are not manageable yet — only the design-time artifact as
-  a whole. `DeleteValMaps` can only clear a whole agency/identifier pair, and
-  its effect is being checked on a tenant first. See
+  `DeleteValMaps`) are not managed — only the design-time artifact as a whole.
+  A tenant check in September 2026 showed why: the first upsert dropped the
+  values the content had defined, a second upsert of the same source value
+  added a duplicate instead of changing it, and `DeleteValMaps` removed
+  nothing. Manage the entries in the value mapping's content instead. See
   `docs/research/capability-evidence-2026.md`.
 - Whether Delete removes only the active version or every version of the
   artifact is unconfirmed for `sapintegrationsuite_value_mapping`,

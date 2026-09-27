@@ -50,6 +50,7 @@ const (
 	srcMetaIA      = "Integration Assessment Entities and Management $metadata, fetched live on 2026-09-27 (snapshots testdata/api-metadata/integration-assessment-*.json)"
 	srcHubSearch   = "Business Accelerator Hub: the API artifacts of 173 Integration Suite, API Management, Edge, Graph and BTP packages (308 APIs) searched for API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API deployment, API policy, reusable API, proxy, transport and gateway (2026-09-27); the package list was unchanged since 2026-09-26"
 	srcSDKCheck    = "Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6"
+	srcGapProbe    = "tenant-probe -GapTests on a development tenant (2026-09-27), synthetic tfAccProbe* objects only"
 )
 
 const checked = "2026-09-26"
@@ -80,18 +81,18 @@ var Evidence = map[string]EvidenceRecord{
 		"Create, read, deploy and delete are verified on a tenant; an in-place content update is not documented, so every change replaces the artifact.",
 		"A tenant check of PUT on ValueMappingDesigntimeArtifacts, or SAP documentation of it, would allow in-place updates and save_as_version.",
 		srcHelp, srcMetaCI, srcTenant),
-	"cloud_integration.value_mapping_entry": ev(
-		"UpsertValMaps is documented with an example; UpdateDefaultValMap and DeleteValMaps are listed as public API resources without semantics, and DeleteValMaps takes no value ID, so it can only clear a whole agency/identifier pair.",
-		"tenant-probe -GapTests: what DeleteValMaps leaves behind and how UpsertValMaps treats an existing source value. Only then a resource that owns one whole agency pair.",
-		srcHelp, srcMetaCI),
+	"cloud_integration.value_mapping_entry": evOn("2026-09-27",
+		"On a synthetic value mapping, the first UpsertValMaps (IsConfigured=true) dropped the pair's design-time values, a second upsert of the same source value added a duplicate that SAP made the default, and DeleteValMaps answered 202 without removing anything. There is no safe update or destroy.",
+		"None within Terraform unless SAP documents an entry update and a delete that works; revisit when the Integration Content API reference changes.",
+		srcHelp, srcMetaCI, srcGapProbe),
 	"cloud_integration.design_time_versioning": ev(
 		"SaveAsVersion is documented for integration flows and in $metadata for every versioned design-time type; the provider uses it for flows, message mappings and script collections.",
 		"Value mappings need an in-place update first (see cloud_integration.value_mapping); the other types need their own resources.",
 		srcHelp, srcMetaCI, srcTenant),
-	"cloud_integration.data_type": ev(
-		"$metadata has DataTypeDesigntimeArtifacts with SaveAsVersion, and a package export carries data types as bundles with Provide-Capability datatype.<id>, like message mappings. SAP Help's Integration Content resource table still lists no data type resource.",
-		"tenant-probe -GapTests creates, updates, versions and deletes a tfacc data type with the message mapping's requests; if all pass, a resource can reuse the design-time client.",
-		srcHelp, srcMetaCI, srcExport, srcHubCI),
+	"cloud_integration.data_type": evOn("2026-09-27",
+		"Reading works (collection and package navigation). A create with the message mapping's body failed with 500 (\"map is null\"); SAP Help still documents no request.",
+		"The next gap probe tries Namespace, Description and IsSimpleType; a successful create, update, SaveAsVersion and delete would allow a resource on the shared design-time client.",
+		srcHelp, srcMetaCI, srcExport, srcGapProbe),
 	"cloud_integration.message_type": ev(
 		"$metadata has MessageTypeDesigntimeArtifacts and FaultMessageTypeDesigntimeArtifacts with SaveAsVersion; SAP Help documents neither.",
 		"The data type probe result decides the pattern; a message type probe follows with content that references a data type.",
@@ -162,10 +163,10 @@ var Evidence = map[string]EvidenceRecord{
 		"SSHKeyGenerationRequests and SSHKeyResources exist in $metadata without documented requests; key pairs cover SSH through the OpenSSH export.",
 		"None needed; revisit only if SAP documents SSH keys as a separate artifact.",
 		srcHelp, srcMetaCI),
-	"security.certificate_chain": ev(
-		"$metadata has the CertificateChainResources media entity and ChainCertificates; SAP Help documents chain import only in the UI, without the media type.",
-		"tenant-probe -GapTests reads ChainCertificates of an existing key pair; an upload test needs a documented media type.",
-		srcHelp, srcMetaCI),
+	"security.certificate_chain": evOn("2026-09-27",
+		"$metadata has the CertificateChainResources media entity and ChainCertificates; SAP Help documents chain import only in the UI. The tenant returns a key pair's chain through KeystoreEntries('<hexalias>')/ChainCertificates.",
+		"A read-only chain attribute on key pairs or a data source; an upload needs a documented media type.",
+		srcHelp, srcMetaCI, srcGapProbe),
 	"security.certificate_user_mapping": ev(
 		"Documented only for the Neo environment.",
 		"A Cloud Foundry API from SAP.",
@@ -186,10 +187,10 @@ var Evidence = map[string]EvidenceRecord{
 		"UI-only; no entity or function import in $metadata.",
 		"A where-used entity in $metadata; it would become a data source.",
 		srcHelp, srcMetaCI),
-	"security.pgp_keyring": ev(
-		"$metadata has keyrings, keys, sub keys, user IDs and upload media entities; SAP Help documents no request.",
-		"Documented upload format; the secret keyring would be write-only. tenant-probe -GapTests reads the keyring sets.",
-		srcHelp, srcMetaCI),
+	"security.pgp_keyring": evOn("2026-09-27",
+		"$metadata declares keyrings, keys, sub keys, user IDs and upload media entities; SAP Help documents no request. On the tenant PgpPublicKeyrings answers 200 but PgpKeyrings 404: not every declared set is addressable.",
+		"A documented upload format; the secret keyring would be write-only.",
+		srcHelp, srcMetaCI, srcGapProbe),
 
 	// --- Partner Directory ---
 	"partner_directory.partner": ev(

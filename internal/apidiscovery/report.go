@@ -103,6 +103,12 @@ func renderService(b *strings.Builder, svc Service, snap *apimeta.Service, rows 
 		fmt.Fprintf(b, "- REST contract: %d operations, %d schemas, %d security schemes\n\n",
 			len(snap.REST.Operations), len(snap.REST.Schemas), len(snap.REST.SecuritySchemes))
 	}
+	if hidden := notInServiceDocument(snap); len(hidden) > 0 {
+		fmt.Fprintf(b, "The service document lists %d of the %d entity sets. The other %d are declared in "+
+			"`$metadata` but not addressable on their own (a tenant check answered such a set with 404); "+
+			"they are reachable only through navigation, if at all: %s.\n\n",
+			len(snap.EntitySets)-len(hidden), len(snap.EntitySets), len(hidden), strings.Join(hidden, ", "))
+	}
 
 	byStatus := map[Status][]Row{}
 	for _, r := range rows {
@@ -238,4 +244,23 @@ func shortType(t string) string {
 
 func cell(s string) string {
 	return strings.ReplaceAll(s, "|", "\\|")
+}
+
+// notInServiceDocument lists the entity sets a snapshot's service document
+// leaves out, or nothing when the snapshot has no service document.
+func notInServiceDocument(s *apimeta.Service) []string {
+	if len(s.ServiceDocument) == 0 {
+		return nil
+	}
+	listed := map[string]bool{}
+	for _, n := range s.ServiceDocument {
+		listed[n] = true
+	}
+	var out []string
+	for _, es := range s.EntitySets {
+		if !listed[es.Name] {
+			out = append(out, es.Name)
+		}
+	}
+	return out
 }
