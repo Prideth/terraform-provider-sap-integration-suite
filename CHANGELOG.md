@@ -171,6 +171,28 @@ reads the number range and fills in what the state is missing.
   types, fault message types, service interfaces) stay unimplemented until
   a create works.
 
+### Documentation
+
+- Every resource and data source page on the Registry was rewritten. Each
+  page states the support status and the contract behind it, the
+  prerequisites and roles, what create, read, update, replacement and delete
+  do (and why an attribute forces replacement), what an import recovers and
+  what it cannot, and SAP limitations separately from provider limitations.
+  Pages are grouped by area in the sidebar.
+- The provider page now covers scope and the boundaries to the SAP/btp
+  provider, Developer Hub and Event Mesh, which service key field goes into
+  which attribute, environment variables and their precedence, support
+  statuses and the opt-in switches, runtimes, write-only secrets and
+  troubleshooting.
+- New guides: Getting Started (from a service key to a deployed integration
+  flow and its endpoint URL), Importing Existing Content, Provider Upgrades
+  and Troubleshooting.
+- Two examples declared a flow deployment with a `version` argument that
+  does not exist and without the required `flow_version`; they are fixed,
+  and a test now checks every example and guide snippet against the schema.
+- The Classic API Management data sources had no attribute descriptions;
+  they have now.
+
 ### For contributors
 
 - API discovery: `$metadata` (OData V2 and V4) and OpenAPI documents are
