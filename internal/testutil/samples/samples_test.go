@@ -175,10 +175,15 @@ func TestWithAPIProxyName_Sample(t *testing.T) {
 	if err != nil || name != "tfaccproxy" {
 		t.Fatalf("renamed bundle declares %q, %v", name, err)
 	}
-	before, _ := samples.FileNames(original)
 	after, _ := samples.FileNames(renamed)
-	if len(before) != len(after) || !slices.Contains(after, "APIProxy/tfaccproxy.xml") {
-		t.Errorf("files before %v, after %v", before, after)
+	if !slices.Contains(after, "APIProxy/tfaccproxy.xml") {
+		t.Errorf("files after renaming: %v", after)
+	}
+	// Every folder has its own entry, as in SAP's importable bundles.
+	for _, dir := range []string{"APIProxy/", "APIProxy/APIProxyEndPoint/", "APIProxy/Policy/"} {
+		if !slices.Contains(after, dir) {
+			t.Errorf("no folder entry %s in %v", dir, after)
+		}
 	}
 	endpoint, err := samples.ReadFile(renamed, "APIProxy/APIProxyEndPoint/default.xml")
 	if err != nil {

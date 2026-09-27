@@ -6,6 +6,16 @@ All notable changes to this project are documented in this file.
 
 ### Fixed
 
+- Replacing the certificate of a `sapintegrationsuite_certificate` failed
+  with "Provider produced inconsistent result after apply": the plan kept the
+  old `certificate_sha256`, `subject_dn`, `issuer_dn` and `serial_number`
+  from state. They are derived from the PEM, so the plan now computes them
+  from the new certificate. Found by the acceptance run of 2026-09-27.
+- Importing a `sapintegrationsuite_key_pair` left the subject fields empty,
+  so the first apply after an import planned a replacement, which generates
+  a new key pair. The subject fields that are still empty are now filled from
+  the subject DN SAP returns for the entry.
+
 - Every request failed under Terraform with `context canceled` on the token
   URL. The provider built its OAuth client with the context of the
   ConfigureProvider call, which Terraform cancels as soon as that call

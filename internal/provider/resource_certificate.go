@@ -124,6 +124,35 @@ func (r *certificateResource) Schema(_ context.Context, _ resource.SchemaRequest
 	}
 }
 
+// ModifyPlan computes the fingerprint, subject, issuer and serial number of
+// the planned certificate. They are derived locally from the PEM, so a plan
+// that changes the certificate shows the new values instead of carrying the
+// old ones over from state (which Terraform then reports as an inconsistent
+// result after apply). If the PEM is not known yet, they become unknown.
+func (r *certificateResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() {
+		return // destroy
+	}
+	var plan certificateModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if plan.Certificate.IsUnknown() || plan.Certificate.IsNull() {
+		plan.CertificateSHA256 = types.StringUnknown()
+		plan.SubjectDN = types.StringUnknown()
+		plan.IssuerDN = types.StringUnknown()
+		plan.SerialNumber = types.StringUnknown()
+	} else {
+		meta, err := securitycontent.ParseCertificatePEM([]byte(plan.Certificate.ValueString()))
+		if err != nil {
+			return // reported by Create or Update with the attribute path
+		}
+		applyCertificateMetadata(&plan, meta)
+	}
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
+}
+
 func (r *certificateResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return

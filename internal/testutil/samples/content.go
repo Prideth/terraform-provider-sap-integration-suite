@@ -191,6 +191,11 @@ var (
 // the APIProxy/<old>.xml descriptor becomes APIProxy/<name>.xml with <name>
 // set, and every proxy endpoint gets basePath, so the copy can be imported
 // next to the original without colliding on name or base path.
+//
+// The copy contains an explicit entry for every folder, before the files in
+// it, as SAP's own importable bundles do: the API portal rejected a copy
+// without folder entries with APIPROXY_ZIP_ERROR ("Verify the directory
+// structure inside the zip", tenant run September 2026).
 func WithAPIProxyName(bundle []byte, name, basePath string) ([]byte, error) {
 	reader, err := zip.NewReader(bytes.NewReader(bundle), int64(len(bundle)))
 	if err != nil {
@@ -199,6 +204,23 @@ func WithAPIProxyName(bundle []byte, name, basePath string) ([]byte, error) {
 	var out bytes.Buffer
 	writer := zip.NewWriter(&out)
 	renamed := false
+	dirs := map[string]bool{}
+	ensureDirs := func(entry string) error {
+		var parents []string
+		for d := path.Dir(entry); d != "." && d != "/"; d = path.Dir(d) {
+			parents = append([]string{d + "/"}, parents...)
+		}
+		for _, d := range parents {
+			if dirs[d] {
+				continue
+			}
+			dirs[d] = true
+			if _, err := writer.Create(d); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
 	for _, f := range reader.File {
 		if f.FileInfo().IsDir() {
 			continue
@@ -223,6 +245,9 @@ func WithAPIProxyName(bundle []byte, name, basePath string) ([]byte, error) {
 			data = append(append(append([]byte{}, data[:loc[0]]...), []byte("<name>"+name+"</name>")...), data[loc[1]:]...)
 		case dir == "APIProxy/APIProxyEndPoint/":
 			data = proxyBasePath.ReplaceAll(data, []byte("<base_path>"+basePath+"</base_path>"))
+		}
+		if err := ensureDirs(entry); err != nil {
+			return nil, err
 		}
 		w, err := writer.Create(entry)
 		if err != nil {

@@ -363,3 +363,40 @@ func TestCertificateResource_ImportState_UsesAlias(t *testing.T) {
 		t.Errorf("alias = %q, want imported-alias", alias.ValueString())
 	}
 }
+
+// Replacing the certificate plans the new fingerprint, subject, issuer and
+// serial number, computed from the new PEM, instead of keeping the old ones
+// from state (a tenant run in September 2026 failed with "inconsistent result
+// after apply" on exactly these attributes).
+func TestCertificateResource_ModifyPlanComputesNewMetadata(t *testing.T) {
+	s := certificateSchema(t).Schema
+	objType := s.Type().TerraformType(context.Background())
+	oldPEM, newPEM := generateTestCertPEM(t, "tfacc-first"), generateTestCertPEM(t, "tfacc-second")
+	row := func(pem, sha, subject string) tftypes.Value {
+		return tftypes.NewValue(objType, map[string]tftypes.Value{
+			"id":                  tftypes.NewValue(tftypes.String, "my-cert"),
+			"alias":               tftypes.NewValue(tftypes.String, "my-cert"),
+			"runtime_location_id": tftypes.NewValue(tftypes.String, nil),
+			"certificate":         tftypes.NewValue(tftypes.String, pem),
+			"certificate_sha256":  tftypes.NewValue(tftypes.String, sha),
+			"subject_dn":          tftypes.NewValue(tftypes.String, subject),
+			"issuer_dn":           tftypes.NewValue(tftypes.String, subject),
+			"serial_number":       tftypes.NewValue(tftypes.String, "999"),
+		})
+	}
+	// The plan still carries the old computed values, as UseStateForUnknown leaves them.
+	req := resource.ModifyPlanRequest{
+		State: tfsdk.State{Schema: s, Raw: row(oldPEM, "old", "CN=tfacc-first")},
+		Plan:  tfsdk.Plan{Schema: s, Raw: row(newPEM, "old", "CN=tfacc-first")},
+	}
+	resp := resource.ModifyPlanResponse{Plan: req.Plan}
+	(&certificateResource{}).ModifyPlan(context.Background(), req, &resp)
+	if resp.Diagnostics.HasError() {
+		t.Fatal(resp.Diagnostics)
+	}
+	var got certificateModel
+	resp.Diagnostics.Append(resp.Plan.Get(context.Background(), &got)...)
+	if got.SubjectDN.ValueString() != "CN=tfacc-second" || got.CertificateSHA256.ValueString() == "old" || got.SerialNumber.ValueString() == "999" {
+		t.Errorf("planned metadata not recomputed: %+v", got)
+	}
+}

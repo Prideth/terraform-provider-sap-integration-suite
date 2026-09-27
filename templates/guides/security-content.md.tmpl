@@ -311,6 +311,15 @@ configured with. The provider refreshes what it can read on every plan and trust
 the last successful write, which is why this resource's support status is `partial`. It is not
 a statement that anything about it is unsafe to use.
 
+**Importing a key pair.** `terraform import sapintegrationsuite_key_pair.signing <alias>` reads
+the entry and fills the subject fields (`common_name`, `organization_unit`, `organization`,
+`locality`, `state`, `country`, `email`) from the combined subject DN SAP returns. This matters
+because those fields are `RequiresReplace`: without them, the first apply after an import would
+see every configured subject field as new and generate a fresh key pair, throwing away the one
+you imported. `signature_algorithm` and `key_algorithm_parameter` cannot be read back, so leave
+them out of the configuration of an imported key pair, or accept that setting them plans a
+replacement.
+
 **There is no separate "SSH Key" resource.** SAP's own Security Content API overview lists no
 independent SSH Key entity, and the tenant keystore UI's own "Creating a Key Pair/SSH Key Pair"
 documentation uses the identical field set for both — "Create > Key Pair" and "Create > SSH Key"

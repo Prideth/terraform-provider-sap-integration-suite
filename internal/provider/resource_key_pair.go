@@ -359,12 +359,12 @@ func (r *keyPairResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 // readAfterWrite re-reads the confirmed-readable subset of a key pair's
 // state (key_type, key_size, valid_not_before, valid_not_after, and the
-// OpenSSH public key export) from KeystoreEntries, and leaves every
-// generation-only parameter this API does not confirm returning
-// (signature_algorithm, key_algorithm_parameter, the subject DN fields)
-// exactly as it already is in base — trusted from the last successful
-// write, the same pattern this provider uses wherever an API's Read
-// cannot verify everything its Create accepted.
+// OpenSSH public key export) from KeystoreEntries, fills subject fields that
+// are still empty from SubjectDN, and leaves the generation-only parameters
+// this API does not return (signature_algorithm, key_algorithm_parameter)
+// exactly as they are in base — trusted from the last successful write, the
+// same pattern this provider uses wherever an API's Read cannot verify
+// everything its Create accepted.
 func (r *keyPairResource) readAfterWrite(ctx context.Context, alias string, base keyPairModel, diags *diag.Diagnostics, state *tfsdk.State) {
 	client, ok := locatedClient(r.client, base.RuntimeLocationID, diags)
 	if !ok {
@@ -385,6 +385,7 @@ func (r *keyPairResource) readAfterWrite(ctx context.Context, alias string, base
 	base.KeySize = int64OrNull(entry.KeySize)
 	base.ValidNotBefore = stringOrNull(entry.ValidNotBefore)
 	base.ValidNotAfter = stringOrNull(entry.ValidNotAfter)
+	fillSubjectFromDN(&base, entry.SubjectDN)
 
 	if entry.KeyType == "RSA" || entry.KeyType == "DSA" {
 		if pub, sshErr := client.GetSSHPublicKey(ctx, alias); sshErr == nil {
@@ -436,13 +437,41 @@ func (r *keyPairResource) Delete(ctx context.Context, req resource.DeleteRequest
 	}
 }
 
-// ImportState only recovers alias: common_name, country, and every other
-// generation parameter this API does not confirm reading back cannot be
-// reconstructed from an existing tenant key pair. A configuration applied
-// right after import must still supply them, and since they are all
-// RequiresReplace, any mismatch between the imported reality and your
-// configuration plans a replacement rather than silently accepting a
-// value this provider could not actually verify — see
+// fillSubjectFromDN sets the subject fields that are still empty (after an
+// import) from the entry's SubjectDN, which KeystoreEntries returns. Values
+// already in state come from the configuration and stay as they are. Without
+// this, the first apply after an import would see every configured subject
+// field as a change and, since they are RequiresReplace, regenerate the key
+// pair (a tenant run in September 2026 showed the gap).
+func fillSubjectFromDN(m *keyPairModel, subjectDN string) {
+	if subjectDN == "" {
+		return
+	}
+	dn := parseDistinguishedName(subjectDN)
+	fill := func(field *types.String, keys ...string) {
+		if !field.IsNull() && !field.IsUnknown() {
+			return
+		}
+		for _, k := range keys {
+			if v, ok := dn[k]; ok && v != "" {
+				*field = types.StringValue(v)
+				return
+			}
+		}
+	}
+	fill(&m.CommonName, "CN")
+	fill(&m.OrganizationUnit, "OU")
+	fill(&m.Organization, "O")
+	fill(&m.Locality, "L")
+	fill(&m.State, "ST", "S")
+	fill(&m.Country, "C")
+	fill(&m.Email, "EMAILADDRESS", "E")
+}
+
+// ImportState recovers the alias; the next read fills the subject fields
+// from the entry's SubjectDN (see fillSubjectFromDN). signature_algorithm and
+// key_algorithm_parameter cannot be read back, so a configuration that sets
+// them plans a replacement after an import — see
 // docs/guides/security-content.md.
 func (r *keyPairResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	loc, parts, err := splitLocatedImportID(req.ID, 1)
