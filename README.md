@@ -1,10 +1,10 @@
 # Terraform Provider for SAP Integration Suite
 
-A Terraform provider for configuring, provisioning, and administering
-content and capabilities **inside an already-provisioned** SAP Integration
-Suite tenant — Cloud Integration, Access Policies, Classic API Management,
-and (as their public APIs are confirmed) SAP's current API Management
-model (API Artifacts, Integration Cell), and Edge Integration Cell.
+A Terraform provider for the content **inside an existing** SAP Integration
+Suite tenant: Cloud Integration packages, artifacts and deployments,
+externalized parameters, security material, the Partner Directory, access
+policies and Classic API Management, plus experimental support for API
+Composition business data graphs.
 
 > **This project is an independent open-source Terraform provider and is
 > not an official SAP product**, unless and until SAP formally adopts or
@@ -12,9 +12,11 @@ model (API Artifacts, Integration Cell), and Edge Integration Cell.
 
 ## Status
 
-Pre-release, under active development toward `v0.1.0`. Schemas may still
-change. See `ROADMAP.md` for what is planned and `CHANGELOG.md` for what
-has landed.
+The provider is on a 0.x release line: a minor release may contain breaking
+changes, each with upgrade steps in [`CHANGELOG.md`](CHANGELOG.md). Pin the
+minor version. The practitioner documentation is on the
+[Terraform Registry](https://registry.terraform.io/providers/Prideth/sap-integration-suite/latest/docs);
+[`ROADMAP.md`](ROADMAP.md) lists planned work.
 
 **Repository naming**: the GitHub repository, Go module, provider binary
 name, and registry manifest all use the final naming
@@ -47,15 +49,16 @@ full picture.
 
 ```
 SAP/btp                              Prideth/sap-integration-suite
-  Subaccount                           Access Policies
-  Entitlements                         Integration Packages
-  Integration Suite subscription  -->  Integration Flows
-  Service instances / bindings         Integration Flow Deployments
-  Destinations                         (Current API Management,
-  Role collections / assignments        Integration Cell, Edge Integration
-                                         Cell as their public APIs are
-                                         confirmed)
+  Subaccount                           Integration packages, artifacts
+  Entitlements                         Deployments, externalized parameters
+  Integration Suite subscription  -->  Credentials, certificates, key pairs
+  Service instances / bindings         Partner Directory
+  Destinations                         Access policies
+  Role collections / assignments       Classic API Management
 ```
+
+Current API Management (API artifacts, Integration Cell) has no public API
+yet, and Edge Integration Cell targeting is not supported.
 
 ## Feature Support
 
@@ -258,17 +261,18 @@ data "sapintegrationsuite_provider_feature" "value_mapping" {
 ## Requirements
 
 - [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.5,
-  or >= 1.11 if you use any resource with a write-only (`_wo`) secret
-  attribute — currently `sapintegrationsuite_partner_user_credential_parameter`,
-  `sapintegrationsuite_user_credential`, and
-  `sapintegrationsuite_oauth2_client_credential`. This provider does not
-  enforce a `required_version` constraint itself; set one in your own
-  configuration if you rely on write-only attributes.
-- An SAP Integration Suite tenant with Cloud Integration activated
-- An OAuth 2.0 client credentials service key with the Integration Content /
-  Security Content API scopes; Partner Directory resources additionally
-  require the `AuthGroup_TenantPartnerDirectoryConfigurator` role
-  (or `AuthGroup_Administrator`) — see `docs/guides/partner-directory.md`
+  or >= 1.11 if you use any attribute ending in `_wo` (write-only secrets
+  and the number range counter): `sapintegrationsuite_user_credential`,
+  `sapintegrationsuite_oauth2_client_credential`,
+  `sapintegrationsuite_secure_parameter`,
+  `sapintegrationsuite_partner_user_credential_parameter`,
+  `sapintegrationsuite_api_provider` and `sapintegrationsuite_number_range`.
+  The provider does not enforce a `required_version`; set one in your
+  configuration.
+- An SAP Integration Suite tenant with Cloud Integration activated.
+- A service key of Process Integration Runtime, plan `api`, with the roles
+  your resources need; see the
+  [Authorization and Roles guide](docs/guides/authorization-and-roles.md).
 
 ## Installation
 
@@ -277,7 +281,7 @@ terraform {
   required_providers {
     sapintegrationsuite = {
       source  = "Prideth/sap-integration-suite"
-      version = "~> 0.1"
+      version = "~> 0.3.0"
     }
   }
 }
@@ -326,10 +330,19 @@ resource "sapintegrationsuite_integration_flow" "metering" {
 }
 
 resource "sapintegrationsuite_integration_flow_deployment" "metering" {
-  package_id = sapintegrationsuite_integration_package.utilities.id
-  flow_id    = sapintegrationsuite_integration_flow.metering.flow_id
+  package_id   = sapintegrationsuite_integration_package.utilities.id
+  flow_id      = sapintegrationsuite_integration_flow.metering.flow_id
+  flow_version = sapintegrationsuite_integration_flow.metering.version
+
+  # Uploading new content keeps the version; redeploy when it changes.
+  redeploy_triggers = {
+    content = sapintegrationsuite_integration_flow.metering.content_hash
+  }
 }
 ```
+
+The [Getting Started guide](docs/guides/getting-started.md) walks through the
+whole path from a service key to a deployed flow and its endpoint URL.
 
 See [`examples/greenfield`](examples/greenfield) for a full new-landscape
 example and [`examples/brownfield`](examples/brownfield) for importing an
@@ -361,18 +374,28 @@ make docs   # regenerate docs/ from schema + examples
 - **Unit tests** (`go test ./...`) run without credentials and cover the
   HTTP client, OAuth token handling, OData V2 request/pagination/error
   handling, and the API clients, using `httptest`.
-- **Acceptance tests** exercise a real tenant and only run with `TF_ACC=1`
-  and `SAP_INTEGRATION_SUITE_*` credentials set:
+- **Acceptance tests** exercise a real tenant. They run with `TF_ACC=1`,
+  credentials, and either `SAP_INTEGRATION_SUITE_ACC_ALL=1` or the gate of a
+  capability, for example `SAP_INTEGRATION_SUITE_ACC_CLOUD_INTEGRATION=1`;
+  tests without their gate or credentials skip and say which variable is
+  missing. Destructive tests additionally need
+  `SAP_INTEGRATION_SUITE_ACC_DESTRUCTIVE=1`. `make accplan` shows what would
+  run:
 
   ```shell
-  TF_ACC=1 go test -v -timeout 60m ./...
+  make testacc-all
   ```
+
+  See "Running the acceptance tests against a tenant" in
+  [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Contributing
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md). Every new resource must trace back
-to an officially documented, SAP-supported public API — see
-[`docs/sap-api-references.md`](docs/sap-api-references.md) for the pattern.
+to a public SAP API, with its contract source recorded in the feature
+catalog: SAP documentation, an official API specification, SAP's own tooling,
+or only the service's `$metadata` (then it is unofficial or experimental) —
+see [`docs/sap-api-references.md`](docs/sap-api-references.md) for the pattern.
 
 ## Roadmap
 
@@ -380,80 +403,39 @@ See [`ROADMAP.md`](ROADMAP.md).
 
 ## Known limitations
 
-- No public API for Integration Suite capability activation (Cloud
-  Integration, API Management, Integration Cell, Edge Integration Cell) was
-  found; activation stays a manual, one-time bootstrap step. See
-  `docs/provisioning-capability-matrix.md`.
-- `sapintegrationsuite_integration_flow`, `sapintegrationsuite_value_mapping`,
-  `sapintegrationsuite_message_mapping`, and
-  `sapintegrationsuite_script_collection`'s `content`/`content_hash`
-  cannot be populated by `terraform import`, since SAP does not return a
-  local file path for an existing design-time artifact; apply a matching
-  configuration after import to bring content under management.
-- `sapintegrationsuite_value_mapping` has no in-place update: changing
-  `name`, `content`, or `content_hash` replaces the resource (creates a new
-  artifact, then deletes the old one) rather than calling an unverified
-  `PUT`. SAP separately documents a distinct
-  `ValueMappingDesigntimeArtifactSaveAsVersion` action this provider does
-  not yet use; implementing true in-place update through it is deferred to
-  a later release (ROADMAP.md, P3). See `docs/sap-api-references.md`.
-  `sapintegrationsuite_message_mapping` does not share this limitation — it
-  has a confirmed in-place update via `PUT`, on different, entity-specific
-  evidence (see `docs/sap-api-references.md`).
-- `sapintegrationsuite_message_mapping` is the reusable, package-level
-  message mapping artifact, not the inline/local message mapping step
-  configurable directly inside an integration flow — see
-  `docs/resource-design.md` for the distinction.
-- Individual value mapping entries (`UpsertValMaps`, `UpdateDefaultValMap`,
-  `DeleteValMaps`) are not managed — only the design-time artifact as a whole.
-  A tenant check in September 2026 showed why: the first upsert dropped the
-  values the content had defined, a second upsert of the same source value
-  added a duplicate instead of changing it, and `DeleteValMaps` removed
-  nothing. Manage the entries in the value mapping's content instead. See
-  `docs/research/capability-evidence-2026.md`.
-- Whether Delete removes only the active version or every version of the
-  artifact is unconfirmed for `sapintegrationsuite_value_mapping`,
-  `sapintegrationsuite_message_mapping`, and
-  `sapintegrationsuite_script_collection` — see `docs/sap-api-references.md`.
-- Current API Management (API artifacts, reusable API artifacts, MCP
-  servers, Integration Cell, its virtual hosts and runtime profiles) has no
-  public API as of September 2026; SAP documents these objects only in the UI.
-  They travel as integration package content. See
-  `docs/guides/current-api-management.md`.
-- Classic API Management covers API providers, API products, key value maps,
-  certificate store references and, experimentally, API proxies
-  (`sapintegrationsuite_api_proxy`, replaced on every bundle change). Virtual
-  hosts, certificate stores, applications, rate plans and policy templates
-  are not managed; their write APIs are not documented well enough. See
-  `docs/guides/classic-api-management.md`.
-- Edge Integration Cell targeting (`runtime_location_id`) is not supported
-  until its acceptance test has passed on a tenant with an Edge Integration
-  Cell; leave the attribute unset.
-- There is no `sapintegrationsuite_partner` resource: SAP documents no
-  confirmed create operation for Partner Directory `Partners`, and
-  deleting one is documented as cascading to every entity that belongs to
-  it. Use `data.sapintegrationsuite_partner` / `data.sapintegrationsuite_partners`
-  for discovery instead. See `docs/guides/partner-directory.md`.
-- `sapintegrationsuite_partner_user_credential_parameter` has no in-place
-  update and never reads a password back from SAP — a permanent property
-  of its security model. See `docs/guides/partner-directory.md`.
-- `sapintegrationsuite_user_credential` and
-  `sapintegrationsuite_oauth2_client_credential` never read a password or
-  client secret back from SAP — the same permanent property, though unlike
-  the Partner Directory credential these two do have a confirmed in-place
-  update (a full redeploy). Custom token request parameters and the grant
-  type placement of OAuth2 client credentials cannot be set yet. See
-  `docs/guides/security-content.md`.
-- Security Content covers user credentials, OAuth2 client credentials,
-  secure parameters (unofficial: known only from the service's `$metadata`),
-  certificates, key pairs (with an OpenSSH export) and access policies. Certificate chains and PGP keyrings have entities in the
-  service's `$metadata` but no documented requests; known hosts, OAuth2
-  password credentials, OAuth2 SAML bearer assertions and where-used lists
-  are UI-only. Certificate-to-user mapping exists only for Neo. OAuth2
-  authorization codes need an interactive consent and stay out of scope. See
-  `docs/guides/security-content.md` and `docs/feature-support.md`.
-- Partner Directory data (string and binary parameters) is stored
-  unencrypted by SAP; do not store secrets there.
+Each resource page on the Registry lists its own limitations, separated into
+what SAP's API does not offer and what the provider does not implement. The
+most important ones:
+
+- **Capability activation** (Cloud Integration, API Management, Integration
+  Cell, Edge Integration Cell) has no public API; it stays a manual step. See
+  [`docs/provisioning-capability-matrix.md`](docs/provisioning-capability-matrix.md).
+- **Content files cannot be imported.** SAP returns no file for integration
+  flows, mappings, script collections, adapters or API proxies; the first
+  apply after an import uploads the configured file. See
+  [Importing Existing Content](docs/guides/importing-existing-content.md).
+- **Replace-only resources.** Value mappings, integration adapters, API
+  products, API providers and key value maps have no documented update, so
+  every change replaces them. For API products that drops the subscriptions
+  of the old product.
+- **Undocumented operations are opt-in.** The content update of message
+  mappings and script collections, reading and deleting number ranges, the
+  description update of access policies and updating or deleting business
+  data graphs work on a tenant but are not documented by SAP; they need
+  `enable_unofficial = true`.
+- **Value mapping entries** are not managed individually: SAP's entry
+  functions dropped values and deleted nothing in tenant tests. The value
+  mapping's content is the unit of change.
+- **Current API Management** (API artifacts, MCP servers, Integration Cell,
+  its virtual hosts and runtime profiles) has no public API as of September
+  2026. See [`docs/guides/current-api-management.md`](docs/guides/current-api-management.md).
+- **Edge Integration Cell targeting** (`runtime_location_id`) is not
+  supported; leave the attribute unset.
+- **Secrets are never read back.** Passwords, client secrets and secure
+  parameter values are write-only, so a secret changed outside Terraform is
+  not detected. Change the matching `*_wo_version` to send a new one.
+- **Partner Directory data is unencrypted** in SAP; keep secrets in user
+  credential parameters, not in string or binary parameters.
 
 ## API support matrix
 
@@ -465,8 +447,12 @@ See [`docs/api-capability-matrix.md`](docs/api-capability-matrix.md) and
 This project is an independent open-source Terraform provider for SAP
 Integration Suite. It is not an official SAP product, and SAP has not
 endorsed or certified it, unless SAP formally adopts or publishes it in the
-future. It only uses officially documented, SAP-supported public APIs — see
-`docs/sap-api-references.md`.
+future. It uses SAP's public APIs and never the endpoints behind the SAP
+Integration Suite user interface. Where a feature relies on a part of a public
+API that SAP does not document, the feature is marked unofficial and stays
+switched off until `enable_unofficial` is set; see
+[`docs/feature-support.md`](docs/feature-support.md) and
+[`docs/sap-api-references.md`](docs/sap-api-references.md).
 
 ## License
 

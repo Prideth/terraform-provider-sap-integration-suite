@@ -7,7 +7,7 @@ whether a feature request belongs in this provider or in a different one.
 ## In Scope
 
 The provider administers the parts of an **already provisioned** SAP Integration Suite tenant
-that are reachable through officially documented, SAP-supported public APIs:
+that are reachable through SAP's public APIs:
 
 - Integration Suite capability discovery and (where a public API exists) capability
   configuration
@@ -26,10 +26,14 @@ that are reachable through officially documented, SAP-supported public APIs:
 - Integration-Suite-specific runtime configuration that is not already owned by the SAP BTP
   control plane
 
-Every resource in this list is only implemented once a concrete, currently documented public
-API has been identified for it (see [`sap-api-references.md`](sap-api-references.md) and the
-capability/API matrices in this directory). A feature being visible in the Integration Suite
-UI is not sufficient justification for a resource.
+Every resource in this list is only implemented once a concrete public API has been identified
+for it (see [`sap-api-references.md`](sap-api-references.md) and the capability/API matrices in
+this directory). The feature catalog records where each contract comes from: SAP's
+documentation, an official API specification, SAP's own tooling, or only the service's
+`$metadata`. Features that rest on `$metadata` alone are `unofficial` or `experimental` and stay
+switched off until the provider's `enable_unofficial` or `enable_experimental` is set. A
+feature being visible in the Integration Suite UI is not sufficient justification for a
+resource, and endpoints behind the UI are never used.
 
 ## A public API does not automatically make its objects Terraform resources
 
