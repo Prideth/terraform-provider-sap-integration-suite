@@ -1,8 +1,8 @@
 {
   "id": "cloud-integration",
   "protocol": "odata-v2",
-  "capturedAt": "2026-09-26",
-  "source": "local document",
+  "capturedAt": "2026-09-27",
+  "source": "live /$metadata",
   "namespaces": [
     "com.sap.hci.api"
   ],
@@ -9132,6 +9132,33 @@
       ],
       "returnType": "Edm.String"
     }
+  ],
+  "serviceDocument": [
+    "AccessPolicies",
+    "AccessPolicyRuntimeAssignments",
+    "ArchivingConfigurations",
+    "ArchivingKeyPerformanceIndicators",
+    "ArtifactReferences",
+    "AuditLogs",
+    "ExternalLoggingActivationStatus",
+    "ExternalLoggingEvents",
+    "LogFileArchives",
+    "LogFiles",
+    "MessageProcessingLogAdapterAttributes",
+    "MessageProcessingLogAttachments",
+    "MessageProcessingLogCustomHeaderProperties",
+    "MessageProcessingLogErrorInformations",
+    "MessageProcessingLogRunStepProperties",
+    "MessageProcessingLogRunSteps",
+    "MessageProcessingLogRuns",
+    "MessageProcessingLogs",
+    "MessageStoreEntries",
+    "MessageStoreEntryAttachmentProperties",
+    "MessageStoreEntryAttachments",
+    "MessageStoreEntryProperties",
+    "TraceMessageExchangeProperties",
+    "TraceMessageProperties",
+    "TraceMessages"
   ],
   "graph": {
     "reachable": [

@@ -17,15 +17,41 @@ And the provider never uses browser endpoints of SAP's UIs.
 
 | Classification | Features |
 |---|---:|
+| Unofficial (`unofficial`) | 2 |
 | Experimental (`experimental`) | 2 |
 | Partial (`partial`) | 10 |
-| Read-only (`read_only`) | 4 |
+| Read-only (`read_only`) | 3 |
 | Public API incomplete (`public_api_incomplete`) | 18 |
 | Unsafe Terraform lifecycle (`unsafe_terraform_lifecycle`) | 2 |
 | Research required (`research_required`) | 1 |
 | No public API (`no_public_api`) | 26 |
 | Out of scope (`out_of_scope`) | 13 |
 | Separate provider (`separate_provider`) | 2 |
+
+## Unofficial
+
+Works and verified on a tenant, but the contract is known only from the service's $metadata; no SAP documentation, specification or tooling describes it.
+
+### Edge Integration Cell Access Policy Replication
+
+`edge_integration_cell.access_policy_replication` · checked 2026-09-26
+
+- **Finding:** AccessPolicyRuntimeAssignments is readable through the access policy; no write is documented.
+- **Next step:** Documented creation of assignments.
+- **Sources:**
+  - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
+  - tenant probes and acceptance runs on a development tenant (September 2026)
+
+### Secure Parameter
+
+`security.secure_parameter` · checked 2026-09-27
+
+- **Finding:** SAP Help documents Secure Parameters only in the Monitor UI, and neither the Security Content resource table nor SAP Help's list of API resources names SecureParameters. The entity set comes from the $metadata; create, read, PUT update and delete were verified on a tenant, and the acceptance test passes.
+- **Next step:** Supported as soon as SAP documents SecureParameters (Security Content API reference or its example requests).
+- **Sources:**
+  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
+  - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
+  - tenant probes and acceptance runs on a development tenant (September 2026)
 
 ## Experimental
 
@@ -179,16 +205,6 @@ Data sources only, by design or because writes are undocumented.
 - **Next step:** None; discovery only by design.
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
-  - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
-  - tenant probes and acceptance runs on a development tenant (September 2026)
-
-### Edge Integration Cell Access Policy Replication
-
-`edge_integration_cell.access_policy_replication` · checked 2026-09-26
-
-- **Finding:** AccessPolicyRuntimeAssignments is readable through the access policy; no write is documented.
-- **Next step:** Documented creation of assignments.
-- **Sources:**
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
   - tenant probes and acceptance runs on a development tenant (September 2026)
 

@@ -2,7 +2,7 @@
   "id": "integration-assessment-management",
   "protocol": "odata-v2",
   "capturedAt": "2026-09-27",
-  "source": "local document",
+  "source": "live /$metadata",
   "namespaces": [
     "com.sap.intas.backend.flavor.intas.entity.management"
   ],
@@ -36,6 +36,9 @@
       "entitySet": "ImportContent",
       "returnType": "Edm.String"
     }
+  ],
+  "serviceDocument": [
+    "ImportContent"
   ],
   "graph": {
     "reachable": [

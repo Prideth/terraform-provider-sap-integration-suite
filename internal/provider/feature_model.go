@@ -36,6 +36,8 @@ type featureModel struct {
 	Planned         types.Bool      `tfsdk:"planned"`
 	Limitations     []types.String  `tfsdk:"limitations"`
 	Operations      operationsModel `tfsdk:"operations"`
+	ContractSource  types.String    `tfsdk:"contract_source"`
+	Undocumented    []types.String  `tfsdk:"undocumented_operations"`
 }
 
 // featureAttributes returns the schema attributes shared by both feature
@@ -62,8 +64,9 @@ func featureAttributes() map[string]schema.Attribute {
 		},
 		"support_status": schema.StringAttribute{
 			Computed: true,
-			Description: "One of \"supported\", \"partial\", \"read_only\", \"experimental\", or " +
-				"\"unsupported\". See docs/feature-support.md for exact meanings.",
+			Description: "One of \"supported\", \"partial\", \"read_only\", \"unofficial\" (works, but " +
+				"the contract is known only from the service's $metadata), \"experimental\", " +
+				"\"unsupported\" or \"separate_provider\". See docs/feature-support.md for exact meanings.",
 		},
 		"support_reason": schema.StringAttribute{
 			Computed: true,
@@ -99,6 +102,17 @@ func featureAttributes() map[string]schema.Attribute {
 			Computed:    true,
 			ElementType: types.StringType,
 			Description: "Specific, concrete caveats to know before relying on this feature.",
+		},
+		"contract_source": schema.StringAttribute{
+			Computed: true,
+			Description: "Where the contract of the implemented part comes from: \"sap_documentation\", " +
+				"\"api_specification\", \"sap_tooling\" or \"metadata_only\". Empty when nothing is " +
+				"implemented.",
+		},
+		"undocumented_operations": schema.ListAttribute{
+			Computed:    true,
+			ElementType: types.StringType,
+			Description: "Implemented operations that work but that SAP does not document, although the rest of the feature is documented.",
 		},
 		"operations": schema.SingleNestedAttribute{
 			Computed:    true,
@@ -144,6 +158,8 @@ func featureToModel(f features.Feature) featureModel {
 		APIProtocol:     types.StringValue(f.APIProtocol),
 		Planned:         types.BoolValue(f.Planned),
 		Limitations:     stringList(f.Limitations),
+		ContractSource:  types.StringValue(string(f.ContractSource)),
+		Undocumented:    stringList(f.UndocumentedOperations),
 		Operations: operationsModel{
 			Create:   types.BoolValue(f.Operations.Create),
 			Read:     types.BoolValue(f.Operations.Read),

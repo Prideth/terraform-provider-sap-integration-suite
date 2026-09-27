@@ -2,7 +2,7 @@
   "id": "integration-assessment-entities",
   "protocol": "odata-v2",
   "capturedAt": "2026-09-27",
-  "source": "local document",
+  "source": "live /$metadata",
   "namespaces": [
     "com.sap.intas.entities"
   ],
@@ -1772,6 +1772,35 @@
       ],
       "returnType": "Edm.String"
     }
+  ],
+  "serviceDocument": [
+    "Application",
+    "ApplicationInstance",
+    "CreateBusinessSolutionRequest",
+    "CreateInterfaceRequest",
+    "DeploymentModel",
+    "Domain",
+    "DomainDetermination",
+    "EntityReference",
+    "IntegrationFlow",
+    "IntegrationFlowMessageFlow",
+    "IntegrationPattern",
+    "KeyCharacteristic",
+    "KeyCharacteristicGroup",
+    "KeyCharacteristicRecommendationDegree",
+    "KeyCharacteristicValue",
+    "MessageFlow",
+    "Request",
+    "RequestLineItem",
+    "RequestLineItemTechnologyInstanceDecision",
+    "Style",
+    "Technology",
+    "TechnologyDomain",
+    "TechnologyInstance",
+    "TechnologyKeyCharacteristic",
+    "TechnologyStyle",
+    "UseCasePattern",
+    "Vendor"
   ],
   "graph": {
     "reachable": [

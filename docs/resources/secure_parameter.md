@@ -3,12 +3,15 @@
 page_title: "sapintegrationsuite_secure_parameter Resource - sapintegrationsuite"
 subcategory: ""
 description: |-
-  Manages a Security Content "Secure Parameter" artifact: a confidential value, for example for a custom adapter or a script, deployed under an alias that integration flows reference. Backed by the SecureParameters entity set of the Security Content OData V2 API. SAP Help documents the artifact only in the Monitor UI; create, read, update and delete were verified on a tenant in September 2026. The value is a write-only attribute: Terraform never stores it, and SAP returns it as null. Requires Terraform CLI 1.11 or later.
+  UNOFFICIAL: works and was verified on a tenant, but SAP does not document the API behind it, so SAP may change it without notice.
+  Manages a Security Content "Secure Parameter" artifact: a confidential value, for example for a custom adapter or a script, deployed under an alias that integration flows reference. Backed by the SecureParameters entity set of the Security Content OData V2 API. SAP Help documents the artifact only in the Monitor UI, and SecureParameters is not among the API resources SAP lists; the entity set comes from the service's $metadata. Create, read, update and delete were verified on a tenant in September 2026. The value is a write-only attribute: Terraform never stores it, and SAP returns it as null. Requires Terraform CLI 1.11 or later.
 ---
 
 # sapintegrationsuite_secure_parameter (Resource)
 
-Manages a Security Content "Secure Parameter" artifact: a confidential value, for example for a custom adapter or a script, deployed under an alias that integration flows reference. Backed by the SecureParameters entity set of the Security Content OData V2 API. SAP Help documents the artifact only in the Monitor UI; create, read, update and delete were verified on a tenant in September 2026. The value is a write-only attribute: Terraform never stores it, and SAP returns it as null. Requires Terraform CLI 1.11 or later.
+UNOFFICIAL: works and was verified on a tenant, but SAP does not document the API behind it, so SAP may change it without notice.
+
+Manages a Security Content "Secure Parameter" artifact: a confidential value, for example for a custom adapter or a script, deployed under an alias that integration flows reference. Backed by the SecureParameters entity set of the Security Content OData V2 API. SAP Help documents the artifact only in the Monitor UI, and SecureParameters is not among the API resources SAP lists; the entity set comes from the service's $metadata. Create, read, update and delete were verified on a tenant in September 2026. The value is a write-only attribute: Terraform never stores it, and SAP returns it as null. Requires Terraform CLI 1.11 or later.
 
 ## Example Usage
 

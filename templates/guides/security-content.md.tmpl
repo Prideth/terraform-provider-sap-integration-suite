@@ -150,7 +150,12 @@ password/secret you supplied. This is a deliberate design, not an accident: it m
 credential never silently rotates its secret, and taking ownership of rotation is always an
 explicit, visible step in a plan.
 
-## Implemented: Secure Parameters
+## Implemented, unofficially: Secure Parameters
+
+**Status: unofficial.** The resource works and passed its acceptance test on a tenant, but SAP
+does not document the API it uses: the `SecureParameters` entity set is known only from the
+service's `$metadata`. SAP may change it without notice, so the provider marks it `unofficial`
+rather than `supported` until SAP documents it.
 
 [`sapintegrationsuite_secure_parameter`](../resources/secure_parameter.md) manages SAP's
 "Secure Parameter" artifact: a confidential value stored under an alias, which custom adapters

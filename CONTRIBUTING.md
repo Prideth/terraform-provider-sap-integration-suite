@@ -162,9 +162,24 @@ in one place upgrades it everywhere.
       whose `Update` exists to satisfy the Terraform Plugin Framework
       interface but never gets called for a real diff (`RequiresReplace`
       on everything mutable) is not `operations.update = true` either.
-   3. Regenerate `docs/feature-support.md` with `go run ./cmd/gendocs > docs/feature-support.md`
+   3. Set `ContractSource` to where the contract comes from, and list in
+      `UndocumentedOperations` every implemented operation that SAP does not
+      document although the rest of the feature is documented:
+
+      | Source | When | Highest status |
+      |---|---|---|
+      | `sap_documentation` | SAP Help describes the operation (example requests, the API's list of resources, the resource table) | `supported` |
+      | `api_specification` | The official specification on the Business Accelerator Hub | `supported` |
+      | `sap_tooling` | SAP's SDK or tooling sends the request (API Management Client SDK, CI/CD actions, Piper) | `supported` |
+      | `metadata_only` | Only the service's `$metadata` and our own tenant tests | `unofficial` once verified on a tenant, `experimental` before |
+
+      Something that works but is found only through `$metadata` is never
+      `supported`: it is `unofficial` (SAP may change it without notice) until
+      an official source describes it. `TestCatalog_ContractSourceRules`
+      enforces this.
+   4. Regenerate `docs/feature-support.md` with `go run ./cmd/gendocs`
       (also done by `make docs`).
-   4. Run the catalog consistency tests
+   5. Run the catalog consistency tests
       (`go test ./internal/features/... ./internal/provider/... -run 'TestCatalog|TestFeatureCatalog'`)
       — they fail if a registered resource/data source has no catalog
       entry, or if a catalog entry claims a resource/data source type that

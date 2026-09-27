@@ -71,6 +71,14 @@ type Feature struct {
 	// feature with no caveats beyond its SupportStatus/SupportReason.
 	Limitations []string
 	Operations  Operations
+	// ContractSource says where the contract of the implemented part comes
+	// from; required for every feature with a resource or data source.
+	ContractSource ContractSource
+	// UndocumentedOperations names operations the provider implements that
+	// only $metadata and tenant tests describe, while the rest of the
+	// feature is officially documented, for example "update (PUT)". They
+	// work but are unofficial: SAP may change them without notice.
+	UndocumentedOperations []string
 }
 
 // Catalog is the complete, canonical list of SAP Integration Suite features
@@ -91,6 +99,7 @@ var Catalog = []Feature{
 		Name:            "Integration Package",
 		Description:     "A Cloud Integration content package that groups integration flows and other design-time artifacts.",
 		SupportStatus:   StatusSupported,
+		ContractSource:  SourceSAPDocumentation,
 		ResourceTypes:   []string{"sapintegrationsuite_integration_package"},
 		DataSourceTypes: []string{"sapintegrationsuite_integration_package"},
 		PublicAPI:       true,
@@ -111,6 +120,7 @@ var Catalog = []Feature{
 		Name:            "Integration Flow",
 		Description:     "An integration flow's design-time content, managed as file-based (ZIP) content.",
 		SupportStatus:   StatusSupported,
+		ContractSource:  SourceSAPDocumentation,
 		ResourceTypes:   []string{"sapintegrationsuite_integration_flow"},
 		DataSourceTypes: []string{},
 		PublicAPI:       true,
@@ -123,6 +133,7 @@ var Catalog = []Feature{
 		Name:            "Integration Flow Deployment",
 		Description:     "The runtime deployment state of an integration flow, managed independently of its design-time content.",
 		SupportStatus:   StatusSupported,
+		ContractSource:  SourceSAPDocumentation,
 		ResourceTypes:   []string{"sapintegrationsuite_integration_flow_deployment"},
 		DataSourceTypes: []string{},
 		PublicAPI:       true,
@@ -135,10 +146,11 @@ var Catalog = []Feature{
 		Name:   "Integration Flow Configuration",
 		Description: "Externalized parameters of an integration flow (receiver hosts, endpoint " +
 			"addresses, credential names and similar values set per environment).",
-		SupportStatus: StatusSupported,
-		ResourceTypes: []string{"sapintegrationsuite_integration_flow_configuration"},
-		PublicAPI:     true,
-		APIProtocol:   "OData V2",
+		SupportStatus:  StatusSupported,
+		ContractSource: SourceSAPDocumentation,
+		ResourceTypes:  []string{"sapintegrationsuite_integration_flow_configuration"},
+		PublicAPI:      true,
+		APIProtocol:    "OData V2",
 		Limitations: []string{
 			"Only the keys listed in parameters are managed; other parameters keep their values. " +
 				"SAP documents reading and updating parameters (PUT " +
@@ -155,13 +167,14 @@ var Catalog = []Feature{
 		Operations: Operations{Create: true, Read: true, Update: true, Import: true},
 	},
 	{
-		Key:           "cloud_integration.value_mapping",
-		Domain:        "cloud_integration",
-		Name:          "Value Mapping",
-		Description:   "A value mapping design-time artifact's content, managed as file-based content.",
-		SupportStatus: StatusPartial,
-		SupportReason: ReasonUnsafeTerraformLifecycle,
-		ResourceTypes: []string{"sapintegrationsuite_value_mapping"},
+		Key:            "cloud_integration.value_mapping",
+		Domain:         "cloud_integration",
+		Name:           "Value Mapping",
+		Description:    "A value mapping design-time artifact's content, managed as file-based content.",
+		SupportStatus:  StatusPartial,
+		ContractSource: SourceSAPDocumentation,
+		SupportReason:  ReasonUnsafeTerraformLifecycle,
+		ResourceTypes:  []string{"sapintegrationsuite_value_mapping"},
 		DataSourceTypes: []string{
 			"sapintegrationsuite_value_mapping",
 		},
@@ -180,6 +193,7 @@ var Catalog = []Feature{
 		Name:            "Value Mapping Deployment",
 		Description:     "The runtime deployment state of a value mapping, managed independently of its design-time content.",
 		SupportStatus:   StatusSupported,
+		ContractSource:  SourceSAPDocumentation,
 		ResourceTypes:   []string{"sapintegrationsuite_value_mapping_deployment"},
 		DataSourceTypes: []string{},
 		PublicAPI:       true,
@@ -225,8 +239,10 @@ var Catalog = []Feature{
 		Name:   "Design-Time Artifact Versioning",
 		Description: "Saving a design-time artifact under an explicit version number (for example " +
 			"1.0.3) instead of working only on the active draft.",
-		SupportStatus: StatusPartial,
-		SupportReason: ReasonNotImplemented,
+		SupportStatus:          StatusPartial,
+		ContractSource:         SourceSAPDocumentation,
+		UndocumentedOperations: []string{"save_as_version on script collections (ScriptCollectionDesigntimeArtifactSaveAsVersion is only in $metadata; integration flows and message mappings are documented)"},
+		SupportReason:          ReasonNotImplemented,
 		ResourceTypes: []string{
 			"sapintegrationsuite_integration_flow",
 			"sapintegrationsuite_message_mapping",
@@ -305,16 +321,18 @@ var Catalog = []Feature{
 		},
 	},
 	{
-		Key:             "cloud_integration.script_collection",
-		Domain:          "cloud_integration",
-		Name:            "Script Collection",
-		Description:     "A reusable collection of Groovy/JavaScript scripts shared across multiple integration flows.",
-		SupportStatus:   StatusSupported,
-		ResourceTypes:   []string{"sapintegrationsuite_script_collection"},
-		DataSourceTypes: []string{"sapintegrationsuite_script_collection"},
-		PublicAPI:       true,
-		APIProtocol:     "OData V2",
-		Operations:      Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
+		Key:                    "cloud_integration.script_collection",
+		Domain:                 "cloud_integration",
+		Name:                   "Script Collection",
+		Description:            "A reusable collection of Groovy/JavaScript scripts shared across multiple integration flows.",
+		SupportStatus:          StatusSupported,
+		ContractSource:         SourceSAPDocumentation,
+		UndocumentedOperations: []string{"update of the content (PUT; SAP documents create, upload of resources and deploy)"},
+		ResourceTypes:          []string{"sapintegrationsuite_script_collection"},
+		DataSourceTypes:        []string{"sapintegrationsuite_script_collection"},
+		PublicAPI:              true,
+		APIProtocol:            "OData V2",
+		Operations:             Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
 	},
 	{
 		Key:             "cloud_integration.script_collection_deployment",
@@ -322,6 +340,7 @@ var Catalog = []Feature{
 		Name:            "Script Collection Deployment",
 		Description:     "The runtime deployment state of a script collection, managed independently of its design-time content.",
 		SupportStatus:   StatusSupported,
+		ContractSource:  SourceSAPDocumentation,
 		ResourceTypes:   []string{"sapintegrationsuite_script_collection_deployment"},
 		DataSourceTypes: []string{},
 		PublicAPI:       true,
@@ -329,16 +348,18 @@ var Catalog = []Feature{
 		Operations:      Operations{Create: true, Read: true, Update: true, Delete: true, Import: true, Deploy: true, Undeploy: true},
 	},
 	{
-		Key:             "cloud_integration.message_mapping",
-		Domain:          "cloud_integration",
-		Name:            "Message Mapping",
-		Description:     "A reusable, package-level message mapping artifact's design-time content — not the inline/local message mapping step an integration flow can also define directly inside its own content.",
-		SupportStatus:   StatusSupported,
-		ResourceTypes:   []string{"sapintegrationsuite_message_mapping"},
-		DataSourceTypes: []string{"sapintegrationsuite_message_mapping"},
-		PublicAPI:       true,
-		APIProtocol:     "OData V2",
-		Operations:      Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
+		Key:                    "cloud_integration.message_mapping",
+		Domain:                 "cloud_integration",
+		Name:                   "Message Mapping",
+		Description:            "A reusable, package-level message mapping artifact's design-time content — not the inline/local message mapping step an integration flow can also define directly inside its own content.",
+		SupportStatus:          StatusSupported,
+		ContractSource:         SourceSAPDocumentation,
+		UndocumentedOperations: []string{"update of the content (PUT; SAP documents read, create and delete)"},
+		ResourceTypes:          []string{"sapintegrationsuite_message_mapping"},
+		DataSourceTypes:        []string{"sapintegrationsuite_message_mapping"},
+		PublicAPI:              true,
+		APIProtocol:            "OData V2",
+		Operations:             Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
 	},
 	{
 		Key:             "cloud_integration.message_mapping_deployment",
@@ -346,6 +367,7 @@ var Catalog = []Feature{
 		Name:            "Message Mapping Deployment",
 		Description:     "The runtime deployment state of a message mapping, managed independently of its design-time content.",
 		SupportStatus:   StatusSupported,
+		ContractSource:  SourceSAPDocumentation,
 		ResourceTypes:   []string{"sapintegrationsuite_message_mapping_deployment"},
 		DataSourceTypes: []string{},
 		PublicAPI:       true,
@@ -359,6 +381,7 @@ var Catalog = []Feature{
 		Description: "Read-only discovery of the runtime service endpoints (entry point URLs and " +
 			"API definition links) SAP generates for deployed Cloud Integration content.",
 		SupportStatus:   StatusReadOnly,
+		ContractSource:  SourceSAPDocumentation,
 		SupportReason:   ReasonUnsafeTerraformLifecycle,
 		DataSourceTypes: []string{"sapintegrationsuite_service_endpoints"},
 		PublicAPI:       true,
@@ -388,6 +411,7 @@ var Catalog = []Feature{
 			"the SAP Adapter SDK), imported into a Cloud Integration package. Cloud Foundry " +
 			"environment only.",
 		SupportStatus:   StatusPartial,
+		ContractSource:  SourceSAPDocumentation,
 		SupportReason:   ReasonPublicAPIIncomplete,
 		ResourceTypes:   []string{"sapintegrationsuite_integration_adapter"},
 		DataSourceTypes: []string{"sapintegrationsuite_integration_adapter"},
@@ -428,6 +452,7 @@ var Catalog = []Feature{
 		Description: "The runtime deployment state of a custom Integration Adapter, independent of " +
 			"its design-time content lifecycle.",
 		SupportStatus:   StatusPartial,
+		ContractSource:  SourceSAPDocumentation,
 		SupportReason:   ReasonPublicAPIIncomplete,
 		ResourceTypes:   []string{"sapintegrationsuite_integration_adapter_deployment"},
 		DataSourceTypes: []string{},
@@ -459,6 +484,7 @@ var Catalog = []Feature{
 		Description: "The tenant-wide set of custom tags integration package owners are asked, or " +
 			"required, to classify their packages with.",
 		SupportStatus:   StatusPartial,
+		ContractSource:  SourceSAPDocumentation,
 		SupportReason:   ReasonUnsafeTerraformLifecycle,
 		ResourceTypes:   []string{"sapintegrationsuite_custom_tag_configuration"},
 		DataSourceTypes: []string{"sapintegrationsuite_custom_tag_configuration"},
@@ -531,10 +557,12 @@ var Catalog = []Feature{
 			"EDI/EDIFACT documents, with a static configuration (min/max/description/rotate/" +
 			"field length) and a live runtime counter (CurrentValue, the UI's \"Next Value\") " +
 			"that advances as deployed content consumes numbers.",
-		SupportStatus: StatusSupported,
-		ResourceTypes: []string{"sapintegrationsuite_number_range"},
-		PublicAPI:     true,
-		APIProtocol:   "OData V2",
+		SupportStatus:          StatusSupported,
+		ContractSource:         SourceSAPDocumentation,
+		UndocumentedOperations: []string{"read by name", "delete", "import"},
+		ResourceTypes:          []string{"sapintegrationsuite_number_range"},
+		PublicAPI:              true,
+		APIProtocol:            "OData V2",
 		Limitations: []string{
 			"SAP documents only POST and PUT. GET by name and DELETE were verified on a tenant " +
 				"(September 2026: GET returned every field as sent, DELETE answered 202 and a read " +
@@ -654,12 +682,14 @@ var Catalog = []Feature{
 
 	// --- Security ---
 	{
-		Key:           "security.access_policy",
-		Domain:        "security",
-		Name:          "Access Policy",
-		Description:   "An access policy restricting which artifacts a role can access.",
-		SupportStatus: StatusSupported,
-		ResourceTypes: []string{"sapintegrationsuite_access_policy"},
+		Key:                    "security.access_policy",
+		Domain:                 "security",
+		Name:                   "Access Policy",
+		Description:            "An access policy restricting which artifacts a role can access.",
+		SupportStatus:          StatusSupported,
+		ContractSource:         SourceSAPTooling,
+		UndocumentedOperations: []string{"description update (PATCH, verified on a tenant)"},
+		ResourceTypes:          []string{"sapintegrationsuite_access_policy"},
 		DataSourceTypes: []string{
 			"sapintegrationsuite_access_policy",
 		},
@@ -685,12 +715,13 @@ var Catalog = []Feature{
 		Operations: Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
 	},
 	{
-		Key:           "security.access_policy_reference",
-		Domain:        "security",
-		Name:          "Access Policy Reference",
-		Description:   "A single artifact reference (attribute/operator/value match rule) on an access policy.",
-		SupportStatus: StatusSupported,
-		ResourceTypes: []string{"sapintegrationsuite_access_policy_reference"},
+		Key:            "security.access_policy_reference",
+		Domain:         "security",
+		Name:           "Access Policy Reference",
+		Description:    "A single artifact reference (attribute/operator/value match rule) on an access policy.",
+		SupportStatus:  StatusSupported,
+		ContractSource: SourceSAPTooling,
+		ResourceTypes:  []string{"sapintegrationsuite_access_policy_reference"},
 		DataSourceTypes: []string{
 			"sapintegrationsuite_access_policy_reference",
 		},
@@ -718,6 +749,7 @@ var Catalog = []Feature{
 		Description: "A \"User Credentials\" security material artifact: a username/password credential " +
 			"integration flow adapters use for outbound basic or username-token authentication.",
 		SupportStatus:   StatusPartial,
+		ContractSource:  SourceSAPDocumentation,
 		SupportReason:   ReasonPublicAPIIncomplete,
 		ResourceTypes:   []string{"sapintegrationsuite_user_credential"},
 		DataSourceTypes: []string{"sapintegrationsuite_user_credential"},
@@ -756,6 +788,7 @@ var Catalog = []Feature{
 			"client secret, and token service URL an integration flow adapter uses for the OAuth2 " +
 			"client credentials grant (RFC 6749) on outbound requests.",
 		SupportStatus:   StatusPartial,
+		ContractSource:  SourceSAPDocumentation,
 		SupportReason:   ReasonPublicAPIIncomplete,
 		ResourceTypes:   []string{"sapintegrationsuite_oauth2_client_credential"},
 		DataSourceTypes: []string{"sapintegrationsuite_oauth2_client_credential"},
@@ -793,8 +826,9 @@ var Catalog = []Feature{
 		Name:   "Keystore Entry",
 		Description: "Any entry (certificate, SAP-generated key pair, or other RSA/DSA/EC-keyed " +
 			"entry) in the tenant's keystore, read-only.",
-		SupportStatus: StatusReadOnly,
-		SupportReason: ReasonUnsafeTerraformLifecycle,
+		SupportStatus:  StatusReadOnly,
+		ContractSource: SourceSAPDocumentation,
+		SupportReason:  ReasonUnsafeTerraformLifecycle,
 		DataSourceTypes: []string{
 			"sapintegrationsuite_keystore_entry",
 			"sapintegrationsuite_keystore_entries",
@@ -823,11 +857,12 @@ var Catalog = []Feature{
 		Name:   "Certificate",
 		Description: "A standalone X.509 certificate keystore entry (as opposed to a key pair), " +
 			"typically an uploaded root or intermediate CA certificate.",
-		SupportStatus: StatusSupported,
-		ResourceTypes: []string{"sapintegrationsuite_certificate"},
-		PublicAPI:     true,
-		APIProtocol:   "OData V2",
-		Planned:       true,
+		SupportStatus:  StatusSupported,
+		ContractSource: SourceSAPDocumentation,
+		ResourceTypes:  []string{"sapintegrationsuite_certificate"},
+		PublicAPI:      true,
+		APIProtocol:    "OData V2",
+		Planned:        true,
 		Limitations: []string{
 			"Create and update use PUT CertificateResources('<hexalias>')/$value with a plain PEM " +
 				"body (Content-Type application/pkix-cert), verified on a tenant in September 2026. " +
@@ -854,12 +889,13 @@ var Catalog = []Feature{
 		Name:   "Key Pair",
 		Description: "An SAP-generated key pair keystore entry (private key plus X.509 certificate), " +
 			"as opposed to one uploaded from outside the tenant.",
-		SupportStatus: StatusPartial,
-		SupportReason: ReasonUnsafeTerraformLifecycle,
-		ResourceTypes: []string{"sapintegrationsuite_key_pair"},
-		PublicAPI:     true,
-		APIProtocol:   "OData V2",
-		Planned:       true,
+		SupportStatus:  StatusPartial,
+		ContractSource: SourceSAPDocumentation,
+		SupportReason:  ReasonUnsafeTerraformLifecycle,
+		ResourceTypes:  []string{"sapintegrationsuite_key_pair"},
+		PublicAPI:      true,
+		APIProtocol:    "OData V2",
+		Planned:        true,
 		Limitations: []string{
 			"Create confirmed field-for-field via SAP's own \"Generate a Key Pair\" documentation: " +
 				"POST KeyPairGenerationRequests. The private key never leaves SAP — this resource has " +
@@ -954,10 +990,12 @@ var Catalog = []Feature{
 		Name:   "Secure Parameter",
 		Description: "A \"Secure Parameter\" security material artifact: an opaque confidential value " +
 			"(for example for a custom adapter) deployed without an associated username.",
-		SupportStatus: StatusSupported,
-		ResourceTypes: []string{"sapintegrationsuite_secure_parameter"},
-		PublicAPI:     true,
-		APIProtocol:   "OData V2",
+		SupportStatus:  StatusUnofficial,
+		SupportReason:  ReasonPublicAPIIncomplete,
+		ContractSource: SourceMetadataOnly,
+		ResourceTypes:  []string{"sapintegrationsuite_secure_parameter"},
+		PublicAPI:      true,
+		APIProtocol:    "OData V2",
 		Limitations: []string{
 			"SAP Help documents the artifact only in the Monitor UI. The entity set comes from the " +
 				"tenant $metadata (key Name; Description, SecureParam, DeployedBy, DeployedOn, Status), " +
@@ -1061,12 +1099,13 @@ var Catalog = []Feature{
 
 	// --- Partner Directory ---
 	{
-		Key:           "partner_directory.partner",
-		Domain:        "partner_directory",
-		Name:          "Partner",
-		Description:   "A Partner ID (Pid) known to the tenant's Partner Directory.",
-		SupportStatus: StatusReadOnly,
-		SupportReason: ReasonUnsafeTerraformLifecycle,
+		Key:            "partner_directory.partner",
+		Domain:         "partner_directory",
+		Name:           "Partner",
+		Description:    "A Partner ID (Pid) known to the tenant's Partner Directory.",
+		SupportStatus:  StatusReadOnly,
+		ContractSource: SourceSAPDocumentation,
+		SupportReason:  ReasonUnsafeTerraformLifecycle,
 		DataSourceTypes: []string{
 			"sapintegrationsuite_partner",
 			"sapintegrationsuite_partners",
@@ -1089,12 +1128,13 @@ var Catalog = []Feature{
 		Operations: Operations{Read: true},
 	},
 	{
-		Key:           "partner_directory.string_parameter",
-		Domain:        "partner_directory",
-		Name:          "Partner Directory String Parameter",
-		Description:   "A named text value scoped to a Partner ID (Pid).",
-		SupportStatus: StatusSupported,
-		ResourceTypes: []string{"sapintegrationsuite_partner_string_parameter"},
+		Key:            "partner_directory.string_parameter",
+		Domain:         "partner_directory",
+		Name:           "Partner Directory String Parameter",
+		Description:    "A named text value scoped to a Partner ID (Pid).",
+		SupportStatus:  StatusSupported,
+		ContractSource: SourceSAPDocumentation,
+		ResourceTypes:  []string{"sapintegrationsuite_partner_string_parameter"},
 		DataSourceTypes: []string{
 			"sapintegrationsuite_partner_string_parameter",
 			"sapintegrationsuite_partner_string_parameters",
@@ -1109,12 +1149,13 @@ var Catalog = []Feature{
 		Operations: Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
 	},
 	{
-		Key:           "partner_directory.binary_parameter",
-		Domain:        "partner_directory",
-		Name:          "Partner Directory Binary Parameter",
-		Description:   "A named binary value (for example an XSD schema or certificate) scoped to a Partner ID (Pid).",
-		SupportStatus: StatusSupported,
-		ResourceTypes: []string{"sapintegrationsuite_partner_binary_parameter"},
+		Key:            "partner_directory.binary_parameter",
+		Domain:         "partner_directory",
+		Name:           "Partner Directory Binary Parameter",
+		Description:    "A named binary value (for example an XSD schema or certificate) scoped to a Partner ID (Pid).",
+		SupportStatus:  StatusSupported,
+		ContractSource: SourceSAPDocumentation,
+		ResourceTypes:  []string{"sapintegrationsuite_partner_binary_parameter"},
 		DataSourceTypes: []string{
 			"sapintegrationsuite_partner_binary_parameter",
 		},
@@ -1132,12 +1173,13 @@ var Catalog = []Feature{
 		Operations: Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
 	},
 	{
-		Key:           "partner_directory.alternative_partner",
-		Domain:        "partner_directory",
-		Name:          "Alternative Partner",
-		Description:   "A mapping from an external identity tuple (agency, scheme, external_id) to an internal Partner ID (Pid).",
-		SupportStatus: StatusSupported,
-		ResourceTypes: []string{"sapintegrationsuite_alternative_partner"},
+		Key:            "partner_directory.alternative_partner",
+		Domain:         "partner_directory",
+		Name:           "Alternative Partner",
+		Description:    "A mapping from an external identity tuple (agency, scheme, external_id) to an internal Partner ID (Pid).",
+		SupportStatus:  StatusSupported,
+		ContractSource: SourceSAPDocumentation,
+		ResourceTypes:  []string{"sapintegrationsuite_alternative_partner"},
 		DataSourceTypes: []string{
 			"sapintegrationsuite_alternative_partner",
 		},
@@ -1152,12 +1194,13 @@ var Catalog = []Feature{
 		Operations: Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
 	},
 	{
-		Key:           "partner_directory.authorized_user",
-		Domain:        "partner_directory",
-		Name:          "Partner Directory Authorized User",
-		Description:   "A mapping from a communication user to the Partner ID (Pid) that user is authorized to act as.",
-		SupportStatus: StatusSupported,
-		ResourceTypes: []string{"sapintegrationsuite_partner_authorized_user"},
+		Key:            "partner_directory.authorized_user",
+		Domain:         "partner_directory",
+		Name:           "Partner Directory Authorized User",
+		Description:    "A mapping from a communication user to the Partner ID (Pid) that user is authorized to act as.",
+		SupportStatus:  StatusSupported,
+		ContractSource: SourceSAPDocumentation,
+		ResourceTypes:  []string{"sapintegrationsuite_partner_authorized_user"},
 		DataSourceTypes: []string{
 			"sapintegrationsuite_partner_authorized_user",
 		},
@@ -1172,14 +1215,15 @@ var Catalog = []Feature{
 		Operations: Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
 	},
 	{
-		Key:           "partner_directory.user_credential_parameter",
-		Domain:        "partner_directory",
-		Name:          "Partner Directory User Credential Parameter",
-		Description:   "A communication username/password credential scoped to a Partner ID (Pid).",
-		SupportStatus: StatusSupported,
-		ResourceTypes: []string{"sapintegrationsuite_partner_user_credential_parameter"},
-		PublicAPI:     true,
-		APIProtocol:   "OData V2",
+		Key:            "partner_directory.user_credential_parameter",
+		Domain:         "partner_directory",
+		Name:           "Partner Directory User Credential Parameter",
+		Description:    "A communication username/password credential scoped to a Partner ID (Pid).",
+		SupportStatus:  StatusSupported,
+		ContractSource: SourceSAPDocumentation,
+		ResourceTypes:  []string{"sapintegrationsuite_partner_user_credential_parameter"},
+		PublicAPI:      true,
+		APIProtocol:    "OData V2",
 		Limitations: []string{
 			"The password is a write-only attribute (password_wo): Terraform never stores it in " +
 				"plan or state, and this provider never requests or reads a password back from " +
@@ -1205,6 +1249,7 @@ var Catalog = []Feature{
 		Description: "A classic API Management backend/API provider system definition — the " +
 			"connection an API Proxy targets.",
 		SupportStatus:   StatusPartial,
+		ContractSource:  SourceSAPDocumentation,
 		SupportReason:   ReasonUnsafeTerraformLifecycle,
 		ResourceTypes:   []string{"sapintegrationsuite_api_provider"},
 		DataSourceTypes: []string{"sapintegrationsuite_api_provider", "sapintegrationsuite_api_providers"},
@@ -1230,6 +1275,7 @@ var Catalog = []Feature{
 		Description: "A classic API Management API proxy definition: the ZIP-bundled design-time " +
 			"content (proxy endpoint, target endpoint, policies, resources) deployed as a callable API.",
 		SupportStatus:   StatusExperimental,
+		ContractSource:  SourceSAPTooling,
 		SupportReason:   ReasonPublicAPIIncomplete,
 		ResourceTypes:   []string{"sapintegrationsuite_api_proxy"},
 		DataSourceTypes: []string{},
@@ -1333,6 +1379,7 @@ var Catalog = []Feature{
 			"subscription, with optional custom attributes and request quotas. Replaced, never " +
 			"updated in place.",
 		SupportStatus:   StatusSupported,
+		ContractSource:  SourceSAPDocumentation,
 		ResourceTypes:   []string{"sapintegrationsuite_api_product"},
 		DataSourceTypes: []string{"sapintegrationsuite_api_product"},
 		PublicAPI:       true,
@@ -1361,8 +1408,9 @@ var Catalog = []Feature{
 		Description: "A named pointer to an already-existing API Management keystore or " +
 			"truststore, used so a virtual host's TLS configuration can be repointed at a new store " +
 			"(for certificate rotation) without editing the virtual host itself.",
-		SupportStatus: StatusSupported,
-		ResourceTypes: []string{"sapintegrationsuite_api_management_certificate_store_reference"},
+		SupportStatus:  StatusSupported,
+		ContractSource: SourceSAPDocumentation,
+		ResourceTypes:  []string{"sapintegrationsuite_api_management_certificate_store_reference"},
 		DataSourceTypes: []string{
 			"sapintegrationsuite_api_management_certificate_store_reference",
 		},
@@ -1385,6 +1433,7 @@ var Catalog = []Feature{
 		Description: "A classic API Management key-value map used for runtime configuration " +
 			"lookups, readable through the Key Value Map Operations policy.",
 		SupportStatus:   StatusPartial,
+		ContractSource:  SourceSAPDocumentation,
 		SupportReason:   ReasonUnsafeTerraformLifecycle,
 		ResourceTypes:   []string{"sapintegrationsuite_api_key_value_map"},
 		DataSourceTypes: []string{"sapintegrationsuite_api_key_value_map"},
@@ -1792,7 +1841,8 @@ var Catalog = []Feature{
 		Name:   "Edge Integration Cell Access Policy Replication",
 		Description: "The runtimes (Cloud Integration runtime, Integration Cell, specific Edge " +
 			"Integration Cells) an Access Policy is replicated to, and the replication state of each.",
-		SupportStatus:   StatusReadOnly,
+		SupportStatus:   StatusUnofficial,
+		ContractSource:  SourceMetadataOnly,
 		SupportReason:   ReasonPublicAPIIncomplete,
 		DataSourceTypes: []string{"sapintegrationsuite_access_policy_runtime_assignments"},
 		PublicAPI:       true,
@@ -1873,12 +1923,14 @@ var Catalog = []Feature{
 		Description: "A business data graph combines the business systems of a landscape (S/4HANA, " +
 			"SAP Sales Cloud, custom OData services and others) into one connected API. Managed " +
 			"through API Composition's Configuration API.",
-		SupportStatus:   StatusExperimental,
-		SupportReason:   ReasonPublicAPIIncomplete,
-		ResourceTypes:   []string{"sapintegrationsuite_business_data_graph"},
-		DataSourceTypes: []string{"sapintegrationsuite_business_data_graph"},
-		PublicAPI:       true,
-		APIProtocol:     "OData V4 (Configuration API)",
+		SupportStatus:          StatusExperimental,
+		ContractSource:         SourceSAPDocumentation,
+		UndocumentedOperations: []string{"delete (DELETE on the graph)", "update body (PATCH with the writable properties)"},
+		SupportReason:          ReasonPublicAPIIncomplete,
+		ResourceTypes:          []string{"sapintegrationsuite_business_data_graph"},
+		DataSourceTypes:        []string{"sapintegrationsuite_business_data_graph"},
+		PublicAPI:              true,
+		APIProtocol:            "OData V4 (Configuration API)",
 		Limitations: []string{
 			"Needs its own credentials in provider.api_composition: a service key of an API " +
 				"Composition service instance with plan \"configuration\". SAP does not document that " +

@@ -301,6 +301,18 @@ All notable changes to this project are documented in this file.
 
 ### Changed
 
+- Support status now depends on where the contract comes from. Every
+  implemented feature names its source (`sap_documentation`,
+  `api_specification`, `sap_tooling` or `metadata_only`), and only an
+  official source allows `supported`, `partial` or `read_only`. A feature
+  that works but is known only from the service's `$metadata` gets the new
+  status `unofficial`: `sapintegrationsuite_secure_parameter` and the
+  `sapintegrationsuite_access_policy_runtime_assignments` data source.
+  Documented features list operations that work but are not documented (for
+  example the content update of message mappings and script collections, and
+  reading and deleting number ranges). The provider feature data sources
+  expose this as `contract_source` and `undocumented_operations`, and
+  `docs/feature-support.md` has a "Contract sources" section.
 - **Breaking:** `sapintegrationsuite_access_policy_reference` has a new
   required `name` and an optional `description`. `artifact_type`, `attribute`
   and `operator` now take SAP's wire constants (for example

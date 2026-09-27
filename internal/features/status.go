@@ -41,6 +41,13 @@ const (
 	// StatusUnsupported means this provider does not implement the
 	// feature at all today. Feature.SupportReason explains why.
 	StatusUnsupported SupportStatus = "unsupported"
+	// StatusUnofficial means the feature works and was verified on a tenant,
+	// but its contract comes only from the service's published $metadata
+	// and those tests: neither SAP's documentation, an official API
+	// specification nor SAP's SDK or tooling describes it. SAP may change it
+	// without notice. As soon as an official source describes it, it moves
+	// to StatusSupported (or StatusPartial).
+	StatusUnofficial SupportStatus = "unofficial"
 	// StatusSeparateProvider means this feature is deliberately excluded
 	// from this provider not because of a missing API or an unsafe
 	// lifecycle, but because it belongs to a different, independently
@@ -54,10 +61,47 @@ const (
 // Valid reports whether s is one of the enumerated SupportStatus values.
 func (s SupportStatus) Valid() bool {
 	switch s {
-	case StatusSupported, StatusPartial, StatusReadOnly, StatusExperimental, StatusUnsupported, StatusSeparateProvider:
+	case StatusSupported, StatusPartial, StatusReadOnly, StatusExperimental, StatusUnofficial, StatusUnsupported, StatusSeparateProvider:
 		return true
 	}
 	return false
+}
+
+// ContractSource says where the contract a feature is built on comes from.
+// Only an official source can make a feature StatusSupported, StatusPartial
+// or StatusReadOnly; a contract known only from $metadata makes it
+// StatusUnofficial once verified on a tenant, StatusExperimental before.
+type ContractSource string
+
+const (
+	// SourceSAPDocumentation: SAP Help describes the operations, for example
+	// in the API's example requests or its list of API resources.
+	SourceSAPDocumentation ContractSource = "sap_documentation"
+	// SourceAPISpecification: the official API specification published on
+	// the SAP Business Accelerator Hub (OpenAPI or EDMX download).
+	SourceAPISpecification ContractSource = "api_specification"
+	// SourceSAPTooling: SAP's own SDK or tooling (the API Management Client
+	// SDK, SAP's CI/CD actions, Project Piper) sends these requests.
+	SourceSAPTooling ContractSource = "sap_tooling"
+	// SourceMetadataOnly: only the service's $metadata and tests against a
+	// tenant; no official source describes it.
+	SourceMetadataOnly ContractSource = "metadata_only"
+)
+
+// Official reports whether the source is SAP documentation, a specification
+// or SAP tooling.
+func (c ContractSource) Official() bool {
+	switch c {
+	case SourceSAPDocumentation, SourceAPISpecification, SourceSAPTooling:
+		return true
+	}
+	return false
+}
+
+// Valid reports whether c is one of the enumerated sources, or empty for a
+// feature that has no resource or data source.
+func (c ContractSource) Valid() bool {
+	return c == "" || c.Official() || c == SourceMetadataOnly
 }
 
 // SupportReason is the small, stable set of reasons a feature is not fully

@@ -174,19 +174,21 @@ func featureSupportDoc() string {
 
 	fmt.Fprintln(&b, "## All features")
 	fmt.Fprintln(&b)
-	fmt.Fprintln(&b, "| Feature | Domain | Status | Public API | Create | Read | Update | Delete | Import | Deploy | Terraform |")
-	fmt.Fprintln(&b, "|---|---|---|---|---|---|---|---|---|---|---|")
+	fmt.Fprintln(&b, "| Feature | Domain | Status | Contract source | Public API | Create | Read | Update | Delete | Import | Deploy | Terraform |")
+	fmt.Fprintln(&b, "|---|---|---|---|---|---|---|---|---|---|---|---|")
 
 	sorted := sortedCatalog()
 	for _, f := range sorted {
-		fmt.Fprintf(&b, "| `%s` | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |\n",
-			f.Key, f.Domain, statusCell(f), boolCell(f.PublicAPI),
+		fmt.Fprintf(&b, "| `%s` | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |\n",
+			f.Key, f.Domain, statusCell(f), sourceCell(f), boolCell(f.PublicAPI),
 			opCell(f.Operations.Create), opCell(f.Operations.Read), opCell(f.Operations.Update),
 			opCell(f.Operations.Delete), opCell(f.Operations.Import), opCell(f.Operations.Deploy),
 			terraformCell(f),
 		)
 	}
 	fmt.Fprintln(&b)
+
+	writeContractSources(&b, sorted)
 
 	fmt.Fprintln(&b, "## Unsupported and partially supported features")
 	fmt.Fprintln(&b)
@@ -274,6 +276,8 @@ func statusIcon(status features.SupportStatus) string {
 		return "👁️"
 	case features.StatusExperimental:
 		return "🧪"
+	case features.StatusUnofficial:
+		return "🔸"
 	case features.StatusUnsupported:
 		return "❌"
 	case features.StatusSeparateProvider:
@@ -349,7 +353,8 @@ func readmeFeatureOverview() string {
 		"per-operation matrix and every feature's detailed limitations.")
 	fmt.Fprintln(&b)
 	fmt.Fprintln(&b, "Legend: ✅ Supported · ⚠️ Partial support / important limitations · "+
-		"👁️ Read-only / data source only · 🧪 Experimental · ❌ Unsupported / not implemented · "+
+		"👁️ Read-only / data source only · 🔸 Unofficial (works, known only from the service's $metadata) · "+
+		"🧪 Experimental · ❌ Unsupported / not implemented · "+
 		"↗️ Planned as a separate Terraform provider")
 	fmt.Fprintln(&b)
 

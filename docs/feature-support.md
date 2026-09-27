@@ -36,107 +36,132 @@ Do not conflate these: a feature can be fully supported by this provider and sti
 
 ## All features
 
-| Feature | Domain | Status | Public API | Create | Read | Update | Delete | Import | Deploy | Terraform |
-|---|---|---|---|---|---|---|---|---|---|---|
-| `api_composition.business_data_graph` | api_composition | experimental (public_api_incomplete) | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
-| `api_gateway.api_artifact` | api_gateway | unsupported (no_public_api) | No | — | — | — | — | — | — | — |
-| `api_gateway.api_artifact_deployment` | api_gateway | unsupported (no_public_api) | No | — | — | — | — | — | — | — |
-| `api_gateway.api_policy` | api_gateway | unsupported (no_public_api) | No | — | — | — | — | — | — | — |
-| `api_gateway.mcp_server` | api_gateway | unsupported (no_public_api) | No | — | — | — | — | — | — | — |
-| `api_gateway.reusable_api_artifact` | api_gateway | unsupported (no_public_api) | No | — | — | — | — | — | — | — |
-| `api_gateway.runtime_profile` | api_gateway | unsupported (no_public_api) | No | — | — | — | — | — | — | — |
-| `api_management.classic.api_product` | api_management_classic | supported | Yes | Yes | Yes | — | Yes | Yes | — | Resource + Data Source |
-| `api_management.classic.api_provider` | api_management_classic | partial (unsafe_terraform_lifecycle) | Yes | Yes | Yes | — | Yes | Yes | — | Resource + Data Source |
-| `api_management.classic.api_proxy` | api_management_classic | experimental (public_api_incomplete) | Yes | Yes | Yes | — | Yes | Yes | — | Resource |
-| `api_management.classic.api_proxy_deployment` | api_management_classic | unsupported (public_api_incomplete) | Yes | — | — | — | — | — | — | — |
-| `api_management.classic.application` | api_management_classic | unsupported (public_api_incomplete) | Yes | — | — | — | — | — | — | — |
-| `api_management.classic.cache_resource` | api_management_classic | unsupported (public_api_incomplete) | Yes | — | — | — | — | — | — | — |
-| `api_management.classic.certificate_store` | api_management_classic | unsupported (public_api_incomplete) | Yes | — | — | — | — | — | — | — |
-| `api_management.classic.certificate_store_reference` | api_management_classic | supported | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
-| `api_management.classic.environment_key_value_map` | api_management_classic | unsupported (public_api_incomplete) | Yes | — | — | — | — | — | — | — |
-| `api_management.classic.key_value_map` | api_management_classic | partial (unsafe_terraform_lifecycle) | Yes | Yes | Yes | — | Yes | Yes | — | Resource + Data Source |
-| `api_management.classic.policy` | api_management_classic | unsupported (public_api_incomplete) | Yes | — | — | — | — | — | — | — |
-| `api_management.classic.policy_template` | api_management_classic | unsupported (public_api_incomplete) | Yes | — | — | — | — | — | — | — |
-| `api_management.classic.product_access_control` | api_management_classic | unsupported (public_api_incomplete) | Yes | — | — | — | — | — | — | — |
-| `api_management.classic.rate_plan` | api_management_classic | unsupported (public_api_incomplete) | Yes | — | — | — | — | — | — | — |
-| `api_management.classic.virtual_host` | api_management_classic | unsupported (public_api_incomplete) | Yes | — | — | — | — | — | — | — |
-| `capabilities.api_gateway` | capability_provisioning | unsupported (no_public_api) | No | — | — | — | — | — | — | — |
-| `capabilities.api_management` | capability_provisioning | unsupported (no_public_api) | No | — | — | — | — | — | — | — |
-| `capabilities.cloud_integration` | capability_provisioning | unsupported (no_public_api) | No | — | — | — | — | — | — | — |
-| `capabilities.edge_integration_cell` | capability_provisioning | unsupported (no_public_api) | No | — | — | — | — | — | — | — |
-| `capabilities.integration_cell` | capability_provisioning | unsupported (no_public_api) | No | — | — | — | — | — | — | — |
-| `cloud_integration.archiving` | cloud_integration | unsupported (unsafe_terraform_lifecycle) | Yes | — | — | — | — | — | — | — |
-| `cloud_integration.custom_tag_configuration` | cloud_integration | partial (unsafe_terraform_lifecycle) | Yes | Yes | Yes | Yes | — | Yes | — | Resource + Data Source |
-| `cloud_integration.data_store` | cloud_integration | unsupported (out_of_scope) | Yes | — | — | — | — | — | — | — |
-| `cloud_integration.data_store_entry` | cloud_integration | unsupported (out_of_scope) | Yes | — | — | — | — | — | — | — |
-| `cloud_integration.data_type` | cloud_integration | unsupported (public_api_incomplete) | Yes | — | — | — | — | — | — | — |
-| `cloud_integration.design_time_versioning` | cloud_integration | partial (not_implemented) | Yes | Yes | — | Yes | — | — | — | Resource |
-| `cloud_integration.integration_adapter` | cloud_integration | partial (public_api_incomplete) | Yes | Yes | Yes | — | Yes | Yes | — | Resource + Data Source |
-| `cloud_integration.integration_adapter_deployment` | cloud_integration | partial (public_api_incomplete) | Yes | Yes | Yes | — | Yes | — | Yes | Resource |
-| `cloud_integration.integration_flow` | cloud_integration | supported | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
-| `cloud_integration.integration_flow_configuration` | cloud_integration | supported | Yes | Yes | Yes | Yes | — | Yes | — | Resource |
-| `cloud_integration.integration_flow_deployment` | cloud_integration | supported | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Resource |
-| `cloud_integration.integration_package` | cloud_integration | supported | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
-| `cloud_integration.message_mapping` | cloud_integration | supported | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
-| `cloud_integration.message_mapping_deployment` | cloud_integration | supported | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Resource |
-| `cloud_integration.message_processing_logs` | cloud_integration | unsupported (out_of_scope) | Yes | — | — | — | — | — | — | — |
-| `cloud_integration.message_stores` | cloud_integration | unsupported (out_of_scope) | Yes | — | — | — | — | — | — | — |
-| `cloud_integration.message_type` | cloud_integration | unsupported (public_api_incomplete) | Yes | — | — | — | — | — | — | — |
-| `cloud_integration.number_range` | cloud_integration | supported | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
-| `cloud_integration.script_collection` | cloud_integration | supported | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
-| `cloud_integration.script_collection_deployment` | cloud_integration | supported | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Resource |
-| `cloud_integration.service_endpoints` | cloud_integration | read_only (unsafe_terraform_lifecycle) | Yes | — | Yes | — | — | — | — | Data Source |
-| `cloud_integration.service_interface` | cloud_integration | unsupported (public_api_incomplete) | Yes | — | — | — | — | — | — | — |
-| `cloud_integration.value_mapping` | cloud_integration | partial (unsafe_terraform_lifecycle) | Yes | Yes | Yes | — | Yes | Yes | — | Resource + Data Source |
-| `cloud_integration.value_mapping_deployment` | cloud_integration | supported | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Resource |
-| `cloud_integration.value_mapping_entry` | cloud_integration | unsupported (unsafe_terraform_lifecycle) | Yes | — | — | — | — | — | — | — |
-| `cloud_integration.variable` | cloud_integration | unsupported (out_of_scope) | Yes | — | — | — | — | — | — | — |
-| `data_space_integration` | other_capability | unsupported (research_required) | Yes | — | — | — | — | — | — | — |
-| `developer_hub` | other_capability | separate_provider (out_of_scope) | Yes | — | — | — | — | — | — | — |
-| `edge_integration_cell.access_policy_replication` | edge_integration_cell | read_only (public_api_incomplete) | Yes | — | Yes | — | — | — | — | Data Source |
-| `edge_integration_cell.deployment_target` | edge_integration_cell | unsupported (public_api_incomplete) | Yes | — | — | — | — | — | — | — |
-| `edge_integration_cell.local_api` | edge_integration_cell | unsupported (out_of_scope) | Yes | — | — | — | — | — | — | — |
-| `edge_integration_cell.registration` | edge_integration_cell | unsupported (no_public_api) | No | — | — | — | — | — | — | — |
-| `edge_integration_cell.runtime` | edge_integration_cell | unsupported (out_of_scope) | Yes | — | — | — | — | — | — | — |
-| `event_mesh` | other_capability | separate_provider (out_of_scope) | Yes | — | — | — | — | — | — | — |
-| `integration_advisor.design_time_content` | other_capability | unsupported (no_public_api) | No | — | — | — | — | — | — | — |
-| `integration_advisor.runtime_artifact_injection` | other_capability | unsupported (out_of_scope) | No | — | — | — | — | — | — | — |
-| `integration_assessment.assessment_workflow` | integration_assessment | unsupported (out_of_scope) | Yes | — | — | — | — | — | — | — |
-| `integration_assessment.landscape_configuration` | integration_assessment | unsupported (public_api_incomplete) | Yes | — | — | — | — | — | — | — |
-| `integration_assessment.master_data` | integration_assessment | unsupported (public_api_incomplete) | Yes | — | — | — | — | — | — | — |
-| `integration_cell.runtime` | integration_cell | unsupported (no_public_api) | No | — | — | — | — | — | — | — |
-| `integration_cell.virtual_host` | integration_cell | unsupported (no_public_api) | No | — | — | — | — | — | — | — |
-| `migration_assessment.extraction_and_evaluation` | other_capability | unsupported (out_of_scope) | No | — | — | — | — | — | — | — |
-| `migration_assessment.source_system` | other_capability | unsupported (no_public_api) | No | — | — | — | — | — | — | — |
-| `odata_provisioning` | other_capability | unsupported (no_public_api) | No | — | — | — | — | — | — | — |
-| `open_connectors` | other_capability | unsupported (out_of_scope) | Yes | — | — | — | — | — | — | — |
-| `partner_directory.alternative_partner` | partner_directory | supported | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
-| `partner_directory.authorized_user` | partner_directory | supported | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
-| `partner_directory.binary_parameter` | partner_directory | supported | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
-| `partner_directory.partner` | partner_directory | read_only (unsafe_terraform_lifecycle) | Yes | — | Yes | — | — | — | — | Data Source |
-| `partner_directory.string_parameter` | partner_directory | supported | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
-| `partner_directory.user_credential_parameter` | partner_directory | supported | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
-| `security.access_policy` | security | supported | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
-| `security.access_policy_reference` | security | supported | Yes | Yes | Yes | — | Yes | Yes | — | Resource + Data Source |
-| `security.certificate` | security | supported | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
-| `security.certificate_chain` | security | unsupported (public_api_incomplete) | Yes | — | — | — | — | — | — | — |
-| `security.certificate_user_mapping` | security | unsupported (no_public_api) | No | — | — | — | — | — | — | — |
-| `security.key_pair` | security | partial (unsafe_terraform_lifecycle) | Yes | Yes | Yes | — | Yes | Yes | — | Resource |
-| `security.keystore_entry` | security | read_only (unsafe_terraform_lifecycle) | Yes | — | — | — | — | — | — | Data Source |
-| `security.known_hosts` | security | unsupported (no_public_api) | No | — | — | — | — | — | — | — |
-| `security.oauth2_client_credential` | security | partial (public_api_incomplete) | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
-| `security.oauth2_password_credential` | security | unsupported (no_public_api) | No | — | — | — | — | — | — | — |
-| `security.oauth2_saml_bearer` | security | unsupported (no_public_api) | No | — | — | — | — | — | — | — |
-| `security.pgp_keyring` | security | unsupported (public_api_incomplete) | Yes | — | — | — | — | — | — | — |
-| `security.secure_parameter` | security | supported | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
-| `security.ssh_key` | security | unsupported (out_of_scope) | Yes | — | — | — | — | — | — | — |
-| `security.user_credential` | security | partial (public_api_incomplete) | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
-| `security.where_used` | security | unsupported (no_public_api) | No | — | — | — | — | — | — | — |
-| `trading_partner_management.agreement` | other_capability | unsupported (no_public_api) | No | — | — | — | — | — | — | — |
-| `trading_partner_management.agreement_template` | other_capability | unsupported (no_public_api) | No | — | — | — | — | — | — | — |
-| `trading_partner_management.company_profile` | other_capability | unsupported (no_public_api) | No | — | — | — | — | — | — | — |
-| `trading_partner_management.partner_directory_generation` | other_capability | unsupported (out_of_scope) | No | — | — | — | — | — | — | — |
-| `trading_partner_management.partner_profile` | other_capability | unsupported (no_public_api) | No | — | — | — | — | — | — | — |
+| Feature | Domain | Status | Contract source | Public API | Create | Read | Update | Delete | Import | Deploy | Terraform |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| `api_composition.business_data_graph` | api_composition | experimental (public_api_incomplete) | sap_documentation (some operations unofficial) | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
+| `api_gateway.api_artifact` | api_gateway | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
+| `api_gateway.api_artifact_deployment` | api_gateway | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
+| `api_gateway.api_policy` | api_gateway | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
+| `api_gateway.mcp_server` | api_gateway | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
+| `api_gateway.reusable_api_artifact` | api_gateway | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
+| `api_gateway.runtime_profile` | api_gateway | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
+| `api_management.classic.api_product` | api_management_classic | supported | sap_documentation | Yes | Yes | Yes | — | Yes | Yes | — | Resource + Data Source |
+| `api_management.classic.api_provider` | api_management_classic | partial (unsafe_terraform_lifecycle) | sap_documentation | Yes | Yes | Yes | — | Yes | Yes | — | Resource + Data Source |
+| `api_management.classic.api_proxy` | api_management_classic | experimental (public_api_incomplete) | sap_tooling | Yes | Yes | Yes | — | Yes | Yes | — | Resource |
+| `api_management.classic.api_proxy_deployment` | api_management_classic | unsupported (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
+| `api_management.classic.application` | api_management_classic | unsupported (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
+| `api_management.classic.cache_resource` | api_management_classic | unsupported (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
+| `api_management.classic.certificate_store` | api_management_classic | unsupported (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
+| `api_management.classic.certificate_store_reference` | api_management_classic | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
+| `api_management.classic.environment_key_value_map` | api_management_classic | unsupported (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
+| `api_management.classic.key_value_map` | api_management_classic | partial (unsafe_terraform_lifecycle) | sap_documentation | Yes | Yes | Yes | — | Yes | Yes | — | Resource + Data Source |
+| `api_management.classic.policy` | api_management_classic | unsupported (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
+| `api_management.classic.policy_template` | api_management_classic | unsupported (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
+| `api_management.classic.product_access_control` | api_management_classic | unsupported (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
+| `api_management.classic.rate_plan` | api_management_classic | unsupported (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
+| `api_management.classic.virtual_host` | api_management_classic | unsupported (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
+| `capabilities.api_gateway` | capability_provisioning | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
+| `capabilities.api_management` | capability_provisioning | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
+| `capabilities.cloud_integration` | capability_provisioning | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
+| `capabilities.edge_integration_cell` | capability_provisioning | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
+| `capabilities.integration_cell` | capability_provisioning | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
+| `cloud_integration.archiving` | cloud_integration | unsupported (unsafe_terraform_lifecycle) | — | Yes | — | — | — | — | — | — | — |
+| `cloud_integration.custom_tag_configuration` | cloud_integration | partial (unsafe_terraform_lifecycle) | sap_documentation | Yes | Yes | Yes | Yes | — | Yes | — | Resource + Data Source |
+| `cloud_integration.data_store` | cloud_integration | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
+| `cloud_integration.data_store_entry` | cloud_integration | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
+| `cloud_integration.data_type` | cloud_integration | unsupported (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
+| `cloud_integration.design_time_versioning` | cloud_integration | partial (not_implemented) | sap_documentation (some operations unofficial) | Yes | Yes | — | Yes | — | — | — | Resource |
+| `cloud_integration.integration_adapter` | cloud_integration | partial (public_api_incomplete) | sap_documentation | Yes | Yes | Yes | — | Yes | Yes | — | Resource + Data Source |
+| `cloud_integration.integration_adapter_deployment` | cloud_integration | partial (public_api_incomplete) | sap_documentation | Yes | Yes | Yes | — | Yes | — | Yes | Resource |
+| `cloud_integration.integration_flow` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
+| `cloud_integration.integration_flow_configuration` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | — | Yes | — | Resource |
+| `cloud_integration.integration_flow_deployment` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Resource |
+| `cloud_integration.integration_package` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
+| `cloud_integration.message_mapping` | cloud_integration | supported | sap_documentation (some operations unofficial) | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
+| `cloud_integration.message_mapping_deployment` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Resource |
+| `cloud_integration.message_processing_logs` | cloud_integration | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
+| `cloud_integration.message_stores` | cloud_integration | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
+| `cloud_integration.message_type` | cloud_integration | unsupported (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
+| `cloud_integration.number_range` | cloud_integration | supported | sap_documentation (some operations unofficial) | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
+| `cloud_integration.script_collection` | cloud_integration | supported | sap_documentation (some operations unofficial) | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
+| `cloud_integration.script_collection_deployment` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Resource |
+| `cloud_integration.service_endpoints` | cloud_integration | read_only (unsafe_terraform_lifecycle) | sap_documentation | Yes | — | Yes | — | — | — | — | Data Source |
+| `cloud_integration.service_interface` | cloud_integration | unsupported (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
+| `cloud_integration.value_mapping` | cloud_integration | partial (unsafe_terraform_lifecycle) | sap_documentation | Yes | Yes | Yes | — | Yes | Yes | — | Resource + Data Source |
+| `cloud_integration.value_mapping_deployment` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Resource |
+| `cloud_integration.value_mapping_entry` | cloud_integration | unsupported (unsafe_terraform_lifecycle) | — | Yes | — | — | — | — | — | — | — |
+| `cloud_integration.variable` | cloud_integration | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
+| `data_space_integration` | other_capability | unsupported (research_required) | — | Yes | — | — | — | — | — | — | — |
+| `developer_hub` | other_capability | separate_provider (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
+| `edge_integration_cell.access_policy_replication` | edge_integration_cell | unofficial (public_api_incomplete) | metadata_only | Yes | — | Yes | — | — | — | — | Data Source |
+| `edge_integration_cell.deployment_target` | edge_integration_cell | unsupported (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
+| `edge_integration_cell.local_api` | edge_integration_cell | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
+| `edge_integration_cell.registration` | edge_integration_cell | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
+| `edge_integration_cell.runtime` | edge_integration_cell | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
+| `event_mesh` | other_capability | separate_provider (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
+| `integration_advisor.design_time_content` | other_capability | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
+| `integration_advisor.runtime_artifact_injection` | other_capability | unsupported (out_of_scope) | — | No | — | — | — | — | — | — | — |
+| `integration_assessment.assessment_workflow` | integration_assessment | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
+| `integration_assessment.landscape_configuration` | integration_assessment | unsupported (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
+| `integration_assessment.master_data` | integration_assessment | unsupported (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
+| `integration_cell.runtime` | integration_cell | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
+| `integration_cell.virtual_host` | integration_cell | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
+| `migration_assessment.extraction_and_evaluation` | other_capability | unsupported (out_of_scope) | — | No | — | — | — | — | — | — | — |
+| `migration_assessment.source_system` | other_capability | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
+| `odata_provisioning` | other_capability | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
+| `open_connectors` | other_capability | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
+| `partner_directory.alternative_partner` | partner_directory | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
+| `partner_directory.authorized_user` | partner_directory | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
+| `partner_directory.binary_parameter` | partner_directory | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
+| `partner_directory.partner` | partner_directory | read_only (unsafe_terraform_lifecycle) | sap_documentation | Yes | — | Yes | — | — | — | — | Data Source |
+| `partner_directory.string_parameter` | partner_directory | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
+| `partner_directory.user_credential_parameter` | partner_directory | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
+| `security.access_policy` | security | supported | sap_tooling (some operations unofficial) | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
+| `security.access_policy_reference` | security | supported | sap_tooling | Yes | Yes | Yes | — | Yes | Yes | — | Resource + Data Source |
+| `security.certificate` | security | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
+| `security.certificate_chain` | security | unsupported (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
+| `security.certificate_user_mapping` | security | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
+| `security.key_pair` | security | partial (unsafe_terraform_lifecycle) | sap_documentation | Yes | Yes | Yes | — | Yes | Yes | — | Resource |
+| `security.keystore_entry` | security | read_only (unsafe_terraform_lifecycle) | sap_documentation | Yes | — | — | — | — | — | — | Data Source |
+| `security.known_hosts` | security | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
+| `security.oauth2_client_credential` | security | partial (public_api_incomplete) | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
+| `security.oauth2_password_credential` | security | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
+| `security.oauth2_saml_bearer` | security | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
+| `security.pgp_keyring` | security | unsupported (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
+| `security.secure_parameter` | security | unofficial (public_api_incomplete) | metadata_only | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
+| `security.ssh_key` | security | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
+| `security.user_credential` | security | partial (public_api_incomplete) | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
+| `security.where_used` | security | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
+| `trading_partner_management.agreement` | other_capability | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
+| `trading_partner_management.agreement_template` | other_capability | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
+| `trading_partner_management.company_profile` | other_capability | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
+| `trading_partner_management.partner_directory_generation` | other_capability | unsupported (out_of_scope) | — | No | — | — | — | — | — | — | — |
+| `trading_partner_management.partner_profile` | other_capability | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
+
+## Contract sources
+
+Every implemented feature says where its contract comes from, because that decides how far it can be trusted across SAP releases:
+
+| Source | Meaning | Highest status |
+|---|---|---|
+| `sap_documentation` | SAP Help describes the operations (example requests, the API's list of resources) | supported |
+| `api_specification` | The official API specification on the SAP Business Accelerator Hub | supported |
+| `sap_tooling` | SAP's own SDK or tooling sends these requests (API Management Client SDK, CI/CD actions, Project Piper) | supported |
+| `metadata_only` | Only the service's `$metadata` and tests on a tenant; nothing official | unofficial once verified, experimental before |
+
+**Unofficial** means that it works and was verified on a tenant, but SAP has not documented it, so SAP may change it without notice. Individual operations of an otherwise documented feature can be unofficial too:
+
+| Feature | Implemented operation that SAP does not document |
+|---|---|
+| `api_composition.business_data_graph` | delete (DELETE on the graph) |
+| `api_composition.business_data_graph` | update body (PATCH with the writable properties) |
+| `cloud_integration.design_time_versioning` | save_as_version on script collections (ScriptCollectionDesigntimeArtifactSaveAsVersion is only in $metadata; integration flows and message mappings are documented) |
+| `cloud_integration.message_mapping` | update of the content (PUT; SAP documents read, create and delete) |
+| `cloud_integration.number_range` | read by name |
+| `cloud_integration.number_range` | delete |
+| `cloud_integration.number_range` | import |
+| `cloud_integration.script_collection` | update of the content (PUT; SAP documents create, upload of resources and deploy) |
+| `security.access_policy` | description update (PATCH, verified on a tenant) |
 
 ## Unsupported and partially supported features
 
@@ -230,6 +255,10 @@ Grouped by why, not just that. A feature can be `partial` and reachable via one 
 - **`security.pgp_keyring`** — The tenant's PGP public and secret keyrings used by the PGP encryptor and decryptor steps.
   - The tenant $metadata defines PgpKeyrings, PgpPublicKeyrings, PgpSecretKeyrings, PgpKeyEntries, PgpSubKeys, PgpUserIds and keyring upload resources, but SAP Help documents no request for any of them. Keyrings are whole-file objects, and the secret keyring holds private keys, so a Terraform design would need a confirmed upload format and write-only handling of the secret keyring before anything is implemented.
   - Tenant check of 2026-09-27: PgpPublicKeyrings answers 200, but PgpKeyrings answers 404 "Could not find an entity set or function import" although $metadata declares it; the service document of /api/v1 lists only 25 of the 131 declared entity sets. A design has to start from the sets that are addressable on their own.
+- **`security.secure_parameter`** — A "Secure Parameter" security material artifact: an opaque confidential value (for example for a custom adapter) deployed without an associated username.
+  - SAP Help documents the artifact only in the Monitor UI. The entity set comes from the tenant $metadata (key Name; Description, SecureParam, DeployedBy, DeployedOn, Status), and a tenant test in September 2026 verified create (POST), read by name, update (PUT) and delete, each write answering 202 without a body.
+  - The value is write-only (secure_param_wo / secure_param_wo_version) and sent on create and every update; SAP returns SecureParam as null. Import recovers the name and description only, so the first apply after an import sends the configured value.
+  - Create stops when the name already exists, because SAP does not document what a create on an existing name does. Edge Integration Cell targeting is not supported and not offered for this resource.
 - **`security.user_credential`** — A "User Credentials" security material artifact: a username/password credential integration flow adapters use for outbound basic or username-token authentication. (partial support already implemented — see Limitations below)
   - The password is never returned by SAP's read API; password_wo/password_wo_version are write-only attributes (Terraform CLI 1.11+ required) and drift on the password value itself cannot be detected — only readable metadata (user, description, kind, company_id) is compared on Read.
   - Update is implemented as a full PUT redeploy, matching SAP's documented "Edit" action for Credentials artifacts, and resends password_wo on every apply that touches this resource (SAP documents re-entering the secret on every edit for the sibling OAuth2 Client Credentials artifact; this provider assumes the same requirement here since it could not find a documented exception for User Credentials).

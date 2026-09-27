@@ -15,6 +15,7 @@ const evidencePath = "docs/research/capability-evidence-2026.md"
 var classificationOrder = []struct {
 	label, heading, meaning string
 }{
+	{"unofficial", "Unofficial", "Works and verified on a tenant, but the contract is known only from the service's $metadata; no SAP documentation, specification or tooling describes it."},
 	{"experimental", "Experimental", "Implemented; the lifecycle still has to pass its acceptance test on a tenant."},
 	{"partial", "Partial", "Implemented with a deliberate gap in the lifecycle."},
 	{"read_only", "Read-only", "Data sources only, by design or because writes are undocumented."},

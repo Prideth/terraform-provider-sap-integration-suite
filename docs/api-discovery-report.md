@@ -22,8 +22,8 @@ SAP documentation, official SAP tooling, or a safe verification on a tenant
 
 | Service | Protocol | Snapshot | Entity sets | Operations | REST operations | Used | Candidates | Excluded |
 |---|---|---|---:|---:|---:|---:|---:|---:|
-| [cloud-integration](#cloud-integration) | OData V2 | 2026-09-26 | 131 | 35 | 0 | 38 | 36 | 92 |
-| [classic-api-management](#classic-api-management) | OData V2 | 2026-09-26 | 61 | 1 | 0 | 7 | 19 | 36 |
+| [cloud-integration](#cloud-integration) | OData V2 | 2026-09-27 | 131 | 35 | 0 | 38 | 36 | 92 |
+| [classic-api-management](#classic-api-management) | OData V2 | 2026-09-27 | 61 | 1 | 0 | 7 | 19 | 36 |
 | [classic-api-management-transport](#classic-api-management-transport) | OpenAPI | none yet | | | | | | |
 | [classic-api-management-content-archive](#classic-api-management-content-archive) | OpenAPI | none yet | | | | | | |
 | [classic-api-management-virtual-host-request](#classic-api-management-virtual-host-request) | OData V2 | none yet | | | | | | |
@@ -41,8 +41,10 @@ Cloud Integration (Integration Content, Security Content, Partner Directory, mes
 - Evidence for the service root: SAP Help, Cloud Integration APIs: service root <tenant>/api/v1 of the API plan service key (SAP Business Accelerator Hub package CloudIntegrationAPI).
 - Acceptance suites: `SAP_INTEGRATION_SUITE_ACC_CLOUD_INTEGRATION`, `SAP_INTEGRATION_SUITE_ACC_SECURITY_CONTENT`, `SAP_INTEGRATION_SUITE_ACC_PARTNER_DIRECTORY`
 - Configuration: `SAP_INTEGRATION_SUITE_HOST`, `SAP_INTEGRATION_SUITE_TOKEN_URL`, `SAP_INTEGRATION_SUITE_CLIENT_ID`, `SAP_INTEGRATION_SUITE_CLIENT_SECRET`
-- Snapshot: `testdata/api-metadata/cloud-integration.json`, captured 2026-09-26 from local document
+- Snapshot: `testdata/api-metadata/cloud-integration.json`, captured 2026-09-27 from live /$metadata
 - Contract: 131 entity sets, 0 singletons, 135 entity types, 3 complex types, 0 enum types, 35 operations; 138 types reachable from the entity sets and operations, 0 unreachable, 0 unresolved references
+
+The service document lists 25 of the 131 entity sets. The other 106 are declared in `$metadata` but not addressable on their own (a tenant check answered such a set with 404); they are reachable only through navigation, if at all: APIDefinitions, AlternativePartners, AuthorizedUsers, B2BArchivingConfigurations, B2BArchivingKeyPerformanceIndicators, BinaryParameters, BuildAndDeployStatus, BusinessDocumentExtFields, BusinessDocumentNotes, BusinessDocumentPayloads, BusinessDocumentProcessingEvents, BusinessDocumentProtocolHeaders, BusinessDocumentRelations, BusinessDocuments, CertificateChainResources, CertificateResources, CertificateSigningRequests, ChainCertificates, CommunicationProtocolHeaders, Configurations, CustomObjects, CustomParameters, CustomTagConfigurations, CustomTags, DataStoreEntries, DataStores, DataTypeDesigntimeArtifacts, DefaultValMaps, DesignGuidelineExecutionResults, DesignGuidelines, EntryPoints, ErrorDetails, ExtendedFieldsConfigs, FaultMessageTypeDesigntimeArtifacts, FunctionalAcknowledgements, GenericIdempotentRepositoryEntries, HistoryKeystoreEntries, IdMapFromId2s, IdMapFromIds, IdMapToIds, IdempotentRepositoryEntries, IntegrationAdapterDesigntimeArtifacts, IntegrationConnections, IntegrationDesigntimeArtifacts, IntegrationDesigntimeLocks, IntegrationFlows, IntegrationPackages, IntegrationRuntimeArtifacts, JmsArtifacts, JmsBrokers, JmsMessages, JmsQueues, KeyPairGenerationRequests, KeyPairResources, KeyringRuntimeAssignment, KeystoreEntries, KeystoreResources, Keystores, Locks, MDIDeltaToken, MessageMappingDesigntimeArtifacts, MessageTypeDesigntimeArtifacts, MessagingMessages, MessagingQueues, NodeProfiles, NumberRanges, OAuth2AuthorizationCodes, OAuth2ClientCredentials, OrphanedInterchanges, Partners, PgpKeyEntries, PgpKeyEntryImportResults, PgpKeyPublicResources, PgpKeySecretResources, PgpKeyringPublicResources, PgpKeyringSecretResources, PgpKeyrings, PgpPublicKeyrings, PgpSecretKeyrings, PgpSubKeys, PgpUserIds, QueueStates, Queues, RSAKeyGenerationRequests, Resources, Roles, RuntimeArtifactErrorInformations, RuntimeSyncInfos, SSHKeyGenerationRequests, SSHKeyResources, ScriptCollectionDesigntimeArtifacts, SecureParameters, SecurityArtifacts, ServiceEndpoints, ServiceInterfaceDesigntimeArtifacts, StringParameters, TechnicalAcknowledgements, UserCredentialParameters, UserCredentials, ValMapSchema, ValMaps, ValueMappingDesigntimeArtifacts, Variables, WNNodes, XiDataStoreArtifacts, XiDataStores.
 
 ### Used by the provider (38)
 
@@ -174,7 +176,7 @@ Classic API Management, API portal Management.svc.
 - Evidence for the service root: SAP Help, API Management APIs on Cloud Foundry: <api portal url>/apiportal/api/1.0/Management.svc (service key of API Management, API portal, plan apiportal-apiaccess); SAP API Management Client SDK.
 - Acceptance suites: `SAP_INTEGRATION_SUITE_ACC_API_MANAGEMENT_CLASSIC`
 - Configuration: `SAP_INTEGRATION_SUITE_API_MANAGEMENT_HOST`, `SAP_INTEGRATION_SUITE_API_MANAGEMENT_TOKEN_URL`, `SAP_INTEGRATION_SUITE_API_MANAGEMENT_CLIENT_ID`, `SAP_INTEGRATION_SUITE_API_MANAGEMENT_CLIENT_SECRET`
-- Snapshot: `testdata/api-metadata/classic-api-management.json`, captured 2026-09-26 from local document
+- Snapshot: `testdata/api-metadata/classic-api-management.json`, captured 2026-09-27 from live /$metadata
 - Contract: 61 entity sets, 0 singletons, 61 entity types, 5 complex types, 0 enum types, 1 operations; 66 types reachable from the entity sets and operations, 0 unreachable, 0 unresolved references
 
 ### Used by the provider (7)
@@ -281,7 +283,7 @@ Integration Assessment, entities API (landscape and ISA-M data).
 - Evidence for the service root: Service key of Integration Assessment APIs: field "entities" is the service root (SAP Help, Integration Assessment APIs).
 - Acceptance suites: `SAP_INTEGRATION_SUITE_ACC_INTEGRATION_ASSESSMENT`
 - Configuration: `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_ENTITIES_URL`, `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_TOKEN_URL`, `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_CLIENT_ID`, `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_CLIENT_SECRET`
-- Snapshot: `testdata/api-metadata/integration-assessment-entities.json`, captured 2026-09-27 from local document
+- Snapshot: `testdata/api-metadata/integration-assessment-entities.json`, captured 2026-09-27 from live /$metadata
 - Contract: 27 entity sets, 0 singletons, 27 entity types, 0 complex types, 0 enum types, 1 operations; 27 types reachable from the entity sets and operations, 0 unreachable, 0 unresolved references
 
 ### Candidates (18)
@@ -321,7 +323,7 @@ Integration Assessment, management API (requests).
 - Evidence for the service root: Service key of Integration Assessment APIs: field "management" is the service root (SAP Help, Integration Assessment APIs).
 - Acceptance suites: `SAP_INTEGRATION_SUITE_ACC_INTEGRATION_ASSESSMENT`
 - Configuration: `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_MANAGEMENT_URL`, `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_TOKEN_URL`, `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_CLIENT_ID`, `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_CLIENT_SECRET`
-- Snapshot: `testdata/api-metadata/integration-assessment-management.json`, captured 2026-09-27 from local document
+- Snapshot: `testdata/api-metadata/integration-assessment-management.json`, captured 2026-09-27 from live /$metadata
 - Contract: 1 entity sets, 0 singletons, 1 entity types, 0 complex types, 0 enum types, 1 operations; 1 types reachable from the entity sets and operations, 0 unreachable, 0 unresolved references
 
 ### Excluded (2)

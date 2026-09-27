@@ -38,6 +38,7 @@ output "value_mapping_support" {
 ### Read-Only
 
 - `api_protocol` (String) The public API's wire protocol, for example "OData V2", when public_api is true and a single protocol applies.
+- `contract_source` (String) Where the contract of the implemented part comes from: "sap_documentation", "api_specification", "sap_tooling" or "metadata_only". Empty when nothing is implemented.
 - `data_source_types` (List of String) Full Terraform data source type names this provider registers for this feature, if any.
 - `description` (String) What the feature is and, briefly, its support status.
 - `domain` (String) Groups related features, for example "cloud_integration" or "security".
@@ -49,7 +50,8 @@ output "value_mapping_support" {
 - `public_api` (Boolean) Whether SAP publishes a public, supported API for this feature at all — independent of whether this provider implements it.
 - `resource_types` (List of String) Full Terraform resource type names this provider registers for this feature, if any.
 - `support_reason` (String) Why support_status is not "supported": one of "not_implemented", "public_api_incomplete", "no_public_api", "research_required", "out_of_scope", or "unsafe_terraform_lifecycle". Empty when support_status is "supported".
-- `support_status` (String) One of "supported", "partial", "read_only", "experimental", or "unsupported". See docs/feature-support.md for exact meanings.
+- `support_status` (String) One of "supported", "partial", "read_only", "unofficial" (works, but the contract is known only from the service's $metadata), "experimental", "unsupported" or "separate_provider". See docs/feature-support.md for exact meanings.
+- `undocumented_operations` (List of String) Implemented operations that work but that SAP does not document, although the rest of the feature is documented.
 
 <a id="nestedatt--operations"></a>
 ### Nested Schema for `operations`

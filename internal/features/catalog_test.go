@@ -159,3 +159,37 @@ func TestEvidence_EveryIncompleteFeatureHasARecord(t *testing.T) {
 		}
 	}
 }
+
+// TestCatalog_ContractSourceRules enforces where a feature's status may come
+// from: supported, partial and read-only need an official source (SAP
+// documentation, an API specification or SAP tooling); a contract known only
+// from $metadata is unofficial once verified on a tenant, experimental
+// before; unofficial always means metadata only; every implemented feature
+// names its source.
+func TestCatalog_ContractSourceRules(t *testing.T) {
+	for _, f := range Catalog {
+		if !f.ContractSource.Valid() {
+			t.Errorf("%s: unknown ContractSource %q", f.Key, f.ContractSource)
+		}
+		implemented := len(f.ResourceTypes)+len(f.DataSourceTypes) > 0
+		if implemented && f.ContractSource == "" {
+			t.Errorf("%s: implemented but no ContractSource", f.Key)
+		}
+		switch f.SupportStatus {
+		case StatusSupported, StatusPartial, StatusReadOnly:
+			if implemented && !f.ContractSource.Official() {
+				t.Errorf("%s is %s but its contract source is %q; only an official source allows that status", f.Key, f.SupportStatus, f.ContractSource)
+			}
+		case StatusUnofficial:
+			if f.ContractSource != SourceMetadataOnly {
+				t.Errorf("%s is unofficial but its contract source is %q; unofficial means $metadata only", f.Key, f.ContractSource)
+			}
+		}
+		if f.ContractSource == SourceMetadataOnly && f.SupportStatus != StatusUnofficial && f.SupportStatus != StatusExperimental {
+			t.Errorf("%s: a $metadata-only contract can only be unofficial or experimental, not %s", f.Key, f.SupportStatus)
+		}
+		if len(f.UndocumentedOperations) > 0 && !implemented {
+			t.Errorf("%s lists undocumented operations but implements nothing", f.Key)
+		}
+	}
+}

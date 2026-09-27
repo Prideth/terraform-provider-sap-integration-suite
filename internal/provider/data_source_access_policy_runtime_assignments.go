@@ -45,7 +45,9 @@ func (d *accessPolicyRuntimeAssignmentsDataSource) Schema(_ context.Context, _ d
 		Description: "Lists the runtimes an access policy is replicated to (Cloud Integration runtime, " +
 			"Integration Cell, Edge Integration Cells) and the replication state SAP reports for " +
 			"each. This is the data behind the Runtimes column of the Access Policies screen. " +
-			"Read-only: which runtimes a policy is assigned to is still chosen in the UI.",
+			"Read-only: which runtimes a policy is assigned to is still chosen in the UI. UNOFFICIAL: the " +
+			"AccessPolicyRuntimeAssignments navigation is known from the service's $metadata and was " +
+			"read on a tenant, but SAP does not document it.",
 		Attributes: map[string]schema.Attribute{
 			"access_policy_id": schema.StringAttribute{
 				Required:    true,

@@ -75,7 +75,7 @@ evaluated, supported or not, grouped by area.
 
 Generated from `internal/features/catalog.go` by `go run ./cmd/gendocs -readme` — do not hand-edit the table below; regenerate it instead (`make docs` does this automatically). See [`docs/feature-support.md`](docs/feature-support.md) for the full per-operation matrix and every feature's detailed limitations.
 
-Legend: ✅ Supported · ⚠️ Partial support / important limitations · 👁️ Read-only / data source only · 🧪 Experimental · ❌ Unsupported / not implemented · ↗️ Planned as a separate Terraform provider
+Legend: ✅ Supported · ⚠️ Partial support / important limitations · 👁️ Read-only / data source only · 🔸 Unofficial (works, known only from the service's $metadata) · 🧪 Experimental · ❌ Unsupported / not implemented · ↗️ Planned as a separate Terraform provider
 
 ### Cloud Integration
 
@@ -124,7 +124,7 @@ Legend: ✅ Supported · ⚠️ Partial support / important limitations · 👁�
 | OAuth2 Password Credentials | ❌ | No suitable public API — see [feature-support.md](docs/feature-support.md#all-features) |
 | OAuth2 SAML Bearer Assertion | ❌ | No suitable public API — see [feature-support.md](docs/feature-support.md#all-features) |
 | PGP Keyrings | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
-| Secure Parameter | ✅ | Resource |
+| Secure Parameter | 🔸 | Resource — see [feature-support.md](docs/feature-support.md#all-features) |
 | SSH Key | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
 | User Credential | ⚠️ | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
 | Security Material Where-Used | ❌ | No suitable public API — see [feature-support.md](docs/feature-support.md#all-features) |
@@ -188,7 +188,7 @@ Legend: ✅ Supported · ⚠️ Partial support / important limitations · 👁�
 
 | Feature | Status | Terraform Support |
 |---|:---:|---|
-| Edge Integration Cell Access Policy Replication | 👁️ | Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
+| Edge Integration Cell Access Policy Replication | 🔸 | Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
 | Edge Integration Cell Runtime Targeting | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
 | Edge Integration Cell Local API Access | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
 | Edge Integration Cell Registration | ❌ | No suitable public API — see [feature-support.md](docs/feature-support.md#all-features) |
@@ -231,7 +231,7 @@ Legend: ✅ Supported · ⚠️ Partial support / important limitations · 👁�
 | Trading Partner Management Partner Directory Generation | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
 | Trading Partner Management Partner Profile | ❌ | No suitable public API — see [feature-support.md](docs/feature-support.md#all-features) |
 
-21 supported · 10 partial · 4 read-only · 2 experimental · 60 unsupported · 2 planned as a separate provider, out of 99 evaluated Integration Suite features.
+20 supported · 10 partial · 3 read-only · 2 experimental · 60 unsupported · 2 planned as a separate provider, out of 99 evaluated Integration Suite features.
 
 <!-- END GENERATED FEATURE SUPPORT -->
 
@@ -445,8 +445,8 @@ See [`ROADMAP.md`](ROADMAP.md).
   type placement of OAuth2 client credentials cannot be set yet. See
   `docs/guides/security-content.md`.
 - Security Content covers user credentials, OAuth2 client credentials,
-  secure parameters, certificates, key pairs (with an OpenSSH export) and
-  access policies. Certificate chains and PGP keyrings have entities in the
+  secure parameters (unofficial: known only from the service's `$metadata`),
+  certificates, key pairs (with an OpenSSH export) and access policies. Certificate chains and PGP keyrings have entities in the
   service's `$metadata` but no documented requests; known hosts, OAuth2
   password credentials, OAuth2 SAML bearer assertions and where-used lists
   are UI-only. Certificate-to-user mapping exists only for Neo. OAuth2
