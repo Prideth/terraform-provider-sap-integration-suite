@@ -3,16 +3,18 @@
 page_title: "sapintegrationsuite_access_policy_runtime_assignments Data Source - sapintegrationsuite"
 subcategory: ""
 description: |-
-  Lists the runtimes an access policy is replicated to (Cloud Integration runtime, Integration Cell, Edge Integration Cells) and the replication state SAP reports for each. This is the data behind the Runtimes column of the Access Policies screen. Read-only: which runtimes a policy is assigned to is still chosen in the UI. UNOFFICIAL: the AccessPolicyRuntimeAssignments navigation is known from the service's $metadata and was read on a tenant, but SAP does not document it.
+  UNOFFICIAL: needs enable_unofficial = true in the provider block. Lists the runtimes an access policy is replicated to (Cloud Integration runtime, Integration Cell, Edge Integration Cells) and the replication state SAP reports for each. This is the data behind the Runtimes column of the Access Policies screen. Read-only: which runtimes a policy is assigned to is still chosen in the UI. UNOFFICIAL: the AccessPolicyRuntimeAssignments navigation is known from the service's $metadata and was read on a tenant, but SAP does not document it.
 ---
 
 # sapintegrationsuite_access_policy_runtime_assignments (Data Source)
 
-Lists the runtimes an access policy is replicated to (Cloud Integration runtime, Integration Cell, Edge Integration Cells) and the replication state SAP reports for each. This is the data behind the Runtimes column of the Access Policies screen. Read-only: which runtimes a policy is assigned to is still chosen in the UI. UNOFFICIAL: the AccessPolicyRuntimeAssignments navigation is known from the service's $metadata and was read on a tenant, but SAP does not document it.
+UNOFFICIAL: needs enable_unofficial = true in the provider block. Lists the runtimes an access policy is replicated to (Cloud Integration runtime, Integration Cell, Edge Integration Cells) and the replication state SAP reports for each. This is the data behind the Runtimes column of the Access Policies screen. Read-only: which runtimes a policy is assigned to is still chosen in the UI. UNOFFICIAL: the AccessPolicyRuntimeAssignments navigation is known from the service's $metadata and was read on a tenant, but SAP does not document it.
 
 ## Example Usage
 
 ```terraform
+# The runtime assignments data source is unofficial: it needs
+# enable_unofficial = true in the provider block.
 data "sapintegrationsuite_access_policy" "utilities" {
   role_name = "UTILITIES_ARCHITECT"
 }

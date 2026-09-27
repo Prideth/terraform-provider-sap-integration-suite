@@ -14,6 +14,15 @@ terraform {
 provider "sapintegrationsuite" {
   host = var.integration_suite_host
 
+  # Both off by default. Resources and data sources whose status is
+  # "experimental" (lifecycle not yet verified on a tenant) or "unofficial"
+  # (works, but SAP does not document the API) refuse to run until the
+  # matching switch is true, so nobody uses them by accident. See
+  # docs/feature-support.md for the list. Environment variables:
+  # SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL, SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL.
+  enable_experimental = false
+  enable_unofficial   = false
+
   oauth {
     token_url     = var.integration_suite_token_url
     client_id     = var.integration_suite_client_id

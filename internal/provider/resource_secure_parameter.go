@@ -46,7 +46,8 @@ func (r *secureParameterResource) Metadata(_ context.Context, req resource.Metad
 
 func (r *secureParameterResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "UNOFFICIAL: works and was verified on a tenant, but SAP does not document the " +
+		Description: "UNOFFICIAL: needs enable_unofficial = true in the provider block. It works and was " +
+			"verified on a tenant, but SAP does not document the " +
 			"API behind it, so SAP may change it without notice.\n\n" +
 			"Manages a Security Content \"Secure Parameter\" artifact: a confidential value, " +
 			"for example for a custom adapter or a script, deployed under an alias that integration " +
@@ -112,6 +113,9 @@ func (r *secureParameterResource) Configure(_ context.Context, req resource.Conf
 	data, ok := req.ProviderData.(*Data)
 	if !ok {
 		resp.Diagnostics.AddError("Unexpected provider data type", "Expected *provider.Data")
+		return
+	}
+	if !requireOptIn(data, "sapintegrationsuite_secure_parameter", &resp.Diagnostics) {
 		return
 	}
 	if !requireHTTPClient(data, "resource", &resp.Diagnostics) {

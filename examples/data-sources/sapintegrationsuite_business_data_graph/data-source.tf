@@ -1,3 +1,4 @@
+# Experimental: needs enable_experimental = true in the provider block.
 # Read a graph that is maintained elsewhere, for example in the
 # Integration Suite UI, and check whether SAP processed it.
 data "sapintegrationsuite_business_data_graph" "sales" {

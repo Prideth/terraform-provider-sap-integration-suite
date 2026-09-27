@@ -3,14 +3,14 @@
 page_title: "sapintegrationsuite_api_proxy Resource - sapintegrationsuite"
 subcategory: ""
 description: |-
-  EXPERIMENTAL. Manages a Classic API Management API proxy (API portal) from a proxy bundle ZIP, the format the API portal exports.
+  EXPERIMENTAL: needs enable_experimental = true in the provider block. Manages a Classic API Management API proxy (API portal) from a proxy bundle ZIP, the format the API portal exports.
   The provider uploads the bundle the way SAP's API Management Client SDK does (POST /apiportal/api/1.0/Transport.svc/APIProxies with the ZIP as application/octet-stream), reads the proxy from Management.svc/APIProxies and deletes it there. SAP's documentation says a proxy imported this way is deployed by default. Whether importing a changed bundle over an existing proxy replaces it cleanly is not documented, so any change of the bundle deletes the proxy and imports it again: the proxy is briefly unavailable, and products that include it lose the link. The lifecycle has not yet passed an acceptance test on a tenant; until it has, the resource stays experimental.
   The bundle must name the proxy in its APIProxy/.xml descriptor, and that name must equal name. API providers the bundle's target endpoint references must already exist.
 ---
 
 # sapintegrationsuite_api_proxy (Resource)
 
-EXPERIMENTAL. Manages a Classic API Management API proxy (API portal) from a proxy bundle ZIP, the format the API portal exports.
+EXPERIMENTAL: needs enable_experimental = true in the provider block. Manages a Classic API Management API proxy (API portal) from a proxy bundle ZIP, the format the API portal exports.
 
 The provider uploads the bundle the way SAP's API Management Client SDK does (POST /apiportal/api/1.0/Transport.svc/APIProxies with the ZIP as application/octet-stream), reads the proxy from Management.svc/APIProxies and deletes it there. SAP's documentation says a proxy imported this way is deployed by default. Whether importing a changed bundle over an existing proxy replaces it cleanly is not documented, so any change of the bundle deletes the proxy and imports it again: the proxy is briefly unavailable, and products that include it lose the link. The lifecycle has not yet passed an acceptance test on a tenant; until it has, the resource stays experimental.
 
@@ -19,6 +19,7 @@ The bundle must name the proxy in its APIProxy/<name>.xml descriptor, and that n
 ## Example Usage
 
 ```terraform
+# Experimental: needs enable_experimental = true in the provider block.
 # Requires provider.api_management to be configured. EXPERIMENTAL.
 # The ZIP is an API proxy bundle as the API portal exports it; its
 # APIProxy/Orders_v1.xml descriptor must declare the same name. A new

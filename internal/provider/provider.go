@@ -5,6 +5,8 @@ import (
 	"context"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -35,10 +37,12 @@ type sapIntegrationSuiteProvider struct {
 
 // providerModel mirrors the provider block's schema.
 type providerModel struct {
-	Host           types.String         `tfsdk:"host"`
-	OAuth          *oauthModel          `tfsdk:"oauth"`
-	APIManagement  *apiManagementModel  `tfsdk:"api_management"`
-	APIComposition *apiCompositionModel `tfsdk:"api_composition"`
+	Host               types.String         `tfsdk:"host"`
+	EnableExperimental types.Bool           `tfsdk:"enable_experimental"`
+	EnableUnofficial   types.Bool           `tfsdk:"enable_unofficial"`
+	OAuth              *oauthModel          `tfsdk:"oauth"`
+	APIManagement      *apiManagementModel  `tfsdk:"api_management"`
+	APIComposition     *apiCompositionModel `tfsdk:"api_composition"`
 }
 
 type oauthModel struct {
@@ -99,6 +103,12 @@ type Data struct {
 	// credential sets.
 	APICompositionHost       string
 	APICompositionHTTPClient *sapthttp.Client
+
+	// EnableExperimental and EnableUnofficial are the provider's opt-ins
+	// for resources and data sources whose catalog status is experimental
+	// or unofficial; see requireOptIn.
+	EnableExperimental bool
+	EnableUnofficial   bool
 }
 
 func (p *sapIntegrationSuiteProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -113,6 +123,24 @@ func (p *sapIntegrationSuiteProvider) Schema(_ context.Context, _ provider.Schem
 			"it does not create BTP subaccounts, entitlements, or the Integration Suite subscription " +
 			"itself. Use the official SAP BTP provider for those.",
 		Attributes: map[string]schema.Attribute{
+			"enable_experimental": schema.BoolAttribute{
+				Optional: true,
+				Description: "Allows resources and data sources whose support status is " +
+					"\"experimental\": implemented on a documented API, but their lifecycle has not " +
+					"yet passed an acceptance test on a tenant, so behavior or schema may still " +
+					"change. Off by default; a configuration that uses one fails until this is true. " +
+					"Can also be set via the SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL environment " +
+					"variable. See docs/feature-support.md for which ones they are.",
+			},
+			"enable_unofficial": schema.BoolAttribute{
+				Optional: true,
+				Description: "Allows resources and data sources whose support status is " +
+					"\"unofficial\": they work and were verified on a tenant, but SAP does not " +
+					"document the API behind them (it is known only from the service's $metadata), " +
+					"so SAP may change it without notice. Off by default; a configuration that uses " +
+					"one fails until this is true. Can also be set via the " +
+					"SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL environment variable.",
+			},
 			"host": schema.StringAttribute{
 				Optional: true,
 				Description: "Base URL of the SAP Integration Suite tenant used for Cloud Integration " +
@@ -251,7 +279,9 @@ func (p *sapIntegrationSuiteProvider) Configure(ctx context.Context, req provide
 	}
 
 	data := &Data{
-		Version: p.version,
+		Version:            p.version,
+		EnableExperimental: boolOrEnv(config.EnableExperimental, "SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL"),
+		EnableUnofficial:   boolOrEnv(config.EnableUnofficial, "SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL"),
 	}
 
 	if host != "" && oauthCfg.TokenURL != "" && oauthCfg.ClientID != "" && oauthCfg.ClientSecret != "" {
@@ -472,6 +502,16 @@ func (p *sapIntegrationSuiteProvider) DataSources(_ context.Context) []func() da
 
 // stringOrEnv returns value's string contents if it is known and non-empty,
 // otherwise falls back to the named environment variable.
+// boolOrEnv returns the configured value, or else the environment variable
+// read as a boolean ("true", "1", ...); anything unset or unparsable is false.
+func boolOrEnv(value types.Bool, envVar string) bool {
+	if !value.IsNull() && !value.IsUnknown() {
+		return value.ValueBool()
+	}
+	b, err := strconv.ParseBool(strings.TrimSpace(os.Getenv(envVar)))
+	return err == nil && b
+}
+
 func stringOrEnv(value types.String, envVar string) string {
 	if !value.IsNull() && !value.IsUnknown() && value.ValueString() != "" {
 		return value.ValueString()

@@ -149,7 +149,25 @@ Every implemented feature says where its contract comes from, because that decid
 | `sap_tooling` | SAP's own SDK or tooling sends these requests (API Management Client SDK, CI/CD actions, Project Piper) | supported |
 | `metadata_only` | Only the service's `$metadata` and tests on a tenant; nothing official | unofficial once verified, experimental before |
 
-**Unofficial** means that it works and was verified on a tenant, but SAP has not documented it, so SAP may change it without notice. Individual operations of an otherwise documented feature can be unofficial too:
+**Unofficial** means that it works and was verified on a tenant, but SAP has not documented it, so SAP may change it without notice.
+
+Resources and data sources whose status is `experimental` or `unofficial` are switched off by default, so nobody uses them by accident. A configuration that uses one fails until the provider block sets the matching switch:
+
+```hcl
+provider "sapintegrationsuite" {
+  enable_experimental = true # or SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL=true
+  enable_unofficial   = true # or SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL=true
+}
+```
+
+| Type | Status | Switch |
+|---|---|---|
+| `sapintegrationsuite_access_policy_runtime_assignments` | unofficial | `enable_unofficial` |
+| `sapintegrationsuite_api_proxy` | experimental | `enable_experimental` |
+| `sapintegrationsuite_business_data_graph` | experimental | `enable_experimental` |
+| `sapintegrationsuite_secure_parameter` | unofficial | `enable_unofficial` |
+
+Individual operations of an otherwise documented feature can be unofficial too. They are not switched off, because they belong to supported resources, but they are listed here:
 
 | Feature | Implemented operation that SAP does not document |
 |---|---|

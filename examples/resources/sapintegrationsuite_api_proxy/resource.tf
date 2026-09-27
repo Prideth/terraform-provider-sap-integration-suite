@@ -1,3 +1,4 @@
+# Experimental: needs enable_experimental = true in the provider block.
 # Requires provider.api_management to be configured. EXPERIMENTAL.
 # The ZIP is an API proxy bundle as the API portal exports it; its
 # APIProxy/Orders_v1.xml descriptor must declare the same name. A new

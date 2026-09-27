@@ -21,6 +21,7 @@ const envGraphDestination = "SAP_INTEGRATION_SUITE_ACC_GRAPH_DESTINATION"
 // the check the resource needs before it can leave experimental.
 func TestAccBusinessDataGraph_basic(t *testing.T) {
 	accgate.Require(t, accgate.APIComposition, envGraphDestination)
+	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL", "true")
 	id := testAccName()
 	destination := os.Getenv(envGraphDestination)
 	config := func(exclude string) string {

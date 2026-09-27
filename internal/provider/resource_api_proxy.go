@@ -73,7 +73,7 @@ func (r *apiProxyResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 		}
 	}
 	resp.Schema = schema.Schema{
-		Description: "EXPERIMENTAL. Manages a Classic API Management API proxy (API portal) from a " +
+		Description: "EXPERIMENTAL: needs enable_experimental = true in the provider block. Manages a Classic API Management API proxy (API portal) from a " +
 			"proxy bundle ZIP, the format the API portal exports.\n\n" +
 			"The provider uploads the bundle the way SAP's API Management Client SDK does (POST " +
 			"/apiportal/api/1.0/Transport.svc/APIProxies with the ZIP as application/octet-stream), " +
@@ -132,6 +132,9 @@ func (r *apiProxyResource) Configure(_ context.Context, req resource.ConfigureRe
 	data, ok := req.ProviderData.(*Data)
 	if !ok {
 		resp.Diagnostics.AddError("Unexpected provider data type", "Expected *provider.Data")
+		return
+	}
+	if !requireOptIn(data, "sapintegrationsuite_api_proxy", &resp.Diagnostics) {
 		return
 	}
 	if !requireAPIManagementClassicHTTPClient(data, "resource", &resp.Diagnostics) {

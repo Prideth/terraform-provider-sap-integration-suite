@@ -95,6 +95,7 @@ resource "sapintegrationsuite_oauth2_client_credential" "test" {
 
 func TestAccSecureParameter_basic(t *testing.T) {
 	accgate.Require(t, accgate.SecurityContent)
+	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "true")
 	name := testAccName()
 	config := func(description, version string) string {
 		return fmt.Sprintf(`

@@ -88,7 +88,7 @@ func keyMappingSideDataSourceAttribute(description string) schema.SingleNestedAt
 
 func (d *businessDataGraphDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Reads the configuration and processing status of a business data graph from API " +
+		Description: "EXPERIMENTAL: needs enable_experimental = true in the provider block. Reads the configuration and processing status of a business data graph from API " +
 			"Composition's Configuration API. Needs provider.api_composition. The attributes match " +
 			"sapintegrationsuite_business_data_graph.",
 		Attributes: map[string]schema.Attribute{
@@ -174,6 +174,9 @@ func (d *businessDataGraphDataSource) Configure(_ context.Context, req datasourc
 	data, ok := req.ProviderData.(*Data)
 	if !ok {
 		resp.Diagnostics.AddError("Unexpected provider data type", "Expected *provider.Data")
+		return
+	}
+	if !requireOptIn(data, "sapintegrationsuite_business_data_graph", &resp.Diagnostics) {
 		return
 	}
 	if !requireAPICompositionHTTPClient(data, "data source", &resp.Diagnostics) {

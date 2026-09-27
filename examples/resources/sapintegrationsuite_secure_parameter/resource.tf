@@ -1,3 +1,6 @@
+# Unofficial: needs enable_unofficial = true in the provider block. The API
+# behind it is known only from the service's $metadata, not from SAP's
+# documentation.
 variable "custom_adapter_api_key" {
   type      = string
   sensitive = true

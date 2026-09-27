@@ -1,6 +1,7 @@
 # Requires provider.api_management to be configured. The proxies in
 # api_proxy_names must already exist: manage them with
-# sapintegrationsuite_api_proxy or create them in the SAP Integration Suite UI.
+# sapintegrationsuite_api_proxy (experimental, needs enable_experimental =
+# true) or create them in the SAP Integration Suite UI.
 # SAP cannot change a product after it is created, so changing any
 # argument here makes Terraform delete the product and create a new one.
 # Applications subscribed to the old product lose their subscription.

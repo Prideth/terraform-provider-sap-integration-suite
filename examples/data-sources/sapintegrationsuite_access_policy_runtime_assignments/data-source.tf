@@ -1,3 +1,5 @@
+# The runtime assignments data source is unofficial: it needs
+# enable_unofficial = true in the provider block.
 data "sapintegrationsuite_access_policy" "utilities" {
   role_name = "UTILITIES_ARCHITECT"
 }

@@ -42,7 +42,7 @@ func (d *accessPolicyRuntimeAssignmentsDataSource) Metadata(_ context.Context, r
 
 func (d *accessPolicyRuntimeAssignmentsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Lists the runtimes an access policy is replicated to (Cloud Integration runtime, " +
+		Description: "UNOFFICIAL: needs enable_unofficial = true in the provider block. Lists the runtimes an access policy is replicated to (Cloud Integration runtime, " +
 			"Integration Cell, Edge Integration Cells) and the replication state SAP reports for " +
 			"each. This is the data behind the Runtimes column of the Access Policies screen. " +
 			"Read-only: which runtimes a policy is assigned to is still chosen in the UI. UNOFFICIAL: the " +
@@ -95,6 +95,9 @@ func (d *accessPolicyRuntimeAssignmentsDataSource) Configure(_ context.Context, 
 	data, ok := req.ProviderData.(*Data)
 	if !ok {
 		resp.Diagnostics.AddError("Unexpected provider data type", "Expected *provider.Data")
+		return
+	}
+	if !requireOptIn(data, "sapintegrationsuite_access_policy_runtime_assignments", &resp.Diagnostics) {
 		return
 	}
 	if !requireHTTPClient(data, "data source", &resp.Diagnostics) {

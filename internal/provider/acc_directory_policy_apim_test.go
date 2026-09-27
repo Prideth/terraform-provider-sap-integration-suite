@@ -179,6 +179,7 @@ resource "sapintegrationsuite_api_product" "test" {
 // experimental.
 func TestAccAPIProxy_sample(t *testing.T) {
 	accgate.Require(t, accgate.APIManagementClassic)
+	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL", "true")
 	name := testAccName()
 	original := samples.Get(t, "codejam-api-proxy")
 	bundle := func(file, basePath string) string {

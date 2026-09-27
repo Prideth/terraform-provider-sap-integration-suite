@@ -1,3 +1,4 @@
+# Experimental: needs enable_experimental = true in the provider block.
 # A graph over an S/4HANA system and SAP Sales Cloud. Both destinations
 # must exist in the subaccount and carry the additional property
 # IntegrationCell.Include = true. Needs provider.api_composition.

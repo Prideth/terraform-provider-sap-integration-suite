@@ -163,7 +163,7 @@ func keyMappingSideAttribute(description string) schema.SingleNestedAttribute {
 
 func (r *businessDataGraphResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Manages a business data graph through API Composition's Configuration API. A " +
+		Description: "EXPERIMENTAL: needs enable_experimental = true in the provider block. Manages a business data graph through API Composition's Configuration API. A " +
 			"business data graph exposes the business systems of a landscape as one connected API. " +
 			"This resource needs provider.api_composition, a credential set separate from " +
 			"provider.oauth and provider.api_management.\n\n" +
@@ -373,6 +373,9 @@ func (r *businessDataGraphResource) Configure(_ context.Context, req resource.Co
 	data, ok := req.ProviderData.(*Data)
 	if !ok {
 		resp.Diagnostics.AddError("Unexpected provider data type", "Expected *provider.Data")
+		return
+	}
+	if !requireOptIn(data, "sapintegrationsuite_business_data_graph", &resp.Diagnostics) {
 		return
 	}
 	if !requireAPICompositionHTTPClient(data, "resource", &resp.Diagnostics) {

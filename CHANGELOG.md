@@ -301,6 +301,16 @@ All notable changes to this project are documented in this file.
 
 ### Changed
 
+- **Breaking:** experimental and unofficial resources and data sources are
+  switched off by default. Set `enable_experimental = true` (for
+  `sapintegrationsuite_api_proxy` and `sapintegrationsuite_business_data_graph`)
+  or `enable_unofficial = true` (for `sapintegrationsuite_secure_parameter`
+  and the `sapintegrationsuite_access_policy_runtime_assignments` data
+  source) in the provider block, or the environment variables
+  `SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL` and
+  `SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL`. Without the switch, a
+  configuration that uses one of them fails with an error that names it, so
+  nobody relies on them by accident.
 - Support status now depends on where the contract comes from. Every
   implemented feature names its source (`sap_documentation`,
   `api_specification`, `sap_tooling` or `metadata_only`), and only an

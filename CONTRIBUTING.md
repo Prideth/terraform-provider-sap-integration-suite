@@ -177,6 +177,14 @@ in one place upgrades it everywhere.
       `supported`: it is `unofficial` (SAP may change it without notice) until
       an official source describes it. `TestCatalog_ContractSourceRules`
       enforces this.
+
+      Resources and data sources whose status is `experimental` or
+      `unofficial` call `requireOptIn` in `Configure`, so they only run with
+      the provider's `enable_experimental` or `enable_unofficial` switch.
+      `TestOptIn_MatchesCatalog` fails when a status changes and the gate
+      does not follow; a status change is therefore always a code change
+      too, and it goes into the CHANGELOG, since users must set or can drop
+      the switch.
    4. Regenerate `docs/feature-support.md` with `go run ./cmd/gendocs`
       (also done by `make docs`).
    5. Run the catalog consistency tests
