@@ -60,6 +60,31 @@ Promoting `dev` to `master` is a separate, deliberate release step,
 performed only when explicitly requested — never automatically after a
 feature merges into `dev`.
 
+## Releasing
+
+Pushing a `v*` tag publishes: the release workflow builds and signs the
+binaries with GoReleaser, creates the GitHub release, and the Terraform
+Registry picks the version up. A tag is therefore never a scratch step.
+
+1. On `dev`, move the "Unreleased" section of `CHANGELOG.md` under a heading
+   for the new version with the release date. Every breaking change needs
+   its old and new behavior, the reason, and what users have to change in
+   configuration or state.
+2. Write `.github/release-notes/v<version>.md`, the text of the GitHub
+   release page, for someone who runs the provider: overview, highlights,
+   new resources and data sources, upgrade instructions, known limitations,
+   compatibility. It is not a commit list. The workflow refuses to release a
+   tag without this file.
+3. Run `make docs` and check that `git diff --exit-code` stays clean, so the
+   Registry shows documentation that matches the code.
+4. Fast-forward `master` to the release commit on `dev`, then tag it on
+   `master` and push the tag.
+
+The provider stays on the 0.x line; a minor version may contain breaking
+changes, a patch version only fixes defects of its minor version. `v1.0.0`
+is released only with the maintainer's explicit decision, never as the
+automatic successor of a 0.x version.
+
 ## Git requirements
 
 These hold for every commit, branch and pull request in this repository:

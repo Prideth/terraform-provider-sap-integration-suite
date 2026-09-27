@@ -28,9 +28,20 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
 
+      # Release notes are written by hand for every version; GoReleaser's
+      # commit list is disabled in .goreleaser.yml.
+      - name: Require release notes
+        env:
+          NOTES: .github/release-notes/${{ github.ref_name }}.md
+        run: |
+          if [ ! -s "$NOTES" ]; then
+            echo "::error::$NOTES is missing or empty. Write the release notes before tagging."
+            exit 1
+          fi
+
       - uses: goreleaser/goreleaser-action@v7
         with:
-          args: release --clean
+          args: release --clean --release-notes .github/release-notes/${{ github.ref_name }}.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}

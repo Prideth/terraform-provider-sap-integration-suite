@@ -1,785 +1,591 @@
 # Changelog
 
-All notable changes to this project are documented in this file.
+This is the release history of the Terraform Provider for SAP Integration
+Suite. Each entry is written for the people who run the provider: what
+changed, why it changed, and what you have to do when you upgrade.
 
-## Unreleased
+The provider is on a 0.x release line. A minor release (0.2.0, 0.3.0) can
+contain breaking schema or lifecycle changes; each one is listed under
+"Breaking changes" together with the steps it needs. Patch releases (0.2.1)
+only fix defects in their minor release.
 
-### Fixed
+## Unreleased (planned as 0.3.0)
+
+This is the state of `dev` and the current feature branch. The release is
+planned around Integration Assessment, which still waits for a tenant test
+of its landscape objects, so the list below is not final.
+
+### Highlights
+
+- Functionality that is not backed by an official SAP contract is now off
+  by default. Experimental and unofficial resources, and the undocumented
+  operations of otherwise documented resources, need an explicit switch in
+  the provider block. Nobody ends up depending on them by accident.
+- Every implemented feature now records where its contract comes from: SAP
+  Help, an official API specification, SAP's own tooling, or only the
+  service's `$metadata`. The support status follows from that.
+- A Classic API Management API proxy can be managed as its bundle ZIP
+  (experimental).
+
+### Breaking changes
+
+#### Experimental and unofficial types need a provider switch
+
+Old behavior: every registered resource and data source could be used
+without further configuration, whatever its support status.
+
+New behavior: a resource or data source whose status is `experimental` or
+`unofficial` fails with an error that names it until the matching switch is
+set:
+
+| Type | Status | Switch |
+|---|---|---|
+| `sapintegrationsuite_api_proxy` | experimental | `enable_experimental` |
+| `sapintegrationsuite_business_data_graph` (resource and data source) | experimental | `enable_experimental` |
+| `sapintegrationsuite_secure_parameter` | unofficial | `enable_unofficial` |
+| `data.sapintegrationsuite_access_policy_runtime_assignments` | unofficial | `enable_unofficial` |
+
+Why: `experimental` means the lifecycle has not passed an acceptance test
+on a tenant yet; `unofficial` means it works on a tenant, but SAP documents
+the API nowhere, so SAP can change it without notice. Both deserve a
+conscious decision. `sapintegrationsuite_secure_parameter` and the runtime
+assignments data source were listed as supported and read-only in 0.2.0;
+they are reclassified because the `SecureParameters` entity set and the
+runtime assignments are known only from the service's `$metadata`.
+
+What to do: if you use one of these types, add the switch. Nothing else
+changes; state and existing objects are untouched.
+
+```terraform
+provider "sapintegrationsuite" {
+  host = var.integration_suite_host
+
+  enable_experimental = true # api_proxy, business_data_graph
+  enable_unofficial   = true # secure_parameter, access_policy_runtime_assignments
+
+  oauth {
+    # ...
+  }
+}
+```
+
+Both switches can also be set with `SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL`
+and `SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL`; a value in the provider block
+takes precedence.
+
+#### Undocumented operations need `enable_unofficial`
+
+Some resources are built on a documented API but use one operation that SAP
+does not document. Those operations are now refused at plan time without
+`enable_unofficial`, with an error that names the operation:
+
+- `sapintegrationsuite_message_mapping`: an in-place update. SAP documents
+  reading, creating and deleting message mappings; the content update is a
+  `PUT` that works on a tenant but is not documented.
+- `sapintegrationsuite_script_collection`: an in-place update, and
+  `save_as_version` (the `SaveAsVersion` function import exists only in the
+  service's `$metadata`).
+- `sapintegrationsuite_access_policy`: changing `description` (`PATCH`).
+- `sapintegrationsuite_business_data_graph`: an in-place update and
+  deleting the graph, in addition to `enable_experimental`. SAP names the
+  PATCH URL but shows no body, and documents no delete request.
+
+`sapintegrationsuite_number_range` keeps working without the switch, but
+only with the two operations SAP documents, `POST` and `PUT`:
+
+- a refresh keeps the state instead of reading the number range, so drift
+  is not detected and `deployed_by` / `deployed_on` stay empty;
+- every update has to change `current_value_wo_version`, because SAP
+  rejects an update without a counter and the live counter can only be read
+  with the undocumented `GET`;
+- `terraform destroy`, a replacement and `terraform import` are refused;
+- create cannot check whether the name already exists.
+
+What to do: to keep the behavior of 0.2.0, set `enable_unofficial = true`.
+Otherwise, plans that need one of the operations above fail before anything
+is sent to SAP. To stop managing a number range without deleting it, use
+`terraform state rm`. Turning the switch on later is safe: the next refresh
+reads the number range and fills in what the state is missing.
+
+### New resources
+
+- `sapintegrationsuite_api_proxy` (experimental): a Classic API Management
+  API proxy, managed as its bundle ZIP. The bundle is uploaded the way SAP's
+  API Management Client SDK 3.0.6 does it (`POST Transport.svc/APIProxies`
+  with the raw ZIP) and read and deleted through `Management.svc/APIProxies`.
+  A new `content_hash` replaces the proxy, because SAP does not document
+  what an import over an existing proxy does. The provider checks that the
+  bundle's `APIProxy/<name>.xml` describes the proxy named in `name`. It
+  stays experimental until its acceptance test passes on a tenant.
+
+### Improvements
+
+- The feature catalog records a contract source for every implemented
+  feature (`sap_documentation`, `api_specification`, `sap_tooling`,
+  `metadata_only`) and the operations that work but are not documented.
+  Only an official source allows `supported`, `partial` or `read_only`;
+  something known only from `$metadata` is `unofficial` once verified on a
+  tenant and `experimental` before. `data.sapintegrationsuite_provider_feature`
+  and `data.sapintegrationsuite_provider_features` return
+  `contract_source` and `undocumented_operations`, and
+  `docs/feature-support.md` explains the sources.
+- The feature catalog now covers Integration Assessment's two services from
+  their live `$metadata`: 27 entity sets in the entities service and the
+  `ImportContent` / `ExportContent` operations of the management service.
+  No resource yet; see Known limitations.
+- The Current API Management re-audit was repeated on 2026-09-27 against 308
+  APIs in 173 Business Accelerator Hub packages. There is still no public
+  API for API artifacts, MCP servers, runtime profiles or Integration Cell
+  virtual hosts.
+
+### Fixes
 
 - Replacing the certificate of a `sapintegrationsuite_certificate` failed
-  with "Provider produced inconsistent result after apply": the plan kept the
-  old `certificate_sha256`, `subject_dn`, `issuer_dn` and `serial_number`
-  from state. They are derived from the PEM, so the plan now computes them
-  from the new certificate. Found by the acceptance run of 2026-09-27.
-- Importing a `sapintegrationsuite_key_pair` left the subject fields empty,
-  so the first apply after an import planned a replacement, which generates
-  a new key pair. The subject fields that are still empty are now filled from
-  the subject DN SAP returns for the entry.
-
-- Every request failed under Terraform with `context canceled` on the token
-  URL. The provider built its OAuth client with the context of the
-  ConfigureProvider call, which Terraform cancels as soon as that call
-  returns, so the first token fetch in a resource was already cancelled.
-  Tokens are now fetched with a context that is not tied to that call, and
-  each token request has its own 60-second limit. The first acceptance test
-  run against a real tenant found this; unit tests could not, because they
-  never cancel the context.
-- A deployment that SAP accepted but that did not reach `STARTED` before
-  its timeout (or ended in `ERROR`) was dropped from state and kept running
-  on the tenant untracked; `terraform destroy` then left it behind. All
-  deployment resources now keep such a deployment in state with its last
-  runtime status, so Terraform marks it tainted and the next apply or
-  destroy undeploys it. On a tenant, message mapping and value mapping
-  deployments sometimes stayed `STARTING` for several minutes before
-  starting; raise `timeouts.create` if that is common on yours.
-- Changing the content of an integration flow, message mapping or script
-  collection failed on a real tenant. The update sent empty `Id` and
-  `PackageId` fields, which SAP rejects for message mappings ("Update of
-  PackageId and Id are not allowed"), and SAP answers a successful update
-  with 200 and no body, which the provider tried to decode. Updates now send
-  only `Name` and `ArtifactContent` and read the new version back.
-- An integration flow or message mapping whose ZIP was exported under a
-  different ID could be created but never updated. SAP writes the artifact
-  ID into `Bundle-SymbolicName` on create and rejects every later content
-  update whose bundle ID differs (400 for flows, 500
-  `BUNDLE_SYMBOLIC_NAME_CANNOT_BE_UPDATED` for mappings). The provider now
-  uploads a copy that carries the artifact ID (and, for mappings, the same
-  name in `Provide-Capability`) and shows a warning; the local file is not
-  changed, and `content_hash` still refers to it.
-- `sapintegrationsuite_integration_flow_deployment` waited until its timeout
-  when SAP deployed a flow to another runtime. A flow with the externalized
-  parameter `SAP_ProfileId = "integrationcell"` is deployed successfully,
-  but to Integration Cell, and never appears in the Cloud Integration
-  runtime. The resource now follows the task the deploy returns
-  (`BuildAndDeployStatus`) and stops with an explanation once the task has
-  succeeded and the flow is still missing, or at once when the task fails.
-  The integration flow configuration guide shows how to set
-  `SAP_ProfileId` to `iflmap`.
-
-- Access policy artifact references now use the property names SAP's
-  `ArtifactReferences` entity actually has (`Name`, `Description`, `Type`,
-  `ConditionAttribute`, `ConditionType`, `ConditionValue`). Earlier releases
-  sent invented names (`ArtifactType`, `Attribute`, `Operator`, `Value`) and
-  could not create a reference on a real tenant. The contract was confirmed
-  from SAP's own access-policy automation in
-  `SAP/cicd-actions-for-sap-integration-suite`.
-- Access policies and references are now addressed with `Edm.Int64` keys
-  (`AccessPolicies(1901L)`) instead of quoted string keys. References are
-  created and deleted through the top-level `ArtifactReferences` entity set.
-- **Breaking:** `sapintegrationsuite_integration_adapter` and its data source
-  no longer have `type` and `application`. A tenant `$metadata` document
-  shows that `IntegrationAdapterDesigntimeArtifact` has no such properties;
-  sending them on create was a guess based on the UI's import dialog. Both
-  now expose the read-only `description` SAP takes from the *.esa file, and
-  the data source also returns `package_id`.
-- **Breaking:** `data.sapintegrationsuite_service_endpoints` returns
-  `api_definitions[].name` instead of `api_definitions[].type`. The API
-  definition entity has `Url` and `Name`, not `Type`, so `type` was always
-  empty. Endpoints now also carry `id`, `title`, `version`, `summary`,
-  `description` and `last_updated`, and entry points carry
-  `additional_information`.
-- The Partner Directory resources (string and binary parameters, alternative
-  partners, authorized users) no longer drop `runtime_location_id` from state
-  on update, and the user credential parameter no longer drops it on create
-  and read. With an Edge Integration Cell location set, Terraform previously
-  reported an inconsistent result or planned a replacement on every run.
-- **Breaking:** `sapintegrationsuite_partner_authorized_user` and its data
-  source reject `user` values with uppercase letters. SAP stores authorized
-  users lowercased (its own example creates `MyUser` and returns `myuser`),
-  so a mixed-case value could never match what SAP reported back and failed
-  after apply.
-- Creating OAuth2 client credentials failed on a real tenant after SAP had
-  already created them: SAP answers the POST with `202 Accepted` and an
-  empty body, which the client tried to decode. The next apply then failed
-  because the credential existed. The Security Content creates (OAuth2 and
-  user credentials) and the Partner Directory creates now read the entry
-  back when the response has no body, and other creates report an empty
-  response clearly instead of a JSON parse error. Access policy creates do
-  the same: a policy is found by its role name, a reference by its content
-  in the policy's reference list, since SAP assigns both IDs.
-- Updating a `sapintegrationsuite_number_range` without changing
-  `current_value_wo_version` failed on a real tenant. The update left out
-  `CurrentValue` to avoid resetting the counter, but SAP rejects a PUT
-  without it (500, nothing changed). The update now reads the live counter
-  right before the PUT and sends it back unchanged. Names with hyphens,
-  which SAP also rejects with a 500, are refused at plan time.
-- **Breaking:** `sapintegrationsuite_integration_package` has a new required
-  `short_text`. Creating a package failed on a real tenant because SAP
-  requires it ("Property 'ShortText' cannot be empty"), and updating one
-  failed because SAP answers PATCH with 501; updates now use PUT. Because
-  that PUT replaces the package, the provider reads it first and sends its
-  version, vendor and tag fields back unchanged; a PUT without them reset
-  Version and Vendor to empty on a tenant. SAP stores
-  the description as HTML and wraps plain text in `<p>...</p>`; the provider
-  removes that wrapper when reading, so plain descriptions no longer show
-  as drift. The package data source returns `short_text` as well.
-- Creating a `sapintegrationsuite_user_credential` without `kind` failed on
-  a real tenant: SAP requires `Kind` and a non-null `Description`. `kind`
-  now defaults to `default`, the value SAP reports for a generic
-  credential, and `Kind`, `Description` and `CompanyId` are always sent.
-- `data.sapintegrationsuite_partner` failed on every real tenant: SAP does
-  not support reading a single partner by key. It now filters the partner
-  list by Pid.
-- The size check for `sapintegrationsuite_partner_binary_parameter` allows
-  values up to 1,572,864 bytes, the `MaxLength` the tenant `$metadata`
-  declares for `BinaryParameter.Value`, instead of 260 KB. Older SAP pages
-  still give the lower figure; the contract tests pin the new value to the
-  `$metadata`.
-- **Breaking:** `sapintegrationsuite_api_product` could neither create nor
-  read a product on a real API Portal. SAP returns the product's links to
-  proxies and properties as `__deferred` objects, which the client tried to
-  decode as lists. A tenant test also showed that SAP answers every update
-  of a product (PUT, PATCH and MERGE) with 405 and rejects a separate
-  create of an additional property with 405. The resource now changes as
-  follows:
-  - Every attribute forces a new product. Replacing a product drops the
-    subscriptions of applications that use it, so check plans carefully.
-  - `api_proxy_names` is required. SAP refuses a product without a linked
-    proxy.
-  - `status_code` defaults to `PUBLISHED`. `DRAFT` also works and creates an
-    unpublished product. Without a status, SAP's create fails.
-  - `version`, `title`, `is_published` and `is_restricted` take the values
-    SAP sets when they are left out, for example version `1`.
-  - `additional_properties` are sent inside the create request.
-  - Refresh and import read the linked proxies and the properties from SAP,
-    so drift in both is detected. The data source's `api_proxy_names` was
-    always empty and is now filled.
-- `sapintegrationsuite_api_key_value_map` and its data source failed to
-  create or read a map on a real API Portal for the same reason: SAP returns
-  `genericKeyMapEntryValues` as a `__deferred` link. The entries are now read
-  through `GenericKeyMapEntries(...)/genericKeyMapEntryValues`.
-- Every `*_deployment` resource read the deployment status into a structure
-  that expected `ErrorInformation` as text. The tenant `$metadata` declares
-  it only as a link to a separate media entity, so a status read would fail
-  as soon as SAP includes that link. The status read now leaves it out, and
-  a failed deployment reports SAP's error text from
-  `IntegrationRuntimeArtifacts('<id>')/ErrorInformation/$value`.
-- `sapintegrationsuite_certificate` could not import a self-signed or
-  otherwise untrusted certificate, and could not change any certificate
-  after creating it. On a tenant, SAP answered the import with `409` and
-  status `notImported` until the fingerprint was confirmed, and answered a
-  replacement with `400 Entry with alias ... already exists` unless
-  `update=true` was sent. The import now sends `fingerprintVerified=true`,
-  and an update additionally sends `update=true`. Listing a certificate in
-  the configuration is therefore the decision to trust it; compare
-  `certificate_sha256` with the fingerprint you expect.
-- `save_as_version` on integration flows, message mappings and script
-  collections failed on a real tenant after SAP had saved the version: SAP
-  answers `...SaveAsVersion` with `200` and an empty body, although the
-  `$metadata` declares the artifact as its result. The provider now reads
-  the active version back when the body is empty.
-
-### Added
-
-- API discovery for the services the provider knows. `$metadata` (OData V2
-  and V4) and OpenAPI documents are parsed into one normalized model, and a
-  snapshot of each service's contract is committed under
-  `testdata/api-metadata/` (Cloud Integration and the Classic API portal so
-  far; no host names, URLs or tenant data). The client contract tests now
-  check against these snapshots, so they run in CI instead of skipping
-  without a local `$metadata` file. `go run ./cmd/apidiscovery` compares a
-  tenant's live documents with the snapshots and reports changes in
-  semantic terms (new entity sets, changed properties, removed operations),
-  separating breaking from additive ones. Every entity set of a snapshot is
-  classified as used by the provider, a candidate for a resource, or
-  excluded with a reason, and a test fails when a new one is not;
-  `docs/api-discovery-report.md` is generated from that. Make targets:
-  `api-metadata-diff`, `api-discovery`, `api-metadata-refresh`,
-  `api-discovery-report`, `testacc-metadata`.
-- `sapintegrationsuite_api_proxy` (experimental): a Classic API Management API
-  proxy managed as its bundle ZIP. The bundle is uploaded the way SAP's API
-  Management Client SDK 3.0.6 does it (`POST Transport.svc/APIProxies` with the
-  raw ZIP), read and deleted through `Management.svc/APIProxies`. A different
-  `content_hash` replaces the proxy, because SAP does not document what an
-  import over an existing proxy does. The provider checks that the bundle's
-  `APIProxy/<name>.xml` names the same proxy as `name`. It stays experimental
-  until `TestAccAPIProxy_sample` passes on a tenant.
-- Acceptance tests for the business data graph lifecycle
-  (`TestAccBusinessDataGraph_basic`, needs
-  `SAP_INTEGRATION_SUITE_ACC_GRAPH_DESTINATION`) and for Edge Integration Cell
-  targeting (`TestAccEdgeIntegrationCell_securityAndPartnerDirectory`, needs
-  `SAP_INTEGRATION_SUITE_RUNTIME_LOCATION_ID`). Both resources keep their
-  status until these pass on a tenant.
-- Capability gates for acceptance tests. A test now runs only with
-  `TF_ACC=1` and either `SAP_INTEGRATION_SUITE_ACC_ALL=1` or its capability
-  gate (for example `SAP_INTEGRATION_SUITE_ACC_CLOUD_INTEGRATION=1`), and
-  skips with the missing variable names otherwise. Destructive tests also
-  need `SAP_INTEGRATION_SUITE_ACC_DESTRUCTIVE=1` and their gate set by name;
-  `SAP_INTEGRATION_SUITE_ACC_ALL` never runs them. `go run ./cmd/accplan`
-  (`make accplan`) prints what would run and why the rest would skip. Anyone
-  who ran the acceptance tests with `TF_ACC=1` alone needs to add
-  `SAP_INTEGRATION_SUITE_ACC_ALL=1` (or `make testacc-all`).
-- `redeploy_triggers` on `sapintegrationsuite_message_mapping_deployment`,
-  `sapintegrationsuite_script_collection_deployment` and
-  `sapintegrationsuite_value_mapping_deployment`, as the integration flow
-  deployment already had. Uploading new content does not change an
-  artifact's version (tenant test, September 2026), so until now new
-  content only reached the runtime with a new version; passing the
-  artifact's `content_hash` redeploys on every content change.
-- A guide, "Integration Content and Deployments", on getting artifact ZIPs
-  out of the UI, the bundle ID, versions and redeploys, deploy times and
-  timeouts, `SAP_ProfileId`, and which content is safe to deploy.
-- `sapintegrationsuite_secure_parameter` manages Security Content "Secure
-  Parameter" artifacts, the confidential values custom adapters and scripts
-  read by alias. SAP Help documents the artifact only in the UI; the entity
-  set comes from the tenant `$metadata`, and create, read, update and delete
-  were verified on a tenant. The value is write-only
-  (`secure_param_wo` / `secure_param_wo_version`) and redeployed in place.
-- `sapintegrationsuite_number_range` reads, deletes and imports. SAP
-  documents only create and update, but a tenant test confirmed
-  `GET NumberRanges('<name>')` and `DELETE`. Read now detects drift in the
-  static fields and removes number ranges deleted outside Terraform, the new
-  `current_value`, `deployed_by` and `deployed_on` attributes report what SAP
-  holds, `terraform destroy` deletes, and `terraform import` works by name.
-  The first apply after an import records `current_value_wo_version`
-  without touching the counter. Create stops if the name already exists.
-- Experimental `sapintegrationsuite_business_data_graph` resource and data
-  source for API Composition's Configuration API, with a new optional
-  `provider.api_composition` block. Its credentials come from an API
-  Composition service instance with plan `configuration`; the Cloud
-  Integration and API Portal credentials do not work there. The schema
-  follows SAP's configuration file format, including locating cues, key
-  mappings with format strategies, `source_entity` and `exclude`. Create and
-  Update wait for SAP's asynchronous processing (`PROCESSING` until
-  `DEPLOYMENT_INITIATED` or `FAILED`, 20 minutes by default, configurable
-  with `timeouts`). A graph that ends in `FAILED` stays in state and is
-  tainted. SAP shows no PATCH body and no delete request; the provider sends
-  the writable properties and `DELETE` on the graph's URL. See the new API
-  Composition guide. This also corrects an earlier research note that named
-  the `integration-flow` plan of Process Integration Runtime for
-  configuration; that plan is for client applications consuming a graph.
-- `save_as_version` on `sapintegrationsuite_integration_flow`,
-  `sapintegrationsuite_message_mapping` and
-  `sapintegrationsuite_script_collection` saves uploaded content under an
-  explicit version through SAP's documented `…SaveAsVersion` function
-  imports. A new version is saved only when the value changes.
-- An optional `runtime_location_id` on the deployment resources, the user
-  and OAuth2 credentials, certificates, key pairs and the Partner Directory
-  resources, plus their data sources, sends requests to
-  `/location/<id>/api/v1`, the service root SAP Help documents for Edge
-  Integration Cells; import IDs accept a `location:<id>/` prefix. **Edge
-  Integration Cell targeting is not supported:** it has never been tested
-  against a tenant with an Edge Integration Cell and is outside the
-  provider's supported scope. Leave the attribute unset.
-- `sapintegrationsuite_integration_flow_configuration` sets externalized
-  parameters of an integration flow through SAP's documented
-  `$links/Configurations` update. Only the listed keys are managed, each
-  parameter's data type is kept, and unknown keys are rejected before
-  anything is written. Destroy leaves the values in place, since SAP offers
-  no way to delete a parameter.
-- `sapintegrationsuite_integration_flow_deployment` has a `redeploy_triggers`
-  map that redeploys the flow in place when it changes, so new parameter
-  values reach the runtime.
-- `sapintegrationsuite_oauth2_client_credential` and its data source gain
-  `client_authentication`, `scope_content_type`, `resource` and `audience`,
-  the property names confirmed by a tenant `$metadata`. They are optional
-  and computed, so every update resends the value SAP holds. Previously an
-  update, which is a full `PUT`, could reset settings made in the UI.
-- The keystore entry data sources return `entry_type`, `owner`, `status`,
-  `subject_dn`, `issuer_dn`, `serial_number`, `signature_algorithm`,
-  `elliptic_curve`, `certificate_version`, `validity`,
-  `fingerprint_sha1/256/512`, `created_by`, `created_time`,
-  `last_modified_by` and `last_modified_time`.
-- The feature catalog lists OAuth2 Password Credentials, OAuth2 SAML Bearer,
-  security material where-used and PGP keyrings with their current status,
-  and the Cloud Integration artifact types data type, message type, fault
-  message type and service interface, plus explicit design-time versioning.
-  Value mapping entries move from "research required" to "public API
-  incomplete": create and read are documented, per-entry delete is not.
-- Classic API Management: a catalog entry for virtual hosts (documented
-  request API, undocumented read schema), and the API Proxy entry now
-  records the upload and export calls SAP's Client SDK 3.0.6 makes.
-- `data.sapintegrationsuite_access_policy_runtime_assignments` lists the
-  runtimes an access policy is replicated to (Cloud Integration runtime,
-  Integration Cell, Edge Integration Cells) with SAP's transfer status,
-  errors and last status change. Choosing the runtimes remains a UI step
-  because writing assignments is not documented.
-- Contract tests that check every OData wire struct, key and function
-  import against a tenant `$metadata` document when one is available
-  locally. See "Checking wire contracts against `$metadata`" in
-  CONTRIBUTING.md.
-
-### Changed
-
-- **Breaking:** experimental and unofficial resources and data sources are
-  switched off by default. Set `enable_experimental = true` (for
-  `sapintegrationsuite_api_proxy` and `sapintegrationsuite_business_data_graph`)
-  or `enable_unofficial = true` (for `sapintegrationsuite_secure_parameter`
-  and the `sapintegrationsuite_access_policy_runtime_assignments` data
-  source) in the provider block, or the environment variables
-  `SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL` and
-  `SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL`. Without the switch, a
-  configuration that uses one of them fails with an error that names it, so
-  nobody relies on them by accident.
-- **Breaking:** `enable_unofficial` also switches off the undocumented
-  operations of otherwise documented resources. Without it, a plan fails
-  with an error that names the operation when it needs one of them:
-  - `sapintegrationsuite_message_mapping`: an in-place update (the content
-    is sent with PUT, which SAP does not document for message mappings);
-  - `sapintegrationsuite_script_collection`: an in-place update, and
-    `save_as_version`;
-  - `sapintegrationsuite_access_policy`: changing the description;
-  - `sapintegrationsuite_business_data_graph`: an in-place update and
-    delete, in addition to `enable_experimental`.
-
-  `sapintegrationsuite_number_range` keeps working without the switch, with
-  the operations SAP documents (create and update): a refresh keeps the
-  state instead of reading the number range, every update has to change
-  `current_value_wo_version` (SAP needs a counter in the update, and the
-  live one cannot be read without the undocumented GET), and destroy and
-  import are refused. Set `enable_unofficial = true` to keep the behavior
-  of earlier releases.
-- Support status now depends on where the contract comes from. Every
-  implemented feature names its source (`sap_documentation`,
-  `api_specification`, `sap_tooling` or `metadata_only`), and only an
-  official source allows `supported`, `partial` or `read_only`. A feature
-  that works but is known only from the service's `$metadata` gets the new
-  status `unofficial`: `sapintegrationsuite_secure_parameter` and the
-  `sapintegrationsuite_access_policy_runtime_assignments` data source.
-  Documented features list operations that work but are not documented (for
-  example the content update of message mappings and script collections, and
-  reading and deleting number ranges). The provider feature data sources
-  expose this as `contract_source` and `undocumented_operations`, and
-  `docs/feature-support.md` has a "Contract sources" section.
-- **Breaking:** `sapintegrationsuite_access_policy_reference` has a new
-  required `name` and an optional `description`. `artifact_type`, `attribute`
-  and `operator` now take SAP's wire constants (for example
-  `INTEGRATION_FLOW`, `Name`, `exactString`) and are passed through
-  unchanged instead of being checked against a closed list. The old list was
-  incomplete (it lacked Integration Package, API, Data Type and Message Type)
-  and spelled wrong. `IntegrationFlow` and `EQUALS` are rejected at plan time
-  with a pointer to the correct value.
-- `data.sapintegrationsuite_access_policy` can look a policy up by
-  `role_name` as well as by `id`. The role name is the same in every tenant;
-  the ID is not.
-- Import IDs for both access policy resources must now be numeric and are
-  checked before any request is sent.
-- The feature catalog lists MCP servers (`api_gateway.mcp_server`) as a
-  current API Management object without a public API. The other Current API
-  Management and Integration Cell entries now cite the September 2026
-  re-audit, which confirmed that none of them has a public API yet.
-- **Behavior change:** the keystore entry data sources return
-  `valid_not_before` and `valid_not_after` as RFC 3339 timestamps instead of
-  SAP's raw `/Date(...)/` literals. OData V2 date literals with a zone
-  offset are now parsed correctly.
-- `sapintegrationsuite_partner_user_credential_parameter` rotates passwords
-  and changes `user` in place. SAP documents a POST with the same Pid and Id
-  as the update for this entity (PUT is not supported), so changing
-  `password_wo_version` or `user` no longer deletes and re-creates the
-  credential, and integration flows keep a valid credential throughout.
-  Because that POST also overwrites, create now fails when the credential
-  already exists and asks for an import. The catalog lists the resource as
-  supported.
-- The feature catalog classifies OData Provisioning as having no public
-  management API instead of needing research. The `ODPAPIAccess` role that
-  earlier suggested one grants access to registered services at run time;
-  registering and configuring services is documented only in the UI.
-- The feature catalog has a new entry, `cloud_integration.archiving`, for
-  message processing log and B2B payload archiving. Activation exists in the
-  API only as a one-way switch without deactivation, so there is no
-  resource; the entry explains why. API Composition's protocol is recorded
-  as OData V4, and the Classic API Proxy entry names the official Transport
-  APIs listed on the Business Accelerator Hub.
-- The Classic API Management client is checked against an API portal's
-  `Management.svc/$metadata` by a contract test; every property and key it
-  uses exists. The same document confirms the virtual host read schema,
-  which the catalog listed as the gap, and the API proxy entity. Seven
-  entity sets the catalog did not cover yet (certificate stores and
-  certificates, applications and developers, key value maps across proxies,
-  cache resources, rate plans, policy templates, product access control)
-  have catalog entries with what the `$metadata` and the Business
-  Accelerator Hub say about them.
-- A tenant probe showed that several Security Content and Message Store
-  entity sets reject query options (`$top` and `$select` with 501,
-  `KeystoreEntries` even `$format` with 400). The provider's reads send
-  none; a regression test now keeps it that way, and CONTRIBUTING warns
-  about it. The keystore entry data sources describe the values SAP
-  actually returns for `entry_type`, `owner`, `status` and `validity`.
-- Trading Partner Management, Integration Advisor and Migration Assessment
-  were re-audited against the current documentation and the complete
-  Business Accelerator Hub package list. Their classification is unchanged;
-  the guides say what was checked.
-
-### Documentation
-
-- New `docs/research/capability-evidence-2026.md`, generated from
-  `internal/features/evidence.go`: for every catalog entry that is not fully
-  supported, the date of the latest check, the sources with their own dates,
-  the finding and the step that would change the classification. A test
-  requires a record for every such entry.
-- The ROADMAP is rewritten around priorities (P0 tenant runs that decide
-  promotions, P1 to P3, WATCH, separate providers, out of scope), each item
-  with the evidence it needs.
-- Removed outdated statements: the README said that Classic API Management
-  and most Security Content types were not implemented and that OAuth2
-  client authentication, resource and audience could not be set; the
-  references said that the API proxy had no resource. A new test fails when a
-  hand-written document says that a registered resource type does not exist
-  or is not managed.
-- The current API Management re-audit of 2026-09-26 (Hub packages of
-  2026-09-24, SAP Help of 2026-09-18, Client SDK 3.0.6) found no public API
-  for API artifacts, MCP servers, runtime profiles or Integration Cell
-  virtual hosts; they travel as integration package content. The catalog
-  records this, the new Partner Directory API in the Edge Integration Cell's
-  local package, and the tested path for Edge Integration Cell targeting.
-- New research summary `docs/research/sap-2026-public-api-gap-closure.md`:
-  method, results per area, corrected earlier conclusions, breaking changes
-  and the open items with the evidence each one needs. The ROADMAP no longer
-  claims complete public API coverage.
-- New guide "Authorization and Roles": the SAP role templates each resource
-  family needs, where they are assigned, and how to diagnose a 403.
-- The Current API Management guide was rewritten around a per-object status
-  table, the 2026 evidence (Integration Content API, Client SDK 3.0.6, SAP's
-  CI/CD tooling, What's New), MCP servers, virtual host rules, and what can
-  be automated around these objects today.
-- The Access Policies guide was rewritten around the confirmed wire
-  contract, with lifecycle side effects and upgrade steps.
-- The Integration Assessment guide records the September 2026 re-audit:
-  both APIs are OData services according to the Business Accelerator Hub,
-  their specifications still need an SAP login, and a `$metadata` document
-  fetched with a service key is the step that would unblock an
-  implementation. CONTRIBUTING describes how to fetch it.
-- New guide "Data Space Integration": which objects would suit Terraform
-  (assets, policies, contract definitions, company policies, contract
-  references), what SAP's API documentation covers (only consumer runtime
-  flows under `/api/dsi/v1`), the one-credential-set-per-connector rule, and
-  what would unblock an implementation.
-
-### Removed
-
-- **Breaking:** `reconciliation_status` on the access policy resource and
-  data source. The `AccessPolicies` entity has no such property; runtime
-  replication lives in the `AccessPolicyRuntimeAssignments` navigation
-  property, which the new runtime assignments data source reads. Existing
-  state is unaffected.
-
-## 0.1.0 - 2026-09-24
-
-Initial release. See `ROADMAP.md` for what is planned next and `docs/` for
-the API discovery this release is based on.
-
-### Added
-
-- Provider foundation: OAuth 2.0 client credentials authentication with
-  token caching, a retrying HTTP client, and an OData V2 request/pagination/
-  error-handling layer.
-- `sapintegrationsuite_integration_package` resource and data source.
-- `sapintegrationsuite_integration_flow` resource (file-based content).
-- `sapintegrationsuite_integration_flow_deployment` resource, with
-  context-aware polling instead of fixed sleeps.
-- `sapintegrationsuite_access_policy` and
-  `sapintegrationsuite_access_policy_reference` resources, plus matching
-  `data.sapintegrationsuite_access_policy` and
-  `data.sapintegrationsuite_access_policy_reference` data sources. See
-  `docs/guides/access-policies.md` for role/BTP semantics, supported
-  artifact types/attributes/operators, and runtime reconciliation findings.
-- `sapintegrationsuite_value_mapping` resource and data source (file-based
-  content), and `sapintegrationsuite_value_mapping_deployment`, sharing the
-  runtime-artifact polling and status model already proven for integration
-  flow deployments.
-- `sapintegrationsuite_message_mapping` resource and data source (file-based
-  content), and `sapintegrationsuite_message_mapping_deployment`, for the
-  reusable, package-level message mapping artifact — not the inline/local
-  message mapping step an integration flow can also define directly inside
-  its own content. Unlike `sapintegrationsuite_value_mapping`, this
-  resource has a confirmed in-place Update via `PUT`, on entity-specific
-  evidence documented in `docs/sap-api-references.md`. Reuses the same
-  shared runtime-artifact polling and status model, confirmed applicable to
-  this entity type rather than assumed.
-- `sapintegrationsuite_script_collection` resource and data source
-  (file-based content), and `sapintegrationsuite_script_collection_deployment`,
-  for reusable Groovy/JavaScript script bundles. Shares its Update model
-  with `sapintegrationsuite_message_mapping` (a confirmed in-place `PUT`,
-  on the same entity-specific evidence) and reuses the same shared
-  runtime-artifact polling and status model as every other `*_deployment`
-  resource.
-- Partner Directory support: `sapintegrationsuite_partner_string_parameter`,
-  `sapintegrationsuite_partner_binary_parameter` (file-based, with SAP's
-  documented 260 KB size limit checked before upload),
-  `sapintegrationsuite_alternative_partner` (hiding SAP's hex-encoded
-  `Hexagency`/`Hexscheme`/`Hexid` entity key behind plain
-  agency/scheme/external_id attributes), and
-  `sapintegrationsuite_partner_authorized_user` resources, each with a
-  matching data source, plus `data.sapintegrationsuite_partner` and
-  `data.sapintegrationsuite_partners` for discovery (there is no
-  `sapintegrationsuite_partner` resource: SAP documents no confirmed create
-  operation for Partners, and deleting one is documented as cascading to
-  every entity belonging to it). See `docs/guides/partner-directory.md`.
-- `sapintegrationsuite_partner_user_credential_parameter`, a
-  security-sensitive Partner Directory resource using a write-only
-  `password_wo` attribute (Terraform CLI 1.11+) paired with a
-  `password_wo_version` marker, since Terraform never stores the password
-  and this provider never reads one back from SAP.
-- CSRF token handling in the shared HTTP client for every modifying
-  (POST/PUT/PATCH/DELETE) request: SAP's OData V2 services protect writes
-  with an `X-CSRF-Token` independently of OAuth, and this had no handling
-  anywhere in this provider before now. Fetches and retries transparently
-  when SAP asks for a token; a no-op when it does not.
-- Generic server-driven paging (`__next` link following) in the OData v2
-  client, so a large collection (Partner Directory's String Parameters in
-  particular) is read completely rather than silently truncated to its
-  first page.
-- A machine-readable provider feature support catalog
-  (`internal/features`), queryable via `data.sapintegrationsuite_provider_features`
-  and `data.sapintegrationsuite_provider_feature` with no SAP host or
-  OAuth credentials required — this provider's `Configure` no longer fails
-  just because SAP connectivity is unconfigured; every SAP-backed resource
-  and data source instead reports a clear, specific error when actually
-  used without one. See `docs/feature-support.md`.
-- Provider scope, boundary, architecture, and API discovery documentation.
-- `sapintegrationsuite_user_credential` and `sapintegrationsuite_oauth2_client_credential`
-  resources (plus matching data sources) for SAP's Security Content API, the first
-  Security Content credential artifacts this provider manages. Both use write-only
-  `password_wo`/`client_secret_wo` attributes paired with a `_wo_version` marker (the
-  same pattern as `sapintegrationsuite_partner_user_credential_parameter`), but unlike
-  that resource, both have a confirmed in-place Update via `PUT` (SAP documents an
-  "Edit and redeploy" action for Credentials artifacts), so rotating a secret redeploys
-  the credential rather than replacing the resource. A dedicated
-  `internal/client/securitycontent` client package backs both. See
-  `docs/guides/security-content.md` for the full security model, which fields could and
-  could not be confirmed, and why most other Security Content artifact types (keystore
-  entries, certificates, key pairs, SSH keys, certificate chains, secure parameters,
-  known hosts) are not implemented yet.
-- `data.sapintegrationsuite_service_endpoints`, a read-only discovery data source for
-  SAP's `ServiceEndpoints` API: the runtime entry point URLs and API definition links
-  SAP generates for deployed Cloud Integration content. Supports the documented `name`/
-  `protocol` filters, combines `EntryPoints`/`ApiDefinitions` expansion into a single
-  request, fetches every page via server-driven paging, and sorts its result
-  deterministically since SAP does not document a guaranteed response order. There is
-  deliberately no matching resource (SAP offers no create/update/delete API for these)
-  and no singular per-endpoint lookup (uniqueness of `name` is not confirmed) — see
-  `docs/guides/service-endpoints.md`.
-- A generated "Feature Support" dashboard in `README.md`, between
-  `<!-- BEGIN GENERATED FEATURE SUPPORT -->`/`<!-- END GENERATED FEATURE SUPPORT -->`
-  markers, produced by `go run ./cmd/gendocs -readme` (also run by `make docs`) from the
-  same `internal/features/catalog.go` that already generates `docs/feature-support.md`,
-  so the two can never drift apart into independently maintained copies. Grouped by
-  domain, using the ✅/⚠️/👁️/🧪/❌ icon legend, and — unlike the README table it
-  replaces — shows unsupported and out-of-scope features alongside supported ones, not
-  just a curated list of what works.
-- `sapintegrationsuite_integration_adapter`, `data.sapintegrationsuite_integration_adapter`,
-  and `sapintegrationsuite_integration_adapter_deployment` for custom Integration Adapter
-  design-time and runtime management (Cloud Foundry environment only — SAP does not expose this
-  artifact type in Neo). This is the SAP Adapter SDK `*.esa` upload lifecycle, distinct from
-  importing a prebundled SAP Business Accelerator Hub adapter from inside the integration flow
-  editor and from tenant capability activation. SAP's own "Example Requests" documentation for
-  this entity confirms only Delete and Deploy (unlike the complete example set backing every
-  sibling design-time artifact type), which confirmed two structural findings that differ from
-  every other design-time resource in this provider: the entity is keyed by `Id` alone, not a
-  composite `(Id, Version)` key, and the deploy action takes no `Version` query parameter.
-  Because SAP documents that importing a duplicate `Id` is rejected as an error, and no
-  reimport/update example was found, this resource implements no in-place update at all — every
-  attribute is `RequiresReplace`. See `docs/guides/integration-adapters.md` for the full
-  breakdown of what is confirmed versus inferred by analogy.
-- `sapintegrationsuite_custom_tag_configuration` and its matching data source, for the
-  tenant-wide Custom Tag Configuration — the set of attributes integration package owners
-  classify their packages with. Unlike every other resource this provider manages, this is a
-  tenant-level singleton, addressed by a single confirmed fixed key ("CustomTags"), and Create/
-  Update both call the same confirmed `POST .../CustomTagConfigurations?Overwrite=true`
-  operation, sending the complete desired tag list every time. `tags` and each tag's
-  `permitted_values` are modeled as Terraform sets rather than lists, since SAP's documentation
-  never states that submission or response order carries meaning, so a reordered response from
-  SAP never produces a spurious plan diff. Delete deliberately returns an explicit error instead
-  of a real destroy operation: this project specifically reverified SAP's documentation for a
-  delete or clear mechanism and found none anywhere, and guessing that an empty overwrite means
-  "delete everything" was rejected as unsafe for tenant-wide governance configuration. See
-  `docs/guides/custom-tag-configurations.md`.
-- Go 1.27.1 (up from 1.25.0), terraform-plugin-framework v1.19.0 (up from v1.17.0), and
-  terraform-plugin-go v0.31.0 (up from v0.29.0), upgraded together since v0.31.0 requires the
-  `GenerateResourceConfig` RPC that only landed in framework v1.19.0. Every other dependency,
-  direct and transitive, is now on a current stable release rather than whatever minimum version
-  selection happened to resolve — including replacing a `google.golang.org/grpc` prerelease
-  pseudo-version that had crept into `go.sum` with a real tagged release. See SECURITY.md for
-  why grpc is deliberately pinned one release behind the very latest.
-- Every GitHub Actions workflow now runs against current action releases
-  (`actions/checkout@v7`, `actions/setup-go@v7`, `golangci-lint-action@v9` pinned to
-  `golangci-lint` v2.13.2, `hashicorp/setup-terraform@v4`) instead of versions that had drifted
-  behind what those actions currently require, which is why lint CI had started failing before
-  ever reaching the actual linters.
-- `sapintegrationsuite_number_range`, a write-only-lifecycle resource for Cloud Integration
-  Number Ranges: SAP documents confirmed `Create`/`Update` for this entity but no `GET` or
-  `DELETE` anywhere, so Read is a documented no-op that trusts state rather than contacting SAP,
-  and Import/Delete both refuse explicitly with an actionable error instead of guessing at an
-  unconfirmed operation. The runtime counter (`CurrentValue`) is a version-gated write-only
-  attribute (`current_value_wo`/`current_value_wo_version`), never an ordinary reconciled field,
-  so an apply that only changes static configuration can never reset a counter that has since
-  advanced through live EDI/EDIFACT processing. Variables, Data Stores, and Data Store Entries
-  were evaluated in the same research pass and are deliberately unsupported: no independent
-  creation API, and/or the object is runtime business data, not desired-state configuration. See
-  `docs/guides/runtime-stores-and-number-ranges.md`.
-- Security Content keystore management: `data.sapintegrationsuite_keystore_entry` and
-  `data.sapintegrationsuite_keystore_entries` for read-only entry discovery,
-  `sapintegrationsuite_certificate` for X.509 certificate lifecycle management (drift detection
-  uses a locally-computed SHA-256 fingerprint of the DER bytes, not raw PEM text, so re-wrapped or
-  CRLF-converted PEM content never causes a spurious diff), and `sapintegrationsuite_key_pair` for
-  SAP-generated key pairs — private key material never enters this provider or its state. There is
-  no separate "SSH Key" resource: SAP's own documentation treats it as the same Key Pair mechanism.
-  Certificate Chain, Secure Parameter, and Known Hosts were evaluated and remain unimplemented,
-  either without a confirmed public contract or without any public API at all. See
-  `docs/guides/security-content.md`.
-- Research findings for SAP's current, API-artifact-centric API Management model (API Artifacts,
-  Runtime Profiles, Integration Cell, Virtual Hosts, Policies, Reusable API Artifacts) and for Edge
-  Integration Cell: after a thorough documentation pass covering both areas, this provider found no
-  public API for API Artifacts or their deployment, Integration Cell activation/runtime status, or
-  Integration Cell/Edge Integration Cell Virtual Hosts — real, UI-documented SAP functionality with
-  no REST/OData contract behind it. Edge Integration Cell's own local monitoring API
-  (`/local/api/v1`, Message Processing Logs/Message Stores) and Operations Cockpit API
-  (`/local/api/eic/v1`) are confirmed real and reachable, but excluded as runtime/monitoring data
-  and Kubernetes-adjacent operational configuration respectively, the same category this provider
-  already excludes for Cloud Integration's own Message Processing Logs. See
-  `docs/guides/current-api-management.md` and `docs/guides/edge-integration-cell.md`.
-- Classic API Management: an optional, independent `provider.api_management` configuration block
-  (and matching `SAP_INTEGRATION_SUITE_API_MANAGEMENT_*` environment variables) authenticating
-  against the API Portal's own `apiportal-apiaccess` service plan, entirely separate from the
-  `oauth` block used for Cloud Integration. A new `internal/client/apimanagementclassic` package
-  backs four resources, each scoped to exactly what SAP's `Management.svc` OData API confirms:
-  `sapintegrationsuite_api_provider` (Create/Read/Delete only — SAP's own Piper tooling documents
-  create-only support for this entity — Internet connection type only, with bounded jittered-backoff
-  polling after Create to wait out SAP's documented ~20-second eventual-consistency window),
-  `sapintegrationsuite_api_product` (full CRUD, confirmed verbatim from SAP's own worked Create/
-  Update examples, including reconciled custom `additional_properties`),
-  `sapintegrationsuite_api_management_certificate_store_reference` (full CRUD — the best-confirmed
-  object in this whole provider, with complete request/response bodies documented for every
-  operation), and `sapintegrationsuite_api_key_value_map` (Create/Read/Delete, unencrypted maps
-  only — this provider could not confirm how an encrypted entry's value is returned by `GET`, so it
-  rejects `encrypted = true` outright rather than risk leaking a secret into state). Matching data
-  sources exist for all four. Classic API Proxy, its deployment, and its policy model are
-  deliberately not implemented: the entity, its `GET`/`DELETE`, and its ZIP bundle structure are
-  all confirmed, but no reachable primary source shows the Create/Update wire format for the bundle
-  content itself. See `docs/guides/classic-api-management.md`.
-- Research findings, without any resulting resources, for Integration Assessment (a separate BTP
-  service with a fully confirmed 19-entity inventory but no confirmed field-level schema for any
-  entity), Trading Partner Management (no public API found for any design-time object across
-  roughly ninety documentation pages; agreement activation is confirmed to push generated entries
-  into the Partner Directory this provider already manages directly), Integration Advisor (no
-  public API found across roughly eighty-five pages; artifact injection into Cloud Integration is a
-  confirmed UI wizard with no REST equivalent), and Migration Assessment (no public API for its own
-  objects — it is documented as an API *consumer* of a registered source system's own SAP Process
-  Orchestration APIs — and every object is action-triggered workflow or reporting output by nature,
-  so this conclusion would hold even if an API were later confirmed). See
-  `docs/guides/integration-assessment.md`, `docs/guides/trading-partner-management.md`,
-  `docs/guides/integration-advisor.md`, and `docs/guides/migration-assessment.md`.
-- A full sweep of the remaining Integration Suite capability surface against current SAP
-  documentation, adding two previously-uncatalogued areas (API Composition's Business Data Graph —
-  the strongest confirmed-but-unimplemented finding in this whole catalog, with complete verbatim
-  Create/Read/Update worked examples; OData Provisioning) and reclassifying three placeholders with
-  real evidence in place of guesses (Event Mesh and Developer Hub are both tracked as
-  `separate_provider`, deliberately excluded because each belongs to a different provider's
-  boundary by design — Developer Hub is planned as its own, independently versioned Terraform
-  provider, working name `Prideth/terraform-provider-sap-developer-hub`; Data Space Integration is
-  confirmed `research_required` with a real, separately credentialed API; Open Connectors is a
-  deliberate `out_of_scope` judgment, a catalog of 170+ independent third-party connector types
-  that does not fit this provider's schema-first design). See `docs/provider-scope.md` and
-  `docs/sap-api-references.md`.
-
-### Changed
-
-- `sapintegrationsuite_value_mapping` no longer implements Update via
-  `PUT`. Re-verifying the Value Mapping API contract found no confirmed
-  in-place update path for this entity set (unlike
-  `sapintegrationsuite_integration_flow`'s equivalent, which is confirmed);
-  `name`, `content`, and `content_hash` are now `RequiresReplace`, so
-  changing any of them replaces the resource instead of relying on an
-  unverified `PUT`. See `docs/sap-api-references.md` for the full
-  reasoning and `docs/resource-design.md` for what was checked.
-- `sapintegrationsuite_access_policy`'s Update now sends a PATCH payload
-  containing only `Description`, instead of resending the immutable
-  `RoleName` unchanged on every description update.
-- The `security.certificate_user_mapping` feature catalog entry is corrected from
-  `public_api: true` / `not_implemented` to `public_api: false` / `no_public_api`:
-  reverifying it found SAP's certificate-to-user mapping documentation exists only for
-  the Neo environment, with no Cloud Foundry equivalent, and this provider targets
-  Cloud Foundry.
-- `docs/feature-support.md` no longer carries a UTF-8 byte-order mark. `cmd/gendocs` now writes
-  it (and `README.md`'s generated feature table) directly with `os.WriteFile` instead of relying
-  on a shell to redirect stdout into the file, which was the actual source of the BOM — a
-  Windows shell's redirection can prepend one where a POSIX shell's never does, so the file's
-  bytes previously depended on which platform last regenerated it.
-- Documentation CI now also fails if `README.md`'s generated feature table is out of date, not
-  only `docs/`, and its failure message now correctly says to run `make docs` instead of a
-  `go generate ./...` command this project has never used.
-- The `terraform-fmt` lint job now runs against a small matrix (Terraform 1.11.0, the documented
-  floor for write-only attribute support, and 1.16.3, the current stable release) instead of
-  whatever `hashicorp/setup-terraform` happened to install by default.
-- `sapintegrationsuite_api_provider`'s `password_wo` attribute is now also marked `Sensitive`,
-  matching every other credential-shaped write-only attribute in this provider (it was previously
-  `WriteOnly` without `Sensitive`, an inconsistency a repository-wide hardening audit found and
-  corrected before this release).
+  with "Provider produced inconsistent result after apply", because the plan
+  kept the old `certificate_sha256`, `subject_dn`, `issuer_dn` and
+  `serial_number`. They are derived from the PEM, so the plan now computes
+  them from the new certificate.
+- After `terraform import`, a `sapintegrationsuite_key_pair` had empty
+  subject fields, so the next apply planned a replacement, which would have
+  generated a new key pair. The empty subject fields are now filled from the
+  subject DN SAP returns.
 
 ### Known limitations
 
-- `sapintegrationsuite_value_mapping` has no in-place update (see Changed
-  above); SAP separately documents a `ValueMappingDesigntimeArtifactSaveAsVersion`
-  action this provider does not yet use, deferred to v0.2.x pending
-  confirmation of its exact contract.
-- Whether `sapintegrationsuite_value_mapping`'s,
-  `sapintegrationsuite_message_mapping`'s, or
-  `sapintegrationsuite_script_collection`'s Delete removes only the active
-  version or every version of the artifact has not been confirmed against
-  a primary source.
-- Individual value mapping entries are not yet manageable through this
-  provider — see `docs/resource-design.md`.
-- `sapintegrationsuite_access_policy`'s `reconciliation_status` is
-  best-effort and not polled to a terminal state: SAP's documentation
-  confirms access policies can be replicated to the Cloud Integration
-  runtime, Integration Cell, and Edge Integration Cell with a per-runtime
-  `Fail`/`Success`/`Pending` reconciliation status, but this project could
-  not confirm that mechanism is exposed through the public `AccessPolicies`
-  OData API as opposed to being UI-only. See
-  `docs/guides/access-policies.md`.
-- The exact wire-format casing SAP's `AccessPolicies` OData API expects for
-  `Attribute` (`Name`/`Id`) and `Operator` (`EQUALS`/`MATCHES`) enum values
-  has not been confirmed against a live tenant or `$metadata`.
-- `sapintegrationsuite_partner_user_credential_parameter` has no in-place
-  update and no password read-back — a permanent property of its security
-  model, not a gap expected to close later. See
-  `docs/guides/partner-directory.md`.
-- Whether `sapintegrationsuite_partner_authorized_user`'s `user` value is
-  case-normalized by SAP internally has not been confirmed against a
-  primary source; this provider does not normalize it.
-- There is no `sapintegrationsuite_partner` resource. SAP documents no
-  confirmed create operation for `Partners`, and deleting one is
-  documented as capable of cascading to every entity that belongs to it —
-  see `docs/guides/partner-directory.md`.
-- `sapintegrationsuite_user_credential` and `sapintegrationsuite_oauth2_client_credential`
-  never read a password/client secret back from SAP — a permanent property of their
-  security model. `sapintegrationsuite_oauth2_client_credential` also only exposes name,
-  description, token service URL, client ID, client secret, and scope; grant type
-  placement, client authentication mode, resource, audience, and custom parameters are
-  documented by SAP but not yet implemented. See `docs/guides/security-content.md`.
-- `data.sapintegrationsuite_service_endpoints`'s `ApiDefinitions[].url` JSON property
-  casing is inferred by consistency with the independently confirmed `EntryPoints[].url`
-  casing (confirmed from SAP's own open-source Piper library), not independently
-  confirmed itself. Whether a fresh deployment's service endpoint appears immediately or
-  after a propagation delay is also unconfirmed — see `docs/guides/service-endpoints.md`.
-- `sapintegrationsuite_integration_adapter` has no in-place update: every attribute is
-  `RequiresReplace`. Its Create request shape is corroborated by analogy to sibling
-  design-time artifact types rather than confirmed by an SAP-published example for this
-  specific entity, `type`/`application` are not validated against a fixed value set (not
-  confirmed as a closed enum), and there is no `sapintegrationsuite_integration_adapters`
-  collection data source (no confirmed list/filter contract for this entity set). Its
-  deployment resource reuses the shared runtime-artifact status/undeploy mechanism by
-  analogy, not independent confirmation for this artifact type. See
-  `docs/guides/integration-adapters.md`.
-- `sapintegrationsuite_custom_tag_configuration` does not support `terraform destroy`: SAP
-  documents no delete or clear operation for the CustomTagConfigurations API at all, and
-  Delete returns an explicit error rather than a guessed implementation. Whether
-  `Overwrite=true` performs a full replace (removing tags not present in the new list) is
-  strongly implied but not stated explicitly by SAP's documentation, and whether tag names
-  must be unique, whether permitted values are case-sensitive, and whether SAP preserves
-  submitted ordering are all unconfirmed. See `docs/guides/custom-tag-configurations.md`.
-- `sapintegrationsuite_number_range` has no Read, no Import, and no Delete — see the Added entry
-  above and `docs/guides/runtime-stores-and-number-ranges.md` for the full reasoning.
-- `sapintegrationsuite_api_provider` has no in-place Update (every attribute is
-  `RequiresReplace`) and only supports the "Internet" connection type; SAP documents three
-  further connection types (On Premise, Open Connectors, Cloud Integration) with no confirmed
-  field-level JSON mapping this provider could find. `sapintegrationsuite_api_product`'s
-  `api_proxy_names` is set only at Create time (also `RequiresReplace`), since SAP's confirmed
-  Update payload never includes that association. `sapintegrationsuite_api_key_value_map` has no
-  in-place Update and does not support encrypted maps at all. There is no
-  `sapintegrationsuite_api_proxy` resource — see `docs/guides/classic-api-management.md` for all
-  four limitations in full.
-- No acceptance tests exist in this repository yet. Every phase of this provider's development so
-  far has worked from documentation research without live SAP tenant credentials, so test coverage
-  is unit-test (`httptest`-based) only; the `TF_ACC=1`-gated acceptance test workflow and
-  convention are in place for future contributors with tenant access. See `CONTRIBUTING.md`.
+- Integration Assessment has no resources yet. The entities service has
+  entity sets for vendors, applications and application instances, but
+  whether they can be created, changed and deleted has not been tested on a
+  tenant.
+- Tenant checks of value mapping entries (September 2026) showed that
+  `UpsertValMaps` dropped design-time values, a duplicate source value became
+  the new default, and `DeleteValMaps` answered 202 without deleting
+  anything. Value mapping entries are therefore classified as unsafe for a
+  Terraform lifecycle and stay unimplemented.
+- Creating a data type through `DataTypeDesigntimeArtifacts` failed on a
+  tenant with a 500 ("map is null"); the remaining design-time types (message
+  types, fault message types, service interfaces) stay unimplemented until
+  a create works.
+
+### For contributors
+
+- API discovery: `$metadata` (OData V2 and V4) and OpenAPI documents are
+  parsed into one normalized model, and a snapshot of each service's
+  contract is committed under `testdata/api-metadata/` without host names or
+  tenant data. `go run ./cmd/apidiscovery` compares live documents with the
+  snapshots and reports semantic changes, breaking ones separately; official
+  REST specifications can be read from a local directory (`-spec-dir`).
+  Every entity set is classified as used, candidate or excluded, and
+  `docs/api-discovery-report.md` is generated from that.
+- Acceptance tests are gated by capability: a test runs only with `TF_ACC=1`
+  and either `SAP_INTEGRATION_SUITE_ACC_ALL=1` or its own gate (for example
+  `SAP_INTEGRATION_SUITE_ACC_CLOUD_INTEGRATION=1`), and skips with the
+  missing variable names otherwise. Destructive tests also need
+  `SAP_INTEGRATION_SUITE_ACC_DESTRUCTIVE=1` and their gate set by name.
+  `go run ./cmd/accplan` prints what would run. `TF_ACC=1` alone no longer
+  runs anything.
+- `go run ./cmd/repohygiene` checks commit authorship and message style; CI
+  runs it on every push.
+- `docs/research/capability-evidence-2026.md` is generated from
+  `internal/features/evidence.go` and gives, for every feature that is not
+  fully supported, the date of the last check, the sources and the step
+  that would change the classification.
+
+## 0.2.0 — prepared, not yet published
+
+Source state of 2026-09-26, commit `9d65cfa`.
+
+### Highlights
+
+- This is the first release that works against a real tenant. 0.1.0 could
+  not authenticate under Terraform at all (see its entry below). On
+  2026-09-26 the provider ran against a tenant for the first time, through
+  acceptance tests and API probes, and the defects those runs found are
+  fixed here. Integration adapters, business data graphs and Edge
+  Integration Cell targeting were not part of those runs.
+- The wire contracts were checked against tenant `$metadata` documents and
+  against SAP's own tooling. Several resources sent property names SAP does
+  not have; they are corrected, some of them with breaking schema changes.
+- Externalized integration flow parameters, explicit design-time versions,
+  secure parameters and full number range management are new, as is an
+  experimental resource for API Composition business data graphs.
+
+### Upgrade from 0.1.0
+
+0.1.0 failed every request to SAP (see below), so it cannot have created or
+imported any SAP object. In practice the upgrade touches only your
+configuration. Attributes that were removed from a schema are dropped from
+state silently on the first refresh.
+
+| Resource or data source | Change to make |
+|---|---|
+| `sapintegrationsuite_integration_package` | Add the new required `short_text`. SAP rejects a package without it. |
+| `sapintegrationsuite_access_policy_reference` | Add the new required `name`. Use SAP's constants: `INTEGRATION_FLOW` instead of `IntegrationFlow`, `exactString` instead of `EQUALS`. |
+| `sapintegrationsuite_integration_adapter` and data source | Remove `type` and `application`; the entity has neither. |
+| `data.sapintegrationsuite_service_endpoints` | Read `api_definitions[*].name` instead of `api_definitions[*].type`. |
+| `sapintegrationsuite_partner_authorized_user` and data source | Write `user` in lowercase. SAP stores it lowercased. |
+| `sapintegrationsuite_api_product` | Set `api_proxy_names`, now required. Every attribute now forces a new product. |
+| `sapintegrationsuite_access_policy` and data source | Remove references to `reconciliation_status`. Use `data.sapintegrationsuite_access_policy_runtime_assignments`. |
+| Keystore entry data sources | `valid_not_before` / `valid_not_after` are RFC 3339 timestamps now, no longer `/Date(...)/` literals. |
+
+Integration package, before and after:
+
+```terraform
+# 0.1.0
+resource "sapintegrationsuite_integration_package" "order_processing" {
+  id          = "ORDER_PROCESSING"
+  name        = "Order Processing"
+  description = "Order intake and confirmation flows"
+}
+
+# 0.2.0
+resource "sapintegrationsuite_integration_package" "order_processing" {
+  id          = "ORDER_PROCESSING"
+  name        = "Order Processing"
+  short_text  = "Order intake and confirmation"
+  description = "Order intake and confirmation flows"
+}
+```
+
+Access policy reference, before and after:
+
+```terraform
+# 0.1.0
+resource "sapintegrationsuite_access_policy_reference" "order_flows" {
+  access_policy_id = sapintegrationsuite_access_policy.order_team.id
+  artifact_type    = "IntegrationFlow"
+  attribute        = "Name"
+  operator         = "EQUALS"
+  value            = "ORDER_INTAKE"
+}
+
+# 0.2.0
+resource "sapintegrationsuite_access_policy_reference" "order_flows" {
+  access_policy_id = sapintegrationsuite_access_policy.order_team.id
+  name             = "Order intake flow"
+  artifact_type    = "INTEGRATION_FLOW"
+  attribute        = "Name"
+  operator         = "exactString"
+  value            = "ORDER_INTAKE"
+}
+```
+
+The provider rejects `IntegrationFlow` and `EQUALS` at plan time with a
+pointer to the correct value. Every attribute of a reference forces
+replacement, as before.
+
+### Breaking changes
+
+Each of these is part of the table above. Why they changed:
+
+- **Integration package `short_text` is required.** Creating a package
+  failed on a tenant with "Property 'ShortText' cannot be empty". Updates
+  now use `PUT` (SAP answers `PATCH` with 501). Because that `PUT` replaces
+  the whole package, the provider reads the package first and sends its
+  version, vendor and tag fields back unchanged; without them SAP reset
+  `Version` and `Vendor` to empty. SAP stores the description as HTML and
+  wraps plain text in `<p>...</p>`; the provider strips that wrapper, so a
+  plain description no longer shows as drift. Adding `short_text` to an
+  existing package is an in-place update.
+- **Access policy reference.** 0.1.0 sent property names the
+  `ArtifactReferences` entity does not have (`ArtifactType`, `Attribute`,
+  `Operator`, `Value`) and could not create a reference on a tenant. The
+  real names (`Name`, `Description`, `Type`, `ConditionAttribute`,
+  `ConditionType`, `ConditionValue`) and constants come from SAP's own
+  access policy automation in `SAP/cicd-actions-for-sap-integration-suite`.
+  `artifact_type`, `attribute` and `operator` now pass SAP's constants
+  through instead of checking a closed list, which was incomplete (it
+  lacked Integration Package, API, Data Type and Message Type).
+- **Integration adapter `type` and `application` removed.** The tenant
+  `$metadata` shows that `IntegrationAdapterDesigntimeArtifact` has neither
+  property; sending them was a guess based on the UI's import dialog. Both
+  the resource and the data source now expose the read-only `description`
+  SAP takes from the `.esa` file, and the data source returns `package_id`.
+- **Service endpoints `api_definitions[*].type` renamed to `name`.** The API
+  definition entity has `Url` and `Name`, so `type` was always empty.
+  Endpoints now also return `id`, `title`, `version`, `summary`,
+  `description` and `last_updated`; entry points return
+  `additional_information`.
+- **Authorized users must be lowercase.** SAP lowercases the user (its own
+  example creates `MyUser` and returns `myuser`), so a mixed-case value
+  could never match what SAP reported back.
+- **API product is replace-only.** 0.1.0 could neither create nor read a
+  product: SAP returns the links to proxies and properties as `__deferred`
+  objects. A tenant also answered every update (`PUT`, `PATCH`, `MERGE`)
+  with 405 and refused a product without a linked proxy. Every attribute
+  now forces a new product; replacing a product drops the subscriptions of
+  applications that use it, so read plans carefully. `status_code`
+  defaults to `PUBLISHED` (`DRAFT` also works). `additional_properties` are
+  sent inside the create request, and refresh and import read the linked
+  proxies and properties, so drift in both is detected.
+- **Access policy `reconciliation_status` removed.** The `AccessPolicies`
+  entity has no such property. Runtime replication is a separate navigation
+  property, which the new runtime assignments data source reads.
+- **Keystore dates.** `valid_not_before` and `valid_not_after` are RFC 3339
+  timestamps. OData V2 date literals with a zone offset are now parsed
+  correctly.
+
+### New resources
+
+- `sapintegrationsuite_integration_flow_configuration` sets externalized
+  parameters of an integration flow through SAP's documented
+  `$links/Configurations` update. Only the keys you list are managed, each
+  parameter keeps its data type, and unknown keys are rejected before
+  anything is written. `terraform destroy` leaves the values in place,
+  because SAP offers no way to delete a parameter. Combine it with
+  `redeploy_triggers` on the deployment to bring new values to the runtime.
+- `sapintegrationsuite_secure_parameter` manages Security Content secure
+  parameters, the confidential values that custom adapters and scripts read
+  by alias. The value is write-only (`secure_param_wo` together with
+  `secure_param_wo_version`) and is never stored in state. Requires
+  Terraform 1.11 or later.
+- `sapintegrationsuite_business_data_graph` (experimental) manages an API
+  Composition business data graph through the Configuration API. It needs
+  the new optional `provider.api_composition` block with credentials from an
+  API Composition service instance of plan `configuration`; the Cloud
+  Integration and API portal credentials do not work there. Create and
+  update wait for SAP's asynchronous processing (`PROCESSING` until
+  `DEPLOYMENT_INITIATED` or `FAILED`, 20 minutes by default, configurable
+  with `timeouts`). A graph that ends in `FAILED` stays in state and is
+  marked tainted. Not yet tested against a tenant.
+
+### New data sources
+
+- `data.sapintegrationsuite_access_policy_runtime_assignments` lists the
+  runtimes an access policy is replicated to (Cloud Integration runtime,
+  Integration Cell, Edge Integration Cells) with SAP's transfer status,
+  errors and last status change. Choosing the runtimes remains a UI step.
+- `data.sapintegrationsuite_business_data_graph` (experimental).
+
+### Improvements to existing resources
+
+- `save_as_version` on `sapintegrationsuite_integration_flow`,
+  `sapintegrationsuite_message_mapping` and
+  `sapintegrationsuite_script_collection` saves the uploaded content under a
+  version you name, through the `...SaveAsVersion` function imports. A
+  version is saved only when the value changes. Uploading new content does
+  not change an artifact's version by itself (tenant test), and deployments
+  redeploy only when the version they point at changes, so this is the
+  clearest way to get new content to the runtime.
+- The integration flow, message mapping, script collection and value
+  mapping deployments have `redeploy_triggers`, a map that redeploys in
+  place when it changes. Passing the artifact's `content_hash` redeploys on
+  every content change.
+- A deployment that SAP accepted but that did not reach `STARTED` before its
+  timeout, or ended in `ERROR`, now stays in state with its last status and
+  is marked tainted. Earlier it was dropped from state and kept running on
+  the tenant untracked. The integration flow deployment also follows the
+  deploy task (`BuildAndDeployStatus`) and stops with an explanation when
+  SAP deployed the flow to another runtime, for example because
+  `SAP_ProfileId` is `integrationcell`.
+- `sapintegrationsuite_number_range` reads, deletes and imports by name.
+  SAP documents only create and update, but a tenant confirmed
+  `GET NumberRanges('<name>')` and `DELETE`. Refresh now detects drift in
+  the static fields; the new `current_value`, `deployed_by` and
+  `deployed_on` report what SAP holds. The first apply after an import
+  records `current_value_wo_version` without touching the counter, and
+  create stops if the name already exists. Updates that keep the counter
+  read the live value right before the `PUT` and send it back, because SAP
+  rejects a `PUT` without `CurrentValue`. Names with hyphens, which SAP
+  rejects, are refused at plan time.
+- `sapintegrationsuite_oauth2_client_credential` and its data source gain
+  `client_authentication`, `scope_content_type`, `resource` and `audience`.
+  They are optional and computed, so an update (a full `PUT`) resends what
+  SAP holds instead of resetting settings made in the UI.
+- `sapintegrationsuite_partner_user_credential_parameter` rotates the
+  password and changes `user` in place. SAP documents a `POST` with the
+  same keys as the update for this entity, so a rotation no longer deletes
+  and re-creates the credential, and integration flows keep a valid
+  credential throughout. Because that `POST` overwrites, create fails when
+  the credential already exists and asks for an import.
+- `sapintegrationsuite_user_credential`: `kind` defaults to `default`, the
+  value SAP reports for a generic credential. SAP requires it.
+- `data.sapintegrationsuite_access_policy` looks a policy up by `role_name`
+  as well as by `id`; the role name is the same in every tenant, the ID is
+  not. Import IDs of both access policy resources must be numeric and are
+  checked before any request.
+- The keystore entry data sources return `entry_type`, `owner`, `status`,
+  `subject_dn`, `issuer_dn`, `serial_number`, `signature_algorithm`,
+  `elliptic_curve`, `certificate_version`, `validity`, SHA-1/256/512
+  fingerprints and the created/modified metadata.
+- `sapintegrationsuite_partner_binary_parameter` accepts values up to
+  1,572,864 bytes, the `MaxLength` the tenant `$metadata` declares, instead
+  of 260 KB.
+- Integration flows and message mappings whose ZIP was exported under a
+  different ID can be updated. SAP writes the artifact ID into
+  `Bundle-SymbolicName` on create and rejects every later update whose
+  bundle ID differs. The provider uploads a copy with the artifact ID (and,
+  for mappings, the same name in `Provide-Capability`) and shows a warning;
+  your file is not changed.
+
+### SAP API corrections found on a tenant
+
+- Every request failed with `context canceled` on the token URL. The OAuth
+  client was built with the context of the provider's configure call, which
+  Terraform cancels as soon as that call returns. Tokens are now fetched
+  with a context that outlives it, with a 60-second limit per request.
+- SAP answers several successful writes with `200` or `202` and no body:
+  content updates, `SaveAsVersion`, and the creates of OAuth2 and user
+  credentials, Partner Directory entries and access policies. The provider
+  reads the object back instead of failing on the empty body, which had left
+  objects on the tenant that the next apply then failed to create.
+- Content updates sent empty `Id` and `PackageId` fields, which SAP rejects
+  for message mappings. Updates now send only `Name` and `ArtifactContent`.
+- `data.sapintegrationsuite_partner` failed on every tenant, because SAP
+  does not support reading a single partner by key. It now filters the
+  partner list by `Pid`.
+- `sapintegrationsuite_api_key_value_map` could not create or read a map,
+  because SAP returns the entries as a `__deferred` link. They are read
+  through `GenericKeyMapEntries(...)/genericKeyMapEntryValues`.
+- Deployment status reads expected `ErrorInformation` as text; SAP declares
+  it as a link to a media entity. A failed deployment now reports SAP's
+  error text from `.../ErrorInformation/$value`.
+- `sapintegrationsuite_certificate` could not import a self-signed or
+  otherwise untrusted certificate (409 `notImported`) and could not replace
+  a certificate (400 "already exists"). The import now sends
+  `fingerprintVerified=true`, an update also `update=true`. Listing a
+  certificate in your configuration is therefore the decision to trust it;
+  compare `certificate_sha256` with the fingerprint you expect.
+- Access policies and references are addressed with `Edm.Int64` keys
+  (`AccessPolicies(1901L)`), and references are created and deleted through
+  the top-level `ArtifactReferences` entity set.
+- The Partner Directory resources no longer drop `runtime_location_id` from
+  state on update or read.
+
+### Known limitations
+
+- `runtime_location_id` on the deployment, credential, certificate, key pair
+  and Partner Directory resources sends requests to `/location/<id>/api/v1`,
+  the service root SAP Help documents for Edge Integration Cells. It has not
+  been tested against a tenant with an Edge Integration Cell and is **not
+  supported**; leave it unset.
+- The business data graph resource has not been run against a live system.
+  SAP shows no PATCH body and no delete request; the provider sends the
+  writable properties and `DELETE` on the graph's URL.
+- Reading, deleting and importing number ranges, and the secure parameter
+  entity set, rely on operations that SAP does not document but that worked
+  on a tenant in September 2026.
+- There is still no API proxy resource; value mapping entries and the
+  remaining Security Content types (certificate chains, known hosts, PGP
+  keyrings) are not implemented.
+
+### For contributors
+
+- Acceptance tests (`TF_ACC=1`) exist for the content, deployment,
+  Security Content, Partner Directory, access policy and Classic API
+  Management resources. Content tests use SAP's public integration content
+  samples, or local exports named by an environment variable.
+- Contract tests check every OData wire struct, key and function import
+  against a tenant `$metadata` document when one is available locally.
+
+### Documentation
+
+- New guides: "Authorization and Roles" (the SAP role templates each
+  resource family needs and how to diagnose a 403), "Integration Content and
+  Deployments" (artifact ZIPs, bundle IDs, versions, redeploys, deploy times,
+  `SAP_ProfileId`), "API Composition" and "Data Space Integration".
+- Rewritten: the Access Policies guide (confirmed wire contract, upgrade
+  steps) and the Current API Management guide (a status table per object and
+  the 2026 evidence).
+- `docs/research/sap-2026-public-api-gap-closure.md` summarizes the 2026
+  re-audit: method, results per area and the earlier conclusions it
+  corrected.
+
+## 0.1.0 — 2026-09-24
+
+The first release, built from documentation research without access to a
+tenant.
+
+### Known issue, found after the release
+
+0.1.0 cannot talk to SAP under Terraform. It built its OAuth client with the
+context of the provider's configure call, which Terraform cancels as soon as
+that call returns, so every request fails with `context canceled` on the
+token URL. Only the feature catalog data sources, which make no request,
+work. Use 0.2.0 or later.
+
+### Resources and data sources
+
+Cloud Integration content:
+
+- `sapintegrationsuite_integration_package` (resource and data source).
+- `sapintegrationsuite_integration_flow` and
+  `sapintegrationsuite_integration_flow_deployment`, with content uploaded
+  from a local ZIP file and deployments polled until they start.
+- `sapintegrationsuite_value_mapping`, `sapintegrationsuite_message_mapping`
+  and `sapintegrationsuite_script_collection`, each with a data source and a
+  `*_deployment` resource.
+- `sapintegrationsuite_integration_adapter` (with data source) and
+  `sapintegrationsuite_integration_adapter_deployment` for custom adapters
+  (`.esa` files, Cloud Foundry only).
+- `data.sapintegrationsuite_service_endpoints` for the entry points and API
+  definitions of deployed content.
+- `sapintegrationsuite_custom_tag_configuration` (with data source), the
+  tenant-wide custom tag configuration.
+- `sapintegrationsuite_number_range`.
+
+Security:
+
+- `sapintegrationsuite_access_policy` and
+  `sapintegrationsuite_access_policy_reference`, each with a data source.
+- `sapintegrationsuite_user_credential` and
+  `sapintegrationsuite_oauth2_client_credential` (with data sources), whose
+  secrets are write-only attributes.
+- `sapintegrationsuite_certificate`, `sapintegrationsuite_key_pair` (SAP
+  generates the private key; it never reaches Terraform), and the
+  `keystore_entry` / `keystore_entries` data sources.
+
+Partner Directory:
+
+- `sapintegrationsuite_partner_string_parameter`,
+  `sapintegrationsuite_partner_binary_parameter`,
+  `sapintegrationsuite_alternative_partner`,
+  `sapintegrationsuite_partner_authorized_user`, each with a data source,
+  and `sapintegrationsuite_partner_user_credential_parameter`.
+- `data.sapintegrationsuite_partner`, `data.sapintegrationsuite_partners`
+  and `data.sapintegrationsuite_partner_string_parameters`.
+
+Classic API Management, through a separate `provider.api_management` block:
+
+- `sapintegrationsuite_api_provider`, `sapintegrationsuite_api_product`,
+  `sapintegrationsuite_api_management_certificate_store_reference` and
+  `sapintegrationsuite_api_key_value_map`, each with a data source, plus
+  `data.sapintegrationsuite_api_providers`.
+
+Provider:
+
+- OAuth 2.0 client credentials with token caching and a one-time refresh on
+  401, retries, CSRF token handling for OData writes and server-driven
+  paging.
+- `data.sapintegrationsuite_provider_feature` and
+  `data.sapintegrationsuite_provider_features`: the feature catalog, usable
+  without SAP credentials.
+
+### Design decisions
+
+- Secrets are write-only attributes paired with a `*_wo_version` marker, and
+  are never read back or stored. Terraform 1.11 or later is required for
+  them.
+- `sapintegrationsuite_value_mapping` has no in-place update; `name`,
+  `content` and `content_hash` force replacement, because no update path was
+  documented for value mappings.
+- `sapintegrationsuite_number_range` read nothing from SAP and refused import
+  and destroy, because SAP documents only create and update. (0.2.0 added
+  read, delete and import after a tenant test.)
+- `sapintegrationsuite_custom_tag_configuration` cannot be destroyed: SAP
+  documents no delete or clear operation for the tenant-wide configuration.
+- `sapintegrationsuite_api_provider` and `sapintegrationsuite_api_key_value_map`
+  have no in-place update; key value maps must be unencrypted, because it
+  was not confirmed how SAP returns an encrypted value.
+- There is no `sapintegrationsuite_partner` resource: SAP documents no
+  create for partners, and deleting one cascades to everything that belongs
+  to it.
+
+### Known limitations
+
+- No acceptance tests had been run against a tenant; coverage was unit tests
+  against recorded responses.
+- The access policy reference constants, the `reconciliation_status`
+  attribute and the integration adapter's `type` and `application` were
+  assumptions; 0.2.0 corrected all of them against a tenant.
+- API proxies, certificate chains, secure parameters, known hosts and value
+  mapping entries were not implemented.
