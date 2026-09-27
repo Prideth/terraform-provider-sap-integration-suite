@@ -6,8 +6,7 @@ wrong, what changed in the provider, and what is still open. It is written for m
 contributors. Per-object evidence lives in `docs/sap-api-references.md` and in the feature
 catalog (`internal/features/catalog.go`); user-facing explanations live in the guides.
 
-All changes are on the branch `feature/sap-2026-api-gap-closure` and listed in the Unreleased
-section of `CHANGELOG.md`.
+The changes were integrated into `dev` on 2026-09-27 and are listed in `CHANGELOG.md`.
 
 ## Why a re-audit was needed
 
