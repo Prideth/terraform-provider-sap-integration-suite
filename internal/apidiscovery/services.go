@@ -51,9 +51,20 @@ type Service struct {
 	// Env lists the environment variables Resolve reads.
 	Env []string
 	// Resolve returns the service root and credentials from the
-	// environment, or the names of the variables that are missing.
+	// environment, or the names of the variables that are missing. Nil for
+	// a service whose contract comes only from an official specification.
 	Resolve func(getenv func(string) string) (root string, creds Credentials, missing []string)
+	// Specification names the official document to download when the
+	// contract is not served by the service itself (a REST API whose
+	// OpenAPI document is published on the Business Accelerator Hub). The
+	// discovery then reads it from the -spec-dir directory as <ID>.json,
+	// <ID>.yaml or <ID>.xml and never calls the service.
+	Specification string
 }
+
+// SpecificationOnly reports whether the service's contract comes only from
+// a downloaded official specification.
+func (s Service) SpecificationOnly() bool { return s.Resolve == nil }
 
 // Services is every service root the discovery knows. A root belongs here
 // only with supported evidence: SAP documentation, a service key field, or
@@ -80,14 +91,32 @@ var Services = []Service{
 		Resolve: apiManagementService("/apiportal/api/1.0/Management.svc"),
 	},
 	{
-		ID: "classic-api-management-transport", Title: "Classic API Management, API portal Transport.svc",
+		ID: "classic-api-management-transport", Title: "Classic API Management, API portal Transport API (REST)",
+		Protocol:     apimeta.ProtocolOpenAPI,
+		Capabilities: []string{CapAPIManagementClassic},
+		Families:     []string{"api_management_classic"},
+		Evidence: "Business Accelerator Hub, package APIMgmt, API \"API Portal - Transport (CF)\" (REST, " +
+			"APIPortal_Transport_CF); SAP API Management Client SDK 3.0.6 imports and exports proxies through " +
+			"/apiportal/api/1.0/Transport.svc/APIProxies.",
+		Specification: "api.sap.com/api/APIPortal_Transport_CF, API specification download (JSON)",
+	},
+	{
+		ID: "classic-api-management-content-archive", Title: "Classic API Management, API portal Content Archive Transport API (REST)",
+		Protocol:     apimeta.ProtocolOpenAPI,
+		Capabilities: []string{CapAPIManagementClassic},
+		Families:     []string{"api_management_classic"},
+		Evidence: "Business Accelerator Hub, package APIMgmt, API \"API Portal - Content Archive Transport (CF)\" " +
+			"(REST, APIPortal_Content_Archive_Transport_CF); used by the Client SDK 3.0.6 for multi-proxy export.",
+		Specification: "api.sap.com/api/APIPortal_Content_Archive_Transport_CF, API specification download (JSON)",
+	},
+	{
+		ID: "classic-api-management-virtual-host-request", Title: "Classic API Management, virtual host requests (OData)",
 		Protocol:     apimeta.ProtocolODataV2,
 		Capabilities: []string{CapAPIManagementClassic},
 		Families:     []string{"api_management_classic"},
-		Evidence: "SAP API Management Client SDK 3.x (APIProxyClient imports and exports proxies through " +
-			"/apiportal/api/1.0/Transport.svc/APIProxies); Business Accelerator Hub package API Portal - Transport (CF).",
-		Env:     apiManagementEnv,
-		Resolve: apiManagementService("/apiportal/api/1.0/Transport.svc"),
+		Evidence: "Business Accelerator Hub, package APIMgmt, API \"API Portal - Virtual Host Request (CF)\" " +
+			"(OData, APIPortal_VirtualHostRequest_CF); SAP Help, Configuring a Default Domain for a Virtual Host.",
+		Specification: "api.sap.com/api/APIPortal_VirtualHostRequest_CF, API specification download (EDMX)",
 	},
 	{
 		ID: "edge-integration-cell", Title: "Cloud Integration APIs of an Edge Integration Cell runtime location",
@@ -135,6 +164,14 @@ var Services = []Service{
 			"(SAP Help, Integration Assessment APIs).",
 		Env:     integrationAssessmentEnv("MANAGEMENT_URL"),
 		Resolve: prefixedService("SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_", "MANAGEMENT_URL", ""),
+	},
+	{
+		ID: "data-space-integration", Title: "Data Space Integration API (DSIAPI, REST)",
+		Protocol:      apimeta.ProtocolOpenAPI,
+		Capabilities:  []string{CapDataSpaceIntegration},
+		Families:      []string{"data_space_integration"},
+		Evidence:      "Business Accelerator Hub, package dataspaceintegration, API DSIAPI 2.0.0 (REST).",
+		Specification: "api.sap.com/api/DSIAPI, API specification download (JSON)",
 	},
 }
 
@@ -199,6 +236,9 @@ func Lookup(id string) (Service, bool) {
 // Configured reports whether the environment has everything the service
 // needs, and lists what is missing (variable names only, never values).
 func (s Service) Configured() (bool, []string) {
+	if s.SpecificationOnly() {
+		return false, []string{"official specification (" + s.Specification + ")"}
+	}
 	_, _, missing := s.Resolve(os.Getenv)
 	sort.Strings(missing)
 	return len(missing) == 0, missing

@@ -1,6 +1,7 @@
 package apidiscovery
 
 import (
+	"context"
 	"testing"
 
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/apimeta"
@@ -75,5 +76,44 @@ func TestCandidatesNameCatalogEntries(t *testing.T) {
 				t.Errorf("%s: exclusion %s has no reason", id, r.Name+r.Prefix)
 			}
 		}
+	}
+}
+
+// A REST contract's operations are classified like entity sets, so an
+// OpenAPI snapshot with an unclassified operation fails the test above.
+func TestClassifyRESTOperations(t *testing.T) {
+	s := &apimeta.Service{ID: "rest-example", Protocol: apimeta.ProtocolOpenAPI, REST: &apimeta.RESTContract{
+		Operations: []apimeta.RESTOperation{{Method: "POST", Path: "/assets", OperationID: "createAsset"}},
+	}}
+	rows := Classify(s)
+	if len(rows) != 1 || rows[0].Kind != "rest operation" || rows[0].Name != "POST /assets" || rows[0].Status != StatusUnclassified {
+		t.Fatalf("rows = %+v", rows)
+	}
+}
+
+// Services whose contract is only published as a download never call a
+// service and report the document to fetch.
+func TestSpecificationOnlyServices(t *testing.T) {
+	found := 0
+	for _, svc := range Services {
+		if !svc.SpecificationOnly() {
+			if svc.Specification != "" {
+				t.Errorf("%s has both a live root and a specification", svc.ID)
+			}
+			continue
+		}
+		found++
+		if svc.Specification == "" {
+			t.Errorf("%s: no specification named", svc.ID)
+		}
+		if ok, missing := svc.Configured(); ok || len(missing) != 1 {
+			t.Errorf("%s: Configured() = %v, %v", svc.ID, ok, missing)
+		}
+		if _, err := Fetch(context.Background(), svc); err == nil {
+			t.Errorf("%s: Fetch must refuse a specification-only service", svc.ID)
+		}
+	}
+	if found == 0 {
+		t.Fatal("no specification-only service; expected the REST APIs of the API portal and DSIAPI")
 	}
 }

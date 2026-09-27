@@ -20,15 +20,18 @@ SAP documentation, official SAP tooling, or a safe verification on a tenant
 
 ## Services
 
-| Service | Protocol | Snapshot | Entity sets | Operations | Used | Candidates | Excluded |
-|---|---|---|---:|---:|---:|---:|---:|
-| [cloud-integration](#cloud-integration) | OData V2 | 2026-09-26 | 131 | 35 | 38 | 36 | 92 |
-| [classic-api-management](#classic-api-management) | OData V2 | 2026-09-26 | 61 | 1 | 7 | 19 | 36 |
-| [classic-api-management-transport](#classic-api-management-transport) | OData V2 | none yet | | | | | |
-| [edge-integration-cell](#edge-integration-cell) | OData V2 | none yet | | | | | |
-| [api-composition-configuration](#api-composition-configuration) | OData V4 | none yet | | | | | |
-| [integration-assessment-entities](#integration-assessment-entities) | OData V2 | none yet | | | | | |
-| [integration-assessment-management](#integration-assessment-management) | OData V2 | none yet | | | | | |
+| Service | Protocol | Snapshot | Entity sets | Operations | REST operations | Used | Candidates | Excluded |
+|---|---|---|---:|---:|---:|---:|---:|---:|
+| [cloud-integration](#cloud-integration) | OData V2 | 2026-09-26 | 131 | 35 | 0 | 38 | 36 | 92 |
+| [classic-api-management](#classic-api-management) | OData V2 | 2026-09-26 | 61 | 1 | 0 | 7 | 19 | 36 |
+| [classic-api-management-transport](#classic-api-management-transport) | OpenAPI | none yet | | | | | | |
+| [classic-api-management-content-archive](#classic-api-management-content-archive) | OpenAPI | none yet | | | | | | |
+| [classic-api-management-virtual-host-request](#classic-api-management-virtual-host-request) | OData V2 | none yet | | | | | | |
+| [edge-integration-cell](#edge-integration-cell) | OData V2 | none yet | | | | | | |
+| [api-composition-configuration](#api-composition-configuration) | OData V4 | none yet | | | | | | |
+| [integration-assessment-entities](#integration-assessment-entities) | OData V2 | none yet | | | | | | |
+| [integration-assessment-management](#integration-assessment-management) | OData V2 | none yet | | | | | | |
+| [data-space-integration](#data-space-integration) | OpenAPI | none yet | | | | | | |
 
 ## cloud-integration
 
@@ -222,13 +225,33 @@ Classic API Management, API portal Management.svc.
 
 ## classic-api-management-transport
 
-Classic API Management, API portal Transport.svc.
+Classic API Management, API portal Transport API (REST).
+
+- Protocol: OpenAPI
+- Evidence for the service root: Business Accelerator Hub, package APIMgmt, API "API Portal - Transport (CF)" (REST, APIPortal_Transport_CF); SAP API Management Client SDK 3.0.6 imports and exports proxies through /apiportal/api/1.0/Transport.svc/APIProxies.
+- Acceptance suites: `SAP_INTEGRATION_SUITE_ACC_API_MANAGEMENT_CLASSIC`
+- Contract source: the official specification, api.sap.com/api/APIPortal_Transport_CF, API specification download (JSON); saved as classic-api-management-transport.json, .yaml or .xml in the directory given to `-spec-dir`
+- Snapshot: none yet. Create one with `go run ./cmd/apidiscovery -services classic-api-management-transport -update` (with `-spec-dir <dir>` for a specification), then classify what it lists.
+
+## classic-api-management-content-archive
+
+Classic API Management, API portal Content Archive Transport API (REST).
+
+- Protocol: OpenAPI
+- Evidence for the service root: Business Accelerator Hub, package APIMgmt, API "API Portal - Content Archive Transport (CF)" (REST, APIPortal_Content_Archive_Transport_CF); used by the Client SDK 3.0.6 for multi-proxy export.
+- Acceptance suites: `SAP_INTEGRATION_SUITE_ACC_API_MANAGEMENT_CLASSIC`
+- Contract source: the official specification, api.sap.com/api/APIPortal_Content_Archive_Transport_CF, API specification download (JSON); saved as classic-api-management-content-archive.json, .yaml or .xml in the directory given to `-spec-dir`
+- Snapshot: none yet. Create one with `go run ./cmd/apidiscovery -services classic-api-management-content-archive -update` (with `-spec-dir <dir>` for a specification), then classify what it lists.
+
+## classic-api-management-virtual-host-request
+
+Classic API Management, virtual host requests (OData).
 
 - Protocol: OData V2
-- Evidence for the service root: SAP API Management Client SDK 3.x (APIProxyClient imports and exports proxies through /apiportal/api/1.0/Transport.svc/APIProxies); Business Accelerator Hub package API Portal - Transport (CF).
+- Evidence for the service root: Business Accelerator Hub, package APIMgmt, API "API Portal - Virtual Host Request (CF)" (OData, APIPortal_VirtualHostRequest_CF); SAP Help, Configuring a Default Domain for a Virtual Host.
 - Acceptance suites: `SAP_INTEGRATION_SUITE_ACC_API_MANAGEMENT_CLASSIC`
-- Configuration: `SAP_INTEGRATION_SUITE_API_MANAGEMENT_HOST`, `SAP_INTEGRATION_SUITE_API_MANAGEMENT_TOKEN_URL`, `SAP_INTEGRATION_SUITE_API_MANAGEMENT_CLIENT_ID`, `SAP_INTEGRATION_SUITE_API_MANAGEMENT_CLIENT_SECRET`
-- Snapshot: none yet. Fetch one with `go run ./cmd/apidiscovery -services classic-api-management-transport -update` once the service is configured, then classify its entity sets.
+- Contract source: the official specification, api.sap.com/api/APIPortal_VirtualHostRequest_CF, API specification download (EDMX); saved as classic-api-management-virtual-host-request.json, .yaml or .xml in the directory given to `-spec-dir`
+- Snapshot: none yet. Create one with `go run ./cmd/apidiscovery -services classic-api-management-virtual-host-request -update` (with `-spec-dir <dir>` for a specification), then classify what it lists.
 
 ## edge-integration-cell
 
@@ -238,7 +261,7 @@ Cloud Integration APIs of an Edge Integration Cell runtime location.
 - Evidence for the service root: SAP Help, Edge Integration Cell: runtime-specific APIs under <tenant>/location/<runtime location ID>/api/v1.
 - Acceptance suites: `SAP_INTEGRATION_SUITE_ACC_EDGE_INTEGRATION_CELL`
 - Configuration: `SAP_INTEGRATION_SUITE_HOST`, `SAP_INTEGRATION_SUITE_TOKEN_URL`, `SAP_INTEGRATION_SUITE_CLIENT_ID`, `SAP_INTEGRATION_SUITE_CLIENT_SECRET`, `SAP_INTEGRATION_SUITE_RUNTIME_LOCATION_ID`
-- Snapshot: none yet. Fetch one with `go run ./cmd/apidiscovery -services edge-integration-cell -update` once the service is configured, then classify its entity sets.
+- Snapshot: none yet. Create one with `go run ./cmd/apidiscovery -services edge-integration-cell -update` (with `-spec-dir <dir>` for a specification), then classify what it lists.
 
 ## api-composition-configuration
 
@@ -248,7 +271,7 @@ API Composition, Configuration API (business data graph).
 - Evidence for the service root: SAP Help, API Composition Configuration API: <host>/configuration/v1/sap.graph with a service key of plan configuration; Business Accelerator Hub lists the API as OData V4.
 - Acceptance suites: `SAP_INTEGRATION_SUITE_ACC_API_COMPOSITION`
 - Configuration: `SAP_INTEGRATION_SUITE_API_COMPOSITION_HOST`, `SAP_INTEGRATION_SUITE_API_COMPOSITION_TOKEN_URL`, `SAP_INTEGRATION_SUITE_API_COMPOSITION_CLIENT_ID`, `SAP_INTEGRATION_SUITE_API_COMPOSITION_CLIENT_SECRET`
-- Snapshot: none yet. Fetch one with `go run ./cmd/apidiscovery -services api-composition-configuration -update` once the service is configured, then classify its entity sets.
+- Snapshot: none yet. Create one with `go run ./cmd/apidiscovery -services api-composition-configuration -update` (with `-spec-dir <dir>` for a specification), then classify what it lists.
 
 ## integration-assessment-entities
 
@@ -258,7 +281,7 @@ Integration Assessment, entities API (landscape and ISA-M data).
 - Evidence for the service root: Service key of Integration Assessment APIs: field "entities" is the service root (SAP Help, Integration Assessment APIs).
 - Acceptance suites: `SAP_INTEGRATION_SUITE_ACC_INTEGRATION_ASSESSMENT`
 - Configuration: `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_ENTITIES_URL`, `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_TOKEN_URL`, `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_CLIENT_ID`, `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_CLIENT_SECRET`
-- Snapshot: none yet. Fetch one with `go run ./cmd/apidiscovery -services integration-assessment-entities -update` once the service is configured, then classify its entity sets.
+- Snapshot: none yet. Create one with `go run ./cmd/apidiscovery -services integration-assessment-entities -update` (with `-spec-dir <dir>` for a specification), then classify what it lists.
 
 ## integration-assessment-management
 
@@ -268,4 +291,14 @@ Integration Assessment, management API (requests).
 - Evidence for the service root: Service key of Integration Assessment APIs: field "management" is the service root (SAP Help, Integration Assessment APIs).
 - Acceptance suites: `SAP_INTEGRATION_SUITE_ACC_INTEGRATION_ASSESSMENT`
 - Configuration: `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_MANAGEMENT_URL`, `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_TOKEN_URL`, `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_CLIENT_ID`, `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_CLIENT_SECRET`
-- Snapshot: none yet. Fetch one with `go run ./cmd/apidiscovery -services integration-assessment-management -update` once the service is configured, then classify its entity sets.
+- Snapshot: none yet. Create one with `go run ./cmd/apidiscovery -services integration-assessment-management -update` (with `-spec-dir <dir>` for a specification), then classify what it lists.
+
+## data-space-integration
+
+Data Space Integration API (DSIAPI, REST).
+
+- Protocol: OpenAPI
+- Evidence for the service root: Business Accelerator Hub, package dataspaceintegration, API DSIAPI 2.0.0 (REST).
+- Acceptance suites: `SAP_INTEGRATION_SUITE_ACC_DATA_SPACE_INTEGRATION`
+- Contract source: the official specification, api.sap.com/api/DSIAPI, API specification download (JSON); saved as data-space-integration.json, .yaml or .xml in the directory given to `-spec-dir`
+- Snapshot: none yet. Create one with `go run ./cmd/apidiscovery -services data-space-integration -update` (with `-spec-dir <dir>` for a specification), then classify what it lists.

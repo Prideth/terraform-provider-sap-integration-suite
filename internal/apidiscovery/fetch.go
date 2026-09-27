@@ -34,6 +34,9 @@ type Result struct {
 // contain the service root or credentials, only the service ID and the
 // HTTP status.
 func Fetch(ctx context.Context, svc Service) (*Result, error) {
+	if svc.SpecificationOnly() {
+		return nil, fmt.Errorf("%s: contract comes only from the official specification (%s)", svc.ID, svc.Specification)
+	}
 	root, creds, missing := svc.Resolve(os.Getenv)
 	if len(missing) > 0 {
 		return nil, fmt.Errorf("%s: not configured, missing %s", svc.ID, strings.Join(missing, ", "))

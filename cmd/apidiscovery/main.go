@@ -52,6 +52,7 @@ func main() {
 		report   = flag.String("report", "", "write the discovery report to this file")
 		failOn   = flag.String("fail-on", "provider-breaking", "exit non-zero on: none, provider-breaking, breaking, additive")
 		rawDir   = flag.String("raw-dir", "", "also save each fetched document here (keep it outside the repository)")
+		specDir  = flag.String("spec-dir", "", "directory with official specifications downloaded from api.sap.com, named <service>.json, .yaml or .xml")
 	)
 	flag.Var(from, "from", "use a local document for a service: service=file (repeatable)")
 	flag.Parse()
@@ -68,7 +69,15 @@ func main() {
 
 	exit := 0
 	for _, svc := range selected {
-		code := runService(svc, from[svc.ID], *offline, *update, *failOn, *rawDir)
+		file := from[svc.ID]
+		if file == "" && *specDir != "" {
+			file = specFile(*specDir, svc.ID)
+		}
+		if file == "" && svc.SpecificationOnly() {
+			fmt.Printf("\n=== %s\nSKIPPED: official specification not provided (%s)\n", svc.ID, svc.Specification)
+			continue
+		}
+		code := runService(svc, file, *offline, *update, *failOn, *rawDir)
 		if code > exit {
 			exit = code
 		}
@@ -184,6 +193,17 @@ func runService(svc apidiscovery.Service, fromFile string, offline, update bool,
 		}
 	}
 	return code
+}
+
+// specFile returns the specification of a service in dir, or "".
+func specFile(dir, id string) string {
+	for _, ext := range []string{".json", ".yaml", ".yml", ".xml", ".edmx"} {
+		p := filepath.Join(dir, id+ext)
+		if _, err := os.Stat(p); err == nil {
+			return p
+		}
+	}
+	return ""
 }
 
 func obtain(svc apidiscovery.Service, fromFile string, offline bool) (*apimeta.Service, []byte, []string, error) {

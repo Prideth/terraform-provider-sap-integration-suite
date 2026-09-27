@@ -47,12 +47,22 @@ const (
 	srcTenant      = "tenant probes and acceptance runs on a development tenant (September 2026)"
 	srcExport      = "a package export of the development tenant (2026-09-26): API artifacts and data types travel as package content"
 	srcCatalog     = "earlier catalog research, recorded in the feature's limitations"
+	srcHubSearch   = "Business Accelerator Hub: the API artifacts of 173 Integration Suite, API Management, Edge, Graph and BTP packages (308 APIs) searched for API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API deployment, API policy, reusable API, proxy, transport and gateway (2026-09-27); the package list was unchanged since 2026-09-26"
+	srcSDKCheck    = "Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6"
 )
 
 const checked = "2026-09-26"
 
 func ev(finding, next string, sources ...string) EvidenceRecord {
 	return EvidenceRecord{CheckedOn: checked, Sources: sources, Finding: finding, NextStep: next}
+}
+
+// reaudited is ev for the current API Management family, checked again on
+// 2026-09-27 with the Hub search and the SDK version check.
+func reaudited(finding, next string, sources ...string) EvidenceRecord {
+	r := ev(finding, next, append(sources, srcHubSearch, srcSDKCheck)...)
+	r.CheckedOn = "2026-09-27"
+	return r
 }
 
 // Evidence holds a record for every feature that is not StatusSupported.
@@ -184,11 +194,11 @@ var Evidence = map[string]EvidenceRecord{
 		"Create, read and delete documented; no update (SAP's Piper tooling says create only). A tenant create failed with DEST_CREATION_FAILED_AUTH_ISSUE.",
 		"Whether the create works on the tenant through the UI (pending tenant check #6), and field mappings for the other connection types.",
 		srcHelp, srcMetaAPIM, srcTenant),
-	"api_management.classic.api_proxy": ev(
+	"api_management.classic.api_proxy": reaudited(
 		"Upload through Transport.svc as SAP's Client SDK does it, read and delete through Management.svc; the update semantics of an import over an existing proxy are undocumented.",
 		"TestAccAPIProxy_sample passing on a tenant promotes the resource from experimental.",
 		srcSDK, srcHubAPIM, srcMetaAPIM, srcRecipes, srcTenant),
-	"api_management.classic.api_proxy_deployment": ev(
+	"api_management.classic.api_proxy_deployment": reaudited(
 		"Imported proxies are deployed by default; no public call deploys or undeploys an existing proxy.",
 		"A documented deploy or undeploy call.",
 		srcHelp, srcSDK),
@@ -234,35 +244,35 @@ var Evidence = map[string]EvidenceRecord{
 		srcHelp, srcMetaAPIM, srcTenant),
 
 	// --- Current API Management ---
-	"api_gateway.api_artifact": ev(
+	"api_gateway.api_artifact": reaudited(
 		"No public API: the Hub's APIMgmt and CloudIntegrationAPI packages, the Client SDK and SAP Help describe API artifacts only in the UI. API artifacts travel as package content (resourceType API) and reach another tenant only through package export/import (POST IntegrationPackages with PackageContent) or transport.",
 		"An API artifact API from SAP. Until then, whole-package import is the only public path; it is opaque to individual API artifacts and not modelled.",
 		srcHubAPIM, srcHubCI, srcHubPackages, srcSDK, srcHelp, srcWhatsNew, srcExport, srcCICD),
-	"api_gateway.api_artifact_deployment": ev(
+	"api_gateway.api_artifact_deployment": reaudited(
 		"Deployment is a UI action; IntegrationRuntimeArtifacts is not documented for API artifacts.",
 		"tenant-probe -GapTests records whether deployed API artifacts appear among the runtime artifact types; a documented deploy call is still needed.",
 		srcHelp, srcHubCI),
-	"api_gateway.api_policy": ev(
+	"api_gateway.api_policy": reaudited(
 		"Policies are edited inside the API artifact; no separate lifecycle.",
 		"Depends on an API artifact API.",
 		srcHelp),
-	"api_gateway.reusable_api_artifact": ev(
+	"api_gateway.reusable_api_artifact": reaudited(
 		"Released 2026-07-05 as a UI feature; same blocker as API artifacts.",
 		"Depends on an API artifact API.",
 		srcWhatsNew, srcHelp),
-	"api_gateway.mcp_server": ev(
+	"api_gateway.mcp_server": reaudited(
 		"MCP Gateway (2026-07-05) and remote MCP servers (2026-09-20) are UI features; MCP servers travel as package content.",
 		"An MCP server API from SAP.",
 		srcWhatsNew, srcHelp, srcHubAPIM, srcSDK),
-	"api_gateway.runtime_profile": ev(
+	"api_gateway.runtime_profile": reaudited(
 		"Enabled under Settings > Integrations only; the Runtime Profiles page lists no Integration Cell row.",
 		"An API; even then a weak data source.",
 		srcHelp),
-	"integration_cell.runtime": ev(
+	"integration_cell.runtime": reaudited(
 		"Activation, status and configuration are UI-only.",
 		"An Integration Cell API.",
 		srcHelp, srcHubPackages),
-	"integration_cell.virtual_host": ev(
+	"integration_cell.virtual_host": reaudited(
 		"Managed in Monitor > Integrations and APIs > Virtual Host only.",
 		"A virtual host API for Integration Cell.",
 		srcHelp, srcHubPackages),
@@ -298,11 +308,11 @@ var Evidence = map[string]EvidenceRecord{
 		"Activated under Manage Capabilities; no API.",
 		"None expected.",
 		srcHelp, srcHubPackages),
-	"capabilities.api_gateway": ev(
+	"capabilities.api_gateway": reaudited(
 		"Activated with the API Management capability in the UI; no API.",
 		"None expected.",
 		srcHelp, srcHubPackages),
-	"capabilities.integration_cell": ev(
+	"capabilities.integration_cell": reaudited(
 		"Activated under Settings > Runtime; no API.",
 		"None expected.",
 		srcHelp, srcHubPackages),

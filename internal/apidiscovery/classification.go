@@ -129,6 +129,12 @@ func Classify(s *apimeta.Service) []Row {
 	for _, sg := range s.Singletons {
 		rows = append(rows, classify("singleton", sg.Name, sg.EntityType, usage.EntitySets[sg.Name]))
 	}
+	if s.REST != nil {
+		for _, op := range s.REST.Operations {
+			name := op.Method + " " + op.Path
+			rows = append(rows, classify("rest operation", name, op.OperationID, usage.Operations[name]))
+		}
+	}
 	for _, op := range s.Operations {
 		if op.Bound || op.Kind == apimeta.KindFunction || op.Kind == apimeta.KindAction {
 			continue // reached through an entity or an import

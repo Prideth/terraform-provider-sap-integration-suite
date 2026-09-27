@@ -4,6 +4,11 @@
 
 BINARY := terraform-provider-sap-integration-suite
 
+# Directory with official specifications downloaded from api.sap.com for the
+# REST APIs discovery cannot fetch itself (see CONTRIBUTING.md).
+SPEC_DIR ?=
+SPEC_FLAG := $(if $(SPEC_DIR),-spec-dir $(SPEC_DIR))
+
 build:
 	go build -o $(BINARY) .
 
@@ -37,17 +42,17 @@ accplan:
 # Compare the live contracts with the snapshots; fail only on breaking
 # changes to what the provider uses.
 api-metadata-diff:
-	go run ./cmd/apidiscovery -fail-on provider-breaking
+	go run ./cmd/apidiscovery -fail-on provider-breaking $(SPEC_FLAG)
 
 # Fail on any difference from the snapshots, additive ones included: how new
 # SAP entities are found.
 api-discovery:
-	go run ./cmd/apidiscovery -fail-on additive
+	go run ./cmd/apidiscovery -fail-on additive $(SPEC_FLAG)
 
 # Write the snapshots whose contract changed and regenerate the report.
 # Review and commit the result yourself.
 api-metadata-refresh:
-	go run ./cmd/apidiscovery -update -fail-on none
+	go run ./cmd/apidiscovery -update -fail-on none $(SPEC_FLAG)
 	go run ./cmd/apidiscovery -offline -report docs/api-discovery-report.md
 
 api-discovery-report:

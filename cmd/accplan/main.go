@@ -60,6 +60,9 @@ func main() {
 			// One subtest per service, each with its own credentials.
 			for _, svc := range apidiscovery.Services {
 				d := accgate.Check{Capability: p.Capability, Credentials: svc.Env}.Evaluate(os.Getenv)
+				if svc.SpecificationOnly() {
+					d = accgate.Decision{Status: "SKIPPED — official specification only (cmd/apidiscovery -spec-dir)"}
+				}
 				report(counts, fmt.Sprintf("%s/%s/%s", p.Package, p.Test, svc.ID), p.Capability, d)
 			}
 			continue

@@ -43,7 +43,7 @@ Implemented; the lifecycle still has to pass its acceptance test on a tenant.
 
 ### API Proxy (classic API Management)
 
-`api_management.classic.api_proxy` · checked 2026-09-26
+`api_management.classic.api_proxy` · checked 2026-09-27
 
 - **Finding:** Upload through Transport.svc as SAP's Client SDK does it, read and delete through Management.svc; the update semantics of an import over an existing proxy are undocumented.
 - **Next step:** TestAccAPIProxy_sample passing on a tenant promotes the resource from experimental.
@@ -53,6 +53,8 @@ Implemented; the lifecycle still has to pass its acceptance test on a tenant.
   - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
   - SAP/apibusinesshub-api-recipes (commit 2668274, 2026-05-07)
   - tenant probes and acceptance runs on a development tenant (September 2026)
+  - Business Accelerator Hub: the API artifacts of 173 Integration Suite, API Management, Edge, Graph and BTP packages (308 APIs) searched for API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API deployment, API policy, reusable API, proxy, transport and gateway (2026-09-27); the package list was unchanged since 2026-09-26
+  - Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6
 
 ## Partial
 
@@ -216,13 +218,15 @@ A public API exists, but part of its contract is unconfirmed.
 
 ### API Proxy Deployment (classic API Management)
 
-`api_management.classic.api_proxy_deployment` · checked 2026-09-26
+`api_management.classic.api_proxy_deployment` · checked 2026-09-27
 
 - **Finding:** Imported proxies are deployed by default; no public call deploys or undeploys an existing proxy.
 - **Next step:** A documented deploy or undeploy call.
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - SAP API Management Client SDK 3.0.6 (Maven Central, published 2026-09-24; classes StandardAPIProxyClient, StandardAPIProductClient, StandardAPIKeyValueMapClient)
+  - Business Accelerator Hub: the API artifacts of 173 Integration Suite, API Management, Edge, Graph and BTP packages (308 APIs) searched for API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API deployment, API policy, reusable API, proxy, transport and gateway (2026-09-27); the package list was unchanged since 2026-09-26
+  - Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6
 
 ### API Management Application and Developer (Classic)
 
@@ -443,7 +447,7 @@ Only UI procedures or internal endpoints, which the provider does not use.
 
 ### API Artifact — Current API Management
 
-`api_gateway.api_artifact` · checked 2026-09-26
+`api_gateway.api_artifact` · checked 2026-09-27
 
 - **Finding:** No public API: the Hub's APIMgmt and CloudIntegrationAPI packages, the Client SDK and SAP Help describe API artifacts only in the UI. API artifacts travel as package content (resourceType API) and reach another tenant only through package export/import (POST IntegrationPackages with PackageContent) or transport.
 - **Next step:** An API artifact API from SAP. Until then, whole-package import is the only public path; it is opaque to individual API artifacts and not modelled.
@@ -456,29 +460,35 @@ Only UI procedures or internal endpoints, which the provider does not use.
   - What's New for API Management, Cloud Foundry (entries up to 2026-09-20)
   - a package export of the development tenant (2026-09-26): API artifacts and data types travel as package content
   - SAP/cicd-actions-for-sap-integration-suite (2026-06-02)
+  - Business Accelerator Hub: the API artifacts of 173 Integration Suite, API Management, Edge, Graph and BTP packages (308 APIs) searched for API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API deployment, API policy, reusable API, proxy, transport and gateway (2026-09-27); the package list was unchanged since 2026-09-26
+  - Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6
 
 ### API Artifact Deployment — Integration Cell
 
-`api_gateway.api_artifact_deployment` · checked 2026-09-26
+`api_gateway.api_artifact_deployment` · checked 2026-09-27
 
 - **Finding:** Deployment is a UI action; IntegrationRuntimeArtifacts is not documented for API artifacts.
 - **Next step:** tenant-probe -GapTests records whether deployed API artifacts appear among the runtime artifact types; a documented deploy call is still needed.
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Hub package CloudIntegrationAPI (Integration Content, Security Content, Partner Directory, Message Stores, MPL, Log Files, B2B Scenarios; modified 2026-08-07)
+  - Business Accelerator Hub: the API artifacts of 173 Integration Suite, API Management, Edge, Graph and BTP packages (308 APIs) searched for API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API deployment, API policy, reusable API, proxy, transport and gateway (2026-09-27); the package list was unchanged since 2026-09-26
+  - Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6
 
 ### API Artifact Policy
 
-`api_gateway.api_policy` · checked 2026-09-26
+`api_gateway.api_policy` · checked 2026-09-27
 
 - **Finding:** Policies are edited inside the API artifact; no separate lifecycle.
 - **Next step:** Depends on an API artifact API.
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
+  - Business Accelerator Hub: the API artifacts of 173 Integration Suite, API Management, Edge, Graph and BTP packages (308 APIs) searched for API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API deployment, API policy, reusable API, proxy, transport and gateway (2026-09-27); the package list was unchanged since 2026-09-26
+  - Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6
 
 ### MCP Server
 
-`api_gateway.mcp_server` · checked 2026-09-26
+`api_gateway.mcp_server` · checked 2026-09-27
 
 - **Finding:** MCP Gateway (2026-07-05) and remote MCP servers (2026-09-20) are UI features; MCP servers travel as package content.
 - **Next step:** An MCP server API from SAP.
@@ -487,35 +497,43 @@ Only UI procedures or internal endpoints, which the provider does not use.
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
   - SAP API Management Client SDK 3.0.6 (Maven Central, published 2026-09-24; classes StandardAPIProxyClient, StandardAPIProductClient, StandardAPIKeyValueMapClient)
+  - Business Accelerator Hub: the API artifacts of 173 Integration Suite, API Management, Edge, Graph and BTP packages (308 APIs) searched for API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API deployment, API policy, reusable API, proxy, transport and gateway (2026-09-27); the package list was unchanged since 2026-09-26
+  - Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6
 
 ### Reusable API Artifact
 
-`api_gateway.reusable_api_artifact` · checked 2026-09-26
+`api_gateway.reusable_api_artifact` · checked 2026-09-27
 
 - **Finding:** Released 2026-07-05 as a UI feature; same blocker as API artifacts.
 - **Next step:** Depends on an API artifact API.
 - **Sources:**
   - What's New for API Management, Cloud Foundry (entries up to 2026-09-20)
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
+  - Business Accelerator Hub: the API artifacts of 173 Integration Suite, API Management, Edge, Graph and BTP packages (308 APIs) searched for API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API deployment, API policy, reusable API, proxy, transport and gateway (2026-09-27); the package list was unchanged since 2026-09-26
+  - Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6
 
 ### Runtime Profile
 
-`api_gateway.runtime_profile` · checked 2026-09-26
+`api_gateway.runtime_profile` · checked 2026-09-27
 
 - **Finding:** Enabled under Settings > Integrations only; the Runtime Profiles page lists no Integration Cell row.
 - **Next step:** An API; even then a weak data source.
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
+  - Business Accelerator Hub: the API artifacts of 173 Integration Suite, API Management, Edge, Graph and BTP packages (308 APIs) searched for API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API deployment, API policy, reusable API, proxy, transport and gateway (2026-09-27); the package list was unchanged since 2026-09-26
+  - Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6
 
 ### Current API Management Capability Activation
 
-`capabilities.api_gateway` · checked 2026-09-26
+`capabilities.api_gateway` · checked 2026-09-27
 
 - **Finding:** Activated with the API Management capability in the UI; no API.
 - **Next step:** None expected.
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Business Accelerator Hub catalog.svc, full package list (1,971 packages, read 2026-09-26)
+  - Business Accelerator Hub: the API artifacts of 173 Integration Suite, API Management, Edge, Graph and BTP packages (308 APIs) searched for API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API deployment, API policy, reusable API, proxy, transport and gateway (2026-09-27); the package list was unchanged since 2026-09-26
+  - Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6
 
 ### API Management Capability Activation
 
@@ -549,13 +567,15 @@ Only UI procedures or internal endpoints, which the provider does not use.
 
 ### Integration Cell Capability Activation
 
-`capabilities.integration_cell` · checked 2026-09-26
+`capabilities.integration_cell` · checked 2026-09-27
 
 - **Finding:** Activated under Settings > Runtime; no API.
 - **Next step:** None expected.
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Business Accelerator Hub catalog.svc, full package list (1,971 packages, read 2026-09-26)
+  - Business Accelerator Hub: the API artifacts of 173 Integration Suite, API Management, Edge, Graph and BTP packages (308 APIs) searched for API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API deployment, API policy, reusable API, proxy, transport and gateway (2026-09-27); the package list was unchanged since 2026-09-26
+  - Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6
 
 ### Edge Integration Cell Registration
 
@@ -578,23 +598,27 @@ Only UI procedures or internal endpoints, which the provider does not use.
 
 ### Integration Cell Runtime
 
-`integration_cell.runtime` · checked 2026-09-26
+`integration_cell.runtime` · checked 2026-09-27
 
 - **Finding:** Activation, status and configuration are UI-only.
 - **Next step:** An Integration Cell API.
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Business Accelerator Hub catalog.svc, full package list (1,971 packages, read 2026-09-26)
+  - Business Accelerator Hub: the API artifacts of 173 Integration Suite, API Management, Edge, Graph and BTP packages (308 APIs) searched for API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API deployment, API policy, reusable API, proxy, transport and gateway (2026-09-27); the package list was unchanged since 2026-09-26
+  - Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6
 
 ### Integration Cell Virtual Host
 
-`integration_cell.virtual_host` · checked 2026-09-26
+`integration_cell.virtual_host` · checked 2026-09-27
 
 - **Finding:** Managed in Monitor > Integrations and APIs > Virtual Host only.
 - **Next step:** A virtual host API for Integration Cell.
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Business Accelerator Hub catalog.svc, full package list (1,971 packages, read 2026-09-26)
+  - Business Accelerator Hub: the API artifacts of 173 Integration Suite, API Management, Edge, Graph and BTP packages (308 APIs) searched for API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API deployment, API policy, reusable API, proxy, transport and gateway (2026-09-27); the package list was unchanged since 2026-09-26
+  - Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6
 
 ### Migration Assessment Source System
 

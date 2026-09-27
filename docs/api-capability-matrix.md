@@ -1,5 +1,14 @@
 # API Capability Matrix
 
+> **Which document is authoritative.** This matrix records what the API research found per
+> object: the operations SAP documents and the evidence for each. The provider's support
+> status is not maintained here: it is generated from `internal/features/catalog.go` into
+> [`feature-support.md`](feature-support.md), with the dated evidence behind every open item
+> in [`research/capability-evidence-2026.md`](research/capability-evidence-2026.md). Where the
+> last column below and those documents disagree, the generated documents are right; a test
+> (`internal/features/docs_consistency_test.go`) fails when a hand-written page denies a
+> resource the catalog registers.
+
 Scope: SAP Cloud Integration's public "Integration Content", "Security Content", and
 "Partner Directory" OData V2 APIs (published under the `CloudIntegrationAPI` package on
 SAP Business Accelerator Hub), plus the Access Policy API. A Terraform column of "Resource"

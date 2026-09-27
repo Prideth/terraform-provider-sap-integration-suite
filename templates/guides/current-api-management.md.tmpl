@@ -72,13 +72,25 @@ channel where a public API would show up:
 6. **What's New.** Every 2026 API Management entry about Integration Cell describes UI
    functionality: API-centric integration, the MCP Gateway, reusable APIs, simplified artifact
    creation, trace data, remote MCP servers.
-7. **The Business Accelerator Hub.** No API page for these objects is indexed. The hub itself
-   renders in the browser and requires an SAP login for specification downloads, so this is
-   the one channel that could only be checked indirectly.
+7. **The Business Accelerator Hub.** The hub's catalog service lists every package and its APIs
+   without a login. On 2026-09-27 the APIs of all 173 packages related to Integration Suite,
+   API Management, Edge Integration Cell, graphs and BTP (308 APIs in total) were searched for
+   API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API
+   deployment, API policy, reusable API, proxy, transport and gateway. The only matches are the
+   Classic API Portal APIs (including Transport and Virtual Host Request), the Edge Integration
+   Cell's local APIs and Event Mesh.
 8. **A tenant's own `$metadata`.** The Cloud Integration OData service of a Cloud Foundry
-   tenant (136 entity sets) has no entity type for API artifacts, MCP servers, virtual hosts
-   or runtime profiles. Its `APIDefinitions` set holds the API definition links of service
-   endpoints, not API artifacts.
+   tenant (131 entity sets in the committed snapshot) has no entity type for API artifacts,
+   MCP servers, virtual hosts or runtime profiles. Its `APIDefinitions` set holds the API
+   definition links of service endpoints, not API artifacts. The API discovery
+   (`cmd/apidiscovery`) compares that snapshot with a live tenant and reports any new entity
+   set, so an API artifact entity would surface there first.
+9. **How the objects move today.** API artifacts and MCP servers are content of an integration
+   package: a package export lists them as artifacts of type `API`, and SAP's transport
+   documentation moves them with the package (export and import, SAP Cloud Transport
+   Management, CTS+). The documented package import (`POST IntegrationPackages` with the
+   base64 `PackageContent`, optionally `?Overwrite=true`) is therefore the only public path by
+   which they reach a tenant, and it treats the package as one opaque archive.
 
 The only page whose title suggests otherwise, *Accessing API Management APIs
 Programmatically*, is about the Classic API Portal's `apiportal-apiaccess` service plan.

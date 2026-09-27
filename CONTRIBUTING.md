@@ -326,6 +326,7 @@ framework makes the service's own published contract the reference.
 | `make api-discovery-report` | Regenerate `docs/api-discovery-report.md` from the snapshots. |
 | `make testacc-metadata` | Run the metadata acceptance test (layers 1–3). |
 | `go run ./cmd/apidiscovery -list` | Show each service, whether it is configured (variable names only) and its evidence. |
+| `go run ./cmd/apidiscovery -spec-dir <dir>` | Also read official specifications downloaded from api.sap.com (`<service>.json`, `.yaml` or `.xml`) for the APIs whose contract the service does not serve itself: the API portal Transport and Content Archive REST APIs, Virtual Host Request and DSIAPI. `make api-discovery SPEC_DIR=<dir>` does the same. |
 
 `cmd/apidiscovery` reads the same `SAP_INTEGRATION_SUITE_*` variables as the
 provider. It can also parse a document you downloaded yourself:

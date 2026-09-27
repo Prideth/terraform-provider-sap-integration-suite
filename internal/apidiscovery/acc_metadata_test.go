@@ -26,6 +26,9 @@ import (
 func TestAccMetadata(t *testing.T) {
 	for _, svc := range Services {
 		t.Run(svc.ID, func(t *testing.T) {
+			if svc.SpecificationOnly() {
+				t.Skip("SKIPPED — contract comes only from the official specification: " + svc.Specification)
+			}
 			accgate.RequireService(t, accgate.Metadata, svc.Env...)
 			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 			defer cancel()

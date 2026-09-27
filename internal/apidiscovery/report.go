@@ -47,7 +47,7 @@ SAP documentation, official SAP tooling, or a safe verification on a tenant
 (see CONTRIBUTING.md, "API discovery").
 
 `)
-	b.WriteString("## Services\n\n| Service | Protocol | Snapshot | Entity sets | Operations | Used | Candidates | Excluded |\n|---|---|---|---:|---:|---:|---:|---:|\n")
+	b.WriteString("## Services\n\n| Service | Protocol | Snapshot | Entity sets | Operations | REST operations | Used | Candidates | Excluded |\n|---|---|---|---:|---:|---:|---:|---:|---:|\n")
 	type loaded struct {
 		svc  Service
 		snap *apimeta.Service
@@ -57,14 +57,14 @@ SAP documentation, official SAP tooling, or a safe verification on a tenant
 	for _, svc := range Services {
 		snap, err := apimeta.LoadSnapshot(svc.ID)
 		if err != nil {
-			fmt.Fprintf(&b, "| [%s](#%s) | %s | none yet | | | | | |\n", svc.ID, svc.ID, protocolLabel(svc.Protocol))
+			fmt.Fprintf(&b, "| [%s](#%s) | %s | none yet | | | | | | |\n", svc.ID, svc.ID, protocolLabel(svc.Protocol))
 			all = append(all, loaded{svc: svc})
 			continue
 		}
 		rows := Classify(snap)
 		counts := countStatus(rows)
-		fmt.Fprintf(&b, "| [%s](#%s) | %s | %s | %d | %d | %d | %d | %d |\n", svc.ID, svc.ID, protocolLabel(svc.Protocol),
-			snap.CapturedAt, len(snap.EntitySets)+len(snap.Singletons), countKind(rows, "operation"),
+		fmt.Fprintf(&b, "| [%s](#%s) | %s | %s | %d | %d | %d | %d | %d | %d |\n", svc.ID, svc.ID, protocolLabel(svc.Protocol),
+			snap.CapturedAt, len(snap.EntitySets)+len(snap.Singletons), countKind(rows, "operation"), countKind(rows, "rest operation"),
 			counts[StatusUsed], counts[StatusCandidate], counts[StatusExcluded])
 		all = append(all, loaded{svc: svc, snap: snap, rows: rows})
 	}
@@ -80,10 +80,14 @@ func renderService(b *strings.Builder, svc Service, snap *apimeta.Service, rows 
 	fmt.Fprintf(b, "## %s\n\n%s.\n\n", svc.ID, svc.Title)
 	fmt.Fprintf(b, "- Protocol: %s\n- Evidence for the service root: %s\n", protocolLabel(svc.Protocol), svc.Evidence)
 	fmt.Fprintf(b, "- Acceptance suites: %s\n", gateList(svc.Capabilities))
-	fmt.Fprintf(b, "- Configuration: %s\n", codeList(svc.Env))
+	if svc.SpecificationOnly() {
+		fmt.Fprintf(b, "- Contract source: the official specification, %s; saved as %s.json, .yaml or .xml in the directory given to `-spec-dir`\n", svc.Specification, svc.ID)
+	} else {
+		fmt.Fprintf(b, "- Configuration: %s\n", codeList(svc.Env))
+	}
 	if snap == nil {
-		b.WriteString("- Snapshot: none yet. Fetch one with `go run ./cmd/apidiscovery -services " + svc.ID +
-			" -update` once the service is configured, then classify its entity sets.\n\n")
+		b.WriteString("- Snapshot: none yet. Create one with `go run ./cmd/apidiscovery -services " + svc.ID +
+			" -update` (with `-spec-dir <dir>` for a specification), then classify what it lists.\n\n")
 		return
 	}
 	fmt.Fprintf(b, "- Snapshot: `testdata/api-metadata/%s.json`, captured %s from %s\n", svc.ID, snap.CapturedAt, snap.Source)
@@ -95,6 +99,10 @@ func renderService(b *strings.Builder, svc Service, snap *apimeta.Service, rows 
 		"%d types reachable from the entity sets and operations, %d unreachable, %d unresolved references\n\n",
 		len(snap.EntitySets), len(snap.Singletons), len(snap.EntityTypes), len(snap.ComplexTypes), len(snap.EnumTypes),
 		len(snap.Operations), reach, unreach, unresolved)
+	if snap.REST != nil {
+		fmt.Fprintf(b, "- REST contract: %d operations, %d schemas, %d security schemes\n\n",
+			len(snap.REST.Operations), len(snap.REST.Schemas), len(snap.REST.SecuritySchemes))
+	}
 
 	byStatus := map[Status][]Row{}
 	for _, r := range rows {
