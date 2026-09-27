@@ -1,0 +1,29 @@
+name: Hygiene
+
+# Checks the tracked files and the commits a branch adds on top of master for
+# tool attribution, the required author and Conventional Commit subjects
+# (see CONTRIBUTING.md, "Git requirements").
+on:
+  pull_request:
+  push:
+    branches: [master, dev, "feature/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  hygiene:
+    name: Repository hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Files and commits since master
+        run: go run ./cmd/repohygiene -commits origin/master..HEAD

@@ -1,4 +1,4 @@
-.PHONY: build test unit-test testacc testacc-all testacc-metadata acceptance-test accplan \
+.PHONY: build test unit-test hygiene testacc testacc-all testacc-metadata acceptance-test accplan \
 	api-discovery api-metadata-diff api-metadata-refresh api-discovery-report \
 	fmt vet lint tidy docs clean
 
@@ -52,6 +52,10 @@ api-metadata-refresh:
 
 api-discovery-report:
 	go run ./cmd/apidiscovery -offline -report docs/api-discovery-report.md
+
+# Tool attribution, author and commit message rules (CONTRIBUTING.md).
+hygiene:
+	go run ./cmd/repohygiene -commits origin/master..HEAD
 
 fmt:
 	gofmt -w .
