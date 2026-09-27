@@ -149,6 +149,11 @@ reads the number range and fills in what the state is missing.
   subject fields, so the next apply planned a replacement, which would have
   generated a new key pair. The empty subject fields are now filled from the
   subject DN SAP returns.
+- For the same reason, setting `signature_algorithm` or
+  `key_algorithm_parameter` on an imported key pair planned a replacement:
+  SAP does not return either value, so state held null. When the prior value
+  is unknown, both now only record the configured value; changing a known
+  value still generates a new key pair.
 
 ### Known limitations
 

@@ -127,9 +127,10 @@ func (r *keyPairResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 					"SHA-256/ECDSA, SHA-1/ECDSA). Left unset, SAP applies its own default; this " +
 					"provider cannot confirm this value is returned by a subsequent read, so it is " +
 					"not Computed — it is trusted from your configuration once generation succeeds, " +
-					"the same as every other write-only-in-practice generation parameter below.",
+					"the same as every other write-only-in-practice generation parameter below. " +
+					"After an import it is unknown; setting it then only records the value.",
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
+					requiresReplaceUnlessUnknownBefore(),
 				},
 			},
 			"key_size": schema.Int64Attribute{
@@ -150,7 +151,7 @@ func (r *keyPairResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 					"list of accepted values.",
 				Validators: []validator.String{stringOneOfValidator{values: keyPairECCurves}},
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
+					requiresReplaceUnlessUnknownBefore(),
 				},
 			},
 			"common_name": schema.StringAttribute{
@@ -435,6 +436,22 @@ func (r *keyPairResource) Delete(ctx context.Context, req resource.DeleteRequest
 		}
 		resp.Diagnostics.AddError("Failed to delete SAP Integration Suite key pair", diagnosticDetail(err))
 	}
+}
+
+// requiresReplaceUnlessUnknownBefore forces a new key pair when a generation
+// parameter changes, except when the prior value is null. SAP does not
+// return signature_algorithm or key_algorithm_parameter, so after an import
+// they are null in state; configuring them then must not regenerate the key
+// pair (a new private key would break everything that trusts the old public
+// key). Update only records the configured value in that case.
+func requiresReplaceUnlessUnknownBefore() planmodifier.String {
+	return stringplanmodifier.RequiresReplaceIf(
+		func(_ context.Context, req planmodifier.StringRequest, resp *stringplanmodifier.RequiresReplaceIfFuncResponse) {
+			resp.RequiresReplace = !req.StateValue.IsNull()
+		},
+		"Changing this value generates a new key pair, unless the value was unknown before (after an import).",
+		"Changing this value generates a new key pair, unless the value was unknown before (after an import).",
+	)
 }
 
 // fillSubjectFromDN sets the subject fields that are still empty (after an

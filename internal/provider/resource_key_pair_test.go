@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -330,5 +331,30 @@ func TestKeyPairResource_ImportState_UsesAlias(t *testing.T) {
 	resp.Diagnostics.Append(resp.State.GetAttribute(context.Background(), pathRoot("alias"), &alias)...)
 	if alias.ValueString() != "imported-alias" {
 		t.Errorf("alias = %q, want imported-alias", alias.ValueString())
+	}
+}
+
+// After an import, SAP has not told us the signature algorithm, so state
+// holds null. Configuring it must record the value, not generate a new key
+// pair; a real change of a known value still replaces.
+func TestKeyPair_GenerationParameterReplaceOnlyWhenKnown(t *testing.T) {
+	ctx := context.Background()
+	existing := tftypes.NewValue(tftypes.Object{AttributeTypes: map[string]tftypes.Type{}}, map[string]tftypes.Value{})
+	check := func(prior types.String, planned string) bool {
+		req := planmodifier.StringRequest{
+			State:      tfsdk.State{Raw: existing},
+			Plan:       tfsdk.Plan{Raw: existing},
+			StateValue: prior,
+			PlanValue:  types.StringValue(planned),
+		}
+		resp := &planmodifier.StringResponse{PlanValue: req.PlanValue}
+		requiresReplaceUnlessUnknownBefore().PlanModifyString(ctx, req, resp)
+		return resp.RequiresReplace
+	}
+	if check(types.StringNull(), "SHA-256/RSA") {
+		t.Error("an imported key pair would be regenerated just for recording signature_algorithm")
+	}
+	if !check(types.StringValue("SHA-512/RSA"), "SHA-256/RSA") {
+		t.Error("changing a known signature_algorithm must generate a new key pair")
 	}
 }
