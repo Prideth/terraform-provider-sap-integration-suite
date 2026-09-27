@@ -66,19 +66,28 @@ Pushing a `v*` tag publishes: the release workflow builds and signs the
 binaries with GoReleaser, creates the GitHub release, and the Terraform
 Registry picks the version up. A tag is therefore never a scratch step.
 
-1. On `dev`, move the "Unreleased" section of `CHANGELOG.md` under a heading
-   for the new version with the release date. Every breaking change needs
-   its old and new behavior, the reason, and what users have to change in
-   configuration or state.
-2. Write `.github/release-notes/v<version>.md`, the text of the GitHub
-   release page, for someone who runs the provider: overview, highlights,
-   new resources and data sources, upgrade instructions, known limitations,
-   compatibility. It is not a commit list. The workflow refuses to release a
-   tag without this file.
+Everything a release says about itself is committed before the tag, so that
+`CHANGELOG.md` read at the tag describes that release:
+
+1. On `dev`, make a release commit. In it, move the "Unreleased" section of
+   `CHANGELOG.md` under `## <version> — <YYYY-MM-DD>` (the planned release
+   date) and start a new, empty Unreleased section above it. Every breaking
+   change needs its old and new behavior, the reason, and what users have
+   to change in configuration or state.
+2. In the same commit, add `.github/release-notes/v<version>.md`, the text of
+   the GitHub release page, for someone who runs the provider: overview,
+   highlights, new resources and data sources, upgrade instructions, known
+   limitations, compatibility. It is not a commit list.
 3. Run `make docs` and check that `git diff --exit-code` stays clean, so the
    Registry shows documentation that matches the code.
-4. Fast-forward `master` to the release commit on `dev`, then tag it on
-   `master` and push the tag.
+4. Fast-forward `master` to exactly that release commit, tag it on
+   `master` and push the tag. If the date slipped, amend the heading in a
+   new release commit before tagging rather than tagging a stale entry.
+
+The release workflow refuses a tag whose commit has no
+`## <version> — <date>` section in `CHANGELOG.md` or no release notes file,
+and `TestChangelog_ReleasesAreFinished` checks the headings and notes files
+on every commit.
 
 The provider stays on the 0.x line; a minor version may contain breaking
 changes, a patch version only fixes defects of its minor version. `v1.0.0`

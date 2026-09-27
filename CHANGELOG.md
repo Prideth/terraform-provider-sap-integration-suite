@@ -220,9 +220,12 @@ reads the number range and fills in what the state is missing.
   fully supported, the date of the last check, the sources and the step
   that would change the classification.
 
-## 0.2.0 — prepared, not yet published
+## 0.2.0 — 2026-09-27
 
-Source state of 2026-09-26, commit `9d65cfa`.
+Tag `v0.2.0` points at commit `9d65cfa` of 2026-09-26. The CHANGELOG inside
+that tag still shows the changes as an unreviewed "Unreleased" list; this
+entry is the reviewed one. From 0.3.0 on, the tagged commit contains its own
+finished entry.
 
 ### Highlights
 

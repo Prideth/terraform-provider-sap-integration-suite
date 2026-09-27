@@ -28,6 +28,18 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
 
+      # The tagged commit must carry the finished CHANGELOG entry of its own
+      # version, so that CHANGELOG.md read at the tag describes the release.
+      - name: Require the CHANGELOG entry of this version
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="${TAG#v}"
+          if ! grep -qE "^## ${version//./\\.} — [0-9]{4}-[0-9]{2}-[0-9]{2}$" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md has no section \"## ${version} — <YYYY-MM-DD>\". Move the Unreleased entries under it in a release commit and tag that commit."
+            exit 1
+          fi
+
       # Release notes are written by hand for every version; GoReleaser's
       # commit list is disabled in .goreleaser.yml.
       - name: Require release notes
