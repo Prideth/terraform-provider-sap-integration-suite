@@ -1,0 +1,30 @@
+---
+page_title: "sapintegrationsuite_integration_assessment_key_characteristic_group Data Source - sapintegrationsuite"
+subcategory: "Integration Assessment"
+description: |-
+  Finds a key characteristic group of SAP's Integration Assessment taxonomy by name.
+---
+
+# sapintegrationsuite_integration_assessment_key_characteristic_group (Data Source)
+
+Returns the Id and description of a key characteristic group of SAP's Integration Solution Advisory
+Methodology. Groups structure the key characteristics that technologies are rated on. The group
+is informational: a rating links to a key characteristic value, not to a group.
+
+**Status:** unofficial. Needs `enable_unofficial = true` in the provider block. SAP documents the
+Integration Assessment Entities API and this entity, but the field-level specification on the
+Business Accelerator Hub needs an SAP login. The requests follow the service's `$metadata` and
+were verified on a tenant in September 2026; SAP may change them without notice.
+
+Names are compared exactly, including case. The plan fails when no entry or more than one entry
+has the name.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_integration_assessment_key_characteristic_group/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Related
+
+- [Integration Assessment guide](../guides/integration-assessment.md).

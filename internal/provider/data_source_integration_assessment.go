@@ -13,9 +13,17 @@ import (
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/integrationassessment"
 )
 
-// iaNamedEntry is what a lookup by name returns.
+// iaNamedEntry is what a lookup by name returns: the Id, the description
+// (when the lookup has one) and the values of its extra attributes.
 type iaNamedEntry struct {
 	id, description string
+	extra           map[string]string
+}
+
+// iaLookupExtra is a computed attribute a lookup returns besides the Id,
+// usually the Id of a linked taxonomy entry.
+type iaLookupExtra struct {
+	attr, description string
 }
 
 // iaLookup is one Integration Assessment data source that finds an entry
@@ -26,19 +34,9 @@ type iaLookup struct {
 	object      string // for messages, for example "deployment model"
 	description string
 	withDesc    bool
+	extras      []iaLookupExtra
 	list        func(ctx context.Context, c *integrationassessment.Client) (map[string][]iaNamedEntry, error)
 	client      *integrationassessment.Client
-}
-
-type iaLookupModel struct {
-	ID          types.String `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	Description types.String `tfsdk:"description"`
-}
-
-type iaLookupModelNoDesc struct {
-	ID   types.String `tfsdk:"id"`
-	Name types.String `tfsdk:"name"`
 }
 
 // NewIntegrationAssessmentDeploymentModelDataSource returns the data source
@@ -156,6 +154,72 @@ func NewIntegrationAssessmentRecommendationDegreeDataSource() datasource.DataSou
 	}
 }
 
+// NewIntegrationAssessmentUseCasePatternDataSource returns the data source
+// for sapintegrationsuite_integration_assessment_use_case_pattern.
+func NewIntegrationAssessmentUseCasePatternDataSource() datasource.DataSource {
+	return &iaLookup{
+		suffix: "use_case_pattern", object: "use case pattern", withDesc: true,
+		description: "Finds a use case pattern of SAP's Integration Solution Advisory Methodology taxonomy by " +
+			"name. A use case pattern refines an integration style; the data source returns that style's Id " +
+			"as well, for sapintegrationsuite_integration_assessment_technology_style.",
+		extras: []iaLookupExtra{
+			{"example", "SAP's example of the pattern."},
+			{"style_id", "Id of the integration style the pattern refines."},
+		},
+		list: func(ctx context.Context, c *integrationassessment.Client) (map[string][]iaNamedEntry, error) {
+			all, err := c.ListUseCasePatterns(ctx)
+			byName := map[string][]iaNamedEntry{}
+			for _, u := range all {
+				byName[u.Name] = append(byName[u.Name], iaNamedEntry{id: u.ID, description: stringOrEmptyPtr(u.Description),
+					extra: map[string]string{"example": stringOrEmptyPtr(u.Example), "style_id": u.StyleID()}})
+			}
+			return byName, err
+		},
+	}
+}
+
+// NewIntegrationAssessmentIntegrationPatternDataSource returns the data
+// source for sapintegrationsuite_integration_assessment_integration_pattern.
+func NewIntegrationAssessmentIntegrationPatternDataSource() datasource.DataSource {
+	return &iaLookup{
+		suffix: "integration_pattern", object: "integration pattern",
+		description: "Finds an integration pattern of SAP's Integration Solution Advisory Methodology taxonomy " +
+			"by name. An integration pattern combines an integration domain and an integration style; the data " +
+			"source returns both Ids, for the technology profile resources.",
+		extras: []iaLookupExtra{
+			{"domain_id", "Id of the pattern's integration domain."},
+			{"style_id", "Id of the pattern's integration style."},
+		},
+		list: func(ctx context.Context, c *integrationassessment.Client) (map[string][]iaNamedEntry, error) {
+			all, err := c.ListIntegrationPatterns(ctx)
+			byName := map[string][]iaNamedEntry{}
+			for _, p := range all {
+				byName[p.Name] = append(byName[p.Name], iaNamedEntry{id: p.ID,
+					extra: map[string]string{"domain_id": p.DomainID(), "style_id": p.StyleID()}})
+			}
+			return byName, err
+		},
+	}
+}
+
+// NewIntegrationAssessmentKeyCharacteristicGroupDataSource returns the data
+// source for sapintegrationsuite_integration_assessment_key_characteristic_group.
+func NewIntegrationAssessmentKeyCharacteristicGroupDataSource() datasource.DataSource {
+	return &iaLookup{
+		suffix: "key_characteristic_group", object: "key characteristic group", withDesc: true,
+		description: "Finds a key characteristic group of SAP's Integration Solution Advisory Methodology " +
+			"taxonomy by name. Groups structure the key characteristics that technologies are rated on.",
+		list: func(ctx context.Context, c *integrationassessment.Client) (map[string][]iaNamedEntry, error) {
+			all, err := c.ListKeyCharacteristicGroups(ctx)
+			byName := map[string][]iaNamedEntry{}
+			for _, g := range all {
+				byName[g.Name] = append(byName[g.Name], iaNamedEntry{id: g.ID, description: stringOrEmptyPtr(g.Description)})
+			}
+			return byName, err
+		},
+	}
+}
+
 // stringOrEmptyPtr returns the value, or "" for nil.
 func stringOrEmptyPtr(s *string) string {
 	if s == nil {
@@ -186,6 +250,9 @@ func (d *iaLookup) Schema(_ context.Context, _ datasource.SchemaRequest, resp *d
 	}
 	if d.withDesc {
 		attrs["description"] = schema.StringAttribute{Computed: true, Description: "SAP's description of the " + d.object + "."}
+	}
+	for _, e := range d.extras {
+		attrs[e.attr] = schema.StringAttribute{Computed: true, Description: e.description}
 	}
 	resp.Schema = schema.Schema{Description: iaUnofficialNote + d.description, Attributes: attrs}
 }
@@ -219,11 +286,12 @@ func (d *iaLookup) Read(ctx context.Context, req datasource.ReadRequest, resp *d
 			fmt.Sprintf("%d entries are named %q; the name does not identify one.", len(matches), name.ValueString()))
 		return
 	}
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, pathRoot("name"), name)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, pathRoot("id"), types.StringValue(matches[0].id))...)
 	if d.withDesc {
-		resp.Diagnostics.Append(resp.State.Set(ctx, iaLookupModel{
-			ID: types.StringValue(matches[0].id), Name: name, Description: stringOrNull(matches[0].description),
-		})...)
-		return
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, pathRoot("description"), stringOrNull(matches[0].description))...)
 	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, iaLookupModelNoDesc{ID: types.StringValue(matches[0].id), Name: name})...)
+	for _, e := range d.extras {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, pathRoot(e.attr), stringOrNull(matches[0].extra[e.attr]))...)
+	}
 }

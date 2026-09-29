@@ -1,0 +1,49 @@
+---
+page_title: "sapintegrationsuite_integration_assessment_domain_determination Data Source - sapintegrationsuite"
+subcategory: "Integration Assessment"
+description: |-
+  Finds the Integration Assessment domain that applies between two deployment models.
+---
+
+# sapintegrationsuite_integration_assessment_domain_determination (Data Source)
+
+Returns the integration domain that SAP's Integration Solution Advisory Methodology assigns to an
+integration from one deployment model to another, for example from a public cloud application to
+an on-premise one. A domain determination has no name, so it is found by the Ids of its source
+and target deployment models, which come from the
+[`sapintegrationsuite_integration_assessment_deployment_model`](integration_assessment_deployment_model.md)
+data source.
+
+SAP Help's description of Domain Determination repeats the text of the recommendation degree;
+what the entity is follows from the service's `$metadata`, which links it to a domain and to a
+source and a target deployment model.
+
+**Status:** unofficial. Needs `enable_unofficial = true` in the provider block. SAP documents the
+Integration Assessment Entities API and this entity, but the field-level specification on the
+Business Accelerator Hub needs an SAP login. The requests follow the service's `$metadata` and
+were verified on a tenant in September 2026; SAP may change them without notice.
+
+The order matters: source and target are not interchangeable. The plan fails unless exactly one
+domain determination goes from the source to the target deployment model.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_integration_assessment_domain_determination/data-source.tf" }}
+
+## Use in a technology profile
+
+The determined domain can link a technology that serves integrations between these two
+deployment models:
+
+```terraform
+resource "sapintegrationsuite_integration_assessment_technology_domain" "acme_esb" {
+  technology_id = sapintegrationsuite_integration_assessment_technology.acme_esb.id
+  domain_id     = data.sapintegrationsuite_integration_assessment_domain_determination.selected.domain_id
+}
+```
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Related
+
+- [Integration Assessment guide](../guides/integration-assessment.md).

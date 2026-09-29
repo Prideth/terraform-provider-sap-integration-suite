@@ -388,3 +388,123 @@ resource "sapintegrationsuite_integration_assessment_technology_key_characterist
 		},
 	})
 }
+
+// iaTaxonomyExpectations are the entries the taxonomy test looks up, with
+// the values the data sources must return, as the client read them.
+type iaTaxonomyExpectations struct {
+	useCasePattern     integrationassessment.UseCasePattern
+	integrationPattern integrationassessment.IntegrationPattern
+	group              integrationassessment.KeyCharacteristicGroup
+	determination      integrationassessment.DomainDetermination
+}
+
+// testAccIATaxonomyExpectations picks a uniquely named use case pattern,
+// integration pattern and key characteristic group, and a domain
+// determination whose pair of deployment models occurs once.
+func testAccIATaxonomyExpectations(t *testing.T) iaTaxonomyExpectations {
+	t.Helper()
+	ctx := context.Background()
+	c := testAccIAClient(t)
+	var e iaTaxonomyExpectations
+	var found [4]bool
+	useCases, err := c.ListUseCasePatterns(ctx)
+	if err != nil {
+		t.Fatalf("listing use case patterns: %v", err)
+	}
+	names := namesOf(useCases, func(u integrationassessment.UseCasePattern) string { return u.Name })
+	for _, u := range useCases {
+		if uniqueIn(names, u.Name) {
+			e.useCasePattern, found[0] = u, true
+			break
+		}
+	}
+	patterns, err := c.ListIntegrationPatterns(ctx)
+	if err != nil {
+		t.Fatalf("listing integration patterns: %v", err)
+	}
+	names = namesOf(patterns, func(p integrationassessment.IntegrationPattern) string { return p.Name })
+	for _, p := range patterns {
+		if uniqueIn(names, p.Name) {
+			e.integrationPattern, found[1] = p, true
+			break
+		}
+	}
+	groups, err := c.ListKeyCharacteristicGroups(ctx)
+	if err != nil {
+		t.Fatalf("listing key characteristic groups: %v", err)
+	}
+	names = namesOf(groups, func(g integrationassessment.KeyCharacteristicGroup) string { return g.Name })
+	for _, g := range groups {
+		if uniqueIn(names, g.Name) {
+			e.group, found[2] = g, true
+			break
+		}
+	}
+	determinations, err := c.ListDomainDeterminations(ctx)
+	if err != nil {
+		t.Fatalf("listing domain determinations: %v", err)
+	}
+	pairs := namesOf(determinations, func(d integrationassessment.DomainDetermination) string {
+		return d.SourceDeploymentModelID() + "→" + d.TargetDeploymentModelID()
+	})
+	for i, d := range determinations {
+		if d.SourceDeploymentModelID() != "" && uniqueIn(pairs, pairs[i]) {
+			e.determination, found[3] = d, true
+			break
+		}
+	}
+	if found != [4]bool{true, true, true, true} {
+		t.Skipf("the tenant's taxonomy has no unique entry for every lookup (found %v)", found)
+	}
+	return e
+}
+
+// The read-only ISA-M taxonomy lookups: use case pattern, integration
+// pattern, key characteristic group and domain determination, compared with
+// what the client reads from the same tenant.
+func TestAccIntegrationAssessment_taxonomy(t *testing.T) {
+	accgate.Require(t, accgate.IntegrationAssessment)
+	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "true")
+	e := testAccIATaxonomyExpectations(t)
+	const (
+		useCase       = "data.sapintegrationsuite_integration_assessment_use_case_pattern.test"
+		pattern       = "data.sapintegrationsuite_integration_assessment_integration_pattern.test"
+		group         = "data.sapintegrationsuite_integration_assessment_key_characteristic_group.test"
+		determination = "data.sapintegrationsuite_integration_assessment_domain_determination.test"
+	)
+	config := fmt.Sprintf(`
+data "sapintegrationsuite_integration_assessment_use_case_pattern" "test" {
+  name = %q
+}
+
+data "sapintegrationsuite_integration_assessment_integration_pattern" "test" {
+  name = %q
+}
+
+data "sapintegrationsuite_integration_assessment_key_characteristic_group" "test" {
+  name = %q
+}
+
+data "sapintegrationsuite_integration_assessment_domain_determination" "test" {
+  source_deployment_model_id = %q
+  target_deployment_model_id = %q
+}
+`, e.useCasePattern.Name, e.integrationPattern.Name, e.group.Name,
+		e.determination.SourceDeploymentModelID(), e.determination.TargetDeploymentModelID())
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{{
+			Config: config,
+			Check: resource.ComposeAggregateTestCheckFunc(
+				resource.TestCheckResourceAttr(useCase, "id", e.useCasePattern.ID),
+				resource.TestCheckResourceAttr(useCase, "style_id", e.useCasePattern.StyleID()),
+				resource.TestCheckResourceAttr(pattern, "id", e.integrationPattern.ID),
+				resource.TestCheckResourceAttr(pattern, "domain_id", e.integrationPattern.DomainID()),
+				resource.TestCheckResourceAttr(pattern, "style_id", e.integrationPattern.StyleID()),
+				resource.TestCheckResourceAttr(group, "id", e.group.ID),
+				resource.TestCheckResourceAttr(determination, "id", e.determination.ID),
+				resource.TestCheckResourceAttr(determination, "domain_id", e.determination.DomainID()),
+			),
+		}},
+	})
+}

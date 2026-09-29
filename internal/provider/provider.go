@@ -595,6 +595,10 @@ func (p *sapIntegrationSuiteProvider) DataSources(_ context.Context) []func() da
 		NewIntegrationAssessmentStyleDataSource,
 		NewIntegrationAssessmentKeyCharacteristicValueDataSource,
 		NewIntegrationAssessmentRecommendationDegreeDataSource,
+		NewIntegrationAssessmentUseCasePatternDataSource,
+		NewIntegrationAssessmentIntegrationPatternDataSource,
+		NewIntegrationAssessmentKeyCharacteristicGroupDataSource,
+		NewIntegrationAssessmentDomainDeterminationDataSource,
 	}
 }
 

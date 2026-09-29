@@ -25,6 +25,12 @@ were verified on a tenant in September 2026; SAP may change them without notice.
 - An Integration Assessment subscription in the subaccount.
 - The technology's Id, from [`sapintegrationsuite_integration_assessment_technology`](integration_assessment_technology.md) (resource or data source), and the domain's Id from the [`sapintegrationsuite_integration_assessment_domain`](../data-sources/integration_assessment_domain.md) data source.
 
+## Ids
+
+The taxonomy entries (domains, styles, key characteristic values, recommendation degrees) are
+SAP's reference content, but their Ids are assigned per tenant. Never write them into a
+configuration: look them up by name with the data sources, as in the example below.
+
 ## Lifecycle
 
 | Operation | What happens |

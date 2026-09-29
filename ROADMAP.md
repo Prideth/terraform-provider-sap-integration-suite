@@ -17,15 +17,27 @@ Priorities:
 - **P3**: valuable but low demand or high effort.
 - **WATCH**: no public API today; revisit when SAP publishes one.
 
-## Next release: 0.5.0
+## Release plan
 
-0.3.0 brought the contract sources, the opt-in switches, tenant fixes and the rewritten Registry
-documentation; 0.4.0 the Integration Assessment landscape (unofficial). 0.5.0 has no fixed scope
-yet. It gets one theme once a tenant run or an official specification unblocks an item below,
-for example the Classic API proxy (the request documented in the official Transport API
-specification) or data types (whether their content can be written at all, which the gap probe
-tests). `v1.0.0` is a separate, explicit decision and not the automatic successor of any 0.x
-release.
+Each 0.x minor release has one theme. Released so far: 0.1.0 (the broad first provider), 0.2.0
+(the tenant-verified rework), 0.3.0 (contract sources, opt-in switches, Registry documentation).
+0.4.0 (the Integration Assessment landscape) is prepared on `release/0.4.0`.
+
+| Version | Theme | State | Precondition |
+|---|---|---|---|
+| 0.5.0 | Integration Assessment technology profiles and the ISA-M taxonomy | on `feature/ia-technology-profile` | its acceptance tests on a tenant |
+| 0.6.0 | API Composition: business data graph hardening | proposed | a service key of plan `configuration` and a destination (P1 item 2) |
+| 0.7.0 | Cloud Integration data types, message types, fault message types, service interfaces | proposed | proof that content written through the API is kept (P1 item 4) |
+| 0.8.0 | Security Content completion | proposed | the upload formats in P2 item 5 |
+| 0.9.0 | Classic API Management infrastructure, above all virtual hosts; the API proxy only if the official Transport API request passes its acceptance test | proposed | P2 item 6 and the Transport API specification |
+| 0.10.0 | Edge Integration Cell targeting | proposed | a tenant with an Edge Integration Cell (P1 item 3) |
+| 0.11.0 | Data Space Integration desired-state configuration | proposed | the DSIAPI specification (P2 item 7) |
+
+The order follows what is closest to a tenant-verified result, not importance, and changes when a
+precondition is met earlier. Current API Management (API artifacts, MCP servers, runtime
+profiles) stays on WATCH until SAP publishes a supported design-time management API. Developer
+Hub belongs to a separate provider. `v1.0.0` is a separate, explicit decision and not the
+automatic successor of any 0.x release.
 
 ## P0 — tenant runs that decide promotions
 
@@ -39,11 +51,11 @@ These need no further research, only a run of the prepared tests:
 
 ## P1 — public contract, next implementation
 
-1. **Integration Assessment, next steps.** The five landscape resources, the technology profile
-   (domains, styles, key characteristic ratings) and the lookups for the taxonomy they link to
-   exist (unofficial). Next: `TestAccIntegrationAssessment_technologyProfile` on a tenant, then
-   the Hub specification of the Entities API, which would make all of them supported. Requests
-   and assessment results stay out of scope as workflow.
+1. **Integration Assessment.** The landscape (0.4), the technology profiles and the complete
+   ISA-M taxonomy (0.5) exist, all unofficial. `TestAccIntegrationAssessment_technologyProfile`
+   passed on 2026-09-29; `TestAccIntegrationAssessment_taxonomy` is next. The Hub specification of
+   the Entities API would make them supported; it still needs an SAP login. Requests and
+   assessment results stay out of scope as workflow.
 2. **API Composition hardening.** `TestAccBusinessDataGraph_basic` needs a service key of plan
    `configuration` and a destination; the Configuration API's `$metadata` goes through
    `cmd/apidiscovery`. Passing both promotes the business data graph from experimental and
@@ -52,10 +64,12 @@ These need no further research, only a run of the prepared tests:
    needs a tenant with an Edge Integration Cell. Passing it makes `runtime_location_id`
    supported for the tested resources; the deployment resources follow with their own test.
 4. **Data types, message types, fault message types, service interfaces.** The `$metadata`
-   defines all four with `SaveAsVersion`. For data types, reading, a create without content and
-   `SaveAsVersion` work; every request with content failed with 500 ("map is null"). The next
-   probe sends the content the API's own `$value` returns for an existing data type. If content
-   can be written, the four resources reuse the shared design-time client.
+   defines all four with `SaveAsVersion`. For data types (September 2026): reading, deleting and
+   `SaveAsVersion` work, and so does a create with content once the bundle carries
+   `additionalAttributes.json` and `metainfo.prop` as SAP's own `$value` does. A media `PUT`
+   on `$value` answers 501. SAP rewrites the XSD's type name to the artifact's name; whether it
+   keeps the structure of a type with elements, and whether an update with content takes effect,
+   is still open. If both hold, the four resources reuse the shared design-time client.
 
 ## P2 — partly confirmed, more evidence first
 

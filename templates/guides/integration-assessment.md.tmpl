@@ -107,13 +107,41 @@ to entries of SAP's taxonomy, which you look up by name:
 | Style | [`integration_assessment_technology_style`](../resources/integration_assessment_technology_style.md) | [style](../data-sources/integration_assessment_style.md) |
 | Key characteristic rating | [`integration_assessment_technology_key_characteristic`](../resources/integration_assessment_technology_key_characteristic.md) | [key characteristic value](../data-sources/integration_assessment_key_characteristic_value.md) and [recommendation degree](../data-sources/integration_assessment_recommendation_degree.md) |
 
+A complete profile for your own technology: one domain, one style and one key characteristic
+rating. The names are variables because they are SAP's taxonomy names as the Integration
+Assessment UI shows them; the Ids behind them differ between tenants.
+
 ```terraform
-variable "domain_name" {
-  type = string
+variable "profile" {
+  description = "Taxonomy names, as the Integration Assessment UI lists them."
+  type = object({
+    domain                   = string
+    style                    = string
+    key_characteristic       = string
+    key_characteristic_value = string
+    recommendation_degree    = string
+  })
 }
 
 data "sapintegrationsuite_integration_assessment_domain" "selected" {
-  name = var.domain_name
+  name = var.profile.domain
+}
+
+data "sapintegrationsuite_integration_assessment_style" "selected" {
+  name = var.profile.style
+}
+
+data "sapintegrationsuite_integration_assessment_key_characteristic_value" "selected" {
+  key_characteristic = var.profile.key_characteristic
+  name               = var.profile.key_characteristic_value
+}
+
+data "sapintegrationsuite_integration_assessment_recommendation_degree" "selected" {
+  name = var.profile.recommendation_degree
+}
+
+resource "sapintegrationsuite_integration_assessment_vendor" "acme" {
+  name = "ACME Logistics"
 }
 
 resource "sapintegrationsuite_integration_assessment_technology" "acme_esb" {
@@ -125,11 +153,48 @@ resource "sapintegrationsuite_integration_assessment_technology_domain" "acme_es
   technology_id = sapintegrationsuite_integration_assessment_technology.acme_esb.id
   domain_id     = data.sapintegrationsuite_integration_assessment_domain.selected.id
 }
+
+resource "sapintegrationsuite_integration_assessment_technology_style" "acme_esb" {
+  technology_id = sapintegrationsuite_integration_assessment_technology.acme_esb.id
+  style_id      = data.sapintegrationsuite_integration_assessment_style.selected.id
+}
+
+resource "sapintegrationsuite_integration_assessment_technology_key_characteristic" "acme_esb" {
+  technology_id               = sapintegrationsuite_integration_assessment_technology.acme_esb.id
+  key_characteristic_value_id = data.sapintegrationsuite_integration_assessment_key_characteristic_value.selected.id
+  recommendation_degree_id    = data.sapintegrationsuite_integration_assessment_recommendation_degree.selected.id
+  description                 = "Rated by the integration architecture board"
+}
 ```
+
+A technology usually has several domains, styles and ratings; declare one resource per entry,
+for example with `for_each` over a map of names.
 
 The service has no update for these associations, so every change replaces one: a rating with a
 new description or degree is deleted and created again. That is quick and has no side effects
 on the technology.
+
+## The ISA-M taxonomy
+
+SAP ships the taxonomy of the Integration Solution Advisory Methodology as reference content.
+The provider reads it with data sources and never manages it:
+
+| Taxonomy entry | Data source | Found by |
+|---|---|---|
+| Deployment model | [`integration_assessment_deployment_model`](../data-sources/integration_assessment_deployment_model.md) | name |
+| Domain | [`integration_assessment_domain`](../data-sources/integration_assessment_domain.md) | name |
+| Style | [`integration_assessment_style`](../data-sources/integration_assessment_style.md) | name |
+| Use case pattern | [`integration_assessment_use_case_pattern`](../data-sources/integration_assessment_use_case_pattern.md) | name; returns the style it refines |
+| Integration pattern | [`integration_assessment_integration_pattern`](../data-sources/integration_assessment_integration_pattern.md) | name; returns its domain and style |
+| Key characteristic group | [`integration_assessment_key_characteristic_group`](../data-sources/integration_assessment_key_characteristic_group.md) | name |
+| Key characteristic value | [`integration_assessment_key_characteristic_value`](../data-sources/integration_assessment_key_characteristic_value.md) | key characteristic name and value name |
+| Recommendation degree | [`integration_assessment_recommendation_degree`](../data-sources/integration_assessment_recommendation_degree.md) | name |
+| Domain determination | [`integration_assessment_domain_determination`](../data-sources/integration_assessment_domain_determination.md) | source and target deployment model |
+
+Names are compared exactly, including case, and must identify one entry. A key characteristic
+value needs its key characteristic's name too, because value names repeat. A domain
+determination has no name; it says which domain applies between two deployment models, so it is
+found by that pair.
 
 ## What changes in place
 
@@ -142,15 +207,15 @@ instances, 50 technologies, 150 technology instances and 10,000 vendors per tena
 
 ## What stays out of scope
 
-- **Requests and assessment results.** Business solution and interface requests follow a
-  status workflow (`draft`, `new`, `in progress`, `completed`), and their results are reports.
-  That is project state, not configuration.
+- **Requests and assessment results.** Business solution and interface requests, their line
+  items, the technology decisions on them, the integration and message flows they describe and
+  the interface request report follow a status workflow (`draft`, `new`, `in progress`,
+  `completed`). Terraform manages desired configuration; an assessment request and its status
+  are the state of a piece of work, not configuration, so none of these entities has a resource.
 - **Content import and export.** The Management API's `ImportContent` and `ExportContent`
   are one-shot transport actions.
-- **The rest of the ISA-M taxonomy** (use case patterns, integration patterns, key
-  characteristic groups, domain determinations) has no data source, because nothing the
-  provider manages links to it. The taxonomy itself is SAP's reference content and is not
-  managed.
+- **The taxonomy itself.** Domains, styles, patterns, key characteristics and the other ISA-M
+  entries are SAP's reference content. They are looked up, never created or changed.
 
 ## Importing existing objects
 

@@ -60,15 +60,16 @@ Works and verified on a tenant, but the contract is known only from the service'
 
 ### Integration Assessment Master Data
 
-`integration_assessment.master_data` · checked 2026-09-27
+`integration_assessment.master_data` · checked 2026-09-29
 
-- **Finding:** The live Entities $metadata (27 entity sets) confirms the ISA-M taxonomy entities field by field, and every set was read on a tenant (for example 57 technology domains, 34 technology styles, 3 deployment models); no write annotations, and SAP Help lists no operations. Read-mostly reference data.
-- **Next step:** Deployment models, domains, styles, key characteristic values and recommendation degrees have data sources (lookup by name); TestAccIntegrationAssessment_technologyProfile exercises the last four on a tenant. SAP publishing the Entities API specification without a login, or its download from the Hub into .specs/specs, would make the contract official; the other taxonomy entities get data sources when a landscape object needs them.
+- **Finding:** The live Entities $metadata (27 entity sets) confirms the ISA-M taxonomy entities field by field, and every set was read on a tenant (7 domains, 6 styles, 24 use case patterns, 12 integration patterns, 14 key characteristics in 5 groups with 29 values, 4 recommendation degrees, 9 domain determinations). SAP Help's entity list (last changed 2026-07-02) describes each entity; its text for Domain Determination repeats the recommendation degree's, so that entity's meaning comes from the $metadata (a domain between a source and a target deployment model). The Hub's EntitiesAPI specification still ends at a login page (2026-09-29).
+- **Next step:** Every taxonomy entity has a read-only data source. SAP publishing the Entities API specification without a login, or its download from the Hub into .specs/specs, would make the contract official.
 - **Sources:**
   - Hub package SAPIntegrationAssessment (EntitiesAPI, ManagementAPI, OData; modified 2025-07-25)
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Integration Assessment Entities and Management $metadata, fetched live on 2026-09-27 (snapshots testdata/api-metadata/integration-assessment-*.json)
   - ia-probe -LandscapeTests on the development tenant's Integration Assessment (2026-09-27 17:29), synthetic tfacc-probe objects only
+  - SAP Help, Integration Assessment APIs (docs/ISuite_Integration_Assessment/integration-assessment-apis-47847b5.md in SAP-docs/btp-integration-suite, last changed 2026-07-02), read 2026-09-29, and the Hub catalog of package SAPIntegrationAssessment (EntitiesAPI 1.0.0, specification behind a login)
 
 ### Secure Parameter
 

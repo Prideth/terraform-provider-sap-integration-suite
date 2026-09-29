@@ -24,6 +24,10 @@ var Contract = apimeta.Contract{
 		{EntitySet: technologyDomainEntitySet, Value: TechnologyDomain{}},
 		{EntitySet: technologyStyleEntitySet, Value: TechnologyStyle{}},
 		{EntitySet: technologyKeyCharacteristicEntitySet, Value: TechnologyKeyCharacteristic{}},
+		{EntitySet: useCasePatternEntitySet, Value: UseCasePattern{}},
+		{EntitySet: integrationPatternEntitySet, Value: IntegrationPattern{}},
+		{EntitySet: keyCharacteristicGroupEntitySet, Value: KeyCharacteristicGroup{}},
+		{EntitySet: domainDeterminationEntitySet, Value: DomainDetermination{}},
 	},
 	Writes: []apimeta.StructUse{
 		{EntitySet: vendorEntitySet, Value: vendorWrite{}},
@@ -64,5 +68,11 @@ var Contract = apimeta.Contract{
 		{EntitySet: technologyKeyCharacteristicEntitySet, Property: "Technology"},
 		{EntitySet: technologyKeyCharacteristicEntitySet, Property: "KeyCharacteristicValue"},
 		{EntitySet: technologyKeyCharacteristicEntitySet, Property: "RecommendationDegree"},
+		{EntitySet: useCasePatternEntitySet, Property: "Style"},
+		{EntitySet: integrationPatternEntitySet, Property: "Domain"},
+		{EntitySet: integrationPatternEntitySet, Property: "Style"},
+		{EntitySet: domainDeterminationEntitySet, Property: "Domain"},
+		{EntitySet: domainDeterminationEntitySet, Property: "SourceDeploymentModel"},
+		{EntitySet: domainDeterminationEntitySet, Property: "TargetDeploymentModel"},
 	},
 }

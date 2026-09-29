@@ -167,7 +167,10 @@ provider "sapintegrationsuite" {
 | `sapintegrationsuite_integration_assessment_application_instance` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_application` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_deployment_model` | unofficial | `enable_unofficial` |
+| `sapintegrationsuite_integration_assessment_domain_determination` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_domain` | unofficial | `enable_unofficial` |
+| `sapintegrationsuite_integration_assessment_integration_pattern` | unofficial | `enable_unofficial` |
+| `sapintegrationsuite_integration_assessment_key_characteristic_group` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_key_characteristic_value` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_recommendation_degree` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_style` | unofficial | `enable_unofficial` |
@@ -176,6 +179,7 @@ provider "sapintegrationsuite" {
 | `sapintegrationsuite_integration_assessment_technology_key_characteristic` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_technology_style` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_technology` | unofficial | `enable_unofficial` |
+| `sapintegrationsuite_integration_assessment_use_case_pattern` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_vendor` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_secure_parameter` | unofficial | `enable_unofficial` |
 
@@ -272,7 +276,9 @@ Grouped by why, not just that. A feature can be `partial` and reachable via one 
   - Needs provider.integration_assessment: the service key of an "Integration Assessment APIs" service instance; the other credential sets do not work there.
 - **`integration_assessment.master_data`** — SAP Integration Solution Advisory Methodology (ISA-M) taxonomy: Domain, Style, Use Case Pattern, Integration Pattern, Key Characteristic (and its Group/Value/Recommendation), Deployment Model, Domain Determination — largely SAP-maintained reference content a tenant can review and adjust.
   - SAP documents the Entities API and lists these entities with a description each; the field-level specification on the Business Accelerator Hub needs an SAP login. The contract comes from the live $metadata (snapshot testdata/api-metadata/integration-assessment-entities.json), and every entity set was read on a tenant in September 2026.
-  - Deployment models, domains, styles, key characteristic values and recommendation degrees have data sources, looked up by name (a key characteristic value by its key characteristic's name and its own), because landscape objects and technology profiles link to them. Use case patterns, integration patterns, key characteristic groups and domain determinations are not exposed.
+  - The whole taxonomy has read-only data sources, looked up by exact name: deployment models, domains, styles, use case patterns, integration patterns, key characteristic groups, key characteristic values (by their key characteristic's name and their own, since value names repeat) and recommendation degrees. A domain determination has no name and is found by its source and target deployment models.
+  - SAP Help's description of Domain Determination repeats the recommendation degree's text; its meaning (the domain that applies between two deployment models) comes from the  only.
+  - The taxonomy is SAP's reference content, adjusted in the UI if at all, so there are no resources for it.
   - Needs provider.integration_assessment: the service key of an "Integration Assessment APIs" service instance; the other credential sets do not work there.
 - **`security.certificate_chain`** — A certificate chain associated with a key pair.
   - The tenant $metadata defines CertificateChainResources, a media entity keyed by the key pair's Hexalias with a KeystoreEntry navigation, and a read-only ChainCertificates set (Hexalias, Index and certificate details). SAP Help describes chain import and export only as a capability of the Key Pair resource and documents neither the media type nor the request that uploads a chain, so nothing is implemented yet.

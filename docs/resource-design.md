@@ -1744,51 +1744,44 @@ across roughly ninety documentation pages.
 
 ## Integration Assessment — suitability check
 
-This phase's research question was again the usual one (does a public API exist), and the answer
-is genuinely yes — a separate BTP service subscription, a confirmed dual-base-URL OAuth-secured
-API, and an exhaustively confirmed entity inventory (nineteen named entities, each with a
-one-paragraph SAP description) are all real evidence, not assumptions. What could not be
-confirmed, despite checking the entire SAP-docs mirror tree for this capability, an official
-2400-line PDF user guide, and SAP's own TechEd hands-on sample repository, is a field-level
-request/response schema for even one entity. The suitability check below is therefore grouped by
-category rather than walked entity-by-entity through the full fourteen-question format — every
-individual entity in a group shares the same answer to questions 4 through 14 ("unconfirmed"),
-so repeating that nineteen times would not add information.
+The first version of this check (September 2026) found SAP's entity inventory but no field-level
+contract, and concluded "no resource, no data source" for every group. That changed once the
+service's live `$metadata` was committed as a snapshot and every request was verified on a tenant:
+the contract source is `metadata_only`, so everything below is **unofficial** and needs
+`enable_unofficial`. The suitability judgments per group did not change; only the missing
+contract did.
 
-### Master data (Domain, Style, Use Case Pattern, Integration Pattern, Key Characteristic family,
-### Deployment Model, Domain Determination) — no resource, no data source
+### Master data (the ISA-M taxonomy) — read-only data sources (0.5.0)
 
-1. **Who creates it**: primarily SAP (shipped ISA-M reference taxonomy), with a documented
-   tenant "Update Content Maintained by SAP" adjustment capability.
-2. **Configuration vs. reference data**: reference/master data — the category this provider
-   already treats as, at most, a data-source candidate rather than a resource (see Runtime
-   Profile's suitability check in the Current API Management section above for the same
-   reasoning pattern).
-3–13. Moot — no field-level API contract confirmed for Create, Read, Update, or Delete on any
-   entity in this group.
-14. **Resource / Data Source / unsupported / out of scope**: **unsupported,
-   `research_required`** — `PublicAPI: true` (the capability and entity both confirmed real),
-   but no schema confirmed to build even a read-only data source against safely.
+1. **Who creates it**: SAP ships it as reference content; the UI allows adjusting some of it
+   ("Update Content Maintained by SAP").
+2. **Configuration vs. reference data**: reference data. Terraform looks it up and never manages
+   it, so there are data sources and no resources.
+3. **Lookup key**: the exact name wherever the entity has one (deployment model, domain, style,
+   use case pattern, integration pattern, key characteristic group, recommendation degree). A key
+   characteristic value is found by its key characteristic's name plus its own, since value names
+   repeat. A domain determination has no name: it is the rule that an integration between a
+   source and a target deployment model belongs to a domain, so it is found by that pair. SAP
+   Help's text for it repeats the recommendation degree's; the meaning comes from the `$metadata`.
+4. **Ids**: assigned per tenant; configurations reference names, never Ids.
 
-### Landscape configuration (Application, Application Instance, Technology, Technology Instance,
-### Vendor, and their association entities) — no resource, no data source, but the strongest
-### candidate in this capability
+### Landscape configuration — resources (0.4.0) and technology profiles (0.5.0)
 
-1. **Who creates it**: a practitioner, describing their organization's actual application and
-   integration-technology landscape.
-2. **Configuration vs. reference data**: configuration — practitioner-authored, not SAP-shipped,
-   and SAP's documented per-tenant limits (20,000 Applications, 20,000 Application Instances, 50
-   Technologies, 150 Technology Instances, 10,000 Vendors) confirm this is real, bounded, durable
-   tenant storage, not runtime/business data.
-3–13. Moot for the same reason as Master Data — no field-level contract confirmed.
-14. **Resource / Data Source / unsupported / out of scope**: **unsupported,
-   `research_required`** — the first place to look if SAP's wire contract for this capability
-   ever becomes reachable, since every other suitability signal (who owns it, why it's created,
-   documented bounded limits) already points toward a legitimate Terraform resource.
+1. **Who creates it**: a practitioner, describing their own landscape.
+2. **Configuration vs. reference data**: configuration, with SAP's documented per-tenant limits
+   (20,000 applications, 20,000 application instances, 50 technologies, 150 technology instances,
+   10,000 vendors).
+3. **Lifecycle**: vendors, applications, application instances, technologies and technology
+   instances support create, read, PATCH and delete; names, descriptions and links change in
+   place (only a technology instance's technology forces a new instance, untested in place). The
+   profile associations (technology domain, style, key characteristic rating) support create,
+   read and delete only: a tenant refused PATCH with 400 V101, so every attribute forces a new
+   association.
+4. **Import**: every resource by the Id the service assigned.
 
 ### Assessment workflow (Request, Request Line Item, Integration Flow, Message Flow, Integration
-### Flow Message Flow, Request Line Item Technology Instance Decision) — no resource, no data
-### source, and not merely a research gap
+### Flow Message Flow, Request Line Item Technology Instance Decision, the create request
+### entities, Entity Reference, Interface Request Report) — excluded, and not merely a research gap
 
 1. **Who creates it**: a practitioner, as a business solution/interface request moving through an
    assessment workflow.

@@ -1,15 +1,14 @@
 ---
-page_title: "sapintegrationsuite_integration_assessment_style Data Source - sapintegrationsuite"
+page_title: "sapintegrationsuite_integration_assessment_use_case_pattern Data Source - sapintegrationsuite"
 subcategory: "Integration Assessment"
 description: |-
-  Finds an integration style of SAP's Integration Assessment taxonomy by name.
+  Finds a use case pattern of SAP's Integration Assessment taxonomy by name.
 ---
 
-# sapintegrationsuite_integration_assessment_style (Data Source)
+# sapintegrationsuite_integration_assessment_use_case_pattern (Data Source)
 
-Returns the Id and description of an integration style of SAP's Integration Solution Advisory
-Methodology, to link a technology to it with
-[`sapintegrationsuite_integration_assessment_technology_style`](../resources/integration_assessment_technology_style.md).
+Returns the Id, description, example and style of a use case pattern of SAP's Integration Solution
+Advisory Methodology. A use case pattern refines an integration style; `style_id` is that style.
 The Ids differ between tenants, the names do not.
 
 **Status:** unofficial. Needs `enable_unofficial = true` in the provider block. SAP documents the
@@ -22,16 +21,16 @@ has the name.
 
 ## Example Usage
 
-{{ tffile "examples/data-sources/sapintegrationsuite_integration_assessment_style/data-source.tf" }}
+{{ tffile "examples/data-sources/sapintegrationsuite_integration_assessment_use_case_pattern/data-source.tf" }}
 
 ## Use in a technology profile
 
-Link your technology to the style:
+A use case pattern refines a style, so `style_id` can link your technology to that style:
 
 ```terraform
 resource "sapintegrationsuite_integration_assessment_technology_style" "acme_esb" {
   technology_id = sapintegrationsuite_integration_assessment_technology.acme_esb.id
-  style_id      = data.sapintegrationsuite_integration_assessment_style.selected.id
+  style_id      = data.sapintegrationsuite_integration_assessment_use_case_pattern.selected.style_id
 }
 ```
 

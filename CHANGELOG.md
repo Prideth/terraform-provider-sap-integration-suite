@@ -9,35 +9,73 @@ contain breaking schema or lifecycle changes; each one is listed under
 "Breaking changes" together with the steps it needs. Patch releases (0.2.1)
 only fix defects in their minor release.
 
-## Unreleased
+## Unreleased (planned as 0.5.0)
 
-This is the state of the current feature branch. Nothing here is released
-yet, and the list below is not final.
+This is the state of the feature branch `feature/ia-technology-profile`,
+planned as 0.5.0. It is not released; the date is set when it is.
+
+0.5.0 extends Integration Assessment from the landscape inventory to the
+technology profiles that ISA-M technology recommendations are based on.
+0.4.0 described which vendors, applications and technologies exist and where
+they run; 0.5.0 describes what a technology can do, in the terms of SAP's
+Integration Solution Advisory Methodology taxonomy, and makes the whole
+taxonomy readable.
+
+### Highlights
+
+- A technology's profile can be maintained with Terraform: the integration
+  domains and styles it serves and how strongly it meets each key
+  characteristic value. The assessment compares these profiles when it
+  recommends a technology for an interface.
+- Every entry of the ISA-M taxonomy can be looked up: deployment models,
+  domains, styles, use case patterns, integration patterns, key
+  characteristic groups, key characteristic values, recommendation degrees
+  and domain determinations. All 27 entity sets of the Entities API are now
+  either used by the provider or explicitly excluded as assessment workflow.
 
 ### New resources
 
 - `sapintegrationsuite_integration_assessment_technology_domain`,
   `sapintegrationsuite_integration_assessment_technology_style` and
   `sapintegrationsuite_integration_assessment_technology_key_characteristic`
-  (unofficial) maintain a technology's profile: the integration domains and
-  styles it serves and how strongly it meets key characteristic values,
-  which the assessment compares when it recommends technologies. A tenant
-  created, read and deleted all three on 2026-09-28. The service has no
-  update for them, so every change replaces the association.
+  (unofficial). A tenant created, read and deleted all three on 2026-09-28
+  and answered a `PATCH` on a key characteristic rating with 400 V101, so
+  the service has no update for them: every change replaces the association.
+  All three can be imported by the Id the service assigned.
 
 ### New data sources
 
 - `sapintegrationsuite_integration_assessment_domain`,
   `sapintegrationsuite_integration_assessment_style`,
-  `sapintegrationsuite_integration_assessment_key_characteristic_value` and
+  `sapintegrationsuite_integration_assessment_use_case_pattern`,
+  `sapintegrationsuite_integration_assessment_integration_pattern`,
+  `sapintegrationsuite_integration_assessment_key_characteristic_group` and
   `sapintegrationsuite_integration_assessment_recommendation_degree`
-  (unofficial) find the taxonomy entries a technology profile links to by
-  name. A key characteristic value is found by its key characteristic's name
-  and its own, because value names repeat across key characteristics.
+  (unofficial) find a taxonomy entry by its exact name. The pattern lookups
+  also return the Ids of the domain and style the pattern refers to.
+- `sapintegrationsuite_integration_assessment_key_characteristic_value`
+  (unofficial) finds a value by its key characteristic's name and its own,
+  because value names repeat across key characteristics.
+- `sapintegrationsuite_integration_assessment_domain_determination`
+  (unofficial) finds the domain that applies between a source and a target
+  deployment model. A domain determination has no name; SAP Help's
+  description of it repeats the recommendation degree's text, so what it is
+  comes from the service's `$metadata`.
+
+### Known limitations
+
+- Still unofficial: SAP documents the Entities API and its entities, but the
+  field-level specification on the Business Accelerator Hub needs an SAP
+  login (checked again on 2026-09-29).
+- The ISA-M taxonomy is read, never written. Assessment requests, their line
+  items and decisions, the integration and message flows they describe and
+  the interface request report stay out of scope: they are the state of an
+  assessment, not configuration.
 
 ### Upgrade notes
 
-Nothing to do; the new types are optional and need `enable_unofficial`.
+Nothing to do. All additions are optional and need `enable_unofficial`; no
+state migration is needed when upgrading from 0.4.
 
 ## 0.4.0 — 2026-09-29
 

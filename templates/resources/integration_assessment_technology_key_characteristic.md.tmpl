@@ -26,6 +26,12 @@ were verified on a tenant in September 2026; SAP may change them without notice.
 - The technology's Id, from [`sapintegrationsuite_integration_assessment_technology`](integration_assessment_technology.md) (resource or data source).
 - The value's Id from [`sapintegrationsuite_integration_assessment_key_characteristic_value`](../data-sources/integration_assessment_key_characteristic_value.md) and the degree's Id from [`sapintegrationsuite_integration_assessment_recommendation_degree`](../data-sources/integration_assessment_recommendation_degree.md).
 
+## Ids
+
+The taxonomy entries (domains, styles, key characteristic values, recommendation degrees) are
+SAP's reference content, but their Ids are assigned per tenant. Never write them into a
+configuration: look them up by name with the data sources, as in the example below.
+
 ## Lifecycle
 
 | Operation | What happens |
