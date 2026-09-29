@@ -9,10 +9,7 @@ contain breaking schema or lifecycle changes; each one is listed under
 "Breaking changes" together with the steps it needs. Patch releases (0.2.1)
 only fix defects in their minor release.
 
-## Unreleased (planned as 0.5.0)
-
-This is the state of the feature branch `feature/ia-technology-profile`,
-planned as 0.5.0. It is not released; the date is set when it is.
+## 0.5.0 — 2026-09-29
 
 0.5.0 extends Integration Assessment from the landscape inventory to the
 technology profiles that ISA-M technology recommendations are based on.
@@ -66,7 +63,8 @@ taxonomy readable.
 
 - Still unofficial: SAP documents the Entities API and its entities, but the
   field-level specification on the Business Accelerator Hub needs an SAP
-  login (checked again on 2026-09-29).
+  login (checked again on 2026-09-29). The acceptance tests of the technology
+  profile and of the taxonomy lookups passed on a tenant on 2026-09-29.
 - The ISA-M taxonomy is read, never written. Assessment requests, their line
   items and decisions, the integration and message flows they describe and
   the interface request report stay out of scope: they are the state of an

@@ -21,11 +21,12 @@ Priorities:
 
 Each 0.x minor release has one theme. Released so far: 0.1.0 (the broad first provider), 0.2.0
 (the tenant-verified rework), 0.3.0 (contract sources, opt-in switches, Registry documentation).
-0.4.0 (the Integration Assessment landscape) is prepared on `release/0.4.0`.
+0.4.0 (the Integration Assessment landscape) is prepared on `release/0.4.0`, 0.5.0 on
+`release/0.5.0`.
 
 | Version | Theme | State | Precondition |
 |---|---|---|---|
-| 0.5.0 | Integration Assessment technology profiles and the ISA-M taxonomy | on `feature/ia-technology-profile`, acceptance tests passed | releasing 0.4.0 first |
+| 0.5.0 | Integration Assessment technology profiles and the ISA-M taxonomy | prepared on `release/0.5.0` | releasing 0.4.0 first |
 | 0.6.0 | API Composition: business data graph hardening | proposed | a service key of plan `configuration` and a destination (P1 item 2) |
 | 0.7.0 | Cloud Integration data types, message types, fault message types, service interfaces | proposed | proof that content written through the API is kept (P1 item 4) |
 | 0.8.0 | Security Content completion | proposed | the upload formats in P2 item 5 |

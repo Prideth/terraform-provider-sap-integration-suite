@@ -16,7 +16,7 @@ terraform {
   required_providers {
     sapintegrationsuite = {
       source  = "Prideth/sap-integration-suite"
-      version = "~> 0.4.0"
+      version = "~> 0.5.0"
     }
   }
 }
@@ -26,6 +26,13 @@ Upgrade one minor version at a time. Run `terraform init -upgrade`, then `terraf
 read the plan before applying: every change below that forces a replacement is marked. The
 complete list of changes is in the
 [CHANGELOG](https://github.com/Prideth/terraform-provider-sap-integration-suite/blob/master/CHANGELOG.md).
+
+## 0.4 to 0.5
+
+Nothing to change, and no state migration. 0.5 only adds Integration Assessment types: the
+technology profile resources (technology domain, style and key characteristic rating) and
+read-only lookups for the whole ISA-M taxonomy. They are unofficial and optional, like the rest of
+Integration Assessment; see the [Integration Assessment guide](integration-assessment.md).
 
 ## 0.3 to 0.4
 
