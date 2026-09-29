@@ -87,13 +87,13 @@ SAP does not return everything a configuration contains. The first plan after an
 therefore often shows a change even though nothing on the tenant differs:
 
 - **Content files.** SAP returns no local file path and no hash for integration flows,
-  mappings, script collections, adapters or API proxies. After the import, `content` and
+  mappings, script collections or adapters. After the import, `content` and
   `content_hash` are empty in state. If your configuration sets them, the first apply uploads
   that file once; make sure it is the content you want on the tenant. For message mappings and
   script collections, that upload is an in-place update and needs `enable_unofficial`; to adopt
   them without it, leave `content` and `content_hash` out until you change the content.
   Value mappings and adapters cannot be updated in place, so setting `content` after an import
-  replaces them. API proxies only record the file on the first apply.
+  replaces them.
 - **Secrets.** Passwords, client secrets and secure parameter values are write-only and never
   read back. After an import, the `*_wo_version` marker is empty, so the first apply is an
   in-place update that sends the configured secret. Have the correct secret in place before you

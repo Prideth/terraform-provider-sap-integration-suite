@@ -189,7 +189,7 @@ func (p *sapIntegrationSuiteProvider) Schema(_ context.Context, _ provider.Schem
 			},
 			"api_management": schema.SingleNestedBlock{
 				Description: "Optional, and independent of the oauth block above. Classic API Management " +
-					"(API Providers, API Proxies, API Products, Key Value Maps) authenticates against its " +
+					"(API Providers, API Products, Key Value Maps, Certificate Store References) authenticates against its " +
 					"own API Portal application URL and its own OAuth 2.0 client, generated from the " +
 					"apiportal-apiaccess service plan — never the Cloud Integration credentials configured " +
 					"above. Leave this entire block out if you do not use any sapintegrationsuite_api_provider, " +

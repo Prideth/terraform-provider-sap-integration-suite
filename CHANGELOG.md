@@ -67,6 +67,9 @@ Nothing to do. The new types are optional; to use them, set
   of 0.2.0 and 0.3.0 were published without a description, because
   `changelog.disable` in the GoReleaser configuration also skipped reading
   the notes file.
+- The provider page, the Classic API Management guide, the import guide and
+  the README still described API proxies as manageable after the resource was
+  withdrawn in 0.3.0. They no longer do.
 
 ### Known limitations
 

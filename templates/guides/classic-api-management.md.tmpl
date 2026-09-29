@@ -2,9 +2,9 @@
 page_title: "Classic API Management"
 subcategory: "API Management"
 description: |-
-  API Providers, API Proxies (experimental), API Products, Key Value Maps, and Certificate Store
-  References for Classic API Management — what this provider manages, what it deliberately does
-  not, and exactly what evidence every decision rests on.
+  API Providers, API Products, Key Value Maps and Certificate Store References for Classic API
+  Management — what this provider manages, what it deliberately does not (including API proxies,
+  for now), and exactly what evidence every decision rests on.
 ---
 
 # Classic API Management

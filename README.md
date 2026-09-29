@@ -412,7 +412,7 @@ most important ones:
   Cell, Edge Integration Cell) has no public API; it stays a manual step. See
   [`docs/provisioning-capability-matrix.md`](docs/provisioning-capability-matrix.md).
 - **Content files cannot be imported.** SAP returns no file for integration
-  flows, mappings, script collections, adapters or API proxies; the first
+  flows, mappings, script collections or adapters; the first
   apply after an import uploads the configured file. See
   [Importing Existing Content](docs/guides/importing-existing-content.md).
 - **Replace-only resources.** Value mappings, integration adapters, API
