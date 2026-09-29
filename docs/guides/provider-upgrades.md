@@ -16,7 +16,7 @@ terraform {
   required_providers {
     sapintegrationsuite = {
       source  = "Prideth/sap-integration-suite"
-      version = "~> 0.3.0"
+      version = "~> 0.4.0"
     }
   }
 }
@@ -26,6 +26,13 @@ Upgrade one minor version at a time. Run `terraform init -upgrade`, then `terraf
 read the plan before applying: every change below that forces a replacement is marked. The
 complete list of changes is in the
 [CHANGELOG](https://github.com/Prideth/terraform-provider-sap-integration-suite/blob/master/CHANGELOG.md).
+
+## 0.3 to 0.4
+
+Nothing to change. 0.4 only adds the Integration Assessment resources and data sources, which
+are unofficial and optional. To use them, set `enable_unofficial = true` and add the
+`integration_assessment` block with the service key of an *Integration Assessment APIs* service
+instance; see the [Integration Assessment guide](integration-assessment.md).
 
 ## 0.2 to 0.3
 

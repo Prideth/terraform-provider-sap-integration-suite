@@ -9,11 +9,12 @@ contain breaking schema or lifecycle changes; each one is listed under
 "Breaking changes" together with the steps it needs. Patch releases (0.2.1)
 only fix defects in their minor release.
 
-## Unreleased (planned as 0.4.0)
+## 0.4.0 — 2026-09-29
 
-This is the state of `dev` and the current feature branch, planned as
-0.4.0. The Integration Assessment resources still wait for their acceptance
-test, so the list below is not final.
+0.4.0 adds the Integration Assessment landscape. It changes nothing for
+existing configurations. The acceptance test of the landscape, including
+moving objects between their links in place, passed on a tenant on
+2026-09-29.
 
 ### Highlights
 
@@ -52,12 +53,28 @@ test, so the list below is not final.
 Nothing to do. The new types are optional; to use them, set
 `enable_unofficial = true` and add the `integration_assessment` block.
 
+### Improvements
+
+- The Current API Management evidence records what a tenant showed on
+  2026-09-27 and 2026-09-29: API artifacts and MCP servers are integration
+  package content (bundles of type `RESTAPI` and `MCPSERVER` for the
+  Integration Cell runtime profile), and the documented Integration Content
+  API does not list them. There is still no public API for them.
+
+### Fixes
+
+- The GitHub release now shows the hand-written release notes. The releases
+  of 0.2.0 and 0.3.0 were published without a description, because
+  `changelog.disable` in the GoReleaser configuration also skipped reading
+  the notes file.
+
 ### Known limitations
 
 - Integration Assessment requests and assessment results stay out of scope
   (workflow state), as do the content import and export. The ISA-M taxonomy
   other than deployment models, and the domains, styles and key
-  characteristics of a technology, are not exposed yet.
+  characteristics of a technology, are not exposed yet. A tenant test showed
+  that key characteristics can only be created and deleted.
 
 ## 0.3.0 — 2026-09-29
 
