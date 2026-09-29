@@ -40,8 +40,9 @@ jobs:
             exit 1
           fi
 
-      # Release notes are written by hand for every version; GoReleaser's
-      # commit list is disabled in .goreleaser.yml.
+      # Release notes are written by hand for every version. GoReleaser uses
+      # the file passed with --release-notes as the release description
+      # instead of a commit list.
       - name: Require release notes
         env:
           NOTES: .github/release-notes/${{ github.ref_name }}.md
