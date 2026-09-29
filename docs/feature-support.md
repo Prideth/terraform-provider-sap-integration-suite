@@ -167,7 +167,14 @@ provider "sapintegrationsuite" {
 | `sapintegrationsuite_integration_assessment_application_instance` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_application` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_deployment_model` | unofficial | `enable_unofficial` |
+| `sapintegrationsuite_integration_assessment_domain` | unofficial | `enable_unofficial` |
+| `sapintegrationsuite_integration_assessment_key_characteristic_value` | unofficial | `enable_unofficial` |
+| `sapintegrationsuite_integration_assessment_recommendation_degree` | unofficial | `enable_unofficial` |
+| `sapintegrationsuite_integration_assessment_style` | unofficial | `enable_unofficial` |
+| `sapintegrationsuite_integration_assessment_technology_domain` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_technology_instance` | unofficial | `enable_unofficial` |
+| `sapintegrationsuite_integration_assessment_technology_key_characteristic` | unofficial | `enable_unofficial` |
+| `sapintegrationsuite_integration_assessment_technology_style` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_technology` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_vendor` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_secure_parameter` | unofficial | `enable_unofficial` |
@@ -261,11 +268,11 @@ Grouped by why, not just that. A feature can be `partial` and reachable via one 
 - **`integration_assessment.landscape_configuration`** — Tenant-owned integration landscape inventory: Application, Application Instance, Technology, Technology Instance, Vendor, and their association entities (Technology Domain, Technology Style, Technology Key Characteristic).
   - SAP documents the Entities API, these entities and their per-tenant limits (20,000 applications, 20,000 application instances, 50 technologies, 150 technology instances, 10,000 vendors), but the field-level specification on the Business Accelerator Hub needs an SAP login. The requests follow the live $metadata and were verified on a tenant on 2026-09-27: create (201 with a UUID Id), read, PATCH and PUT (204), delete (204) for all five objects, and links written as {"Id": ...}; the service rejects links written as __metadata URIs (V124) and a Content-Type with a charset parameter (V122).
   - Names, descriptions and links change in place (PATCH, verified on 2026-09-28): an application's vendor, an application instance's application and deployment model, a technology's vendor and a technology instance's deployment model. Only moving a technology instance to another technology was not tested, so it replaces the instance.
-  - The association sets of a technology (TechnologyDomain, TechnologyStyle, TechnologyKeyCharacteristic) are not managed yet. Create, read and delete work on a tenant (2026-09-28); a key characteristic cannot be changed (PATCH: 400 V101).
+  - A technology's profile (TechnologyDomain, TechnologyStyle, TechnologyKeyCharacteristic) is managed as three association resources. Create, read and delete work on a tenant (2026-09-28); the service has no update for them (a key characteristic answered PATCH with 400 V101), so every attribute forces a new association.
   - Needs provider.integration_assessment: the service key of an "Integration Assessment APIs" service instance; the other credential sets do not work there.
 - **`integration_assessment.master_data`** — SAP Integration Solution Advisory Methodology (ISA-M) taxonomy: Domain, Style, Use Case Pattern, Integration Pattern, Key Characteristic (and its Group/Value/Recommendation), Deployment Model, Domain Determination — largely SAP-maintained reference content a tenant can review and adjust.
   - SAP documents the Entities API and lists these entities with a description each; the field-level specification on the Business Accelerator Hub needs an SAP login. The contract comes from the live $metadata (snapshot testdata/api-metadata/integration-assessment-entities.json), and every entity set was read on a tenant in September 2026.
-  - Only deployment models have a data source, looked up by name, because the landscape instances link to them. The rest of the taxonomy (domains, styles, patterns, key characteristics) is not exposed yet.
+  - Deployment models, domains, styles, key characteristic values and recommendation degrees have data sources, looked up by name (a key characteristic value by its key characteristic's name and its own), because landscape objects and technology profiles link to them. Use case patterns, integration patterns, key characteristic groups and domain determinations are not exposed.
   - Needs provider.integration_assessment: the service key of an "Integration Assessment APIs" service instance; the other credential sets do not work there.
 - **`security.certificate_chain`** — A certificate chain associated with a key pair.
   - The tenant $metadata defines CertificateChainResources, a media entity keyed by the key pair's Hexalias with a KeystoreEntry navigation, and a read-only ChainCertificates set (Hexalias, Index and certificate details). SAP Help describes chain import and export only as a capability of the Key Pair resource and documents neither the media type nor the request that uploads a chain, so nothing is implemented yet.

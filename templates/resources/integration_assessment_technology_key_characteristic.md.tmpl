@@ -1,0 +1,63 @@
+---
+page_title: "sapintegrationsuite_integration_assessment_technology_key_characteristic Resource - sapintegrationsuite"
+subcategory: "Integration Assessment"
+description: |-
+  Rates an Integration Assessment technology on one key characteristic value.
+---
+
+# sapintegrationsuite_integration_assessment_technology_key_characteristic (Resource)
+
+A technology key characteristic rates a technology on one value of a key characteristic of
+SAP's Integration Solution Advisory Methodology, with a recommendation degree that says how
+strongly the technology meets it. The assessment compares these ratings when it recommends
+technologies for an interface.
+
+**Status:** unofficial. Needs `enable_unofficial = true` in the provider block. SAP documents the
+Integration Assessment Entities API and this entity, but the field-level specification on the
+Business Accelerator Hub needs an SAP login. The requests follow the service's `$metadata` and
+were verified on a tenant in September 2026; SAP may change them without notice.
+
+## Prerequisites
+
+- `enable_unofficial = true` and the `integration_assessment` provider block, with the service key
+  of an *Integration Assessment APIs* service instance (plan `default`). The Cloud Integration
+  credentials do not work for this API.
+- An Integration Assessment subscription in the subaccount.
+- The technology's Id, from [`sapintegrationsuite_integration_assessment_technology`](integration_assessment_technology.md) (resource or data source).
+- The value's Id from [`sapintegrationsuite_integration_assessment_key_characteristic_value`](../data-sources/integration_assessment_key_characteristic_value.md) and the degree's Id from [`sapintegrationsuite_integration_assessment_recommendation_degree`](../data-sources/integration_assessment_recommendation_degree.md).
+
+## Lifecycle
+
+| Operation | What happens |
+|---|---|
+| Create | Creates the rating, linked to the technology, the value and the degree, with the description if set. |
+| Read | Reads the three links and the description. |
+| Update | None: the service has no update for this entity. |
+| Replacement | Any change deletes the entry and creates a new one. |
+| Delete | Deletes the entry. The technology and the taxonomy entries stay. |
+
+## Example Usage
+
+{{ tffile "examples/resources/sapintegrationsuite_integration_assessment_technology_key_characteristic/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ codefile "shell" "examples/resources/sapintegrationsuite_integration_assessment_technology_key_characteristic/import.sh" }}
+
+The ID is the UUID the service assigned. Everything is recovered from the service.
+
+## Limitations
+
+- **SAP:** the service has no update for technology profile entries; a tenant answered a
+  `PATCH` on a key characteristic rating with 400 V101 ("The operation for this entity is not
+  allowed").
+- **Provider:** unofficial until the specification is available without a login or verified from
+  the Hub download.
+
+## Related
+
+- [`sapintegrationsuite_integration_assessment_key_characteristic_value`](../data-sources/integration_assessment_key_characteristic_value.md) and [`sapintegrationsuite_integration_assessment_recommendation_degree`](../data-sources/integration_assessment_recommendation_degree.md) (data sources).
+- [`sapintegrationsuite_integration_assessment_technology_domain`](integration_assessment_technology_domain.md) and [`sapintegrationsuite_integration_assessment_technology_style`](integration_assessment_technology_style.md).
+- [Integration Assessment guide](../guides/integration-assessment.md).

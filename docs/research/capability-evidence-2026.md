@@ -47,7 +47,7 @@ Works and verified on a tenant, but the contract is known only from the service'
 `integration_assessment.landscape_configuration` · checked 2026-09-28
 
 - **Finding:** A second landscape probe (2026-09-27 19:33) verified create (201 with a UUID Id), read, PATCH and PUT (204) and delete (204, then 404) for vendors, applications, application instances, technologies and technology instances, with links written as {"Id": ...}; setting, removing and resetting an application's vendor worked. The first probe had failed only on its own request format (charset parameter, __metadata links). TestAccIntegrationAssessment_landscape passed on 2026-09-27 21:30. A third probe (2026-09-28) changed an instance's application and deployment model, a technology's vendor and a technology instance's name and deployment model with PATCH, each confirmed by a read; TechnologyDomain, TechnologyStyle and TechnologyKeyCharacteristic were created, read and deleted, and a key characteristic's PATCH was refused (400 V101).
-- **Next step:** TestAccIntegrationAssessment_landscape with the in-place moves on a tenant; the Hub specification (EntitiesAPI) would make the contract official and allow the status supported.
+- **Next step:** TestAccIntegrationAssessment_landscape with the in-place moves passed on 2026-09-29; TestAccIntegrationAssessment_technologyProfile confirms the technology profile resources and lookups. The Hub specification (EntitiesAPI) would make the contract official and allow the status supported.
 - **Sources:**
   - Hub package SAPIntegrationAssessment (EntitiesAPI, ManagementAPI, OData; modified 2025-07-25)
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
@@ -56,13 +56,14 @@ Works and verified on a tenant, but the contract is known only from the service'
   - ia-probe -LandscapeTests on the development tenant (2026-09-27 19:33), synthetic tfacc-probe objects only
   - ia-probe -LandscapeTests, extended, on the development tenant (2026-09-28 07:54): link changes with PATCH and the technology association sets, synthetic tfacc-probe objects only
   - acceptance run of 2026-09-27 21:30 on the development tenant, including TestAccIntegrationAssessment_landscape
+  - acceptance run of 2026-09-29 14:35 on the development tenant, including TestAccIntegrationAssessment_landscape with the in-place moves
 
 ### Integration Assessment Master Data
 
 `integration_assessment.master_data` · checked 2026-09-27
 
 - **Finding:** The live Entities $metadata (27 entity sets) confirms the ISA-M taxonomy entities field by field, and every set was read on a tenant (for example 57 technology domains, 34 technology styles, 3 deployment models); no write annotations, and SAP Help lists no operations. Read-mostly reference data.
-- **Next step:** Deployment models have a data source (lookup by name). SAP publishing the Entities API specification without a login, or its download from the Hub into .specs/specs, would make the contract official; the other taxonomy entities get data sources when a landscape object needs them.
+- **Next step:** Deployment models, domains, styles, key characteristic values and recommendation degrees have data sources (lookup by name); TestAccIntegrationAssessment_technologyProfile exercises the last four on a tenant. SAP publishing the Entities API specification without a login, or its download from the Hub into .specs/specs, would make the contract official; the other taxonomy entities get data sources when a landscape object needs them.
 - **Sources:**
   - Hub package SAPIntegrationAssessment (EntitiesAPI, ManagementAPI, OData; modified 2025-07-25)
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)

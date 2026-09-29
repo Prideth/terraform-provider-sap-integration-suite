@@ -2,8 +2,9 @@
 page_title: "Integration Assessment"
 subcategory: "Integration Assessment"
 description: |-
-  Maintaining the Integration Assessment landscape (vendors, applications, technologies and
-  their instances) with Terraform: setup, the object model, status and what stays out of scope.
+  Maintaining the Integration Assessment landscape (vendors, applications, technologies, their
+  instances and technology profiles) with Terraform: setup, the object model, status and what
+  stays out of scope.
 ---
 
 # Integration Assessment
@@ -93,6 +94,43 @@ resource "sapintegrationsuite_integration_assessment_application_instance" "ware
 }
 ```
 
+## Technology profiles
+
+The assessment compares technologies by their profile: the integration domains and styles a
+technology serves, and how strongly it meets each key characteristic value. For your own
+technologies you maintain that profile with three association resources. They link a technology
+to entries of SAP's taxonomy, which you look up by name:
+
+| Association | Resource | Taxonomy lookup |
+|---|---|---|
+| Domain | [`integration_assessment_technology_domain`](../resources/integration_assessment_technology_domain.md) | [domain](../data-sources/integration_assessment_domain.md) |
+| Style | [`integration_assessment_technology_style`](../resources/integration_assessment_technology_style.md) | [style](../data-sources/integration_assessment_style.md) |
+| Key characteristic rating | [`integration_assessment_technology_key_characteristic`](../resources/integration_assessment_technology_key_characteristic.md) | [key characteristic value](../data-sources/integration_assessment_key_characteristic_value.md) and [recommendation degree](../data-sources/integration_assessment_recommendation_degree.md) |
+
+```terraform
+variable "domain_name" {
+  type = string
+}
+
+data "sapintegrationsuite_integration_assessment_domain" "selected" {
+  name = var.domain_name
+}
+
+resource "sapintegrationsuite_integration_assessment_technology" "acme_esb" {
+  name      = "ACME ESB"
+  vendor_id = sapintegrationsuite_integration_assessment_vendor.acme.id
+}
+
+resource "sapintegrationsuite_integration_assessment_technology_domain" "acme_esb" {
+  technology_id = sapintegrationsuite_integration_assessment_technology.acme_esb.id
+  domain_id     = data.sapintegrationsuite_integration_assessment_domain.selected.id
+}
+```
+
+The service has no update for these associations, so every change replaces one: a rating with a
+new description or degree is deleted and created again. That is quick and has no side effects
+on the technology.
+
 ## What changes in place
 
 Almost everything changes in place: names, an application's vendor (set, changed or removed),
@@ -109,9 +147,10 @@ instances, 50 technologies, 150 technology instances and 10,000 vendors per tena
   That is project state, not configuration.
 - **Content import and export.** The Management API's `ImportContent` and `ExportContent`
   are one-shot transport actions.
-- **The rest of the ISA-M taxonomy** (domains, styles, patterns, key characteristics) has no
-  data source yet, and the domains, styles and key characteristics of a technology are not
-  managed yet; maintain them in the UI.
+- **The rest of the ISA-M taxonomy** (use case patterns, integration patterns, key
+  characteristic groups, domain determinations) has no data source, because nothing the
+  provider manages links to it. The taxonomy itself is SAP's reference content and is not
+  managed.
 
 ## Importing existing objects
 

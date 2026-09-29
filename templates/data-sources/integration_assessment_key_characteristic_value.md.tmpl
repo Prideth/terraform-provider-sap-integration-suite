@@ -1,0 +1,32 @@
+---
+page_title: "sapintegrationsuite_integration_assessment_key_characteristic_value Data Source - sapintegrationsuite"
+subcategory: "Integration Assessment"
+description: |-
+  Finds a value of an Integration Assessment key characteristic by the two names.
+---
+
+# sapintegrationsuite_integration_assessment_key_characteristic_value (Data Source)
+
+Returns the Id and description of one value of a key characteristic of SAP's Integration Solution
+Advisory Methodology, to rate a technology on it with
+[`sapintegrationsuite_integration_assessment_technology_key_characteristic`](../resources/integration_assessment_technology_key_characteristic.md).
+The same value name can belong to several key characteristics, so the lookup takes the key
+characteristic's name as well.
+
+**Status:** unofficial. Needs `enable_unofficial = true` in the provider block. SAP documents the
+Integration Assessment Entities API and this entity, but the field-level specification on the
+Business Accelerator Hub needs an SAP login. The requests follow the service's `$metadata` and
+were verified on a tenant in September 2026; SAP may change them without notice.
+
+Both names are compared exactly, including case. The plan fails unless exactly one key
+characteristic has the given name and exactly one of its values has the value name.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_integration_assessment_key_characteristic_value/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Related
+
+- [Integration Assessment guide](../guides/integration-assessment.md).

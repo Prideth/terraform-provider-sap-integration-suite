@@ -100,6 +100,70 @@ func NewIntegrationAssessmentTechnologyDataSource() datasource.DataSource {
 	}
 }
 
+// NewIntegrationAssessmentDomainDataSource returns the data source for
+// sapintegrationsuite_integration_assessment_domain.
+func NewIntegrationAssessmentDomainDataSource() datasource.DataSource {
+	return &iaLookup{
+		suffix: "domain", object: "domain", withDesc: true,
+		description: "Finds an integration domain of SAP's Integration Solution Advisory Methodology taxonomy " +
+			"by name, to link a technology to it with " +
+			"sapintegrationsuite_integration_assessment_technology_domain.",
+		list: func(ctx context.Context, c *integrationassessment.Client) (map[string][]iaNamedEntry, error) {
+			all, err := c.ListDomains(ctx)
+			byName := map[string][]iaNamedEntry{}
+			for _, d := range all {
+				byName[d.Name] = append(byName[d.Name], iaNamedEntry{id: d.ID, description: stringOrEmptyPtr(d.Description)})
+			}
+			return byName, err
+		},
+	}
+}
+
+// NewIntegrationAssessmentStyleDataSource returns the data source for
+// sapintegrationsuite_integration_assessment_style.
+func NewIntegrationAssessmentStyleDataSource() datasource.DataSource {
+	return &iaLookup{
+		suffix: "style", object: "style", withDesc: true,
+		description: "Finds an integration style of SAP's Integration Solution Advisory Methodology taxonomy " +
+			"by name, to link a technology to it with " +
+			"sapintegrationsuite_integration_assessment_technology_style.",
+		list: func(ctx context.Context, c *integrationassessment.Client) (map[string][]iaNamedEntry, error) {
+			all, err := c.ListStyles(ctx)
+			byName := map[string][]iaNamedEntry{}
+			for _, s := range all {
+				byName[s.Name] = append(byName[s.Name], iaNamedEntry{id: s.ID, description: stringOrEmptyPtr(s.Description)})
+			}
+			return byName, err
+		},
+	}
+}
+
+// NewIntegrationAssessmentRecommendationDegreeDataSource returns the data
+// source for sapintegrationsuite_integration_assessment_recommendation_degree.
+func NewIntegrationAssessmentRecommendationDegreeDataSource() datasource.DataSource {
+	return &iaLookup{
+		suffix: "recommendation_degree", object: "recommendation degree",
+		description: "Finds a recommendation degree by name: how strongly a technology meets a key " +
+			"characteristic value, used by sapintegrationsuite_integration_assessment_technology_key_characteristic.",
+		list: func(ctx context.Context, c *integrationassessment.Client) (map[string][]iaNamedEntry, error) {
+			all, err := c.ListRecommendationDegrees(ctx)
+			byName := map[string][]iaNamedEntry{}
+			for _, r := range all {
+				byName[r.Name] = append(byName[r.Name], iaNamedEntry{id: r.ID})
+			}
+			return byName, err
+		},
+	}
+}
+
+// stringOrEmptyPtr returns the value, or "" for nil.
+func stringOrEmptyPtr(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
+}
+
 func (d *iaLookup) typeName() string {
 	return "sapintegrationsuite_integration_assessment_" + d.suffix
 }

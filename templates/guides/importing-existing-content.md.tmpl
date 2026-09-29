@@ -59,7 +59,7 @@ review it before use, because it cannot contain file paths or secrets.
 | `api_provider`, `api_product`, `api_management_certificate_store_reference` | `<name>` |
 | `api_key_value_map` | `<name>/<scope>/<scope_id>` |
 | `business_data_graph` | `<business_data_graph_identifier>` |
-| `integration_assessment_vendor`, `_application`, `_application_instance`, `_technology`, `_technology_instance` | the UUID the service assigned |
+| `integration_assessment_vendor`, `_application`, `_application_instance`, `_technology`, `_technology_instance`, `_technology_domain`, `_technology_style`, `_technology_key_characteristic` | the UUID the service assigned |
 
 The alternative partner uses hex encoding because agency, scheme and external ID may contain
 `/`. `printf 'Sender_1' | xxd -p` prints the hex form of one part.

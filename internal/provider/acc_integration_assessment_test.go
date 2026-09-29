@@ -15,22 +15,28 @@ import (
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/testutil/accgate"
 )
 
-// testAccIADeploymentModels returns the names of two of the tenant's
-// deployment models, read through the provider's own client, so the test
-// needs no extra input. With only one model both names are the same and the
-// deployment model change is not exercised.
-func testAccIADeploymentModels(t *testing.T) (first, second string) {
+// testAccIAClient builds the provider's own Integration Assessment client
+// from the acceptance test credentials, to read what a test needs from the
+// tenant.
+func testAccIAClient(t *testing.T) *integrationassessment.Client {
 	t.Helper()
-	ctx := context.Background()
 	httpClient, _, err := auth.Config{
 		TokenURL:     os.Getenv("SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_TOKEN_URL"),
 		ClientID:     os.Getenv("SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_CLIENT_ID"),
 		ClientSecret: os.Getenv("SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_CLIENT_SECRET"),
-	}.HTTPClient(ctx, http.DefaultClient)
+	}.HTTPClient(context.Background(), http.DefaultClient)
 	if err != nil {
 		t.Fatal(err)
 	}
-	models, err := integrationassessment.New(httpClient, os.Getenv("SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_ENTITIES_URL")).ListDeploymentModels(ctx)
+	return integrationassessment.New(httpClient, os.Getenv("SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_ENTITIES_URL"))
+}
+
+// testAccIADeploymentModels returns the names of two of the tenant's
+// deployment models, so the test needs no extra input. With only one model
+// both names are the same and the deployment model change is not exercised.
+func testAccIADeploymentModels(t *testing.T) (first, second string) {
+	t.Helper()
+	models, err := testAccIAClient(t).ListDeploymentModels(context.Background())
 	if err != nil {
 		t.Fatalf("listing deployment models: %v", err)
 	}
@@ -186,6 +192,199 @@ func TestAccIntegrationAssessment_landscape(t *testing.T) {
 			importStep(instance),
 			importStep(technology),
 			importStep(techInstance),
+		},
+	})
+}
+
+// iaTaxonomyNames are names of SAP's taxonomy entries on the tenant that
+// identify exactly one entry each, so the lookups can find them.
+type iaTaxonomyNames struct {
+	domain, style, keyCharacteristic, keyCharacteristicValue, recommendationDegree string
+}
+
+// uniqueName returns the first name that occurs exactly once, or "".
+func uniqueName(names []string) string {
+	count := map[string]int{}
+	for _, n := range names {
+		count[n]++
+	}
+	for _, n := range names {
+		if count[n] == 1 {
+			return n
+		}
+	}
+	return ""
+}
+
+// namesOf returns the name of every item.
+func namesOf[T any](items []T, name func(T) string) []string {
+	names := make([]string, 0, len(items))
+	for _, item := range items {
+		names = append(names, name(item))
+	}
+	return names
+}
+
+// uniqueIn reports whether name occurs exactly once in names.
+func uniqueIn(names []string, name string) bool {
+	n := 0
+	for _, x := range names {
+		if x == name {
+			n++
+		}
+	}
+	return n == 1
+}
+
+// testAccIAKeyCharacteristicValue returns the names of a key characteristic
+// and one of its values that the lookup can find, or "" for both.
+func testAccIAKeyCharacteristicValue(t *testing.T, c *integrationassessment.Client) (characteristic, value string) {
+	t.Helper()
+	ctx := context.Background()
+	characteristics, err := c.ListKeyCharacteristics(ctx)
+	if err != nil {
+		t.Fatalf("listing key characteristics: %v", err)
+	}
+	values, err := c.ListKeyCharacteristicValues(ctx)
+	if err != nil {
+		t.Fatalf("listing key characteristic values: %v", err)
+	}
+	characteristicNames := namesOf(characteristics, func(k integrationassessment.KeyCharacteristic) string { return k.Name })
+	for _, k := range characteristics {
+		if !uniqueIn(characteristicNames, k.Name) {
+			continue
+		}
+		var valueNames []string
+		for _, v := range values {
+			if v.KeyCharacteristicID() == k.ID {
+				valueNames = append(valueNames, v.Name)
+			}
+		}
+		if v := uniqueName(valueNames); v != "" {
+			return k.Name, v
+		}
+	}
+	return "", ""
+}
+
+// testAccIATaxonomy reads the taxonomy entries the technology profile test
+// links to, so the test needs no extra input.
+func testAccIATaxonomy(t *testing.T) iaTaxonomyNames {
+	t.Helper()
+	ctx := context.Background()
+	c := testAccIAClient(t)
+	domains, err := c.ListDomains(ctx)
+	if err != nil {
+		t.Fatalf("listing domains: %v", err)
+	}
+	styles, err := c.ListStyles(ctx)
+	if err != nil {
+		t.Fatalf("listing styles: %v", err)
+	}
+	degrees, err := c.ListRecommendationDegrees(ctx)
+	if err != nil {
+		t.Fatalf("listing recommendation degrees: %v", err)
+	}
+	names := iaTaxonomyNames{
+		domain:               uniqueName(namesOf(domains, func(d integrationassessment.Domain) string { return d.Name })),
+		style:                uniqueName(namesOf(styles, func(s integrationassessment.Style) string { return s.Name })),
+		recommendationDegree: uniqueName(namesOf(degrees, func(d integrationassessment.RecommendationDegree) string { return d.Name })),
+	}
+	names.keyCharacteristic, names.keyCharacteristicValue = testAccIAKeyCharacteristicValue(t, c)
+	if names.domain == "" || names.style == "" || names.recommendationDegree == "" || names.keyCharacteristicValue == "" {
+		t.Skipf("the tenant's taxonomy has no uniquely named entry for every lookup: %+v", names)
+	}
+	return names
+}
+
+// The technology profile: a technology linked to a domain and a style and
+// rated on a key characteristic value, all through the lookups. Changing the
+// rating's description replaces it, since the service has no update. Then
+// an import of every association.
+func TestAccIntegrationAssessment_technologyProfile(t *testing.T) {
+	accgate.Require(t, accgate.IntegrationAssessment)
+	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "true")
+	tax := testAccIATaxonomy(t)
+	name := testAccName()
+	const (
+		domain = "sapintegrationsuite_integration_assessment_technology_domain.test"
+		style  = "sapintegrationsuite_integration_assessment_technology_style.test"
+		rating = "sapintegrationsuite_integration_assessment_technology_key_characteristic.test"
+	)
+	config := func(description string) string {
+		return fmt.Sprintf(`
+data "sapintegrationsuite_integration_assessment_domain" "test" {
+  name = %[2]q
+}
+
+data "sapintegrationsuite_integration_assessment_style" "test" {
+  name = %[3]q
+}
+
+data "sapintegrationsuite_integration_assessment_key_characteristic_value" "test" {
+  key_characteristic = %[4]q
+  name               = %[5]q
+}
+
+data "sapintegrationsuite_integration_assessment_recommendation_degree" "test" {
+  name = %[6]q
+}
+
+resource "sapintegrationsuite_integration_assessment_vendor" "test" {
+  name = "%[1]s vendor"
+}
+
+resource "sapintegrationsuite_integration_assessment_technology" "test" {
+  name      = "%[1]s technology"
+  vendor_id = sapintegrationsuite_integration_assessment_vendor.test.id
+}
+
+resource "sapintegrationsuite_integration_assessment_technology_domain" "test" {
+  technology_id = sapintegrationsuite_integration_assessment_technology.test.id
+  domain_id     = data.sapintegrationsuite_integration_assessment_domain.test.id
+}
+
+resource "sapintegrationsuite_integration_assessment_technology_style" "test" {
+  technology_id = sapintegrationsuite_integration_assessment_technology.test.id
+  style_id      = data.sapintegrationsuite_integration_assessment_style.test.id
+}
+
+resource "sapintegrationsuite_integration_assessment_technology_key_characteristic" "test" {
+  technology_id               = sapintegrationsuite_integration_assessment_technology.test.id
+  key_characteristic_value_id = data.sapintegrationsuite_integration_assessment_key_characteristic_value.test.id
+  recommendation_degree_id    = data.sapintegrationsuite_integration_assessment_recommendation_degree.test.id
+  description                 = %[7]q
+}
+`, name, tax.domain, tax.style, tax.keyCharacteristic, tax.keyCharacteristicValue, tax.recommendationDegree, description)
+	}
+	importStep := func(address string) resource.TestStep {
+		return resource.TestStep{ResourceName: address, ImportState: true, ImportStateVerify: true}
+	}
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: config("created"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrPair(domain, "domain_id", "data.sapintegrationsuite_integration_assessment_domain.test", "id"),
+					resource.TestCheckResourceAttrPair(style, "style_id", "data.sapintegrationsuite_integration_assessment_style.test", "id"),
+					resource.TestCheckResourceAttrPair(rating, "key_characteristic_value_id",
+						"data.sapintegrationsuite_integration_assessment_key_characteristic_value.test", "id"),
+					resource.TestCheckResourceAttrPair(rating, "technology_id", "sapintegrationsuite_integration_assessment_technology.test", "id"),
+					resource.TestCheckResourceAttr(rating, "description", "created"),
+				),
+			},
+			{
+				Config: config("replaced"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction(rating, plancheck.ResourceActionReplace),
+					plancheck.ExpectResourceAction(domain, plancheck.ResourceActionNoop),
+				}},
+				Check: resource.TestCheckResourceAttr(rating, "description", "replaced"),
+			},
+			importStep(domain),
+			importStep(style),
+			importStep(rating),
 		},
 	})
 }

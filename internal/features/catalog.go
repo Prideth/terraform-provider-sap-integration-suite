@@ -2167,21 +2167,29 @@ var Catalog = []Feature{
 			"Style, Use Case Pattern, Integration Pattern, Key Characteristic (and its Group/Value/" +
 			"Recommendation), Deployment Model, Domain Determination — largely SAP-maintained " +
 			"reference content a tenant can review and adjust.",
-		SupportStatus:   StatusUnofficial,
-		SupportReason:   ReasonPublicAPIIncomplete,
-		ContractSource:  SourceMetadataOnly,
-		DataSourceTypes: []string{"sapintegrationsuite_integration_assessment_deployment_model"},
-		PublicAPI:       true,
-		APIProtocol:     "OData V2",
-		Operations:      Operations{Read: true},
+		SupportStatus:  StatusUnofficial,
+		SupportReason:  ReasonPublicAPIIncomplete,
+		ContractSource: SourceMetadataOnly,
+		DataSourceTypes: []string{
+			"sapintegrationsuite_integration_assessment_deployment_model",
+			"sapintegrationsuite_integration_assessment_domain",
+			"sapintegrationsuite_integration_assessment_style",
+			"sapintegrationsuite_integration_assessment_key_characteristic_value",
+			"sapintegrationsuite_integration_assessment_recommendation_degree",
+		},
+		PublicAPI:   true,
+		APIProtocol: "OData V2",
+		Operations:  Operations{Read: true},
 		Limitations: []string{
 			"SAP documents the Entities API and lists these entities with a description each; the " +
 				"field-level specification on the Business Accelerator Hub needs an SAP login. The " +
 				"contract comes from the live $metadata (snapshot testdata/api-metadata/integration-" +
 				"assessment-entities.json), and every entity set was read on a tenant in September 2026.",
-			"Only deployment models have a data source, looked up by name, because the landscape " +
-				"instances link to them. The rest of the taxonomy (domains, styles, patterns, key " +
-				"characteristics) is not exposed yet.",
+			"Deployment models, domains, styles, key characteristic values and recommendation " +
+				"degrees have data sources, looked up by name (a key characteristic value by its key " +
+				"characteristic's name and its own), because landscape objects and technology profiles " +
+				"link to them. Use case patterns, integration patterns, key characteristic groups and " +
+				"domain determinations are not exposed.",
 			"Needs provider.integration_assessment: the service key of an \"Integration Assessment " +
 				"APIs\" service instance; the other credential sets do not work there.",
 		},
@@ -2202,6 +2210,9 @@ var Catalog = []Feature{
 			"sapintegrationsuite_integration_assessment_application_instance",
 			"sapintegrationsuite_integration_assessment_technology",
 			"sapintegrationsuite_integration_assessment_technology_instance",
+			"sapintegrationsuite_integration_assessment_technology_domain",
+			"sapintegrationsuite_integration_assessment_technology_style",
+			"sapintegrationsuite_integration_assessment_technology_key_characteristic",
 		},
 		DataSourceTypes: []string{
 			"sapintegrationsuite_integration_assessment_vendor",
@@ -2222,9 +2233,10 @@ var Catalog = []Feature{
 				"application's vendor, an application instance's application and deployment model, a " +
 				"technology's vendor and a technology instance's deployment model. Only moving a technology " +
 				"instance to another technology was not tested, so it replaces the instance.",
-			"The association sets of a technology (TechnologyDomain, TechnologyStyle, " +
-				"TechnologyKeyCharacteristic) are not managed yet. Create, read and delete work on a " +
-				"tenant (2026-09-28); a key characteristic cannot be changed (PATCH: 400 V101).",
+			"A technology's profile (TechnologyDomain, TechnologyStyle, TechnologyKeyCharacteristic) " +
+				"is managed as three association resources. Create, read and delete work on a tenant " +
+				"(2026-09-28); the service has no update for them (a key characteristic answered PATCH " +
+				"with 400 V101), so every attribute forces a new association.",
 			"Needs provider.integration_assessment: the service key of an \"Integration Assessment " +
 				"APIs\" service instance; the other credential sets do not work there.",
 		},

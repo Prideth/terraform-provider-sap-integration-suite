@@ -168,14 +168,11 @@ const (
 // lists the resources without operations; .specs/ia-probe.ps1 verified
 // create, read, update and delete of the landscape objects the provider
 // now uses (Vendor, Application, ApplicationInstance, Technology,
-// TechnologyInstance) and reads DeploymentModel.
+// TechnologyInstance and the technology profile associations) and reads the
+// taxonomy sets that the lookups use. The sets the provider uses are derived
+// from the client contracts, so they are not listed here.
 var integrationAssessmentEntitiesClassification = concat(
-	each([]string{"TechnologyDomain", "TechnologyStyle", "TechnologyKeyCharacteristic"},
-		func(n string) rule {
-			return candidate(n, featureIALandscape, "Association of a technology profile; would be managed with the technology.")
-		}),
-	each([]string{"Domain", "Style", "UseCasePattern", "IntegrationPattern", "KeyCharacteristic", "KeyCharacteristicGroup",
-		"KeyCharacteristicValue", "KeyCharacteristicRecommendationDegree", "DomainDetermination"},
+	each([]string{"UseCasePattern", "IntegrationPattern", "KeyCharacteristicGroup", "DomainDetermination"},
 		func(n string) rule {
 			return candidate(n, featureIAMaster, "Integration Solution Advisory Methodology taxonomy; a data source for references.")
 		}),

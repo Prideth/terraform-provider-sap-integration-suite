@@ -9,6 +9,36 @@ contain breaking schema or lifecycle changes; each one is listed under
 "Breaking changes" together with the steps it needs. Patch releases (0.2.1)
 only fix defects in their minor release.
 
+## Unreleased
+
+This is the state of the current feature branch. Nothing here is released
+yet, and the list below is not final.
+
+### New resources
+
+- `sapintegrationsuite_integration_assessment_technology_domain`,
+  `sapintegrationsuite_integration_assessment_technology_style` and
+  `sapintegrationsuite_integration_assessment_technology_key_characteristic`
+  (unofficial) maintain a technology's profile: the integration domains and
+  styles it serves and how strongly it meets key characteristic values,
+  which the assessment compares when it recommends technologies. A tenant
+  created, read and deleted all three on 2026-09-28. The service has no
+  update for them, so every change replaces the association.
+
+### New data sources
+
+- `sapintegrationsuite_integration_assessment_domain`,
+  `sapintegrationsuite_integration_assessment_style`,
+  `sapintegrationsuite_integration_assessment_key_characteristic_value` and
+  `sapintegrationsuite_integration_assessment_recommendation_degree`
+  (unofficial) find the taxonomy entries a technology profile links to by
+  name. A key characteristic value is found by its key characteristic's name
+  and its own, because value names repeat across key characteristics.
+
+### Upgrade notes
+
+Nothing to do; the new types are optional and need `enable_unofficial`.
+
 ## 0.4.0 — 2026-09-29
 
 0.4.0 adds the Integration Assessment landscape. It changes nothing for

@@ -551,6 +551,9 @@ func (p *sapIntegrationSuiteProvider) Resources(_ context.Context) []func() reso
 		NewIntegrationAssessmentApplicationInstanceResource,
 		NewIntegrationAssessmentTechnologyResource,
 		NewIntegrationAssessmentTechnologyInstanceResource,
+		NewIntegrationAssessmentTechnologyDomainResource,
+		NewIntegrationAssessmentTechnologyStyleResource,
+		NewIntegrationAssessmentTechnologyKeyCharacteristicResource,
 	}
 }
 
@@ -588,6 +591,10 @@ func (p *sapIntegrationSuiteProvider) DataSources(_ context.Context) []func() da
 		NewIntegrationAssessmentDeploymentModelDataSource,
 		NewIntegrationAssessmentVendorDataSource,
 		NewIntegrationAssessmentTechnologyDataSource,
+		NewIntegrationAssessmentDomainDataSource,
+		NewIntegrationAssessmentStyleDataSource,
+		NewIntegrationAssessmentKeyCharacteristicValueDataSource,
+		NewIntegrationAssessmentRecommendationDegreeDataSource,
 	}
 }
 

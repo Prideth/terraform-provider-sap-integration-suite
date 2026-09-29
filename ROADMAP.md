@@ -39,10 +39,10 @@ These need no further research, only a run of the prepared tests:
 
 ## P1 — public contract, next implementation
 
-1. **Integration Assessment, next steps.** The five landscape resources and the lookups for
-   deployment models, vendors and technologies exist (unofficial). Next: the Hub specification
-   of the Entities API, which would make them supported; the domains, styles and key
-   characteristics of a technology; data sources for the rest of the ISA-M taxonomy. Requests
+1. **Integration Assessment, next steps.** The five landscape resources, the technology profile
+   (domains, styles, key characteristic ratings) and the lookups for the taxonomy they link to
+   exist (unofficial). Next: `TestAccIntegrationAssessment_technologyProfile` on a tenant, then
+   the Hub specification of the Entities API, which would make all of them supported. Requests
    and assessment results stay out of scope as workflow.
 2. **API Composition hardening.** `TestAccBusinessDataGraph_basic` needs a service key of plan
    `configuration` and a destination; the Configuration API's `$metadata` goes through

@@ -29,7 +29,7 @@ SAP documentation, official SAP tooling, or a safe verification on a tenant
 | [classic-api-management-virtual-host-request](#classic-api-management-virtual-host-request) | OData V2 | none yet | | | | | | |
 | [edge-integration-cell](#edge-integration-cell) | OData V2 | none yet | | | | | | |
 | [api-composition-configuration](#api-composition-configuration) | OData V4 | none yet | | | | | | |
-| [integration-assessment-entities](#integration-assessment-entities) | OData V2 | 2026-09-27 | 27 | 1 | 0 | 6 | 12 | 10 |
+| [integration-assessment-entities](#integration-assessment-entities) | OData V2 | 2026-09-27 | 27 | 1 | 0 | 14 | 4 | 10 |
 | [integration-assessment-management](#integration-assessment-management) | OData V2 | 2026-09-27 | 1 | 1 | 0 | 0 | 0 | 2 |
 | [data-space-integration](#data-space-integration) | OpenAPI | none yet | | | | | | |
 
@@ -286,32 +286,32 @@ Integration Assessment, entities API (landscape and ISA-M data).
 - Snapshot: `testdata/api-metadata/integration-assessment-entities.json`, captured 2026-09-27 from live /$metadata
 - Contract: 27 entity sets, 0 singletons, 27 entity types, 0 complex types, 0 enum types, 1 operations; 27 types reachable from the entity sets and operations, 0 unreachable, 0 unresolved references
 
-### Used by the provider (6)
+### Used by the provider (14)
 
 | Name | Kind | Type or method | Client packages |
 |---|---|---|---|
 | Application | entity set | Application | `integrationassessment` |
 | ApplicationInstance | entity set | ApplicationInstance | `integrationassessment` |
 | DeploymentModel | entity set | DeploymentModel | `integrationassessment` |
+| Domain | entity set | Domain | `integrationassessment` |
+| KeyCharacteristic | entity set | KeyCharacteristic | `integrationassessment` |
+| KeyCharacteristicRecommendationDegree | entity set | KeyCharacteristicRecommendationDegree | `integrationassessment` |
+| KeyCharacteristicValue | entity set | KeyCharacteristicValue | `integrationassessment` |
+| Style | entity set | Style | `integrationassessment` |
 | Technology | entity set | Technology | `integrationassessment` |
+| TechnologyDomain | entity set | TechnologyDomain | `integrationassessment` |
 | TechnologyInstance | entity set | TechnologyInstance | `integrationassessment` |
+| TechnologyKeyCharacteristic | entity set | TechnologyKeyCharacteristic | `integrationassessment` |
+| TechnologyStyle | entity set | TechnologyStyle | `integrationassessment` |
 | Vendor | entity set | Vendor | `integrationassessment` |
 
-### Candidates (12)
+### Candidates (4)
 
 | Name | Kind | Catalog entry | Catalog status | Note |
 |---|---|---|---|---|
-| TechnologyDomain | entity set | `integration_assessment.landscape_configuration` | unofficial | Association of a technology profile; would be managed with the technology. |
-| TechnologyKeyCharacteristic | entity set | `integration_assessment.landscape_configuration` | unofficial | Association of a technology profile; would be managed with the technology. |
-| TechnologyStyle | entity set | `integration_assessment.landscape_configuration` | unofficial | Association of a technology profile; would be managed with the technology. |
-| Domain | entity set | `integration_assessment.master_data` | unofficial | Integration Solution Advisory Methodology taxonomy; a data source for references. |
 | DomainDetermination | entity set | `integration_assessment.master_data` | unofficial | Integration Solution Advisory Methodology taxonomy; a data source for references. |
 | IntegrationPattern | entity set | `integration_assessment.master_data` | unofficial | Integration Solution Advisory Methodology taxonomy; a data source for references. |
-| KeyCharacteristic | entity set | `integration_assessment.master_data` | unofficial | Integration Solution Advisory Methodology taxonomy; a data source for references. |
 | KeyCharacteristicGroup | entity set | `integration_assessment.master_data` | unofficial | Integration Solution Advisory Methodology taxonomy; a data source for references. |
-| KeyCharacteristicRecommendationDegree | entity set | `integration_assessment.master_data` | unofficial | Integration Solution Advisory Methodology taxonomy; a data source for references. |
-| KeyCharacteristicValue | entity set | `integration_assessment.master_data` | unofficial | Integration Solution Advisory Methodology taxonomy; a data source for references. |
-| Style | entity set | `integration_assessment.master_data` | unofficial | Integration Solution Advisory Methodology taxonomy; a data source for references. |
 | UseCasePattern | entity set | `integration_assessment.master_data` | unofficial | Integration Solution Advisory Methodology taxonomy; a data source for references. |
 
 ### Excluded (10)

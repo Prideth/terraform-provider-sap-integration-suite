@@ -26,7 +26,7 @@ deployed integration flow and its endpoint URL.
 | Access policies | policies and their artifact references | `oauth` block |
 | Classic API Management | API providers, API products, certificate store references, key value maps | `api_management` block |
 | API Composition | business data graphs (experimental) | `api_composition` block |
-| Integration Assessment | vendors, applications, application instances, technologies, technology instances (unofficial) | `integration_assessment` block |
+| Integration Assessment | vendors, applications, application instances, technologies, technology instances, technology profiles (unofficial) | `integration_assessment` block |
 
 Data sources exist for most of these, plus discovery data sources for deployed service
 endpoints, keystore entries, partners, and the provider's own feature catalog.
