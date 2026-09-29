@@ -476,7 +476,7 @@ Only UI procedures or internal endpoints, which the provider does not use.
 
 `api_gateway.api_artifact` · checked 2026-09-27
 
-- **Finding:** No public API: the Hub's APIMgmt and CloudIntegrationAPI packages, the Client SDK and SAP Help describe API artifacts only in the UI. API artifacts travel as package content (resourceType API) and reach another tenant only through package export/import (POST IntegrationPackages with PackageContent) or transport.
+- **Finding:** No public API: the Hub's APIMgmt and CloudIntegrationAPI packages, the Client SDK and SAP Help describe API artifacts only in the UI. API artifacts travel as package content (resourceType API) and reach another tenant only through package export/import (POST IntegrationPackages with PackageContent) or transport. The documented package navigation of the Integration Content API lists only a package's integration flows, not its API artifacts or MCP servers.
 - **Next step:** An API artifact API from SAP. Until then, whole-package import is the only public path; it is opaque to individual API artifacts and not modelled.
 - **Sources:**
   - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
@@ -487,6 +487,7 @@ Only UI procedures or internal endpoints, which the provider does not use.
   - What's New for API Management, Cloud Foundry (entries up to 2026-09-20)
   - a package export of the development tenant (2026-09-26): API artifacts and data types travel as package content
   - artifact bundles downloaded from the development tenant (2026-09-27): an API artifact is a RESTAPI bundle and an MCP server an MCPSERVER bundle, both for runtime profile integrationcell; the MCP server requires the capability of its source API artifact
+  - tenant-probe -GapTests on the development tenant (2026-09-29 07:51): IntegrationPackages('<id>')/IntegrationDesigntimeArtifacts for a package with an integration flow, an API artifact and an MCP server returned only the integration flow
   - SAP/cicd-actions-for-sap-integration-suite (2026-06-02)
   - Business Accelerator Hub: the API artifacts of 173 Integration Suite, API Management, Edge, Graph and BTP packages (308 APIs) searched for API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API deployment, API policy, reusable API, proxy, transport and gateway (2026-09-27); the package list was unchanged since 2026-09-26
   - Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6

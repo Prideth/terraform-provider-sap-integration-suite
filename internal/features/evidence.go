@@ -52,6 +52,7 @@ const (
 	srcSDKCheck    = "Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6"
 	srcGapProbe    = "tenant-probe -GapTests on a development tenant (2026-09-27), synthetic tfAccProbe* objects only"
 	srcIAProbe     = "ia-probe -LandscapeTests on the development tenant's Integration Assessment (2026-09-27 17:29), synthetic tfacc-probe objects only"
+	srcNavProbe    = "tenant-probe -GapTests on the development tenant (2026-09-29 07:51): IntegrationPackages('<id>')/IntegrationDesigntimeArtifacts for a package with an integration flow, an API artifact and an MCP server returned only the integration flow"
 	srcBundles     = "artifact bundles downloaded from the development tenant (2026-09-27): an API artifact is a RESTAPI bundle and an MCP server an MCPSERVER bundle, both for runtime profile integrationcell; the MCP server requires the capability of its source API artifact"
 	srcAccRun      = "acceptance run of 2026-09-27 17:29 on the development tenant"
 	srcIAProbe2    = "ia-probe -LandscapeTests on the development tenant (2026-09-27 19:33), synthetic tfacc-probe objects only"
@@ -264,9 +265,9 @@ var Evidence = map[string]EvidenceRecord{
 
 	// --- Current API Management ---
 	"api_gateway.api_artifact": reaudited(
-		"No public API: the Hub's APIMgmt and CloudIntegrationAPI packages, the Client SDK and SAP Help describe API artifacts only in the UI. API artifacts travel as package content (resourceType API) and reach another tenant only through package export/import (POST IntegrationPackages with PackageContent) or transport.",
+		"No public API: the Hub's APIMgmt and CloudIntegrationAPI packages, the Client SDK and SAP Help describe API artifacts only in the UI. API artifacts travel as package content (resourceType API) and reach another tenant only through package export/import (POST IntegrationPackages with PackageContent) or transport. The documented package navigation of the Integration Content API lists only a package's integration flows, not its API artifacts or MCP servers.",
 		"An API artifact API from SAP. Until then, whole-package import is the only public path; it is opaque to individual API artifacts and not modelled.",
-		srcHubAPIM, srcHubCI, srcHubPackages, srcSDK, srcHelp, srcWhatsNew, srcExport, srcBundles, srcCICD),
+		srcHubAPIM, srcHubCI, srcHubPackages, srcSDK, srcHelp, srcWhatsNew, srcExport, srcBundles, srcNavProbe, srcCICD),
 	"api_gateway.api_artifact_deployment": reaudited(
 		"Deployment is a UI action; IntegrationRuntimeArtifacts is not documented for API artifacts.",
 		"tenant-probe -GapTests records whether deployed API artifacts appear among the runtime artifact types; a documented deploy call is still needed.",

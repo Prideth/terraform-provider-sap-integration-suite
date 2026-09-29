@@ -1615,6 +1615,10 @@ var Catalog = []Feature{
 				"Cell runtime profile. It holds an OpenAPI 3.0 definition and an integration flow " +
 				"that SAP generates from it. The format is SAP-internal, so building such bundles is " +
 				"not a way around the missing API.",
+			"The documented Integration Content API does not see them: for a package holding an " +
+				"integration flow, an API artifact and an MCP server, " +
+				"IntegrationPackages('<id>')/IntegrationDesigntimeArtifacts listed only the integration " +
+				"flow (2026-09-29).",
 		},
 	},
 	{
