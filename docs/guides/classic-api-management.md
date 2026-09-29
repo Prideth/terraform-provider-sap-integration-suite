@@ -147,9 +147,9 @@ old product lose that subscription, so read a plan that replaces a product befor
 it, and consider `lifecycle { prevent_destroy = true }` for products with subscribers.
 
 **At least one proxy is required.** SAP refuses a product without a linked proxy ("At least one
-API Proxy should be linked to an API Product"). The proxies must already exist: manage them with
-`sapintegrationsuite_api_proxy` (experimental, see below) or create them in the SAP Integration
-Suite UI.
+API Proxy should be linked to an API Product"). The proxies must already exist: create them in
+the SAP Integration Suite UI or transport them there. An API proxy resource is not part of the
+provider yet; see below.
 
 **Status.** SAP needs a `status_code` on create; without one its create fails with an internal
 error. The provider sends `PUBLISHED` unless you set something else. `DRAFT` also works and
@@ -161,51 +161,6 @@ own (`405 CREATE operation not supported on APIProductAdditionalProperty entity`
 must carry the product's name as `entityId`, which the provider fills in for you. SAP documents
 limits of 255 characters for a name, 1024 for a value, and 18 attributes per product; the
 provider does not check those itself, since SAP may change them.
-
-### API Proxy (experimental)
-
-The deployable gateway artifact — proxy and target endpoints, mediation policies, resources —
-managed as the ZIP bundle the API portal exports, in the same spirit as
-`sapintegrationsuite_integration_flow`: opaque content tracked by its hash, not every field of
-the proxy XML as Terraform attributes.
-
-```hcl
-resource "sapintegrationsuite_api_proxy" "orders" {
-  name         = "Orders_v1"
-  content      = "${path.module}/proxies/Orders_v1.zip"
-  content_hash = filesha256("${path.module}/proxies/Orders_v1.zip")
-}
-```
-
-**How it talks to SAP.** The provider uploads the bundle exactly the way SAP's own API Management
-Client SDK 3.0.6 does: a `POST` to `/apiportal/api/1.0/Transport.svc/APIProxies` with the ZIP as
-raw `application/octet-stream` bytes. It then reads the proxy from
-`Management.svc/APIProxies('<name>')`, waiting until the API portal returns it, and deletes it
-there. The Business Accelerator Hub lists this Transport API ("API Portal - Transport (CF)",
-"Export and Import API Proxy via zip bundle") as an official API; its specification is behind an
-SAP login, which is why the SDK is the reference.
-
-**Why it is experimental.** The lifecycle has not yet passed an acceptance test on a tenant.
-SAP's documentation says a proxy imported this way is deployed by default, and `state` shows
-what SAP reports, but nothing public says whether importing a changed bundle over an existing
-proxy replaces it cleanly. The resource therefore never does that: **a new `content_hash`
-deletes the proxy and imports the new bundle.** The proxy is unavailable in between, and a
-product that includes it loses the link, so read such plans before applying them.
-
-**The bundle names the proxy.** SAP takes the name from the bundle's `APIProxy/<name>.xml`
-descriptor. The provider reads it before uploading and stops with an error if it differs from
-`name`, so a copied bundle cannot silently create a proxy under another name. The base path in
-`APIProxyEndPoint/*.xml` must be free on the virtual host.
-
-**Dependencies.** A target endpoint that references an API provider needs that provider on the
-tenant first (`depends_on` a `sapintegrationsuite_api_provider`); SAP's sample repository
-documents that the import fails otherwise. A bundle with a target URL (`provider_id` `NONE`)
-has no such dependency.
-
-**Import.** `terraform import sapintegrationsuite_api_proxy.orders Orders_v1`. SAP does not return
-the bundle file, so the first apply after an import only records `content` and `content_hash`;
-the provider assumes the file matches the proxy on the tenant. Any later hash change replaces it
-as described above.
 
 ### Certificate Store Reference
 
@@ -263,13 +218,26 @@ is confirmed, or manage them outside Terraform.
 
 ## What this provider deliberately does not manage, in this phase
 
+### API Proxy, not yet
+
+The deployable gateway artifact (proxy and target endpoints, policies, resources) travels as the
+ZIP bundle the API portal exports, and the Business Accelerator Hub lists a Transport API
+("API Portal - Transport (CF)", "Export and Import API Proxy via zip bundle") for it. Its
+specification is behind an SAP login. An implementation that uploads the bundle the way SAP's
+API Management Client SDK 3.0.6 does (`POST /apiportal/api/1.0/Transport.svc/APIProxies` with
+the raw ZIP) exists in the repository, but the API portal rejected that import with
+`400 APIPROXY_ZIP_ERROR` ("Verify the directory structure inside the zip"), also for a bundle it
+had exported itself (tenant test, September 2026). The resource is therefore not part of the
+provider. It is added once the request documented in the official specification works; until
+then, create or transport proxies in the SAP Integration Suite UI and reference them by name,
+for example in `sapintegrationsuite_api_product`.
+
 ### API Proxy Deployment
 
 A separate deployment resource, like `sapintegrationsuite_integration_flow_deployment`, has no
 documented API to build on: SAP documents that a proxy transported or exported, individually or
 as part of a product, "by default gets imported to the target in the deployed state", and no
-public call deploys or undeploys an existing proxy on its own. `sapintegrationsuite_api_proxy`
-deploys by importing and shows the resulting `state`.
+public call deploys or undeploys an existing proxy on its own. An import deploys the proxy.
 
 ### Policy
 
@@ -278,8 +246,8 @@ SAP documents) are confirmed to be XML content embedded inside the API Proxy ZIP
 a `<policies>` element in the proxy's root XML referencing named files under a `Policy/` folder —
 not an independently addressable OData entity with its own Create/Read/Update/Delete. There is no
 `sapintegrationsuite_api_proxy_policy` resource candidate here: policies would be managed as part
-of the proxy's own opaque content, exactly like Cloud Integration's design-time artifacts, as
-`sapintegrationsuite_api_proxy` does. This provider does not attempt to reproduce SAP's
+of the proxy's own opaque content, exactly like Cloud Integration's design-time artifacts. This
+provider does not attempt to reproduce SAP's
 entire policy schema catalog as nested Terraform blocks.
 
 ### Virtual Hosts

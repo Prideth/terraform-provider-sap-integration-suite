@@ -24,6 +24,12 @@ const apiProxyDefaultCreateTimeout = 5 * time.Minute
 
 // NewAPIProxyResource returns a fresh resource.Resource implementation for
 // sapintegrationsuite_api_proxy.
+//
+// The resource is not registered with the provider: the API portal rejected
+// its import (the request of SAP's Client SDK 3.0.6) with APIPROXY_ZIP_ERROR,
+// even for a bundle it had exported itself (tenant test, 2026-09-27). It is
+// registered again once the documented request from the official Transport
+// API specification works; until then the code and its unit tests stay.
 func NewAPIProxyResource() resource.Resource {
 	return &apiProxyResource{}
 }

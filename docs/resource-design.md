@@ -1634,7 +1634,7 @@ is genuinely "is this the right shape for a Terraform resource," not "does an AP
 
 SAP's own documentation states a transported or exported proxy "by default gets imported to the
 target in the deployed state", and no public call deploys or undeploys an existing proxy on its
-own. Deployment is therefore a side effect of `sapintegrationsuite_api_proxy`'s create, the
+own. Deployment is therefore a side effect of importing a proxy, the
 opposite of the design-time/runtime split this provider uses for Cloud Integration artifacts.
 
 ### Policy — no resource, folded into API Proxy's opaque content
@@ -1643,7 +1643,7 @@ SAP's own sample repository confirms policies are XML files referenced by a `<po
 in the proxy's root XML, not an independently addressable OData entity. Per this provider's
 established pattern for opaque, nested design-time content (matching how Cloud Integration
 artifact ZIP content is already treated), policies are managed as part of
-`sapintegrationsuite_api_proxy`'s content, never as a separate
+the proxy's bundle content, never as a separate
 `sapintegrationsuite_api_proxy_policy` resource reproducing SAP's policy schema catalog.
 
 ## Migration Assessment — suitability check

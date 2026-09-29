@@ -1280,15 +1280,18 @@ var Catalog = []Feature{
 		Name:   "API Proxy (classic API Management)",
 		Description: "A classic API Management API proxy definition: the ZIP-bundled design-time " +
 			"content (proxy endpoint, target endpoint, policies, resources) deployed as a callable API.",
-		SupportStatus:   StatusExperimental,
-		ContractSource:  SourceSAPTooling,
+		SupportStatus:   StatusUnsupported,
 		SupportReason:   ReasonPublicAPIIncomplete,
-		ResourceTypes:   []string{"sapintegrationsuite_api_proxy"},
 		DataSourceTypes: []string{},
 		PublicAPI:       true,
 		APIProtocol:     "REST (Transport.svc) for upload, OData V2 (Management.svc/APIProxies) for read and delete",
 		Planned:         true,
 		Limitations: []string{
+			"An implementation exists in the repository but is not part of the provider yet: the API " +
+				"portal answered its import, the request SAP's Client SDK 3.0.6 sends, with 400 " +
+				"APIPROXY_ZIP_ERROR (\"Verify the directory structure inside the zip\"), even for a bundle " +
+				"the same API portal had exported (tenant test, 2026-09-27). It is added once the request " +
+				"documented in the official Transport API specification (APIPortal_Transport_CF) works.",
 			"Experimental until the acceptance test (TestAccAPIProxy_sample) passes on a tenant. " +
 				"Upload follows SAP's API Management Client SDK 3.0.6 (published 2026-09-24) byte for " +
 				"byte: POST /apiportal/api/1.0/Transport.svc/APIProxies with the SDK's own query and " +
@@ -1324,7 +1327,7 @@ var Catalog = []Feature{
 		Limitations: []string{
 			"SAP's own documentation states that a proxy transported or exported, individually or " +
 				"as part of a product, \"by default gets imported to the target in the deployed " +
-				"state\", so sapintegrationsuite_api_proxy (experimental) deploys by importing and " +
+				"state\", so an import deploys the proxy, and " +
 				"exposes the resulting state. No documented API deploys or undeploys an existing proxy " +
 				"on its own, so there is no separate deployment resource.",
 		},
@@ -1343,7 +1346,7 @@ var Catalog = []Feature{
 				"element in the proxy's root XML, referencing named files under a Policy/ folder), not " +
 				"an independently addressable OData entity with its own Create/Read/Update/Delete — so " +
 				"individual policies are not a separate resource candidate; they are managed as part " +
-				"of the bundle content of sapintegrationsuite_api_proxy (experimental).",
+				"of a proxy's bundle content.",
 		},
 	},
 	{
@@ -1395,8 +1398,8 @@ var Catalog = []Feature{
 				"existing product with 405 \"UPDATE operation not supported on APIProduct entity\". " +
 				"Every attribute forces a new product, which drops the subscriptions of the old one.",
 			"At least one existing API proxy is required (SAP: \"At least one API Proxy should be " +
-				"linked to an API Product\"). Proxies come from the UI or from sapintegrationsuite_api_proxy " +
-				"(experimental); see api_management.classic.api_proxy.",
+				"linked to an API Product\"). Proxies come from the UI or a transport; see " +
+				"api_management.classic.api_proxy.",
 			"status_code is required by SAP on create and defaults to PUBLISHED; DRAFT creates an " +
 				"unpublished product. Both were confirmed on a tenant.",
 			"Additional properties can only be sent inside the create request, each with the " +

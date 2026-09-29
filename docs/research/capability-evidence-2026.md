@@ -18,10 +18,10 @@ And the provider never uses browser endpoints of SAP's UIs.
 | Classification | Features |
 |---|---:|
 | Unofficial (`unofficial`) | 2 |
-| Experimental (`experimental`) | 2 |
+| Experimental (`experimental`) | 1 |
 | Partial (`partial`) | 10 |
 | Read-only (`read_only`) | 3 |
-| Public API incomplete (`public_api_incomplete`) | 18 |
+| Public API incomplete (`public_api_incomplete`) | 19 |
 | Unsafe Terraform lifecycle (`unsafe_terraform_lifecycle`) | 2 |
 | Research required (`research_required`) | 1 |
 | No public API (`no_public_api`) | 26 |
@@ -66,22 +66,6 @@ Implemented; the lifecycle still has to pass its acceptance test on a tenant.
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
-
-### API Proxy (classic API Management)
-
-`api_management.classic.api_proxy` · checked 2026-09-27
-
-- **Finding:** Upload through Transport.svc as SAP's Client SDK does it, read and delete through Management.svc; the update semantics of an import over an existing proxy are undocumented. The acceptance run of 2026-09-27 17:29 answered the import of SAP's sample bundle, renamed to a tfacc proxy, with 400 APIPROXY_ZIP_ERROR ("Verify the directory structure inside the zip"); the request itself matches the SDK.
-- **Next step:** apim-probe -ProxyTests exports an existing proxy from the tenant to learn the layout the API portal produces, and imports renamed copies of that export and of the sample. TestAccAPIProxy_sample passing promotes the resource.
-- **Sources:**
-  - SAP API Management Client SDK 3.0.6 (Maven Central, published 2026-09-24; classes StandardAPIProxyClient, StandardAPIProductClient, StandardAPIKeyValueMapClient)
-  - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
-  - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
-  - SAP/apibusinesshub-api-recipes (commit 2668274, 2026-05-07)
-  - tenant probes and acceptance runs on a development tenant (September 2026)
-  - acceptance run of 2026-09-27 17:29 on the development tenant
-  - Business Accelerator Hub: the API artifacts of 173 Integration Suite, API Management, Edge, Graph and BTP packages (308 APIs) searched for API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API deployment, API policy, reusable API, proxy, transport and gateway (2026-09-27); the package list was unchanged since 2026-09-26
-  - Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6
 
 ## Partial
 
@@ -233,6 +217,22 @@ Data sources only, by design or because writes are undocumented.
 
 A public API exists, but part of its contract is unconfirmed.
 
+### API Proxy (classic API Management)
+
+`api_management.classic.api_proxy` · checked 2026-09-27
+
+- **Finding:** Upload through Transport.svc as SAP's Client SDK does it, read and delete through Management.svc; the update semantics of an import over an existing proxy are undocumented. The acceptance run of 2026-09-27 17:29 answered the import of SAP's sample bundle, renamed to a tfacc proxy, with 400 APIPROXY_ZIP_ERROR ("Verify the directory structure inside the zip"); the request itself matches the SDK.
+- **Next step:** apim-probe -ProxyTests (2026-09-27 19:33): the tenant's own export of a proxy, renamed, was rejected the same way, so the request is at fault, not the bundle. The implementation is withheld from the provider; the official Transport API specification (APIPortal_Transport_CF) decides the request, and TestAccAPIProxy_sample passing registers the resource as experimental.
+- **Sources:**
+  - SAP API Management Client SDK 3.0.6 (Maven Central, published 2026-09-24; classes StandardAPIProxyClient, StandardAPIProductClient, StandardAPIKeyValueMapClient)
+  - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
+  - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
+  - SAP/apibusinesshub-api-recipes (commit 2668274, 2026-05-07)
+  - tenant probes and acceptance runs on a development tenant (September 2026)
+  - acceptance run of 2026-09-27 17:29 on the development tenant
+  - Business Accelerator Hub: the API artifacts of 173 Integration Suite, API Management, Edge, Graph and BTP packages (308 APIs) searched for API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API deployment, API policy, reusable API, proxy, transport and gateway (2026-09-27); the package list was unchanged since 2026-09-26
+  - Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6
+
 ### API Proxy Deployment (classic API Management)
 
 `api_management.classic.api_proxy_deployment` · checked 2026-09-27
@@ -290,7 +290,7 @@ A public API exists, but part of its contract is unconfirmed.
 `api_management.classic.policy` · checked 2026-09-26
 
 - **Finding:** Policies are XML inside the proxy bundle, not separate entities; the proxy resource manages them as content.
-- **Next step:** None; covered by sapintegrationsuite_api_proxy.
+- **Next step:** None; policies stay part of the proxy bundle.
 - **Sources:**
   - SAP/apibusinesshub-api-recipes (commit 2668274, 2026-05-07)
   - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)

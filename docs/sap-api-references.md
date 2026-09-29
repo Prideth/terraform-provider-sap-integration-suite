@@ -1337,8 +1337,9 @@ What is not confirmed, despite a specific search for it (SAP Community threads d
 to that site's bot-blocking): the exact Create/Update wire format for the ZIP content itself. The
 official user guide's own "Import an API Definition" section describes only the UI wizard
 procedure, never a REST call. The bundle shape alone was therefore not enough for a resource;
-the request format came later from SAP's own Client SDK (next section), and
-`sapintegrationsuite_api_proxy` is built on exactly that request.
+the request format came later from SAP's own Client SDK (next section). An implementation built
+on exactly that request was rejected by a tenant's API portal with `APIPROXY_ZIP_ERROR`, even for
+the portal's own export, so it is not registered in the provider.
 
 ### Re-audit September 2026: Client SDK 3.0.6 and virtual hosts
 
@@ -1359,10 +1360,10 @@ disassembled with `javap` to read the endpoints and headers it sends. `StandardA
 The odd import URL (`?name=?virtualhost=default`) is reproduced as the SDK sends it. A community
 write-up of the same endpoint uses `?virtualhost=<GUID>` and a base64 string body instead; the
 provider follows SAP's own tooling, not the write-up. SAP Help documents `Transport.svc` nowhere,
-and nothing public says what an import over an existing proxy does, so
-`sapintegrationsuite_api_proxy` imports only new proxies (a changed bundle replaces the proxy),
-reads and deletes through `Management.svc`, and stays experimental until
-`TestAccAPIProxy_sample` passes on a tenant.
+and nothing public says what an import over an existing proxy does. The implementation imported
+only new proxies (a changed bundle replaced the proxy) and read and deleted through
+`Management.svc`; after the tenant rejected the import (September 2026) it was withheld from the
+provider until the documented request from the Transport API specification is known.
 
 **Classic virtual hosts.** SAP Help (*Configuring a Default Domain for a Virtual Host*,
 *Configuring a Custom Domain for a Virtual Host*, *Configuring Mutual TLS …*) documents a

@@ -17,12 +17,12 @@ Priorities:
 - **P3**: valuable but low demand or high effort.
 - **WATCH**: no public API today; revisit when SAP publishes one.
 
-## Next release: 0.3.0
+## Next release: 0.4.0
 
-0.3.0 is planned around Integration Assessment (P1 item 1) together with what is already on
-`dev` and the current feature branch: API discovery, the experimental Classic API proxy, the
-contract source of every feature and the opt-in switches. It is cut from `dev` once the
-Integration Assessment landscape resources are verified or explicitly deferred. `v1.0.0` is a
+0.3.0 contains API discovery, the contract source of every feature, the opt-in switches, the
+tenant fixes of September 2026 and the rewritten Registry documentation. 0.4.0 is planned around
+the Integration Assessment landscape (P1 item 1). The Classic API proxy is part of neither: it
+waits for the request documented in the official Transport API specification. `v1.0.0` is a
 separate, explicit decision and not the automatic successor of any 0.x release.
 
 ## P0 — tenant runs that decide promotions
@@ -31,7 +31,7 @@ These need no further research, only a run of the prepared tests:
 
 | Item | Test | Decides |
 |---|---|---|
-| Classic API proxy | `apim-probe -ProxyTests`, then `TestAccAPIProxy_sample` | Why the import answers `APIPROXY_ZIP_ERROR` (the tenant's own export shows the expected layout); then `sapintegrationsuite_api_proxy` from experimental to supported (replace-only) |
+| Classic API proxy | the official Transport API specification, then `TestAccAPIProxy_sample` | Even the tenant's own export, renamed, answered `APIPROXY_ZIP_ERROR`, so the import request is the problem, not the bundle. The resource is implemented but not registered; the specification (`APIPortal_Transport_CF`, needs an SAP login) shows the documented request, after which the resource is registered as experimental |
 | Live contract check | `TestAccMetadata` (`SAP_INTEGRATION_SUITE_ACC_METADATA`) | First comparison of the committed snapshots with a tenant, including the service documents |
 | Deployments with longer timeouts | message mapping and value mapping acceptance tests | Whether slow deployments need more than the documented timeout advice |
 

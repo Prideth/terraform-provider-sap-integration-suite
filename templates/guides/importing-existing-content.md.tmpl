@@ -56,7 +56,7 @@ review it before use, because it cannot contain file paths or secrets.
 | `partner_string_parameter`, `partner_binary_parameter`, `partner_user_credential_parameter` | `<partner_id>/<parameter_id>` |
 | `partner_authorized_user` | `<user>` (lowercase) |
 | `alternative_partner` | `<hex(agency)>/<hex(scheme)>/<hex(external_id)>` |
-| `api_provider`, `api_product`, `api_proxy`, `api_management_certificate_store_reference` | `<name>` |
+| `api_provider`, `api_product`, `api_management_certificate_store_reference` | `<name>` |
 | `api_key_value_map` | `<name>/<scope>/<scope_id>` |
 | `business_data_graph` | `<business_data_graph_identifier>` |
 

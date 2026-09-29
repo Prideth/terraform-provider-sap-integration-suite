@@ -109,6 +109,5 @@ provider keeps the password SAP holds.
 
 ## Related
 
-- [`sapintegrationsuite_api_proxy`](api_proxy.md): proxies that target the provider.
 - [`sapintegrationsuite_api_providers`](../data-sources/api_providers.md): every provider on the API portal.
 - [Classic API Management guide](../guides/classic-api-management.md).

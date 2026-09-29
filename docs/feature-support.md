@@ -47,7 +47,7 @@ Do not conflate these: a feature can be fully supported by this provider and sti
 | `api_gateway.runtime_profile` | api_gateway | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
 | `api_management.classic.api_product` | api_management_classic | supported | sap_documentation | Yes | Yes | Yes | — | Yes | Yes | — | Resource + Data Source |
 | `api_management.classic.api_provider` | api_management_classic | partial (unsafe_terraform_lifecycle) | sap_documentation | Yes | Yes | Yes | — | Yes | Yes | — | Resource + Data Source |
-| `api_management.classic.api_proxy` | api_management_classic | experimental (public_api_incomplete) | sap_tooling | Yes | Yes | Yes | — | Yes | Yes | — | Resource |
+| `api_management.classic.api_proxy` | api_management_classic | unsupported (public_api_incomplete) | — | Yes | Yes | Yes | — | Yes | Yes | — | — |
 | `api_management.classic.api_proxy_deployment` | api_management_classic | unsupported (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
 | `api_management.classic.application` | api_management_classic | unsupported (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
 | `api_management.classic.cache_resource` | api_management_classic | unsupported (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
@@ -163,7 +163,6 @@ provider "sapintegrationsuite" {
 | Type | Status | Switch |
 |---|---|---|
 | `sapintegrationsuite_access_policy_runtime_assignments` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_api_proxy` | experimental | `enable_experimental` |
 | `sapintegrationsuite_business_data_graph` | experimental | `enable_experimental` |
 | `sapintegrationsuite_secure_parameter` | unofficial | `enable_unofficial` |
 
@@ -202,13 +201,14 @@ Grouped by why, not just that. A feature can be `partial` and reachable via one 
   - Cue-scoped key mappings and the OData containment setting are described by SAP without a property name and cannot be set.
   - SAP does not describe a logMessages entry, so each is exposed as the JSON text SAP returned.
 - **`api_management.classic.api_proxy`** — A classic API Management API proxy definition: the ZIP-bundled design-time content (proxy endpoint, target endpoint, policies, resources) deployed as a callable API.
+  - An implementation exists in the repository but is not part of the provider yet: the API portal answered its import, the request SAP's Client SDK 3.0.6 sends, with 400 APIPROXY_ZIP_ERROR ("Verify the directory structure inside the zip"), even for a bundle the same API portal had exported (tenant test, 2026-09-27). It is added once the request documented in the official Transport API specification (APIPortal_Transport_CF) works.
   - Experimental until the acceptance test (TestAccAPIProxy_sample) passes on a tenant. Upload follows SAP's API Management Client SDK 3.0.6 (published 2026-09-24) byte for byte: POST /apiportal/api/1.0/Transport.svc/APIProxies with the SDK's own query and the raw ZIP as application/octet-stream. The Business Accelerator Hub lists "API Portal - Transport (CF)" ("Export and Import API Proxy via zip bundle") as the official API; its specification needs an SAP login.
   - The APIProxy entity is confirmed by the Management.svc $metadata (key name; provider_name, state, status_code, version, isPublished and navigations to endpoints, policies, resources and the API provider), and its GET returned 200 on a tenant. The read and delete paths Management.svc/APIProxies('<name>') are the ones SAP's documentation and worked examples use.
   - Replace-only: nothing public says whether importing a changed bundle over an existing proxy replaces it cleanly, so a different content_hash deletes the proxy and imports it again. SAP's documentation says an imported proxy is deployed by default, so there is no separate deployment step (see api_management.classic.api_proxy_deployment).
   - API providers a bundle's target endpoint references must already exist on the tenant: SAP's sample repository documents that the import fails otherwise. Bundles with a target URL (provider_id NONE) have no such dependency.
   - The SDK's JSON create path (/api/1.0/apis/ with isFromCli) is an internal endpoint and not used.
 - **`api_management.classic.api_proxy_deployment`** — The runtime deployment state of a classic API Proxy, potentially independent of its design-time content.
-  - SAP's own documentation states that a proxy transported or exported, individually or as part of a product, "by default gets imported to the target in the deployed state", so sapintegrationsuite_api_proxy (experimental) deploys by importing and exposes the resulting state. No documented API deploys or undeploys an existing proxy on its own, so there is no separate deployment resource.
+  - SAP's own documentation states that a proxy transported or exported, individually or as part of a product, "by default gets imported to the target in the deployed state", so an import deploys the proxy, and exposes the resulting state. No documented API deploys or undeploys an existing proxy on its own, so there is no separate deployment resource.
 - **`api_management.classic.application`** — Consumer applications subscribed to API products, with their generated application key and secret, and the developers who own them.
   - Management.svc $metadata: Applications (key id; app_key, app_secret, callbackurl, status_code, validity, subscribedRatePlan, navigation to apiProducts and developer) and Developers (key id; emailId, firstName, lastName, country). The Hub describes the CF Applications API as "view all available applications"; creating applications through the API is described only for the Developer API. The generated app_secret would have to be kept out of state or treated as sensitive.
 - **`api_management.classic.cache_resource`** — A named cache used by response cache and lookup cache policies.
@@ -218,7 +218,7 @@ Grouped by why, not just that. A feature can be `partial` and reachable via one 
 - **`api_management.classic.environment_key_value_map`** — Key value maps shared across API proxies (KeyMapEntries), as opposed to the generic, scoped key value maps sapintegrationsuite_api_key_value_map manages.
   - Management.svc $metadata: KeyMapEntries (key name; encrypted, scope) with KeyMapEntryValues (key map_name and name; value). The Hub lists "Key Value Maps (CF)" ("create key value pairs across the API proxies") next to the generic key value maps this provider implements. How the two relate, and which one SAP recommends, is not documented.
 - **`api_management.classic.policy`** — An individual mediation policy (for example VerifyAPIKey, Quota, AssignMessage) attached to a classic API Proxy's proxy or target endpoint flow.
-  - Confirmed to be XML content embedded inside the API Proxy ZIP bundle (a <policies> element in the proxy's root XML, referencing named files under a Policy/ folder), not an independently addressable OData entity with its own Create/Read/Update/Delete — so individual policies are not a separate resource candidate; they are managed as part of the bundle content of sapintegrationsuite_api_proxy (experimental).
+  - Confirmed to be XML content embedded inside the API Proxy ZIP bundle (a <policies> element in the proxy's root XML, referencing named files under a Policy/ folder), not an independently addressable OData entity with its own Create/Read/Update/Delete — so individual policies are not a separate resource candidate; they are managed as part of a proxy's bundle content.
 - **`api_management.classic.policy_template`** — Reusable policy templates that can be applied to API proxies.
   - Management.svc $metadata: PolicyTemplateContainers (key name; proxy and target endpoint XML, navigations to policies and file resources). The token scopes include import, export and apply for policy templates, but the Hub lists no policy template API and SAP Help describes only the UI.
 - **`api_management.classic.product_access_control`** — Rules that grant user groups access to API products in the Developer Hub.

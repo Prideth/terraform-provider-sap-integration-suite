@@ -36,7 +36,6 @@ enables them:
 
 | Type | Switch |
 |---|---|
-| `sapintegrationsuite_api_proxy` | `enable_experimental = true` |
 | `sapintegrationsuite_business_data_graph` (resource and data source) | `enable_experimental = true` |
 | `sapintegrationsuite_secure_parameter` | `enable_unofficial = true` |
 | `sapintegrationsuite_access_policy_runtime_assignments` (data source) | `enable_unofficial = true` |

@@ -149,7 +149,7 @@ Legend: ✅ Supported · ⚠️ Partial support / important limitations · 👁�
 |---|:---:|---|
 | API Product (classic API Management) | ✅ | Resource + Data Source |
 | API Provider (classic API Management) | ⚠️ | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
-| API Proxy (classic API Management) | 🧪 | Resource — see [feature-support.md](docs/feature-support.md#all-features) |
+| API Proxy (classic API Management) | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
 | API Proxy Deployment (classic API Management) | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
 | API Management Application and Developer (Classic) | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
 | API Management Cache Resource (Classic) | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
@@ -234,7 +234,7 @@ Legend: ✅ Supported · ⚠️ Partial support / important limitations · 👁�
 | Trading Partner Management Partner Directory Generation | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
 | Trading Partner Management Partner Profile | ❌ | No suitable public API — see [feature-support.md](docs/feature-support.md#all-features) |
 
-20 supported · 10 partial · 3 read-only · 2 experimental · 60 unsupported · 2 planned as a separate provider, out of 99 evaluated Integration Suite features.
+20 supported · 10 partial · 3 read-only · 1 experimental · 61 unsupported · 2 planned as a separate provider, out of 99 evaluated Integration Suite features.
 
 <!-- END GENERATED FEATURE SUPPORT -->
 

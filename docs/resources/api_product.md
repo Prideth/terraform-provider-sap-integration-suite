@@ -19,7 +19,7 @@ read and delete were run on a tenant.
 
 - The `api_management` block in the provider configuration, with the role
   `APIPortal.Administrator`.
-- At least one API proxy, for example from [`sapintegrationsuite_api_proxy`](api_proxy.md). SAP
+- At least one API proxy, created in the UI or transported to the API portal. SAP
   refuses a product without one.
 
 ## Lifecycle
@@ -36,9 +36,8 @@ read and delete were run on a tenant.
 
 ```terraform
 # Requires provider.api_management to be configured. The proxies in
-# api_proxy_names must already exist: manage them with
-# sapintegrationsuite_api_proxy (experimental, needs enable_experimental =
-# true) or create them in the SAP Integration Suite UI.
+# api_proxy_names must already exist: create them in the SAP Integration
+# Suite UI or transport them there.
 # SAP cannot change a product after it is created, so changing any
 # argument here makes Terraform delete the product and create a new one.
 # Applications subscribed to the old product lose their subscription.
@@ -113,6 +112,5 @@ properties.
 
 ## Related
 
-- [`sapintegrationsuite_api_proxy`](api_proxy.md): the proxies a product bundles.
 - [`sapintegrationsuite_api_product`](../data-sources/api_product.md) (data source).
 - [Classic API Management guide](../guides/classic-api-management.md).

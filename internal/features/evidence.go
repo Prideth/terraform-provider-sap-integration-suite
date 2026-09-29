@@ -211,7 +211,7 @@ var Evidence = map[string]EvidenceRecord{
 		srcHelp, srcMetaAPIM, srcTenant),
 	"api_management.classic.api_proxy": reaudited(
 		"Upload through Transport.svc as SAP's Client SDK does it, read and delete through Management.svc; the update semantics of an import over an existing proxy are undocumented. The acceptance run of 2026-09-27 17:29 answered the import of SAP's sample bundle, renamed to a tfacc proxy, with 400 APIPROXY_ZIP_ERROR (\"Verify the directory structure inside the zip\"); the request itself matches the SDK.",
-		"apim-probe -ProxyTests exports an existing proxy from the tenant to learn the layout the API portal produces, and imports renamed copies of that export and of the sample. TestAccAPIProxy_sample passing promotes the resource.",
+		"apim-probe -ProxyTests (2026-09-27 19:33): the tenant's own export of a proxy, renamed, was rejected the same way, so the request is at fault, not the bundle. The implementation is withheld from the provider; the official Transport API specification (APIPortal_Transport_CF) decides the request, and TestAccAPIProxy_sample passing registers the resource as experimental.",
 		srcSDK, srcHubAPIM, srcMetaAPIM, srcRecipes, srcTenant, srcAccRun),
 	"api_management.classic.api_proxy_deployment": reaudited(
 		"Imported proxies are deployed by default; no public call deploys or undeploys an existing proxy.",
@@ -219,7 +219,7 @@ var Evidence = map[string]EvidenceRecord{
 		srcHelp, srcSDK),
 	"api_management.classic.policy": ev(
 		"Policies are XML inside the proxy bundle, not separate entities; the proxy resource manages them as content.",
-		"None; covered by sapintegrationsuite_api_proxy.",
+		"None; policies stay part of the proxy bundle.",
 		srcRecipes, srcMetaAPIM),
 	"api_management.classic.virtual_host": ev(
 		"Create, update and delete are documented through Configuration.svc/VirtualHostRequests; the read schema is confirmed. The write path needs the APIManagement.SelfService.Administrator role and answered 403 with an administrator key.",

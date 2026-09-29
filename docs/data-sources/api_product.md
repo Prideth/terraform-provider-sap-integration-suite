@@ -46,4 +46,3 @@ output "sample_product_proxies" {
 ## Related
 
 - [`sapintegrationsuite_api_product`](../resources/api_product.md) (resource)
-- [`sapintegrationsuite_api_proxy`](../resources/api_proxy.md)

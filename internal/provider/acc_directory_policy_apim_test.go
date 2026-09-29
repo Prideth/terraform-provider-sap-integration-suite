@@ -177,9 +177,11 @@ resource "sapintegrationsuite_api_product" "test" {
 // An API proxy imported from SAP's sample bundle under a unique name and base
 // path (its target is a URL, so no API provider is needed), read back,
 // imported, then replaced by a bundle with a different hash and destroyed.
-// Until this passes on a tenant, sapintegrationsuite_api_proxy stays
+// The resource is not registered (see NewAPIProxyResource), so the test is
+// skipped until it is. Until this passes on a tenant, sapintegrationsuite_api_proxy stays
 // experimental.
 func TestAccAPIProxy_sample(t *testing.T) {
+	t.Skip("sapintegrationsuite_api_proxy is not registered until its import works; see NewAPIProxyResource")
 	accgate.Require(t, accgate.APIManagementClassic)
 	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL", "true")
 	name := testAccName()

@@ -9,11 +9,12 @@ contain breaking schema or lifecycle changes; each one is listed under
 "Breaking changes" together with the steps it needs. Patch releases (0.2.1)
 only fix defects in their minor release.
 
-## Unreleased (planned as 0.3.0)
+## 0.3.0 — 2026-09-29
 
-This is the state of `dev` and the current feature branch. The release is
-planned around Integration Assessment, which still waits for a tenant test
-of its landscape objects, so the list below is not final.
+0.3.0 changes how the provider treats anything SAP has not documented, fixes
+what the September 2026 acceptance runs found in certificates, key pairs
+and number ranges, and rewrites the Terraform Registry documentation. It adds
+no resource types. Two changes are breaking; read them before you upgrade.
 
 ### Highlights
 
@@ -24,8 +25,11 @@ of its landscape objects, so the list below is not final.
 - Every implemented feature now records where its contract comes from: SAP
   Help, an official API specification, SAP's own tooling, or only the
   service's `$metadata`. The support status follows from that.
-- A Classic API Management API proxy can be managed as its bundle ZIP
-  (experimental).
+- Replacing a certificate and importing a key pair work on a tenant. Both
+  failed or planned a replacement in 0.2.0.
+- Every Registry page was rewritten around lifecycle, import and limitations,
+  with new guides for getting started, importing existing content,
+  upgrading and troubleshooting.
 
 ### Breaking changes
 
@@ -40,7 +44,6 @@ set:
 
 | Type | Status | Switch |
 |---|---|---|
-| `sapintegrationsuite_api_proxy` | experimental | `enable_experimental` |
 | `sapintegrationsuite_business_data_graph` (resource and data source) | experimental | `enable_experimental` |
 | `sapintegrationsuite_secure_parameter` | unofficial | `enable_unofficial` |
 | `data.sapintegrationsuite_access_policy_runtime_assignments` | unofficial | `enable_unofficial` |
@@ -60,7 +63,7 @@ changes; state and existing objects are untouched.
 provider "sapintegrationsuite" {
   host = var.integration_suite_host
 
-  enable_experimental = true # api_proxy, business_data_graph
+  enable_experimental = true # business_data_graph
   enable_unofficial   = true # secure_parameter, access_policy_runtime_assignments
 
   oauth {
@@ -107,17 +110,6 @@ is sent to SAP. To stop managing a number range without deleting it, use
 `terraform state rm`. Turning the switch on later is safe: the next refresh
 reads the number range and fills in what the state is missing.
 
-### New resources
-
-- `sapintegrationsuite_api_proxy` (experimental): a Classic API Management
-  API proxy, managed as its bundle ZIP. The bundle is uploaded the way SAP's
-  API Management Client SDK 3.0.6 does it (`POST Transport.svc/APIProxies`
-  with the raw ZIP) and read and deleted through `Management.svc/APIProxies`.
-  A new `content_hash` replaces the proxy, because SAP does not document
-  what an import over an existing proxy does. The provider checks that the
-  bundle's `APIProxy/<name>.xml` describes the proxy named in `name`. It
-  stays experimental until its acceptance test passes on a tenant.
-
 ### Improvements
 
 - The feature catalog records a contract source for every implemented
@@ -161,9 +153,14 @@ reads the number range and fills in what the state is missing.
 
 ### Known limitations
 
-- Integration Assessment has no resources yet. A tenant test created, read
-  and deleted vendors and applications; updates and the links between
-  landscape objects are still being tested.
+- There is still no API proxy resource. An implementation that imports a
+  proxy bundle the way SAP's API Management Client SDK does exists, but the
+  API portal rejected that import with `APIPROXY_ZIP_ERROR`, even for a bundle
+  it had exported itself. It is added once the request documented in the
+  official Transport API specification works.
+- Integration Assessment has no resources yet. Its two services are
+  classified from their live `$metadata`, and a tenant test created, read and
+  deleted vendors and applications.
 - Tenant checks of value mapping entries (September 2026) showed that
   `UpsertValMaps` dropped design-time values, a duplicate source value became
   the new default, and `DeleteValMaps` answered 202 without deleting
