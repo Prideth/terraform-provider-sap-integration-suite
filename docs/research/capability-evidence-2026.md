@@ -63,7 +63,7 @@ Works and verified on a tenant, but the contract is known only from the service'
 `integration_assessment.master_data` · checked 2026-09-29
 
 - **Finding:** The live Entities $metadata (27 entity sets) confirms the ISA-M taxonomy entities field by field, and every set was read on a tenant (7 domains, 6 styles, 24 use case patterns, 12 integration patterns, 14 key characteristics in 5 groups with 29 values, 4 recommendation degrees, 9 domain determinations). SAP Help's entity list (last changed 2026-07-02) describes each entity; its text for Domain Determination repeats the recommendation degree's, so that entity's meaning comes from the $metadata (a domain between a source and a target deployment model). The Hub's EntitiesAPI specification still ends at a login page (2026-09-29).
-- **Next step:** Every taxonomy entity has a read-only data source. SAP publishing the Entities API specification without a login, or its download from the Hub into .specs/specs, would make the contract official.
+- **Next step:** Every taxonomy entity has a read-only data source; TestAccIntegrationAssessment_taxonomy and _technologyProfile passed on 2026-09-29. SAP publishing the Entities API specification without a login, or its download from the Hub into .specs/specs, would make the contract official.
 - **Sources:**
   - Hub package SAPIntegrationAssessment (EntitiesAPI, ManagementAPI, OData; modified 2025-07-25)
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)

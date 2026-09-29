@@ -25,7 +25,7 @@ Each 0.x minor release has one theme. Released so far: 0.1.0 (the broad first pr
 
 | Version | Theme | State | Precondition |
 |---|---|---|---|
-| 0.5.0 | Integration Assessment technology profiles and the ISA-M taxonomy | on `feature/ia-technology-profile` | its acceptance tests on a tenant |
+| 0.5.0 | Integration Assessment technology profiles and the ISA-M taxonomy | on `feature/ia-technology-profile`, acceptance tests passed | releasing 0.4.0 first |
 | 0.6.0 | API Composition: business data graph hardening | proposed | a service key of plan `configuration` and a destination (P1 item 2) |
 | 0.7.0 | Cloud Integration data types, message types, fault message types, service interfaces | proposed | proof that content written through the API is kept (P1 item 4) |
 | 0.8.0 | Security Content completion | proposed | the upload formats in P2 item 5 |
@@ -53,7 +53,7 @@ These need no further research, only a run of the prepared tests:
 
 1. **Integration Assessment.** The landscape (0.4), the technology profiles and the complete
    ISA-M taxonomy (0.5) exist, all unofficial. `TestAccIntegrationAssessment_technologyProfile`
-   passed on 2026-09-29; `TestAccIntegrationAssessment_taxonomy` is next. The Hub specification of
+   and `TestAccIntegrationAssessment_taxonomy` passed on 2026-09-29. The Hub specification of
    the Entities API would make them supported; it still needs an SAP login. Requests and
    assessment results stay out of scope as workflow.
 2. **API Composition hardening.** `TestAccBusinessDataGraph_basic` needs a service key of plan
