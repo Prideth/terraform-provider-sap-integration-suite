@@ -51,5 +51,8 @@ release:
     - glob: "terraform-registry-manifest.json"
       name_template: "{{ .ProjectName }}_{{ .Version }}_manifest.json"
 
-changelog:
-  disable: true
+# No changelog setting: the release workflow always passes --release-notes
+# with the hand-written notes, and GoReleaser then uses that file instead of
+# a commit list. `changelog.disable: true` must not come back: it skips the
+# step that reads --release-notes, which left the GitHub releases of v0.2.0
+# and v0.3.0 without a description.
