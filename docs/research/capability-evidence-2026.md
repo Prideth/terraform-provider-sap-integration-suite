@@ -44,16 +44,18 @@ Works and verified on a tenant, but the contract is known only from the service'
 
 ### Integration Assessment Landscape Configuration
 
-`integration_assessment.landscape_configuration` · checked 2026-09-27
+`integration_assessment.landscape_configuration` · checked 2026-09-28
 
-- **Finding:** A second landscape probe (2026-09-27 19:33) verified create (201 with a UUID Id), read, PATCH and PUT (204) and delete (204, then 404) for vendors, applications, application instances, technologies and technology instances, with links written as {"Id": ...}; setting, removing and resetting an application's vendor worked. The first probe had failed only on its own request format (charset parameter, __metadata links).
-- **Next step:** TestAccIntegrationAssessment_landscape on a tenant; the Hub specification (EntitiesAPI) would make the contract official and allow the status supported.
+- **Finding:** A second landscape probe (2026-09-27 19:33) verified create (201 with a UUID Id), read, PATCH and PUT (204) and delete (204, then 404) for vendors, applications, application instances, technologies and technology instances, with links written as {"Id": ...}; setting, removing and resetting an application's vendor worked. The first probe had failed only on its own request format (charset parameter, __metadata links). TestAccIntegrationAssessment_landscape passed on 2026-09-27 21:30. A third probe (2026-09-28) changed an instance's application and deployment model, a technology's vendor and a technology instance's name and deployment model with PATCH, each confirmed by a read; TechnologyDomain, TechnologyStyle and TechnologyKeyCharacteristic were created, read and deleted, and a key characteristic's PATCH was refused (400 V101).
+- **Next step:** TestAccIntegrationAssessment_landscape with the in-place moves on a tenant; the Hub specification (EntitiesAPI) would make the contract official and allow the status supported.
 - **Sources:**
   - Hub package SAPIntegrationAssessment (EntitiesAPI, ManagementAPI, OData; modified 2025-07-25)
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Integration Assessment Entities and Management $metadata, fetched live on 2026-09-27 (snapshots testdata/api-metadata/integration-assessment-*.json)
   - ia-probe -LandscapeTests on the development tenant's Integration Assessment (2026-09-27 17:29), synthetic tfacc-probe objects only
   - ia-probe -LandscapeTests on the development tenant (2026-09-27 19:33), synthetic tfacc-probe objects only
+  - ia-probe -LandscapeTests, extended, on the development tenant (2026-09-28 07:54): link changes with PATCH and the technology association sets, synthetic tfacc-probe objects only
+  - acceptance run of 2026-09-27 21:30 on the development tenant, including TestAccIntegrationAssessment_landscape
 
 ### Integration Assessment Master Data
 

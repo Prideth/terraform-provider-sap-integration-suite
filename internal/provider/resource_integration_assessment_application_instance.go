@@ -54,11 +54,10 @@ func (r *iaApplicationInstanceResource) Schema(_ context.Context, _ resource.Sch
 				Description: "A description of the instance. Changes in place.",
 			},
 			"application_id": iaLinkAttribute("Id of the application this is an instance of, for example from " +
-				"sapintegrationsuite_integration_assessment_application. Changing it creates a new instance: " +
-				"moving an instance to another application in place was not tested."),
+				"sapintegrationsuite_integration_assessment_application. Changing it moves the instance to the " +
+				"other application in place."),
 			"deployment_model_id": iaLinkAttribute("Id of the deployment model, for example from the " +
-				"sapintegrationsuite_integration_assessment_deployment_model data source. Changing it creates a " +
-				"new instance, for the same reason."),
+				"sapintegrationsuite_integration_assessment_deployment_model data source. Changes in place."),
 		},
 	}
 }
@@ -130,7 +129,8 @@ func (r *iaApplicationInstanceResource) Update(ctx context.Context, req resource
 		return
 	}
 	id := plan.ID.ValueString()
-	if err := r.client.UpdateApplicationInstance(ctx, id, plan.Name.ValueString(), optionalString(plan.Description)); err != nil {
+	if err := r.client.UpdateApplicationInstance(ctx, id, plan.Name.ValueString(), optionalString(plan.Description),
+		plan.ApplicationID.ValueString(), plan.DeploymentModelID.ValueString()); err != nil {
 		resp.Diagnostics.AddError("Failed to update Integration Assessment application instance", diagnosticDetail(err))
 		return
 	}

@@ -44,14 +44,22 @@ func iaIDAttribute(object string) schema.StringAttribute {
 	}
 }
 
-// iaLinkAttribute is a required link to another object that the service
-// does not let this resource change in place.
+// iaLinkAttribute is a required link to another object that an update
+// changes in place (PATCH with the new {"Id": ...}, confirmed on a tenant
+// on 2026-09-28).
 func iaLinkAttribute(description string) schema.StringAttribute {
 	return schema.StringAttribute{
-		Required:      true,
-		Description:   description,
-		PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+		Required:    true,
+		Description: description,
 	}
+}
+
+// iaReplacingLinkAttribute is a required link whose change in place was not
+// tested; changing it creates a new object.
+func iaReplacingLinkAttribute(description string) schema.StringAttribute {
+	a := iaLinkAttribute(description)
+	a.PlanModifiers = []planmodifier.String{stringplanmodifier.RequiresReplace()}
+	return a
 }
 
 // stringOrEmpty returns the value, or "" for null and unknown.

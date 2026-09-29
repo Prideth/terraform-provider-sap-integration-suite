@@ -7,8 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -43,19 +41,19 @@ func (r *iaTechnologyInstanceResource) Schema(_ context.Context, _ resource.Sche
 		Description: iaUnofficialNote + "One installation of a technology in the Integration Assessment " +
 			"landscape, SAP's or your own, with the deployment model it runs on. Assessments recommend " +
 			"technology instances for interfaces. Backed by the TechnologyInstance entity set of the " +
-			"Entities API. An update was not tested, so every change creates a new instance.",
+			"Entities API.",
 		Attributes: map[string]schema.Attribute{
 			"id": iaIDAttribute("technology instance"),
 			"name": schema.StringAttribute{
-				Required:      true,
-				Description:   "The instance's name. Changing it creates a new instance.",
-				Validators:    []validator.String{stringvalidator.LengthAtLeast(1)},
-				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+				Required:    true,
+				Description: "The instance's name. Changes in place.",
+				Validators:  []validator.String{stringvalidator.LengthAtLeast(1)},
 			},
-			"technology_id": iaLinkAttribute("Id of the technology, from sapintegrationsuite_integration_assessment_technology " +
-				"or, for one of SAP's technologies, from the data source of the same name. Changing it creates a new instance."),
+			"technology_id": iaReplacingLinkAttribute("Id of the technology, from sapintegrationsuite_integration_assessment_technology " +
+				"or, for one of SAP's technologies, from the data source of the same name. Changing it creates a new " +
+				"instance: moving an instance to another technology in place was not tested."),
 			"deployment_model_id": iaLinkAttribute("Id of the deployment model, for example from the " +
-				"sapintegrationsuite_integration_assessment_deployment_model data source. Changing it creates a new instance."),
+				"sapintegrationsuite_integration_assessment_deployment_model data source. Changes in place."),
 		},
 	}
 }
@@ -118,9 +116,23 @@ func (r *iaTechnologyInstanceResource) Read(ctx context.Context, req resource.Re
 	resp.Diagnostics.Append(resp.State.Set(ctx, m)...)
 }
 
-// Update is never called: every attribute forces a new instance.
-func (r *iaTechnologyInstanceResource) Update(_ context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	resp.State.Raw = req.Plan.Raw
+func (r *iaTechnologyInstanceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan iaTechnologyInstanceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	id := plan.ID.ValueString()
+	if err := r.client.UpdateTechnologyInstance(ctx, id, plan.Name.ValueString(), plan.DeploymentModelID.ValueString()); err != nil {
+		resp.Diagnostics.AddError("Failed to update Integration Assessment technology instance", diagnosticDetail(err))
+		return
+	}
+	m, err := r.read(ctx, id)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to read Integration Assessment technology instance after update", diagnosticDetail(err))
+		return
+	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, m)...)
 }
 
 func (r *iaTechnologyInstanceResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {

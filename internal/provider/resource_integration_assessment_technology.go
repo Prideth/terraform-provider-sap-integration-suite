@@ -49,8 +49,7 @@ func (r *iaTechnologyResource) Schema(_ context.Context, _ resource.SchemaReques
 				Validators:  []validator.String{stringvalidator.LengthAtLeast(1)},
 			},
 			"vendor_id": iaLinkAttribute("Id of the vendor, for example from " +
-				"sapintegrationsuite_integration_assessment_vendor. Changing it creates a new technology: " +
-				"changing the vendor of a technology in place was not tested."),
+				"sapintegrationsuite_integration_assessment_vendor. Changes in place."),
 		},
 	}
 }
@@ -115,7 +114,7 @@ func (r *iaTechnologyResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 	id := plan.ID.ValueString()
-	if err := r.client.UpdateTechnology(ctx, id, plan.Name.ValueString()); err != nil {
+	if err := r.client.UpdateTechnology(ctx, id, plan.Name.ValueString(), plan.VendorID.ValueString()); err != nil {
 		resp.Diagnostics.AddError("Failed to update Integration Assessment technology", diagnosticDetail(err))
 		return
 	}

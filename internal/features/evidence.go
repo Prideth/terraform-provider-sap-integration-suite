@@ -55,6 +55,8 @@ const (
 	srcBundles     = "artifact bundles downloaded from the development tenant (2026-09-27): an API artifact is a RESTAPI bundle and an MCP server an MCPSERVER bundle, both for runtime profile integrationcell; the MCP server requires the capability of its source API artifact"
 	srcAccRun      = "acceptance run of 2026-09-27 17:29 on the development tenant"
 	srcIAProbe2    = "ia-probe -LandscapeTests on the development tenant (2026-09-27 19:33), synthetic tfacc-probe objects only"
+	srcIAProbe3    = "ia-probe -LandscapeTests, extended, on the development tenant (2026-09-28 07:54): link changes with PATCH and the technology association sets, synthetic tfacc-probe objects only"
+	srcAccRun2     = "acceptance run of 2026-09-27 21:30 on the development tenant, including TestAccIntegrationAssessment_landscape"
 )
 
 const checked = "2026-09-26"
@@ -389,10 +391,10 @@ var Evidence = map[string]EvidenceRecord{
 		"The live Entities $metadata (27 entity sets) confirms the ISA-M taxonomy entities field by field, and every set was read on a tenant (for example 57 technology domains, 34 technology styles, 3 deployment models); no write annotations, and SAP Help lists no operations. Read-mostly reference data.",
 		"Deployment models have a data source (lookup by name). SAP publishing the Entities API specification without a login, or its download from the Hub into .specs/specs, would make the contract official; the other taxonomy entities get data sources when a landscape object needs them.",
 		srcHubIA, srcHelp, srcMetaIA, srcIAProbe),
-	"integration_assessment.landscape_configuration": evOn("2026-09-27",
-		"A second landscape probe (2026-09-27 19:33) verified create (201 with a UUID Id), read, PATCH and PUT (204) and delete (204, then 404) for vendors, applications, application instances, technologies and technology instances, with links written as {\"Id\": ...}; setting, removing and resetting an application's vendor worked. The first probe had failed only on its own request format (charset parameter, __metadata links).",
-		"TestAccIntegrationAssessment_landscape on a tenant; the Hub specification (EntitiesAPI) would make the contract official and allow the status supported.",
-		srcHubIA, srcHelp, srcMetaIA, srcIAProbe, srcIAProbe2),
+	"integration_assessment.landscape_configuration": evOn("2026-09-28",
+		"A second landscape probe (2026-09-27 19:33) verified create (201 with a UUID Id), read, PATCH and PUT (204) and delete (204, then 404) for vendors, applications, application instances, technologies and technology instances, with links written as {\"Id\": ...}; setting, removing and resetting an application's vendor worked. The first probe had failed only on its own request format (charset parameter, __metadata links). TestAccIntegrationAssessment_landscape passed on 2026-09-27 21:30. A third probe (2026-09-28) changed an instance's application and deployment model, a technology's vendor and a technology instance's name and deployment model with PATCH, each confirmed by a read; TechnologyDomain, TechnologyStyle and TechnologyKeyCharacteristic were created, read and deleted, and a key characteristic's PATCH was refused (400 V101).",
+		"TestAccIntegrationAssessment_landscape with the in-place moves on a tenant; the Hub specification (EntitiesAPI) would make the contract official and allow the status supported.",
+		srcHubIA, srcHelp, srcMetaIA, srcIAProbe, srcIAProbe2, srcIAProbe3, srcAccRun2),
 	"integration_assessment.assessment_workflow": ev(
 		"A request status machine; workflow state.",
 		"None; out of scope.",

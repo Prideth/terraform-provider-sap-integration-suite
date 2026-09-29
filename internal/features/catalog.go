@@ -2214,12 +2214,13 @@ var Catalog = []Feature{
 				"2026-09-27: create (201 with a UUID Id), read, PATCH and PUT (204), delete (204) for all " +
 				"five objects, and links written as {\"Id\": ...}; the service rejects links written as " +
 				"__metadata URIs (V124) and a Content-Type with a charset parameter (V122).",
-			"Vendor and application change their name, and the application its vendor, in place. " +
-				"Application instances change name and description in place. Moving an instance to " +
-				"another application or deployment model, changing a technology's vendor and any change " +
-				"of a technology instance were not tested, so they replace the object.",
+			"Names, descriptions and links change in place (PATCH, verified on 2026-09-28): an " +
+				"application's vendor, an application instance's application and deployment model, a " +
+				"technology's vendor and a technology instance's deployment model. Only moving a technology " +
+				"instance to another technology was not tested, so it replaces the instance.",
 			"The association sets of a technology (TechnologyDomain, TechnologyStyle, " +
-				"TechnologyKeyCharacteristic) are not managed yet.",
+				"TechnologyKeyCharacteristic) are not managed yet. Create, read and delete work on a " +
+				"tenant (2026-09-28); a key characteristic cannot be changed (PATCH: 400 V101).",
 			"Needs provider.integration_assessment: the service key of an \"Integration Assessment " +
 				"APIs\" service instance; the other credential sets do not work there.",
 		},

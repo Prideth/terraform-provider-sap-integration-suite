@@ -30,8 +30,8 @@ were verified on a tenant in September 2026; SAP may change them without notice.
 |---|---|
 | Create | Creates the technology of the vendor. |
 | Read | Reads the name and the vendor. |
-| Update | A new `name` changes the technology in place (PATCH). |
-| Replacement | Changing `vendor_id` creates a new technology: changing the vendor in place was not tested. |
+| Update | `name` and `vendor_id` change in place (PATCH). |
+| Replacement | None. |
 | Delete | Deletes the technology. |
 
 ## Example Usage
@@ -52,7 +52,7 @@ resource "sapintegrationsuite_integration_assessment_technology" "acme_esb" {
 ### Required
 
 - `name` (String) The technology's name. Changes in place.
-- `vendor_id` (String) Id of the vendor, for example from sapintegrationsuite_integration_assessment_vendor. Changing it creates a new technology: changing the vendor of a technology in place was not tested.
+- `vendor_id` (String) Id of the vendor, for example from sapintegrationsuite_integration_assessment_vendor. Changes in place.
 
 ### Read-Only
 

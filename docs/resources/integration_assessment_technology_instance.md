@@ -29,15 +29,15 @@ were verified on a tenant in September 2026; SAP may change them without notice.
 |---|---|
 | Create | Creates the instance, linked to the technology and the deployment model. |
 | Read | Reads the name and both links. |
-| Update | None: an update of a technology instance was not tested. |
-| Replacement | Any change creates a new instance. |
+| Update | `name` and `deployment_model_id` change in place (PATCH). |
+| Replacement | Changing `technology_id` creates a new instance: moving an instance to another technology in place was not tested. |
 | Delete | Deletes the instance. |
 
 ## Example Usage
 
 ```terraform
 # Unofficial: needs enable_unofficial = true and provider.integration_assessment.
-# Every change creates a new instance; an update was not tested.
+# name and deployment_model_id change in place; a new technology_id creates a new instance.
 resource "sapintegrationsuite_integration_assessment_technology_instance" "acme_esb_prd" {
   name                = "ACME ESB PRD"
   technology_id       = sapintegrationsuite_integration_assessment_technology.acme_esb.id
@@ -50,9 +50,9 @@ resource "sapintegrationsuite_integration_assessment_technology_instance" "acme_
 
 ### Required
 
-- `deployment_model_id` (String) Id of the deployment model, for example from the sapintegrationsuite_integration_assessment_deployment_model data source. Changing it creates a new instance.
-- `name` (String) The instance's name. Changing it creates a new instance.
-- `technology_id` (String) Id of the technology, from sapintegrationsuite_integration_assessment_technology or, for one of SAP's technologies, from the data source of the same name. Changing it creates a new instance.
+- `deployment_model_id` (String) Id of the deployment model, for example from the sapintegrationsuite_integration_assessment_deployment_model data source. Changes in place.
+- `name` (String) The instance's name. Changes in place.
+- `technology_id` (String) Id of the technology, from sapintegrationsuite_integration_assessment_technology or, for one of SAP's technologies, from the data source of the same name. Changing it creates a new instance: moving an instance to another technology in place was not tested.
 
 ### Read-Only
 

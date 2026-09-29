@@ -31,8 +31,8 @@ were verified on a tenant in September 2026; SAP may change them without notice.
 |---|---|
 | Create | Creates the instance, linked to the application and the deployment model. |
 | Read | Reads name, description and both links. |
-| Update | `name` and `description` change in place (PATCH). |
-| Replacement | Changing `application_id` or `deployment_model_id` creates a new instance: moving an instance in place was not tested. |
+| Update | `name`, `description`, `application_id` and `deployment_model_id` change in place (PATCH). Changing `application_id` moves the instance to the other application and keeps its Id. |
+| Replacement | None. |
 | Delete | Deletes the instance. |
 
 ## Example Usage
@@ -61,8 +61,8 @@ resource "sapintegrationsuite_integration_assessment_application_instance" "ware
 
 ### Required
 
-- `application_id` (String) Id of the application this is an instance of, for example from sapintegrationsuite_integration_assessment_application. Changing it creates a new instance: moving an instance to another application in place was not tested.
-- `deployment_model_id` (String) Id of the deployment model, for example from the sapintegrationsuite_integration_assessment_deployment_model data source. Changing it creates a new instance, for the same reason.
+- `application_id` (String) Id of the application this is an instance of, for example from sapintegrationsuite_integration_assessment_application. Changing it moves the instance to the other application in place.
+- `deployment_model_id` (String) Id of the deployment model, for example from the sapintegrationsuite_integration_assessment_deployment_model data source. Changes in place.
 - `name` (String) The instance's name. Changes in place.
 
 ### Optional

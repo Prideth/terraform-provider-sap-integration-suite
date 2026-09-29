@@ -36,8 +36,8 @@ test, so the list below is not final.
   entities, but the field-level specification needs an SAP login, so the
   requests follow the service's `$metadata`; create, read, update and delete
   of all five objects, and their links, were verified on a tenant. Names,
-  an application's vendor and an instance's description change in place;
-  changes that were not tested in place replace the object.
+  descriptions and links change in place; only moving a technology instance
+  to another technology replaces it, because that was not tested.
 
 ### New data sources
 

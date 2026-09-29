@@ -95,11 +95,11 @@ resource "sapintegrationsuite_integration_assessment_application_instance" "ware
 
 ## What changes in place
 
-Names change in place for vendors, applications, application instances and technologies. An
-application's vendor can be set, changed and removed in place, and an instance's description
-changes in place. Moving an instance to another application or deployment model, changing a
-technology's vendor and any change of a technology instance were not tested on a tenant, so
-they replace the object. The service's limits apply: 20,000 applications, 20,000 application
+Almost everything changes in place: names, an application's vendor (set, changed or removed),
+an application instance's description, application and deployment model, a technology's vendor,
+and a technology instance's name and deployment model. Only moving a technology instance to
+another technology was not tested on a tenant, so it replaces the instance.
+The service's limits apply: 20,000 applications, 20,000 application
 instances, 50 technologies, 150 technology instances and 10,000 vendors per tenant.
 
 ## What stays out of scope

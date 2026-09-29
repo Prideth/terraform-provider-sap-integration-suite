@@ -31,8 +31,8 @@ were verified on a tenant in September 2026; SAP may change them without notice.
 |---|---|
 | Create | Creates the instance, linked to the application and the deployment model. |
 | Read | Reads name, description and both links. |
-| Update | `name` and `description` change in place (PATCH). |
-| Replacement | Changing `application_id` or `deployment_model_id` creates a new instance: moving an instance in place was not tested. |
+| Update | `name`, `description`, `application_id` and `deployment_model_id` change in place (PATCH). Changing `application_id` moves the instance to the other application and keeps its Id. |
+| Replacement | None. |
 | Delete | Deletes the instance. |
 
 ## Example Usage
