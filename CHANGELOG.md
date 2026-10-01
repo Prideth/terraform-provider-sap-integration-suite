@@ -14,7 +14,7 @@ only fix defects in their minor release.
 0.4.0 adds the Integration Assessment landscape. It changes nothing for
 existing configurations. The acceptance test of the landscape, including
 moving objects between their links in place, passed on a tenant on
-2026-09-29.
+2026-09-29. It also contains the access policy description check of 0.3.1.
 
 ### Highlights
 
@@ -78,6 +78,48 @@ Nothing to do. The new types are optional; to use them, set
   other than deployment models, and the domains, styles and key
   characteristics of a technology, are not exposed yet. A tenant test showed
   that key characteristics can only be created and deleted.
+
+## 0.3.1 — 2026-10-01
+
+0.3.1 is a patch release of 0.3.0. It fixes the validation of access policy
+descriptions and changes nothing else.
+
+### Fixed
+
+- **Access policy descriptions longer than 200 characters are rejected at
+  plan time.** SAP Integration Suite keeps at most 200 characters of an
+  access policy description. Earlier releases accepted longer values: SAP
+  accepted the create request, stored only the first 200 characters, and the
+  provider's read-back no longer matched the plan. Terraform then reported
+  "Provider produced inconsistent result after apply". The policy already
+  existed in SAP at that point, but the
+  `sapintegrationsuite_access_policy_reference` resources that depend on its
+  `id` were never created, leaving policies with a role, a truncated
+  description and no references.
+
+  `sapintegrationsuite_access_policy` now checks the length while Terraform
+  validates the configuration, so a description SAP cannot keep stops the
+  plan before anything is sent to SAP. The error names the limit and the
+  length found. The provider does not shorten descriptions itself: a silently
+  cut text would hide the configuration error. An empty string is rejected as
+  before; omit the attribute instead.
+
+  The limit is not stated in SAP Help, the Business Accelerator Hub
+  specification or the service's `$metadata`; it was observed on a tenant.
+
+### Upgrading from 0.3.0
+
+- No resource is renamed and no state is migrated. Configurations whose
+  access policy descriptions have 200 characters or fewer need no change.
+- A configuration with a longer description fails at plan time. Shorten the
+  description to a summary of the policy; the artifacts it protects belong in
+  its references.
+- Policies that 0.3.0 created with a truncated description are reconciled
+  once the configuration is shortened. A policy left in the state as tainted
+  is replaced by the next apply, or kept with `terraform untaint` (an
+  in-place description change needs `enable_unofficial = true`). A policy
+  that is not in the state can be imported by its numeric ID. The Provider
+  Upgrades guide describes both cases.
 
 ## 0.3.0 — 2026-09-29
 

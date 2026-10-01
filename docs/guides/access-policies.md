@@ -122,6 +122,11 @@ returns a numeric ID, which becomes the resource `id`. Each reference is then cr
 own POST that points back at the policy. Terraform orders these correctly as long as the
 reference uses `sapintegrationsuite_access_policy.<name>.id`.
 
+A policy `description` may contain at most 200 characters. SAP keeps only the first 200 of a
+longer one, which used to fail the apply after the policy had been created and left it without
+references; since 0.3.1 the provider rejects such a description while planning. Use the
+description for a one-line summary and leave the artifact scope to the references.
+
 **Update.** Changing a policy's `description` is an in-place update: the provider sends a
 `PATCH` with only `Description`. A tenant test (September 2026) settled the method. `PUT`
 answers `501 Not Implemented`, with or without `Id` in the body, even though SAP's CI/CD
