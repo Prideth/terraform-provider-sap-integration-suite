@@ -133,7 +133,7 @@ func (r *accessPolicyReferenceResource) Schema(_ context.Context, _ resource.Sch
 				Required: true,
 				Description: "Stored in ConditionValue. With \"exactString\" the exact name or ID, taken " +
 					"literally. With \"regularExpression\" a Java regular expression, for example " +
-					"\"IFL_CORE_.*\" for every name that starts with IFL_CORE_ (not the glob \"IFL_CORE_*\").",
+					"\"SALES_.*\" for every name that starts with SALES_ (not the glob \"SALES_*\").",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},

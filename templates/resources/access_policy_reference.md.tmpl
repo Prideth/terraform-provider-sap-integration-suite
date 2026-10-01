@@ -105,9 +105,9 @@ With `exactString`, `value` is the exact name or ID, taken literally; characters
 
 With `regularExpression`, `value` is a Java regular expression (`java.util.regex.Pattern`). SAP
 Help describes `myName.*` as matching every value that begins with `myName`. A `*` repeats only
-the character before it, so the glob `IFL_CORE_ITS_*` matches `IFL_CORE_ITS` followed by
-underscores, not every name that starts with `IFL_CORE_ITS_`; write `IFL_CORE_ITS_.*` or
-`^IFL_CORE_ITS_.*$`. The plan shows a warning for such glob-like patterns and an error for
+the character before it, so the glob `SALES_ORDERS_*` matches `SALES_ORDERS` followed by
+underscores, not every name that starts with `SALES_ORDERS_`; write `SALES_ORDERS_.*` or
+`^SALES_ORDERS_.*$`. The plan shows a warning for such glob-like patterns and an error for
 patterns that Java rejects as well: unbalanced parentheses or brackets, a leading `*`, a reversed
 character range. The check uses Go's regular expression parser, which is not Java's, so it reports
 only these errors; a pattern that passes can still be rejected by SAP.
