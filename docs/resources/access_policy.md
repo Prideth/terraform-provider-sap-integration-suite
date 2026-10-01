@@ -48,7 +48,7 @@ created. An empty string is rejected too; omit the attribute instead.
 
 The limit is not stated in SAP's documentation or the API's `$metadata`; it was observed on a
 tenant. Keep the description to a short summary of who the policy is for, for example
-`"CORE/LWW developer access to owned Cloud Integration artifacts."` The artifacts the policy
+`"Sales team access to its Cloud Integration artifacts."` The artifacts the policy
 protects belong in its [`sapintegrationsuite_access_policy_reference`](access_policy_reference.md)
 resources, not in the description.
 

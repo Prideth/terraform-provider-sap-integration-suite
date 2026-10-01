@@ -129,8 +129,8 @@ without their references. Nothing else changes.
 
   For `regularExpression`, the plan fails for patterns Java rejects as well
   (for example unbalanced parentheses or a leading `*`) and warns about
-  glob-like patterns such as `IFL_CORE_*`, which matches `IFL_CORE` followed
-  by underscores rather than every name starting with `IFL_CORE_`.
+  glob-like patterns such as `SALES_*`, which matches `SALES` followed
+  by underscores rather than every name starting with `SALES_`.
 
   The values come from SAP Help (types, attributes, operators and both
   restrictions), SAP's audit log documentation (`INTEGRATION_FLOW`, `Name`,
