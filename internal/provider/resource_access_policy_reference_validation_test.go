@@ -184,17 +184,17 @@ func TestAccessPolicyReference_RegularExpressionValue(t *testing.T) {
 		wantWarning string // suggested pattern in the warning, "" for none
 	}{
 		{"^IFL_TFACC_.*$", false, ""},
-		{"IFL_CORE_ITS_.*", false, ""},
+		{"SALES_ORDERS_.*", false, ""},
 		{`IFL_\d*`, false, ""},
 		{"[A-Z]*_ORDERS", false, ""},
 		{"(?<=IFL_)CORE", false, ""},         // lookbehind: valid in Java, unsupported in Go
 		{`\p{Lower}+_ORDERS`, false, ""},     // Java's POSIX class, unknown to Go
 		{`[\p{javaLowerCase}_]+`, false, ""}, // Java-specific class
 		{`IFL_\h+`, false, ""},               // \h is Java only
-		{"IFL_CORE_ITS_*", false, "IFL_CORE_ITS_.*"},
+		{"SALES_ORDERS_*", false, "SALES_ORDERS_.*"},
 		{"*_ORDERS", true, ""},
-		{"(IFL_CORE", true, ""},
-		{"IFL_CORE)", true, ""},
+		{"(SALES", true, ""},
+		{"SALES)", true, ""},
 		{"[A-Z", true, ""},
 		{"[Z-A]", true, ""},
 	}
@@ -223,7 +223,7 @@ func TestAccessPolicyReference_RegularExpressionValue(t *testing.T) {
 // With exactString SAP takes the value literally, so regular expression
 // characters are neither checked nor warned about.
 func TestAccessPolicyReference_ExactStringValueIsLiteral(t *testing.T) {
-	for _, value := range []string{"IFL_CORE_ITS_*", "*_ORDERS", "(IFL"} {
+	for _, value := range []string{"SALES_ORDERS_*", "*_ORDERS", "(IFL"} {
 		diags := validateReference(t, "INTEGRATION_FLOW", "Name", "exactString", value)
 		if len(diags) != 0 {
 			t.Errorf("%q: diagnostics = %v, want none", value, diags)

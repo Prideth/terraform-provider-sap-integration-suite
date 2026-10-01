@@ -105,9 +105,9 @@ With `exactString`, `value` is the exact name or ID, taken literally; characters
 
 With `regularExpression`, `value` is a Java regular expression (`java.util.regex.Pattern`). SAP
 Help describes `myName.*` as matching every value that begins with `myName`. A `*` repeats only
-the character before it, so the glob `IFL_CORE_ITS_*` matches `IFL_CORE_ITS` followed by
-underscores, not every name that starts with `IFL_CORE_ITS_`; write `IFL_CORE_ITS_.*` or
-`^IFL_CORE_ITS_.*$`. The plan shows a warning for such glob-like patterns and an error for
+the character before it, so the glob `SALES_ORDERS_*` matches `SALES_ORDERS` followed by
+underscores, not every name that starts with `SALES_ORDERS_`; write `SALES_ORDERS_.*` or
+`^SALES_ORDERS_.*$`. The plan shows a warning for such glob-like patterns and an error for
 patterns that Java rejects as well: unbalanced parentheses or brackets, a leading `*`, a reversed
 character range. The check uses Go's regular expression parser, which is not Java's, so it reports
 only these errors; a pattern that passes can still be rejected by SAP.
@@ -129,15 +129,15 @@ resource "sapintegrationsuite_access_policy_reference" "metering_flow" {
 
 # "Matches" in the UI is the wire value "regularExpression". The value is a
 # Java regular expression: ".*" stands for any characters, so this matches
-# every integration flow whose name starts with IFL_CORE_ITS_.
+# every integration flow whose name starts with SALES_ORDERS_.
 resource "sapintegrationsuite_access_policy_reference" "core_its_flows" {
   access_policy_id = sapintegrationsuite_access_policy.utilities.id
 
-  name          = "CORE ITS integration flows"
+  name          = "Sales order integration flows"
   artifact_type = "INTEGRATION_FLOW"
   attribute     = "Name"
   operator      = "regularExpression"
-  value         = "^IFL_CORE_ITS_.*$"
+  value         = "^SALES_ORDERS_.*$"
 }
 ```
 
@@ -151,7 +151,7 @@ resource "sapintegrationsuite_access_policy_reference" "core_its_flows" {
 - `attribute` (String) Artifact attribute the condition is evaluated against, as stored in ConditionAttribute: "Name" or "ID". Message queues, global variables and global data stores can only be matched by "Name".
 - `name` (String) Name of the reference as shown in the policy's References table. Mandatory in SAP.
 - `operator` (String) Condition type as stored in ConditionType: "exactString" (Equals in the UI) or "regularExpression" (Matches in the UI). Integration packages only allow "exactString". UI labels such as EQUALS or MATCHES are rejected.
-- `value` (String) Stored in ConditionValue. With "exactString" the exact name or ID, taken literally. With "regularExpression" a Java regular expression, for example "IFL_CORE_.*" for every name that starts with IFL_CORE_ (not the glob "IFL_CORE_*").
+- `value` (String) Stored in ConditionValue. With "exactString" the exact name or ID, taken literally. With "regularExpression" a Java regular expression, for example "SALES_.*" for every name that starts with SALES_ (not the glob "SALES_*").
 
 ### Optional
 

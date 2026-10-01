@@ -260,9 +260,9 @@ func javaRegexError(pattern string) error {
 
 // globStarSuggestion returns the pattern with ".*" in place of every "*"
 // that directly follows a letter, digit, underscore or hyphen outside a
-// character class, or "" when there is none. "IFL_CORE_*" is valid, but it
-// matches IFL_CORE followed by underscores, not every name that starts with
-// IFL_CORE_; the glob-style star is almost always a mistake there.
+// character class, or "" when there is none. "SALES_*" is valid, but it
+// matches SALES followed by underscores, not every name that starts with
+// SALES_; the glob-style star is almost always a mistake there.
 func globStarSuggestion(pattern string) string {
 	var b strings.Builder
 	found, inClass, escaped := false, false, false
