@@ -67,8 +67,8 @@ func requireUnofficialOperation(allowed bool, typeName, operation string, diags 
 	}
 	diags.AddError(fmt.Sprintf("%s: %s is unofficial", typeName, operation),
 		fmt.Sprintf("The API behind %s is official, but this operation is not: SAP neither documents it nor "+
-			"uses it in its own tooling. It is known from the service's $metadata and was verified on a tenant, "+
-			"so SAP may change it without notice. To allow it, set "+
+			"uses it in its own tooling. It is known only from the service's $metadata or the tenant's own "+
+			"answers and was verified on a tenant, so SAP may change it without notice. To allow it, set "+
 			"enable_unofficial = true in the provider block (or SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL=true). "+
 			"The documented operations of %s work without it. See docs/feature-support.md, \"Contract sources\".",
 			typeName, typeName))

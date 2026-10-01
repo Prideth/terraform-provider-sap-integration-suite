@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -166,30 +165,6 @@ func runStringValidator(v validator.String, value string) (bool, string) {
 		return false, ""
 	}
 	return true, resp.Diagnostics.Errors()[0].Detail()
-}
-
-func TestLegacyValueValidator(t *testing.T) {
-	cases := []struct {
-		v        validator.String
-		value    string
-		rejected bool
-		hint     string
-	}{
-		{legacyValueValidator{legacy: legacyArtifactTypeValues}, "IntegrationFlow", true, "INTEGRATION_FLOW"},
-		{legacyValueValidator{legacy: legacyArtifactTypeValues}, "INTEGRATION_FLOW", false, ""},
-		{legacyValueValidator{legacy: legacyOperatorValues}, "EQUALS", true, "exactString"},
-		{legacyValueValidator{legacy: legacyOperatorValues}, "exactString", false, ""},
-	}
-
-	for _, c := range cases {
-		rejected, detail := runStringValidator(c.v, c.value)
-		if rejected != c.rejected {
-			t.Errorf("%q: rejected = %v, want %v", c.value, rejected, c.rejected)
-		}
-		if c.hint != "" && !strings.Contains(detail, c.hint) {
-			t.Errorf("%q: diagnostic %q does not point to %q", c.value, detail, c.hint)
-		}
-	}
 }
 
 func TestInt64StringValidator(t *testing.T) {

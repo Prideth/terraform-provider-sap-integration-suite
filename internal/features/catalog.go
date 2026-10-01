@@ -730,7 +730,9 @@ var Catalog = []Feature{
 		Description:    "A single artifact reference (attribute/operator/value match rule) on an access policy.",
 		SupportStatus:  StatusSupported,
 		ContractSource: SourceSAPTooling,
-		ResourceTypes:  []string{"sapintegrationsuite_access_policy_reference"},
+		UndocumentedOperations: []string{"create a reference to an artifact type SAP does not document for " +
+			"access policies (eight types SAP's API lists, verified on a tenant)"},
+		ResourceTypes: []string{"sapintegrationsuite_access_policy_reference"},
 		DataSourceTypes: []string{
 			"sapintegrationsuite_access_policy_reference",
 		},
@@ -741,11 +743,15 @@ var Catalog = []Feature{
 				"(SAP's own CI/CD tooling) creates and deletes references and never updates one, so every " +
 				"attribute forces replacement. Replacement deletes the old reference before creating the " +
 				"new one, which briefly leaves the matched artifacts unprotected by it.",
-			"artifact_type, attribute and operator are passed through verbatim. Confirmed wire values " +
-				"are Type INTEGRATION_FLOW, ConditionAttribute Name and ConditionType exactString; SAP " +
-				"publishes no complete list of the other constants (for example for Integration Package, " +
-				"Message Queue or regular-expression matching). Read a UI-created reference with the data " +
-				"source to learn them.",
+			"artifact_type, attribute and operator are checked at plan time against the wire values " +
+				"and combinations SAP allows: 14 artifact types, Name or ID, exactString or " +
+				"regularExpression; Integration Package only with exactString, message queues, global " +
+				"variables and global data stores only by Name. SAP Help documents the types by UI label " +
+				"only; the constants come from SAP's audit log documentation and from the tenant, which " +
+				"names them in its 400 answers and accepted every listed combination (October 2026). " +
+				"Eight further types that SAP accepts but does not document for access policies " +
+				"(credentials, secure parameters, adapters, service interfaces, fault message types) need " +
+				"enable_unofficial.",
 			"Releases before this correction sent invented field names (ArtifactType, Attribute, " +
 				"Operator, Value) and could not have worked against a real tenant.",
 		},

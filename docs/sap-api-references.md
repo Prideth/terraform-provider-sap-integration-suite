@@ -784,12 +784,46 @@ contract test (`internal/client/cloudintegration/metadata_contract_test.go`) che
 structs and keys against the committed snapshot of this document
 (`testdata/api-metadata/cloud-integration.json`) on every test run.
 
+### Reference wire values (October 2026)
+
+SAP's audit log documentation for Cloud Integration (Help Portal page "Auditing and Logging
+Information for Cloud Integration", Markdown source
+`docs/ISuite_Integrations_APIs/60-Security/auditing-and-logging-information-for-cloud-integration-d1c7bfe.md`
+in `SAP-docs/btp-integration-suite`) shows the stored values of artifact references in its
+example events: `"Type":"INTEGRATION_FLOW"`, `"ConditionAttribute":"Name"`,
+`"ConditionType":"exactString"` (create and change events) and
+`"ConditionType":"regularExpression"` (delete event). Together with SAP Help's operator
+descriptions this pairs *Equals* with `exactString` and *Matches* with `regularExpression`.
+
+The tenant validates every value and names the allowed ones in its `400` answers to
+`POST /ArtifactReferences` (2026-10-01):
+
+| Sent | Answer |
+|---|---|
+| unknown `Type` | "Provided Artifact Type is not allowed! Supported types: [DATA_TYPE, GLOBAL_DATA_STORE, GLOBAL_VARIABLE, INTEGRATION_ADAPTER, INTEGRATION_FLOW, MESSAGE_MAPPING, MESSAGE_QUEUE, MESSAGE_TYPE, ODATA_SERVICE, REST_API_PROVIDER, SCRIPT_COLLECTION, SOAP_API_PROVIDER, VALUE_MAPPING, USER_CREDENTIAL, OAUTH2_CLIENT_CRED, AUTH2_SAML_BEARER_ASSERTION, AUTH2_AUTHORIZATION_CODE, SECURE_PARAMETER, INTEGRATION_PACKAGE, API_ARTIFACT, SERVICE_INTERFACE, FAULT_MESSAGE_TYPE]" |
+| `ConditionAttribute` other than `Name`/`ID` (also `NAME`, `Id`) | "Provided Attribute is not allowed! Only ID and Name allowed." |
+| `ConditionType` other than the two (also `EQUALS`, `MATCHES`) | "Provided Condition Type is not allowed! Only 'exactString' and 'regularExpression' are permitted." |
+| `INTEGRATION_PACKAGE` with `regularExpression` | "Only exactString is allowed with Integration Package" |
+| `MESSAGE_QUEUE`, `GLOBAL_VARIABLE` or `GLOBAL_DATA_STORE` with `ID` | "Only Name Attribute is allowed for Artifact Type <type>!" |
+
+Every other combination of the 22 types, both attributes and both condition types was created
+and read back unchanged. The two restrictions are the ones SAP Help states. The provider
+accepts the 14 types whose category SAP Help offers for access policies; the UI labels pair
+with the constants by name (OData API = `ODATA_SERVICE`, REST API = `REST_API_PROVIDER`, SOAP
+API = `SOAP_API_PROVIDER`, API = `API_ARTIFACT`). The other eight (`INTEGRATION_ADAPTER`,
+`USER_CREDENTIAL`, `OAUTH2_CLIENT_CRED`, `AUTH2_SAML_BEARER_ASSERTION`,
+`AUTH2_AUTHORIZATION_CODE`, `SECURE_PARAMETER`, `SERVICE_INTERFACE`, `FAULT_MESSAGE_TYPE`)
+work on the tenant but are not documented for access policies, so creating a reference to one
+needs `enable_unofficial`. `TestAccAccessPolicyReference_matrixMatchesSAP` repeats the check
+against the tenant for all 22 types. Two references on the tenant that neither the provider
+nor its probes created (an `INTEGRATION_PACKAGE` reference by `Name` with `exactString`, an
+`ODATA_SERVICE` reference with `regularExpression`) carry the same constants.
+
 ### Still not publicly documented
 
-- The wire constants for every artifact type other than Integration Flow, for the *ID*
-  attribute, and for the *Matches* operator. The provider therefore passes these values
-  through and only rejects the two former provider values proven wrong (`IntegrationFlow`,
-  `EQUALS`).
+- The artifact type constants: SAP Help names the types only by UI label, and the Hub
+  specification is behind a login. The constants above come from the audit log documentation
+  and the tenant.
 - Whether `AccessPolicyRuntimeAssignments` can be written (their structure is now known, see
   above), the values `TransferStatus` takes, and which runtimes a policy created through the
   API is assigned to by default.

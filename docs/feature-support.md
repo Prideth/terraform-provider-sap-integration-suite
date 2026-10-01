@@ -117,7 +117,7 @@ Do not conflate these: a feature can be fully supported by this provider and sti
 | `partner_directory.string_parameter` | partner_directory | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
 | `partner_directory.user_credential_parameter` | partner_directory | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
 | `security.access_policy` | security | supported | sap_tooling (some operations unofficial) | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
-| `security.access_policy_reference` | security | supported | sap_tooling | Yes | Yes | Yes | — | Yes | Yes | — | Resource + Data Source |
+| `security.access_policy_reference` | security | supported | sap_tooling (some operations unofficial) | Yes | Yes | Yes | — | Yes | Yes | — | Resource + Data Source |
 | `security.certificate` | security | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
 | `security.certificate_chain` | security | unsupported (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
 | `security.certificate_user_mapping` | security | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
@@ -179,6 +179,7 @@ Individual operations of an otherwise documented feature can be unofficial too. 
 | `cloud_integration.number_range` | import |
 | `cloud_integration.script_collection` | update of the content (PUT; SAP documents create, upload of resources and deploy) |
 | `security.access_policy` | description update (PATCH, verified on a tenant) |
+| `security.access_policy_reference` | create a reference to an artifact type SAP does not document for access policies (eight types SAP's API lists, verified on a tenant) |
 
 ## Unsupported and partially supported features
 
