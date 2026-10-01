@@ -27,6 +27,26 @@ read the plan before applying: every change below that forces a replacement is m
 complete list of changes is in the
 [CHANGELOG](https://github.com/Prideth/terraform-provider-sap-integration-suite/blob/master/CHANGELOG.md).
 
+## 0.3.0 to 0.3.1
+
+0.3.1 only fixes a defect; nothing is renamed and no state is migrated. One configuration that
+0.3.0 accepted is now rejected while planning: an access policy `description` longer than 200
+characters. SAP keeps only the first 200 characters, and with 0.3.0 such an apply failed with
+"Provider produced inconsistent result after apply" after the policy had been created, leaving
+it without its references.
+
+If a description is longer, shorten it to 200 characters or fewer and run `terraform plan`
+again. A policy that 0.3.0 already created with a truncated description:
+
+- If it is in the state (the failed apply records it as tainted), the next plan replaces it.
+  `terraform untaint <address>` keeps the existing policy instead; with
+  `enable_unofficial = true` its description is then updated in place, otherwise set the
+  description to the text SAP kept.
+- If it is not in the state, import it with its numeric ID, or delete it in SAP, before applying;
+  otherwise the create fails because the role name is already taken.
+
+The references depending on the policy are created by the same apply.
+
 ## 0.2 to 0.3
 
 ### Experimental and unofficial resources need a switch

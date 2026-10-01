@@ -3,7 +3,9 @@ package provider
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
+	"unicode/utf16"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -73,10 +75,12 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 				},
 			},
 			"description": schema.StringAttribute{
-				Optional:    true,
-				Description: "Free-text description shown next to the policy in the Access Policies screen.",
+				Optional: true,
+				Description: "Free-text description shown next to the policy in the Access Policies screen. " +
+					"At most 200 characters: SAP stores only the first 200, so the provider rejects a " +
+					"longer description during planning. Omit it rather than setting an empty string.",
 				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
+					accessPolicyDescriptionValidator{},
 				},
 			},
 		},
@@ -204,6 +208,50 @@ func (r *accessPolicyResource) ImportState(ctx context.Context, req resource.Imp
 		return
 	}
 	resource.ImportStatePassthroughID(ctx, pathRootID(), req, resp)
+}
+
+// accessPolicyDescriptionMaxLength is the number of characters SAP keeps of an
+// access policy description. Neither SAP Help, the API specification nor the
+// tenant $metadata declares a limit, but a tenant accepts a longer description
+// on POST and stores only its first 200 characters. The read-back then differs
+// from the plan, Terraform reports "Provider produced inconsistent result after
+// apply", and the policy is left in SAP without its references. The limit is
+// therefore checked in the configuration, before SAP is called.
+const accessPolicyDescriptionMaxLength = 200
+
+// accessPolicyDescriptionValidator rejects an empty description, which SAP
+// reports back as no description, and one longer than SAP keeps. Length is
+// counted in UTF-16 code units: how SAP counts a character outside the Basic
+// Multilingual Plane (an emoji, for example) was not tested, so it counts as
+// two to stay on the safe side. For ordinary text this is the number of
+// characters.
+type accessPolicyDescriptionValidator struct{}
+
+func (accessPolicyDescriptionValidator) Description(context.Context) string {
+	return fmt.Sprintf("must contain between 1 and %d characters", accessPolicyDescriptionMaxLength)
+}
+
+func (v accessPolicyDescriptionValidator) MarkdownDescription(ctx context.Context) string {
+	return v.Description(ctx)
+}
+
+func (accessPolicyDescriptionValidator) ValidateString(_ context.Context, req validator.StringRequest, resp *validator.StringResponse) {
+	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() {
+		return
+	}
+	value := req.ConfigValue.ValueString()
+	if value == "" {
+		resp.Diagnostics.AddAttributeError(req.Path, "Access policy description is empty",
+			"SAP reports an empty description as no description. Omit the description attribute instead of setting it to \"\".")
+		return
+	}
+	if n := len(utf16.Encode([]rune(value))); n > accessPolicyDescriptionMaxLength {
+		resp.Diagnostics.AddAttributeError(req.Path, "Access policy description is too long",
+			fmt.Sprintf("SAP Integration Suite supports access policy descriptions of at most %d characters; this one has %d. "+
+				"SAP would keep only the first %d, so shorten the description to a summary of the policy and describe "+
+				"the protected artifacts with sapintegrationsuite_access_policy_reference resources.",
+				accessPolicyDescriptionMaxLength, n, accessPolicyDescriptionMaxLength))
+	}
 }
 
 func accessPolicyToModel(policy *cloudintegration.AccessPolicy) accessPolicyModel {

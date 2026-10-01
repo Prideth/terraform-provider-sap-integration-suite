@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -46,6 +47,26 @@ func TestClient_CreateAccessPolicy(t *testing.T) {
 	}
 	if policy.ID != "1901" {
 		t.Errorf("ID = %q, want 1901", policy.ID)
+	}
+}
+
+// The client is a faithful wire client: it sends the description exactly as
+// given, whatever its length. The 200-character limit SAP applies is checked
+// by the Terraform schema, and the client must never shorten a value silently.
+func TestClient_CreateAccessPolicy_SendsDescriptionUnchanged(t *testing.T) {
+	description := strings.Repeat("0123456789", 100) + " äöü 😀"
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if got := decodeBody(t, r)["Description"]; got != description {
+			t.Errorf("Description sent = %q, want the configured value unchanged", got)
+		}
+		w.WriteHeader(http.StatusCreated)
+		_, _ = w.Write([]byte(`{"d": {"Id": "1901", "RoleName": "R", "Description": "x"}}`))
+	}))
+	defer server.Close()
+
+	if _, err := New(http.DefaultClient, server.URL).CreateAccessPolicy(context.Background(),
+		AccessPolicy{RoleName: "R", Description: description}); err != nil {
+		t.Fatalf("CreateAccessPolicy() error: %v", err)
 	}
 }
 

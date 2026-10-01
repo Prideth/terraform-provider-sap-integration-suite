@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/testutil/accgate"
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/testutil/samples"
@@ -112,6 +115,75 @@ resource "sapintegrationsuite_access_policy_reference" "test" {
 			{Config: config("updated"), Check: resource.TestCheckResourceAttr("sapintegrationsuite_access_policy.test", "description", "updated")},
 			{ResourceName: "sapintegrationsuite_access_policy.test", ImportState: true, ImportStateVerify: true},
 			{ResourceName: "sapintegrationsuite_access_policy_reference.test", ImportState: true, ImportStateVerify: true},
+		},
+	})
+}
+
+// SAP keeps at most 200 characters of an access policy description. A
+// description of exactly 200 characters must round-trip unchanged so that the
+// reference depending on the policy is created and the next plan is empty. One
+// character more must be rejected during planning, before SAP is called and
+// without touching the existing policy; earlier releases sent it, SAP
+// truncated it, and the apply failed with "Provider produced inconsistent
+// result after apply" after the policy had been created. The last two steps
+// prove that destroy removed the synthetic policy.
+func TestAccAccessPolicy_descriptionLimit(t *testing.T) {
+	accgate.Require(t, accgate.SecurityContent)
+	role := testAccName()
+	prefix := "tfacc description limit "
+	atLimit := prefix + strings.Repeat("x", accessPolicyDescriptionMaxLength-len(prefix))
+	config := func(description string) string {
+		return fmt.Sprintf(`
+resource "sapintegrationsuite_access_policy" "test" {
+  role_name   = %[1]q
+  description = %[2]q
+}
+
+resource "sapintegrationsuite_access_policy_reference" "test" {
+  access_policy_id = sapintegrationsuite_access_policy.test.id
+  name             = "tfacc reference"
+  artifact_type    = "INTEGRATION_FLOW"
+  attribute        = "Name"
+  operator         = "exactString"
+  value            = %[1]q
+}
+`, role, description)
+	}
+	lookup := fmt.Sprintf(`
+data "sapintegrationsuite_access_policy" "test" {
+  role_name = %q
+}
+`, role)
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: config(atLimit),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sapintegrationsuite_access_policy.test", "description", atLimit),
+					resource.TestCheckResourceAttrPair("sapintegrationsuite_access_policy_reference.test", "access_policy_id",
+						"sapintegrationsuite_access_policy.test", "id"),
+					resource.TestCheckResourceAttrSet("sapintegrationsuite_access_policy_reference.test", "id"),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+			},
+			{
+				Config:      config(atLimit + "y"),
+				ExpectError: regexp.MustCompile(`Access policy description is too long`),
+			},
+			{
+				Config:   config(atLimit),
+				PlanOnly: true,
+			},
+			{
+				Config: `locals { removed = true }`,
+			},
+			{
+				Config:      lookup,
+				ExpectError: regexp.MustCompile(`Access policy not found`),
+			},
 		},
 	})
 }
