@@ -187,7 +187,10 @@ func TestAccessPolicyReference_RegularExpressionValue(t *testing.T) {
 		{"IFL_CORE_ITS_.*", false, ""},
 		{`IFL_\d*`, false, ""},
 		{"[A-Z]*_ORDERS", false, ""},
-		{"(?<=IFL_)CORE", false, ""}, // lookbehind: valid in Java, unsupported in Go
+		{"(?<=IFL_)CORE", false, ""},         // lookbehind: valid in Java, unsupported in Go
+		{`\p{Lower}+_ORDERS`, false, ""},     // Java's POSIX class, unknown to Go
+		{`[\p{javaLowerCase}_]+`, false, ""}, // Java-specific class
+		{`IFL_\h+`, false, ""},               // \h is Java only
 		{"IFL_CORE_ITS_*", false, "IFL_CORE_ITS_.*"},
 		{"*_ORDERS", true, ""},
 		{"(IFL_CORE", true, ""},

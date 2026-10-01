@@ -245,7 +245,14 @@ func javaRegexError(pattern string) error {
 	}
 	switch syntaxErr.Code {
 	case syntax.ErrMissingParen, syntax.ErrUnexpectedParen, syntax.ErrMissingBracket,
-		syntax.ErrMissingRepeatArgument, syntax.ErrInvalidCharRange, syntax.ErrTrailingBackslash:
+		syntax.ErrMissingRepeatArgument, syntax.ErrTrailingBackslash:
+		return syntaxErr
+	case syntax.ErrInvalidCharRange:
+		// Go reports Java's named classes such as \p{Lower} or
+		// \p{javaLowerCase} with the same code as a reversed range.
+		if strings.HasPrefix(syntaxErr.Expr, `\p`) || strings.HasPrefix(syntaxErr.Expr, `\P`) {
+			return nil
+		}
 		return syntaxErr
 	}
 	return nil
