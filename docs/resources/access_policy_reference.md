@@ -14,7 +14,8 @@ own entity with an ID that SAP assigns, which is why it is a separate resource a
 [`sapintegrationsuite_access_policy`](access_policy.md).
 
 **Status:** supported. The wire contract (`Name`, `Type`, `ConditionAttribute`, `ConditionType`,
-`ConditionValue`) and the constants come from SAP's own access policy automation.
+`ConditionValue`) comes from SAP's own access policy automation; the accepted values are listed
+below with their evidence.
 
 ## Prerequisites
 
@@ -31,11 +32,85 @@ own entity with an ID that SAP assigns, which is why it is a separate resource a
 | Replacement | Any change deletes the reference and creates it again. In between, the matched artifacts are briefly not protected by it. |
 | Delete | Deletes the reference. |
 
-`artifact_type`, `attribute` and `operator` take SAP's constants and pass them through
-unchanged. Confirmed values are `INTEGRATION_FLOW`, `Name` and `exactString`. For other types
-and the regular-expression operator, create a reference in the UI and read it with the
-[`sapintegrationsuite_access_policy_reference`](../data-sources/access_policy_reference.md)
-data source; the Access Policies guide explains how.
+## Values: SAP wire values, not UI labels
+
+`artifact_type`, `attribute` and `operator` take the values SAP's API stores, which differ from
+the labels in the UI. The provider checks them while Terraform plans and sends them unchanged; it
+never converts a label into a wire value.
+
+| UI | Attribute | Wire value |
+|---|---|---|
+| Operator *Equals* | `operator` | `exactString` |
+| Operator *Matches* | `operator` | `regularExpression` |
+| Attribute *Name* | `attribute` | `Name` |
+| Attribute *ID* | `attribute` | `ID` |
+
+Do not use `EQUALS`, `MATCHES`, `IntegrationFlow` or other spellings. The plan fails for any value
+outside the lists below and names the right value where it is clear, for example
+`regularExpression` for `MATCHES`. Earlier releases accepted any non-empty string, so a wrong value
+only failed when SAP rejected it during apply, after the policy had been created.
+
+### Supported combinations
+
+| `artifact_type` | UI artifact type | `attribute` | `operator` | Status |
+|---|---|---|---|---|
+| `INTEGRATION_FLOW` | Integration Flow | `Name`, `ID` | `exactString`, `regularExpression` | supported |
+| `INTEGRATION_PACKAGE` | Integration Package | `Name`, `ID` | `exactString` only | supported |
+| `API_ARTIFACT` | API | `Name`, `ID` | `exactString`, `regularExpression` | supported |
+| `ODATA_SERVICE` | OData API | `Name`, `ID` | `exactString`, `regularExpression` | supported |
+| `REST_API_PROVIDER` | REST API | `Name`, `ID` | `exactString`, `regularExpression` | supported |
+| `SOAP_API_PROVIDER` | SOAP API | `Name`, `ID` | `exactString`, `regularExpression` | supported |
+| `SCRIPT_COLLECTION` | Script Collection | `Name`, `ID` | `exactString`, `regularExpression` | supported |
+| `VALUE_MAPPING` | Value Mapping | `Name`, `ID` | `exactString`, `regularExpression` | supported |
+| `MESSAGE_MAPPING` | Message Mapping | `Name`, `ID` | `exactString`, `regularExpression` | supported |
+| `DATA_TYPE` | Data Type | `Name`, `ID` | `exactString`, `regularExpression` | supported |
+| `MESSAGE_TYPE` | Message Type | `Name`, `ID` | `exactString`, `regularExpression` | supported |
+| `MESSAGE_QUEUE` | Message Queue | `Name` only | `exactString`, `regularExpression` | supported |
+| `GLOBAL_DATA_STORE` | Global Data Store | `Name` only | `exactString`, `regularExpression` | supported |
+| `GLOBAL_VARIABLE` | Global Variable | `Name` only | `exactString`, `regularExpression` | supported |
+| `AUTH2_AUTHORIZATION_CODE` | not offered | `Name`, `ID` | `exactString`, `regularExpression` | unofficial |
+| `AUTH2_SAML_BEARER_ASSERTION` | not offered | `Name`, `ID` | `exactString`, `regularExpression` | unofficial |
+| `FAULT_MESSAGE_TYPE` | not offered | `Name`, `ID` | `exactString`, `regularExpression` | unofficial |
+| `INTEGRATION_ADAPTER` | not offered | `Name`, `ID` | `exactString`, `regularExpression` | unofficial |
+| `OAUTH2_CLIENT_CRED` | not offered | `Name`, `ID` | `exactString`, `regularExpression` | unofficial |
+| `SECURE_PARAMETER` | not offered | `Name`, `ID` | `exactString`, `regularExpression` | unofficial |
+| `SERVICE_INTERFACE` | not offered | `Name`, `ID` | `exactString`, `regularExpression` | unofficial |
+| `USER_CREDENTIAL` | not offered | `Name`, `ID` | `exactString`, `regularExpression` | unofficial |
+
+Where the values come from:
+
+- **SAP Help** lists the artifact types, the attributes *Name* and *ID*, and the operators
+  *Equals* and *Matches*. It states both restrictions in the table: *Matches* is not available
+  for Integration Package, and message queues, global variables and global data stores support
+  only names.
+- **SAP's audit log documentation** shows the stored values `INTEGRATION_FLOW`, `Name`,
+  `exactString` and `regularExpression`. SAP's access policy CI/CD actions use the same values.
+- **The tenant** names the rest. A reference with an unknown value is answered with 400 and the
+  list of allowed artifact types, "Only ID and Name allowed", or "Only 'exactString' and
+  'regularExpression' are permitted". A tenant test (October 2026) created every combination
+  in the table, read each back unchanged, and was refused exactly the combinations the table
+  excludes. The UI artifact type column pairs the constants with SAP Help's labels by name;
+  only the constant is sent.
+
+The *unofficial* rows are types that SAP's list of artifact types names and the tenant accepted
+with every attribute and operator, but that SAP Help does not offer for access policies. A plan
+that creates a reference to one of them fails unless the provider block sets
+`enable_unofficial = true`; refreshing, importing or destroying such a reference works without
+it. SAP may change these types without notice.
+
+### Values
+
+With `exactString`, `value` is the exact name or ID, taken literally; characters such as `*` or
+`.` have no special meaning.
+
+With `regularExpression`, `value` is a Java regular expression (`java.util.regex.Pattern`). SAP
+Help describes `myName.*` as matching every value that begins with `myName`. A `*` repeats only
+the character before it, so the glob `IFL_CORE_ITS_*` matches `IFL_CORE_ITS` followed by
+underscores, not every name that starts with `IFL_CORE_ITS_`; write `IFL_CORE_ITS_.*` or
+`^IFL_CORE_ITS_.*$`. The plan shows a warning for such glob-like patterns and an error for
+patterns that Java rejects as well: unbalanced parentheses or brackets, a leading `*`, a reversed
+character range. The check uses Go's regular expression parser, which is not Java's, so it reports
+only these errors; a pattern that passes can still be rejected by SAP.
 
 ## Example Usage
 
@@ -51,6 +126,19 @@ resource "sapintegrationsuite_access_policy_reference" "metering_flow" {
   operator      = "exactString"
   value         = "Metering"
 }
+
+# "Matches" in the UI is the wire value "regularExpression". The value is a
+# Java regular expression: ".*" stands for any characters, so this matches
+# every integration flow whose name starts with IFL_CORE_ITS_.
+resource "sapintegrationsuite_access_policy_reference" "core_its_flows" {
+  access_policy_id = sapintegrationsuite_access_policy.utilities.id
+
+  name          = "CORE ITS integration flows"
+  artifact_type = "INTEGRATION_FLOW"
+  attribute     = "Name"
+  operator      = "regularExpression"
+  value         = "^IFL_CORE_ITS_.*$"
+}
 ```
 
 <!-- schema generated by tfplugindocs -->
@@ -59,11 +147,11 @@ resource "sapintegrationsuite_access_policy_reference" "metering_flow" {
 ### Required
 
 - `access_policy_id` (String) Numeric ID of the access policy this reference belongs to.
-- `artifact_type` (String) Artifact type constant as SAP's API stores it in the Type property, for example "INTEGRATION_FLOW". Passed through unchanged; see the Access Policies guide for how to find the constant for other types.
-- `attribute` (String) Artifact attribute the condition is evaluated against, as stored in ConditionAttribute, for example "Name".
+- `artifact_type` (String) Artifact type constant as SAP's API stores it in the Type property, for example "INTEGRATION_FLOW" or "INTEGRATION_PACKAGE", not the UI label. Only the types listed on this page are accepted; the plan fails for any other value.
+- `attribute` (String) Artifact attribute the condition is evaluated against, as stored in ConditionAttribute: "Name" or "ID". Message queues, global variables and global data stores can only be matched by "Name".
 - `name` (String) Name of the reference as shown in the policy's References table. Mandatory in SAP.
-- `operator` (String) Condition type as stored in ConditionType: "exactString" for an exact match. The regular-expression variant is covered in the Access Policies guide.
-- `value` (String) Exact name/ID, or Java regular expression, stored in ConditionValue.
+- `operator` (String) Condition type as stored in ConditionType: "exactString" (Equals in the UI) or "regularExpression" (Matches in the UI). Integration packages only allow "exactString". UI labels such as EQUALS or MATCHES are rejected.
+- `value` (String) Stored in ConditionValue. With "exactString" the exact name or ID, taken literally. With "regularExpression" a Java regular expression, for example "IFL_CORE_.*" for every name that starts with IFL_CORE_ (not the glob "IFL_CORE_*").
 
 ### Optional
 
@@ -82,12 +170,17 @@ terraform import sapintegrationsuite_access_policy_reference.metering_flow 1901/
 
 The ID is `<access_policy_id>/<reference_id>`, both numeric. Everything is recovered.
 
+Import and refresh keep whatever SAP returns, including values the provider does not create, for
+example a reference to a credential created in the UI. Only configured values are checked: to
+manage such a reference with Terraform, its values have to be in the tables above, otherwise the
+plan explains that this provider version does not create them.
+
 ## Limitations
 
-- **SAP:** SAP publishes no complete list of the constants. The UI can edit a reference, but the
-  public contract only creates and deletes.
-- **Provider:** constants are not validated against a list, apart from rejecting the wrong
-  spellings `IntegrationFlow` and `EQUALS` that earlier releases used.
+- **SAP:** SAP documents the artifact types only by their UI labels; the constants come from the
+  tenant. The UI can edit a reference, but the public contract only creates and deletes.
+- **Provider:** the regular expression check is not a Java parser (see above). Creating references
+  to the unofficial artifact types needs `enable_unofficial = true`.
 
 ## Related
 
