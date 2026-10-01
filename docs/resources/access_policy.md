@@ -37,6 +37,21 @@ API. Changing the description uses `PATCH`, which SAP does not document, so it n
 new policy matches become inaccessible to anyone without the role (or
 `AccessAllAccessPoliciesArtifacts`), including the client that manages them with Terraform.
 
+## Description
+
+`description` is optional. When you set it, it may contain at most 200 characters. SAP accepts
+a longer description when the policy is created but keeps only its first 200 characters, so the
+provider checks the length while Terraform plans and rejects a longer value before it calls SAP.
+Without that check (provider versions before 0.3.1), the policy was created, the apply failed
+with "Provider produced inconsistent result after apply", and the policy's references were never
+created. An empty string is rejected too; omit the attribute instead.
+
+The limit is not stated in SAP's documentation or the API's `$metadata`; it was observed on a
+tenant. Keep the description to a short summary of who the policy is for, for example
+`"CORE/LWW developer access to owned Cloud Integration artifacts."` The artifacts the policy
+protects belong in its [`sapintegrationsuite_access_policy_reference`](access_policy_reference.md)
+resources, not in the description.
+
 ## Example Usage
 
 ```terraform
@@ -57,7 +72,7 @@ resource "sapintegrationsuite_access_policy" "utilities" {
 
 ### Optional
 
-- `description` (String) Free-text description shown next to the policy in the Access Policies screen.
+- `description` (String) Free-text description shown next to the policy in the Access Policies screen. At most 200 characters: SAP stores only the first 200, so the provider rejects a longer description during planning. Omit it rather than setting an empty string.
 
 ### Read-Only
 

@@ -77,7 +77,11 @@ These need no further research, only a run of the prepared tests:
 5. **Security Content.** Certificate chains (upload media type), PGP keyrings (upload format;
    secret keyrings write-only) and OAuth2 client credential custom parameters (write path). The
    OAuth2 password and SAML bearer artifacts become user credential kinds if a probe finds them
-   among `UserCredentials`.
+   among `UserCredentials`. Access policy string limits: SAP keeps only 200 characters of a
+   policy description (0.3.1 checks it at plan time), but no source states a limit for
+   `RoleName` or for the reference's `Name`, `Description` and `ConditionValue`. A probe should
+   create values of increasing length and compare the read-back, so the same plan-time check
+   can follow wherever SAP shortens a value instead of rejecting it.
 6. **Classic virtual hosts.** The write API (`Configuration.svc/VirtualHostRequests`) is
    documented and the read schema confirmed; needs a key with
    `APIManagement.SelfService.Administrator` and a destructive-gated tenant test, since virtual

@@ -716,6 +716,10 @@ var Catalog = []Feature{
 				"and policy delete (204).",
 			"role_name forces replacement: it is the policy's identity, and renaming in place was not " +
 				"tested. Replacing a policy also deletes its artifact references on SAP's side.",
+			"description is limited to 200 characters. SAP's documentation and the tenant $metadata " +
+				"declare no limit, but a tenant accepts a longer description on create and stores only " +
+				"its first 200 characters (observed on a tenant). The provider rejects a longer " +
+				"description at plan time instead of letting the apply fail after the policy exists.",
 		},
 		Operations: Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
 	},

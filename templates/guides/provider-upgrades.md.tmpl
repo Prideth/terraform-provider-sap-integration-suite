@@ -36,10 +36,33 @@ Integration Assessment; see the [Integration Assessment guide](integration-asses
 
 ## 0.3 to 0.4
 
-Nothing to change. 0.4 only adds the Integration Assessment resources and data sources, which
-are unofficial and optional. To use them, set `enable_unofficial = true` and add the
-`integration_assessment` block with the service key of an *Integration Assessment APIs* service
-instance; see the [Integration Assessment guide](integration-assessment.md).
+0.4 adds the Integration Assessment resources and data sources, which are unofficial and
+optional. To use them, set `enable_unofficial = true` and add the `integration_assessment` block
+with the service key of an *Integration Assessment APIs* service instance; see the
+[Integration Assessment guide](integration-assessment.md).
+
+0.4 also contains the access policy description check of 0.3.1. Coming from 0.3.0, read the next
+section; nothing else needs to change.
+
+## 0.3.0 to 0.3.1
+
+0.3.1 only fixes a defect; nothing is renamed and no state is migrated. One configuration that
+0.3.0 accepted is now rejected while planning: an access policy `description` longer than 200
+characters. SAP keeps only the first 200 characters, and with 0.3.0 such an apply failed with
+"Provider produced inconsistent result after apply" after the policy had been created, leaving
+it without its references.
+
+If a description is longer, shorten it to 200 characters or fewer and run `terraform plan`
+again. A policy that 0.3.0 already created with a truncated description:
+
+- If it is in the state (the failed apply records it as tainted), the next plan replaces it.
+  `terraform untaint <address>` keeps the existing policy instead; with
+  `enable_unofficial = true` its description is then updated in place, otherwise set the
+  description to the text SAP kept.
+- If it is not in the state, import it with its numeric ID, or delete it in SAP, before applying;
+  otherwise the create fails because the role name is already taken.
+
+The references depending on the policy are created by the same apply.
 
 ## 0.2 to 0.3
 
