@@ -41,16 +41,19 @@ optional. To use them, set `enable_unofficial = true` and add the `integration_a
 with the service key of an *Integration Assessment APIs* service instance; see the
 [Integration Assessment guide](integration-assessment.md).
 
-0.4 also contains the access policy description check of 0.3.1. Coming from 0.3.0, read the next
-section; nothing else needs to change.
+0.4 also contains the access policy checks of 0.3.1 (description length, reference values).
+Coming from 0.3.0, read the next section; nothing else needs to change.
 
 ## 0.3.0 to 0.3.1
 
-0.3.1 only fixes a defect; nothing is renamed and no state is migrated. One configuration that
-0.3.0 accepted is now rejected while planning: an access policy `description` longer than 200
-characters. SAP keeps only the first 200 characters, and with 0.3.0 such an apply failed with
-"Provider produced inconsistent result after apply" after the policy had been created, leaving
-it without its references.
+0.3.1 only fixes defects; nothing is renamed and no state is migrated. Two kinds of configuration
+that 0.3.0 accepted are now rejected while planning.
+
+### Access policy descriptions longer than 200 characters
+
+An access policy `description` longer than 200 characters is rejected. SAP keeps only the first
+200 characters, and with 0.3.0 such an apply failed with "Provider produced inconsistent result
+after apply" after the policy had been created, leaving it without its references.
 
 If a description is longer, shorten it to 200 characters or fewer and run `terraform plan`
 again. A policy that 0.3.0 already created with a truncated description:
@@ -63,6 +66,18 @@ again. A policy that 0.3.0 already created with a truncated description:
   otherwise the create fails because the role name is already taken.
 
 The references depending on the policy are created by the same apply.
+
+### Access policy reference values
+
+`artifact_type`, `attribute` and `operator` of `sapintegrationsuite_access_policy_reference`
+accept only SAP's wire values, in the combinations SAP allows; the
+[resource page](../resources/access_policy_reference.md) lists them. A UI label such as `MATCHES`
+or `IntegrationPackage` fails the plan, and the error names the value to use, here
+`regularExpression` and `INTEGRATION_PACKAGE`. Such configurations never worked: SAP rejected them
+during apply, after the policy had been created. One exception: references to the eight artifact
+types SAP accepts but does not document for access policies, such as `USER_CREDENTIAL`, worked
+with 0.3.0 and now need `enable_unofficial = true` in the provider block. Existing references
+are read and imported as SAP returns them.
 
 ## 0.2 to 0.3
 

@@ -75,29 +75,29 @@ IDs it created or imported. References that someone added through the UI stay un
 ## Where the reference values come from
 
 Each attribute of `sapintegrationsuite_access_policy_reference` maps directly onto a property
-of SAP's `ArtifactReferences` entity. The provider sends your values unchanged:
+of SAP's `ArtifactReferences` entity:
 
-| Terraform attribute | SAP property | Label in the UI | Values confirmed on the wire |
+| Terraform attribute | SAP property | Label in the UI | Values |
 |---|---|---|---|
 | `name` | `Name` | Name (mandatory) | free text |
 | `description` | `Description` | Description | free text |
-| `artifact_type` | `Type` | Artifact Type | `INTEGRATION_FLOW` |
-| `attribute` | `ConditionAttribute` | Attribute | `Name` |
-| `operator` | `ConditionType` | Operator | `exactString` (the UI's *Equals*) |
+| `artifact_type` | `Type` | Artifact Type | SAP's constant, for example `INTEGRATION_FLOW` or `INTEGRATION_PACKAGE` |
+| `attribute` | `ConditionAttribute` | Attribute | `Name` or `ID` |
+| `operator` | `ConditionType` | Operator | `exactString` (*Equals*) or `regularExpression` (*Matches*) |
 | `value` | `ConditionValue` | Value / Expression | exact name or ID, or a Java regular expression |
 
-The UI offers more choices than the last column lists. Artifact types include Integration
-Package, API, OData API, REST API, SOAP API, Script Collection, Value Mapping, Message Mapping,
-Message Queue, Global Data Store, Global Variable, Data Type and Message Type. Attributes
-include *ID*, and operators include *Matches* for Java regular expressions. SAP has not
-published the wire constants for those options anywhere public. The API specification sits
-behind a login on the Business Accelerator Hub, and SAP's own CI/CD tooling only shows the
-integration flow case. Rather than guess at spellings such as `INTEGRATION_PACKAGE`, the
-provider accepts any non-empty string and leaves validation to SAP.
+The values are SAP's wire values, not the UI labels: the operator *Matches* is stored as
+`regularExpression`, not `MATCHES`. The provider accepts only values that SAP is known to
+store and combinations SAP allows, and fails the plan for anything else, so a wrong value can
+no longer leave a policy without its references halfway through an apply. The complete table
+of artifact types, with the evidence for each, is on the
+[`sapintegrationsuite_access_policy_reference`](../resources/access_policy_reference.md) page.
+Two rules from SAP Help are part of it: *Matches* is not available for Integration Package
+references, and message queues, global variables and global data stores can only be matched
+by name.
 
-To find the exact constant for another option, create one reference of that kind in the
-Integration Suite UI (*Monitor* > *Integrations and APIs* > *Manage Security* > *Access
-Policies*). Then read it back:
+References created in the UI with other values can still be read with the data source and
+imported:
 
 ```terraform
 data "sapintegrationsuite_access_policy_reference" "created_in_ui" {
@@ -107,13 +107,10 @@ data "sapintegrationsuite_access_policy_reference" "created_in_ui" {
 ```
 
 The `artifact_type`, `attribute` and `operator` attributes return what SAP actually stored.
-Use those strings in your configuration. Two rules from SAP Help still apply whatever the
-spelling: *Matches* is not available for Integration Package references, and message queues,
-global variables and global data stores can only be matched by name.
 
 For regular expressions, `value` must be a valid `java.util.regex.Pattern`, not a glob.
 `UTIL_.*` matches everything starting with `UTIL_`. `UTIL_*` is also valid Java syntax, but it
-means "`UTIL` followed by any number of underscores".
+means "`UTIL` followed by any number of underscores"; the plan warns about such patterns.
 
 ## Lifecycle
 

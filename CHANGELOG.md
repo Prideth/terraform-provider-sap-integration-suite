@@ -80,7 +80,7 @@ state migration is needed when upgrading from 0.4.
 0.4.0 adds the Integration Assessment landscape. It changes nothing for
 existing configurations. The acceptance test of the landscape, including
 moving objects between their links in place, passed on a tenant on
-2026-09-29. It also contains the access policy description check of 0.3.1.
+2026-09-29. It also contains the access policy checks of 0.3.1.
 
 ### Highlights
 
@@ -147,8 +147,10 @@ Nothing to do. The new types are optional; to use them, set
 
 ## 0.3.1 — 2026-10-01
 
-0.3.1 is a patch release of 0.3.0. It fixes the validation of access policy
-descriptions and changes nothing else.
+0.3.1 is a patch release of 0.3.0. It moves two kinds of access policy
+errors from apply time to plan time: descriptions SAP cannot keep, and
+reference values SAP does not accept. Both used to leave policies in SAP
+without their references. Nothing else changes.
 
 ### Fixed
 
@@ -173,6 +175,41 @@ descriptions and changes nothing else.
   The limit is not stated in SAP Help, the Business Accelerator Hub
   specification or the service's `$metadata`; it was observed on a tenant.
 
+- **Access policy references accept only values SAP stores.**
+  `artifact_type`, `attribute` and `operator` of
+  `sapintegrationsuite_access_policy_reference` accepted any non-empty string,
+  apart from the two wrong spellings `IntegrationFlow` and `EQUALS`. A UI
+  label such as `MATCHES` or `IntegrationPackage` passed the plan, SAP
+  rejected it during apply, and the policy created in the same apply was left
+  without its references.
+
+  The plan now accepts only SAP's wire values: the artifact type constants
+  (for example `INTEGRATION_FLOW`, `INTEGRATION_PACKAGE`, `ODATA_SERVICE`,
+  `MESSAGE_QUEUE`), the attributes `Name` and `ID`, and the operators
+  `exactString` (*Equals* in the UI) and `regularExpression` (*Matches*). It
+  also rejects the combinations SAP refuses: Integration Package references
+  only take `exactString`, and message queues, global variables and global
+  data stores can only be matched by `Name`. Every error lists the valid
+  values and, for a UI label or an earlier spelling, names the wire value to
+  use; the provider never converts a value itself.
+
+  For `regularExpression`, the plan fails for patterns Java rejects as well
+  (for example unbalanced parentheses or a leading `*`) and warns about
+  glob-like patterns such as `IFL_CORE_*`, which matches `IFL_CORE` followed
+  by underscores rather than every name starting with `IFL_CORE_`.
+
+  The values come from SAP Help (types, attributes, operators and both
+  restrictions), SAP's audit log documentation (`INTEGRATION_FLOW`, `Name`,
+  `exactString`, `regularExpression`) and the tenant, which lists the allowed
+  values in its error answers. A tenant test created every accepted
+  combination and read it back unchanged. Eight artifact types SAP accepts
+  but does not document for access policies (credentials, secure parameters,
+  adapters, service interfaces, fault message types) need
+  `enable_unofficial = true` to be created.
+
+  Read and import are unchanged: a reference that already exists in SAP keeps
+  whatever values SAP returns, even ones this version does not create.
+
 ### Upgrading from 0.3.0
 
 - No resource is renamed and no state is migrated. Configurations whose
@@ -186,6 +223,10 @@ descriptions and changes nothing else.
   in-place description change needs `enable_unofficial = true`). A policy
   that is not in the state can be imported by its numeric ID. The Provider
   Upgrades guide describes both cases.
+- A reference configuration with a value outside the supported lists fails at
+  plan time with the value to use. Such a configuration never worked against
+  SAP, except for the eight undocumented artifact types: references to those
+  keep working once `enable_unofficial = true` is set.
 
 ## 0.3.0 — 2026-09-29
 

@@ -9,3 +9,16 @@ resource "sapintegrationsuite_access_policy_reference" "metering_flow" {
   operator      = "exactString"
   value         = "Metering"
 }
+
+# "Matches" in the UI is the wire value "regularExpression". The value is a
+# Java regular expression: ".*" stands for any characters, so this matches
+# every integration flow whose name starts with IFL_CORE_ITS_.
+resource "sapintegrationsuite_access_policy_reference" "core_its_flows" {
+  access_policy_id = sapintegrationsuite_access_policy.utilities.id
+
+  name          = "CORE ITS integration flows"
+  artifact_type = "INTEGRATION_FLOW"
+  attribute     = "Name"
+  operator      = "regularExpression"
+  value         = "^IFL_CORE_ITS_.*$"
+}

@@ -90,8 +90,10 @@ These need no further research, only a run of the prepared tests:
    once it is available, then model only desired-state configuration (assets, policies,
    contract definitions); negotiations, agreements and transfers stay out of scope.
 8. **Unofficial features.** `sapintegrationsuite_secure_parameter`, the access policy runtime
-   assignments and the undocumented operations listed in Feature Support become supported only
-   if SAP documents them. The weekly discovery run and the Hub checks watch for that.
+   assignments, the eight access policy reference types SAP accepts but does not document
+   (credentials, secure parameters, adapters, service interfaces, fault message types) and the
+   undocumented operations listed in Feature Support become supported only if SAP documents them.
+   The weekly discovery run and the Hub checks watch for that.
 
 ## P3 — later
 

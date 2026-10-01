@@ -5,8 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -26,6 +29,9 @@ func NewAccessPolicyReferenceResource() resource.Resource {
 
 type accessPolicyReferenceResource struct {
 	client *cloudintegration.Client
+	// allowUnofficial is the provider's enable_unofficial: references to
+	// artifact types SAP does not document for access policies need it.
+	allowUnofficial bool
 }
 
 type accessPolicyReferenceModel struct {
@@ -38,18 +44,6 @@ type accessPolicyReferenceModel struct {
 	Operator       types.String `tfsdk:"operator"`
 	Value          types.String `tfsdk:"value"`
 }
-
-// Values that earlier provider releases accepted for a concept whose real
-// wire value is now known. Only provably wrong values are listed; rejecting
-// them at plan time replaces an opaque OData error at apply time.
-var (
-	legacyArtifactTypeValues = map[string]string{
-		"IntegrationFlow": `use "INTEGRATION_FLOW"`,
-	}
-	legacyOperatorValues = map[string]string{
-		"EQUALS": `use "exactString"`,
-	}
-)
 
 func (r *accessPolicyReferenceResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_access_policy_reference"
@@ -102,42 +96,44 @@ func (r *accessPolicyReferenceResource) Schema(_ context.Context, _ resource.Sch
 			"artifact_type": schema.StringAttribute{
 				Required: true,
 				Description: "Artifact type constant as SAP's API stores it in the Type property, for " +
-					"example \"INTEGRATION_FLOW\". Passed through unchanged; see the Access Policies " +
-					"guide for how to find the constant for other types.",
+					"example \"INTEGRATION_FLOW\" or \"INTEGRATION_PACKAGE\", not the UI label. Only the " +
+					"types listed on this page are accepted; the plan fails for any other value.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
-					legacyValueValidator{legacy: legacyArtifactTypeValues},
+					referenceArtifactTypeValidator,
 				},
 			},
 			"attribute": schema.StringAttribute{
 				Required: true,
 				Description: "Artifact attribute the condition is evaluated against, as stored in " +
-					"ConditionAttribute, for example \"Name\".",
+					"ConditionAttribute: \"Name\" or \"ID\". Message queues, global variables and global " +
+					"data stores can only be matched by \"Name\".",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
+					referenceAttributeValidator,
 				},
 			},
 			"operator": schema.StringAttribute{
 				Required: true,
-				Description: "Condition type as stored in ConditionType: \"exactString\" for an exact " +
-					"match. The regular-expression variant is covered in the Access Policies guide.",
+				Description: "Condition type as stored in ConditionType: \"exactString\" (Equals in the " +
+					"UI) or \"regularExpression\" (Matches in the UI). Integration packages only allow " +
+					"\"exactString\". UI labels such as EQUALS or MATCHES are rejected.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
-					legacyValueValidator{legacy: legacyOperatorValues},
+					referenceOperatorValidator,
 				},
 			},
 			"value": schema.StringAttribute{
-				Required:    true,
-				Description: "Exact name/ID, or Java regular expression, stored in ConditionValue.",
+				Required: true,
+				Description: "Stored in ConditionValue. With \"exactString\" the exact name or ID, taken " +
+					"literally. With \"regularExpression\" a Java regular expression, for example " +
+					"\"IFL_CORE_.*\" for every name that starts with IFL_CORE_ (not the glob \"IFL_CORE_*\").",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -147,6 +143,88 @@ func (r *accessPolicyReferenceResource) Schema(_ context.Context, _ resource.Sch
 			},
 		},
 	}
+}
+
+// ValidateConfig checks what the single attribute validators cannot: whether
+// SAP allows the attribute and operator for the artifact type, and whether a
+// regular expression is well-formed. It runs before the plan, so a reference
+// SAP would reject is never sent while its policy is being created.
+func (r *accessPolicyReferenceResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var config accessPolicyReferenceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if known(config.ArtifactType, config.Attribute, config.Operator) {
+		validateReferenceCombination(config.ArtifactType.ValueString(), config.Attribute.ValueString(),
+			config.Operator.ValueString(), func(attr path.Path, summary, detail string) {
+				resp.Diagnostics.AddAttributeError(attr, summary, detail)
+			})
+	}
+
+	if !known(config.Operator, config.Value) || config.Operator.ValueString() != referenceOperatorRegex {
+		return
+	}
+	value := config.Value.ValueString()
+	if err := javaRegexError(value); err != nil {
+		detail := fmt.Sprintf("SAP expects a Java regular expression for the regularExpression operator, and %q is "+
+			"not one: %s.", value, err)
+		if strings.HasPrefix(value, "*") {
+			detail += " A leading * is glob syntax; in a regular expression, .* stands for any characters."
+		}
+		resp.Diagnostics.AddAttributeError(path.Root("value"), "Invalid regular expression", detail)
+		return
+	}
+	if suggestion := globStarSuggestion(value); suggestion != "" {
+		resp.Diagnostics.AddAttributeWarning(path.Root("value"), "Regular expression looks like a glob pattern",
+			fmt.Sprintf("In a regular expression, * repeats only the character before it, so %q does not match "+
+				"every name that starts with the text before the *. If that is what you mean, write %q. "+
+				"The value is sent to SAP unchanged.", value, suggestion))
+	}
+}
+
+// ModifyPlan stops a plan that creates a reference to an artifact type SAP
+// does not document for access policies, unless enable_unofficial is set.
+// Every attribute forces replacement, so creating is the only write.
+func (r *accessPolicyReferenceResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if r.client == nil || req.Plan.Raw.IsNull() {
+		return // provider not configured yet (Create checks again), or a destroy
+	}
+	if !req.State.Raw.IsNull() && len(resp.RequiresReplace) == 0 {
+		return // nothing is created
+	}
+	var artifactType types.String
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("artifact_type"), &artifactType)...)
+	if resp.Diagnostics.HasError() || artifactType.IsUnknown() {
+		return
+	}
+	r.allowArtifactType(artifactType.ValueString(), &resp.Diagnostics)
+}
+
+// allowArtifactType reports whether a reference to the artifact type may be
+// created, and explains the refusal of an unofficial one.
+func (r *accessPolicyReferenceResource) allowArtifactType(artifactType string, diags *diag.Diagnostics) bool {
+	t, ok := referenceArtifactTypeByWireValue(artifactType)
+	if !ok || !t.Unofficial {
+		return true
+	}
+	return requireUnofficialOperation(r.allowUnofficial, "sapintegrationsuite_access_policy_reference",
+		referenceUnofficialTypeOperation+" ("+artifactType+")", diags)
+}
+
+// referenceUnofficialTypeOperation names the gated operation the way the
+// feature catalog lists it.
+const referenceUnofficialTypeOperation = "create a reference to an artifact type SAP does not document for access policies"
+
+// known reports whether every value is set and known.
+func known(values ...types.String) bool {
+	for _, v := range values {
+		if v.IsNull() || v.IsUnknown() {
+			return false
+		}
+	}
+	return true
 }
 
 func (r *accessPolicyReferenceResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -162,12 +240,16 @@ func (r *accessPolicyReferenceResource) Configure(_ context.Context, req resourc
 		return
 	}
 	r.client = cloudintegration.New(data.HTTPClient, data.Host)
+	r.allowUnofficial = data.EnableUnofficial
 }
 
 func (r *accessPolicyReferenceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan accessPolicyReferenceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+	if !r.allowArtifactType(plan.ArtifactType.ValueString(), &resp.Diagnostics) {
 		return
 	}
 
@@ -301,32 +383,4 @@ func (int64StringValidator) ValidateString(_ context.Context, req validator.Stri
 		resp.Diagnostics.AddAttributeError(req.Path, "Invalid SAP ID",
 			fmt.Sprintf("%q is not a numeric SAP ID.", req.ConfigValue.ValueString()))
 	}
-}
-
-// legacyValueValidator rejects values that earlier provider releases accepted
-// by mistake, with a hint where the correct SAP wire value is known.
-type legacyValueValidator struct {
-	legacy map[string]string
-}
-
-func (legacyValueValidator) Description(context.Context) string {
-	return "value must be the constant SAP's API uses, not a value accepted by earlier provider releases"
-}
-
-func (v legacyValueValidator) MarkdownDescription(ctx context.Context) string {
-	return v.Description(ctx)
-}
-
-func (v legacyValueValidator) ValidateString(_ context.Context, req validator.StringRequest, resp *validator.StringResponse) {
-	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() {
-		return
-	}
-	value := req.ConfigValue.ValueString()
-	hint, isLegacy := v.legacy[value]
-	if !isLegacy {
-		return
-	}
-	resp.Diagnostics.AddAttributeError(req.Path, "Unsupported legacy value",
-		fmt.Sprintf("%q was accepted by earlier releases of this provider, but it is not the value SAP's "+
-			"access policy API uses; %s.", value, hint))
 }

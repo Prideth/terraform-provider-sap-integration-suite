@@ -143,10 +143,16 @@ see `docs/sap-api-references.md` for the evidence.*
   `artifact_type` → `Type`, `attribute` → `ConditionAttribute`, `operator` →
   `ConditionType`, `value` → `ConditionValue`. The Terraform names follow the labels of SAP's
   UI, and the values are SAP's wire constants.
-- **Validation**: non-empty strings only, plus plan-time rejection of `IntegrationFlow` and
-  `EQUALS`. Those two were accepted by earlier releases and are now known to be wrong
-  (`INTEGRATION_FLOW`, `exactString`). The complete constant sets are not public, so a closed
-  enum would either be a guess or lock users out of valid types such as Integration Package.
+- **Validation**: since 0.3.1 an allow-list of SAP wire values and the combinations SAP allows
+  (`internal/provider/access_policy_reference_rules.go`): 14 documented artifact types (eight more
+  that SAP accepts but does not document for access policies need `enable_unofficial`), `Name`/`ID`,
+  `exactString`/`regularExpression`; `INTEGRATION_PACKAGE` only with `exactString`, and
+  `MESSAGE_QUEUE`, `GLOBAL_VARIABLE` and `GLOBAL_DATA_STORE` only by `Name`. The tenant itself
+  enumerates the allowed values in its 400 answers, and an acceptance test checks the matrix
+  against SAP. UI labels and the spellings of earlier releases fail the plan with a hint to the
+  wire value; nothing is converted. Configured values only: read and import keep whatever SAP
+  returns. Regular expressions are checked for errors Java rejects as well, and glob-like
+  patterns get a warning.
 - **Create**: `POST ArtifactReferences` with the six properties and
   `"AccessPolicy": {"Id": "<policy id>"}` binding the reference to its policy.
 - **Read**: `GET AccessPolicies(<policy id>L)/ArtifactReferences`, then pick the reference by

@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
@@ -21,46 +20,17 @@ import (
 // rejected while Terraform validates the configuration, before any request.
 
 // validateAccessPolicyConfig runs the configuration through the provider's
-// ValidateResourceConfig RPC, the call Terraform makes during validate and
-// plan. description nil means the attribute is omitted.
+// ValidateResourceConfig RPC. description nil means the attribute is omitted.
 func validateAccessPolicyConfig(t *testing.T, description *string) []*tfprotov6.Diagnostic {
 	t.Helper()
-	server, err := providerserver.NewProtocol6WithError(New("test")())()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	objectType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
-		"id":          tftypes.String,
-		"role_name":   tftypes.String,
-		"description": tftypes.String,
-	}}
-	descriptionValue := tftypes.NewValue(tftypes.String, nil)
-	if description != nil {
-		descriptionValue = tftypes.NewValue(tftypes.String, *description)
-	}
-	config, err := tfprotov6.NewDynamicValue(objectType, tftypes.NewValue(objectType, map[string]tftypes.Value{
-		"id":          tftypes.NewValue(tftypes.String, nil),
-		"role_name":   tftypes.NewValue(tftypes.String, "TFACC_DESCRIPTION_LIMIT"),
-		"description": descriptionValue,
-	}))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	resp, err := server.ValidateResourceConfig(context.Background(), &tfprotov6.ValidateResourceConfigRequest{
-		TypeName: "sapintegrationsuite_access_policy",
-		Config:   &config,
+	return validateStringResourceConfig(t, "sapintegrationsuite_access_policy", map[string]*string{
+		"id":          nil,
+		"role_name":   ptr("TFACC_DESCRIPTION_LIMIT"),
+		"description": description,
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	return resp.Diagnostics
 }
 
 func TestAccessPolicyResource_DescriptionLength(t *testing.T) {
-	ptr := func(s string) *string { return &s }
-
 	cases := []struct {
 		name        string
 		description *string
