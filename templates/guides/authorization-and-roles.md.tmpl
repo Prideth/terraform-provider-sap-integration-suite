@@ -104,7 +104,10 @@ API Composition client (`api_composition` block): the credentials come from a se
 *API Composition* service instance with plan **`configuration`**, which SAP names as the plan for
 the Configuration API. SAP documents no role parameters for this plan. For people, the role
 collection `Graph.KeyUser` (role `Graph_Key_User`) allows creating and changing business data
-graphs, and `Graph.Guest` gives read-only access. See the [API Composition guide](api-composition.md).
+graphs, and `Graph.Guest` gives read-only access. SAP protects the Configuration API with the
+same role, but a client-credentials token of a `configuration` key carried no graph role on a
+test tenant and was refused with HTTP 403; see "Authorization: an open question" in the
+[API Composition guide](api-composition.md).
 
 `sapintegrationsuite_provider_features` and `sapintegrationsuite_provider_feature` need no
 credentials at all.

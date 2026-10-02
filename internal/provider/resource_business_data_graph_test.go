@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -16,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/apicomposition"
+	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/apierror"
 )
 
 func businessDataGraphSchema(t *testing.T) schema.Schema {
@@ -235,5 +237,22 @@ func TestBusinessDataGraphResource_Create_FailedKeepsState(t *testing.T) {
 	resp.Diagnostics.Append(resp.State.Get(ctx, &got)...)
 	if got.ID.ValueString() != "my-bdg" || got.Status.ValueString() != apicomposition.StatusFailed {
 		t.Errorf("state = id %q status %q, want the failed graph recorded", got.ID.ValueString(), got.Status.ValueString())
+	}
+}
+
+func TestBusinessDataGraphErrorDetail_ForbiddenNamesTheRole(t *testing.T) {
+	err := &apierror.Error{StatusCode: http.StatusForbidden, Code: "2707", Message: "check your assigned roles", RequestID: "trace-1"}
+	detail := businessDataGraphErrorDetail(err)
+	for _, want := range []string{"HTTP 403", `"2707"`, "SAP trace ID: trace-1", "Graph_Key_User"} {
+		if !strings.Contains(detail, want) {
+			t.Errorf("detail does not contain %q:\n%s", want, detail)
+		}
+	}
+}
+
+func TestBusinessDataGraphErrorDetail_OtherErrorsHaveNoRoleHint(t *testing.T) {
+	detail := businessDataGraphErrorDetail(&apierror.Error{StatusCode: http.StatusBadRequest, Message: "invalid locating policy"})
+	if strings.Contains(detail, "Graph_Key_User") || strings.Contains(detail, "trace ID") {
+		t.Errorf("unexpected hint in a 400 without trace ID:\n%s", detail)
 	}
 }

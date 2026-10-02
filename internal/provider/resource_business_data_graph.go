@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"errors"
+	"net/http"
 	"regexp"
 	"time"
 
@@ -20,6 +21,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/apicomposition"
+	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/apierror"
 )
 
 // businessDataGraphIDPattern follows SAP's rule for the identifier: up to
@@ -567,8 +569,34 @@ func saveProcessedGraph(ctx context.Context, state *tfsdk.State, tf timeouts.Val
 		if errors.As(err, &failed) {
 			summary = "SAP could not process the business data graph"
 		}
-		diags.AddError(summary, diagnosticDetail(err))
+		diags.AddError(summary, businessDataGraphErrorDetail(err))
 	}
+}
+
+// businessDataGraphErrorDetail is diagnosticDetail plus what helps with the
+// Configuration API's errors: SAP's trace ID, which SAP support asks for,
+// and on HTTP 403 the role SAP protects the API with. SAP's 403 text only
+// says to check the assigned roles; on a test tenant (2026-09-29 and
+// 2026-10-01) a client-credentials token of a `configuration` service key
+// carried no graph role and was refused with code 2707 on every request,
+// including $metadata.
+func businessDataGraphErrorDetail(err error) string {
+	detail := diagnosticDetail(err)
+	var apiErr *apierror.Error
+	if !errors.As(err, &apiErr) {
+		return detail
+	}
+	if apiErr.RequestID != "" {
+		detail += "\nSAP trace ID: " + apiErr.RequestID
+	}
+	if apiErr.StatusCode == http.StatusForbidden {
+		detail += "\n\nSAP protects the API Composition Configuration API with the role " +
+			"Graph_Key_User (Graph_Guest for reading only). The access token of the " +
+			"api_composition credentials does not grant it. A token that a service key of " +
+			"plan \"configuration\" issues for client credentials can carry no graph role " +
+			"at all; see \"Credentials\" in the API Composition guide."
+	}
+	return detail
 }
 
 func (r *businessDataGraphResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -603,7 +631,7 @@ func (r *businessDataGraphResource) Read(ctx context.Context, req resource.ReadR
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError("Failed to read business data graph", diagnosticDetail(err))
+		resp.Diagnostics.AddError("Failed to read business data graph", businessDataGraphErrorDetail(err))
 		return
 	}
 
@@ -665,7 +693,7 @@ func (r *businessDataGraphResource) Delete(ctx context.Context, req resource.Del
 	}
 
 	if err := r.client.DeleteGraphConfiguration(ctx, state.ID.ValueString()); err != nil && !isNotFound(err) {
-		resp.Diagnostics.AddError("Failed to delete business data graph", diagnosticDetail(err))
+		resp.Diagnostics.AddError("Failed to delete business data graph", businessDataGraphErrorDetail(err))
 	}
 }
 

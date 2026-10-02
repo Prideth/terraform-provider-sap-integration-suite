@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/apierror"
 )
 
 func TestClient_CreateGraphConfiguration(t *testing.T) {
@@ -236,5 +238,32 @@ func TestClient_DeleteGraphConfiguration(t *testing.T) {
 	client := New(http.DefaultClient, server.URL)
 	if err := client.DeleteGraphConfiguration(context.Background(), "my-bdg"); err != nil {
 		t.Fatalf("DeleteGraphConfiguration() error: %v", err)
+	}
+}
+
+// The 403 body is the one a tenant returned on 2026-10-01, with a made-up
+// trace ID.
+func TestClient_GetGraphConfiguration_ForbiddenKeepsCodeAndTraceID(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusForbidden)
+		_, _ = w.Write([]byte(`{"error":{"code":"2707","message":"You don't have permission to access this resource. Please check your assigned roles in your SAP BTP subaccount.","@Graph.traceId":"00000000-0000-0000-0000-000000000001","@Common.numericSeverity":4}}`))
+	}))
+	defer server.Close()
+
+	client := New(http.DefaultClient, server.URL)
+	_, err := client.GetGraphConfiguration(context.Background(), "my-bdg")
+
+	var apiErr *apierror.Error
+	if !errors.As(err, &apiErr) {
+		t.Fatalf("error = %v, want *apierror.Error", err)
+	}
+	if apiErr.StatusCode != http.StatusForbidden || apiErr.Code != "2707" {
+		t.Errorf("status, code = %d, %q, want 403, \"2707\"", apiErr.StatusCode, apiErr.Code)
+	}
+	if !strings.HasPrefix(apiErr.Message, "You don't have permission") {
+		t.Errorf("Message = %q", apiErr.Message)
+	}
+	if apiErr.RequestID != "00000000-0000-0000-0000-000000000001" {
+		t.Errorf("RequestID = %q, want the @Graph.traceId", apiErr.RequestID)
 	}
 }

@@ -88,13 +88,14 @@ Implemented; the lifecycle still has to pass its acceptance test on a tenant.
 
 ### API Composition Business Data Graph
 
-`api_composition.business_data_graph` · checked 2026-09-26
+`api_composition.business_data_graph` · checked 2026-10-02
 
-- **Finding:** Create body, GET and PATCH documented; no PATCH body and no delete request documented. The Hub lists the Configuration API as OData V4.
-- **Next step:** TestAccBusinessDataGraph_basic on a tenant with an API Composition configuration key, plus the service's $metadata through cmd/apidiscovery.
+- **Finding:** Create body, GET and PATCH documented; no PATCH body and no delete request documented. The Hub lists the Configuration API as OData V4. SAP protects the API with the role Graph_Key_User, which it describes only as a role for people. A client-credentials token of a configuration service key carried no scope but uaa.resource, and the API answered 403 (code 2707) on the service root, $metadata and GraphConfiguration.
+- **Next step:** A token that carries Graph_Key_User: first a user token of a key user through the configuration client (pending tenant check #50), then TestAccBusinessDataGraph_basic and the service's $metadata through cmd/apidiscovery.
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
+  - apicomp-probe on the development tenant (2026-09-29 18:44 and 2026-10-01 15:32, read-only): token scopes of a configuration service key and the status of the service root, $metadata and GraphConfiguration
 
 ## Partial
 

@@ -60,6 +60,7 @@ const (
 	srcHelpIA2     = "SAP Help, Integration Assessment APIs (docs/ISuite_Integration_Assessment/integration-assessment-apis-47847b5.md in SAP-docs/btp-integration-suite, last changed 2026-07-02), read 2026-09-29, and the Hub catalog of package SAPIntegrationAssessment (EntitiesAPI 1.0.0, specification behind a login)"
 	srcAccRun3     = "acceptance run of 2026-09-29 14:35 on the development tenant, including TestAccIntegrationAssessment_landscape with the in-place moves"
 	srcAccRun2     = "acceptance run of 2026-09-27 21:30 on the development tenant, including TestAccIntegrationAssessment_landscape"
+	srcCompProbe   = "apicomp-probe on the development tenant (2026-09-29 18:44 and 2026-10-01 15:32, read-only): token scopes of a configuration service key and the status of the service root, $metadata and GraphConfiguration"
 )
 
 const checked = "2026-09-26"
@@ -344,10 +345,10 @@ var Evidence = map[string]EvidenceRecord{
 		srcHelp, srcHubPackages),
 
 	// --- API Composition ---
-	"api_composition.business_data_graph": ev(
-		"Create body, GET and PATCH documented; no PATCH body and no delete request documented. The Hub lists the Configuration API as OData V4.",
-		"TestAccBusinessDataGraph_basic on a tenant with an API Composition configuration key, plus the service's $metadata through cmd/apidiscovery.",
-		srcHelp, srcHubAPIM),
+	"api_composition.business_data_graph": evOn("2026-10-02",
+		"Create body, GET and PATCH documented; no PATCH body and no delete request documented. The Hub lists the Configuration API as OData V4. SAP protects the API with the role Graph_Key_User, which it describes only as a role for people. A client-credentials token of a configuration service key carried no scope but uaa.resource, and the API answered 403 (code 2707) on the service root, $metadata and GraphConfiguration.",
+		"A token that carries Graph_Key_User: first a user token of a key user through the configuration client (pending tenant check #50), then TestAccBusinessDataGraph_basic and the service's $metadata through cmd/apidiscovery.",
+		srcHelp, srcHubAPIM, srcCompProbe),
 
 	// --- Other capabilities ---
 	"odata_provisioning": ev(

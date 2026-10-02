@@ -194,7 +194,7 @@ func (d *businessDataGraphDataSource) Read(ctx context.Context, req datasource.R
 
 	found, err := d.client.GetGraphConfiguration(ctx, config.BusinessDataGraphIdentifier.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to read business data graph", diagnosticDetail(err))
+		resp.Diagnostics.AddError("Failed to read business data graph", businessDataGraphErrorDetail(err))
 		return
 	}
 

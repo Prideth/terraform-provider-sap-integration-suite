@@ -9,6 +9,31 @@ contain breaking schema or lifecycle changes; each one is listed under
 "Breaking changes" together with the steps it needs. Patch releases (0.2.1)
 only fix defects in their minor release.
 
+## Unreleased (planned as 0.6.0)
+
+0.6.0 is planned to harden the API Composition business data graph. So far
+a tenant has refused every request to the Configuration API with HTTP 403,
+so this section collects what is already known and how the provider reports
+it.
+
+### Changed
+
+- When the API Composition Configuration API refuses a request with HTTP
+  403, the error of `sapintegrationsuite_business_data_graph` (resource and
+  data source) now names the role SAP protects the API with,
+  `Graph_Key_User`, and explains that a client-credentials token of a
+  `configuration` service key can carry no graph role at all. Every error of
+  the API also shows SAP's trace ID (`@Graph.traceId`), which SAP support
+  asks for. The error format was confirmed by a tenant's answer.
+
+### Known limitations
+
+- On a test tenant, a token that a `configuration` service key issued for
+  client credentials carried no scope except `uaa.resource`, and the API
+  answered 403 with code 2707 even for `$metadata`. SAP does not document
+  how that plan's client obtains `Graph_Key_User`. The API Composition guide
+  describes the finding; the business data graph stays experimental.
+
 ## 0.5.0 — 2026-09-29
 
 0.5.0 extends Integration Assessment from the landscape inventory to the

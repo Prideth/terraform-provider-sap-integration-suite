@@ -81,7 +81,19 @@ SAP lists `clientid`, `clientsecret`, `tokenurl` and `url`, and BTP service keys
 that pattern. Take the client ID and secret, the token endpoint, and the API Composition host.
 If the key only contains the authentication server's base URL, append `/oauth/token` to get
 `token_url`. For `host`, use the scheme and host name only. The provider appends
-`/configuration/v1/sap.graph`.
+`/configuration/v1/sap.graph`. On a test tenant, the key's `url` was the region host followed
+by `/configuration`; leave that path out.
+
+**Authorization: an open question.** SAP protects the Configuration API with the role
+`Graph_Key_User` (`Graph_Guest` for reading only) and describes both only as roles that an
+administrator assigns to people. SAP does not say how a service key of the `configuration` plan
+obtains that role. On a test tenant (checked on 2026-09-29 and 2026-10-01), a token that the
+key's client obtained with client credentials carried no scope except `uaa.resource`. The API
+answered every request, even `$metadata`, with HTTP 403 and code 2707 ("You don't have
+permission to access this resource. Please check your assigned roles in your SAP BTP
+subaccount."). Whether a user token of a key user works instead has not been tested yet. Until
+it is clear which token SAP expects, plan for this 403. When the provider receives it, its error
+names the role and shows SAP's trace ID for a support ticket.
 
 ## The configuration model
 
@@ -199,8 +211,8 @@ page. The Business Accelerator Hub lists the API as *Graph - Configuration*
 (`Graph_ConfigurationAPI`) of type OData V4. It serves its metadata at
 `/configuration/v1/sap.graph/$metadata`, but that document is only reachable with credentials
 and is not published; fetching it with a service key of the `configuration` plan would confirm
-the property names and the PATCH semantics. No part of this resource has been checked against
-a live system yet.
+the property names and the PATCH semantics. So far, a live system has answered only with the
+403 described under "Credentials", so no part of this resource has been checked against SAP yet.
 
 The following parts are the provider's own inference:
 
