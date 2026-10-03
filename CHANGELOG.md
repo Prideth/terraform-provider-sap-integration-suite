@@ -9,7 +9,7 @@ contain breaking schema or lifecycle changes; each one is listed under
 "Breaking changes" together with the steps it needs. Patch releases (0.2.1)
 only fix defects in their minor release.
 
-## 0.4.0 — 2026-09-29
+## 0.4.0 — 2026-10-03
 
 0.4.0 adds the Integration Assessment landscape. It changes nothing for
 existing configurations. The acceptance test of the landscape, including
