@@ -43,12 +43,14 @@ output "sales_graph_data_sources" {
 ### Read-Only
 
 - `data_sources` (Attributes List) The business systems of the landscape. (see [below for nested schema](#nestedatt--data_sources))
+- `description` (String) Description of the graph.
 - `effective_graph_model_version` (String) Model version SAP actually applied.
 - `exclude` (List of String) Mirrored entities removed from the graph's API.
 - `extensions` (List of String) Model extensions of the graph.
 - `graph_model_version` (String) Requested version of the unified entity model.
 - `locating_policy` (Attributes) Where each entity is read from and how keys are translated. (see [below for nested schema](#nestedatt--locating_policy))
 - `log_messages` (List of String) Processing log, one JSON document per entry.
+- `odata_containment` (Boolean) Whether contained entities are reached only through their parent entity.
 - `schema_version` (String) Version of the configuration schema.
 - `status` (String) Processing status: PROCESSING, DEPLOYMENT_INITIATED or FAILED.
 - `status_details` (String) SAP's explanation of the status.
@@ -78,6 +80,7 @@ Read-Only:
 Read-Only:
 
 - `cues` (Attributes List) Declared cues. (see [below for nested schema](#nestedatt--locating_policy--cues))
+- `description` (String) Description of the locating policy.
 - `key_mapping` (Attributes List) Foreign key mappings between systems. (see [below for nested schema](#nestedatt--locating_policy--key_mapping))
 - `rules` (Attributes List) Locating rules. (see [below for nested schema](#nestedatt--locating_policy--rules))
 
@@ -95,6 +98,7 @@ Read-Only:
 
 Read-Only:
 
+- `cues` (List of String) Cues that select this key mapping.
 - `foreign_key` (Attributes) The referencing side. (see [below for nested schema](#nestedatt--locating_policy--key_mapping--foreign_key))
 - `references` (Attributes) The referenced side. (see [below for nested schema](#nestedatt--locating_policy--key_mapping--references))
 

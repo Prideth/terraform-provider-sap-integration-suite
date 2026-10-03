@@ -44,6 +44,13 @@ func businessDataGraphPlan(t *testing.T, s schema.Schema, m businessDataGraphMod
 	// Terraform plans the computed lists as unknown on create.
 	m.Extensions = types.ListUnknown(types.StringType)
 	m.LogMessages = types.ListUnknown(types.StringType)
+	// Optional and computed settings left out of the configuration are unknown too.
+	if m.Description.IsNull() {
+		m.Description = types.StringUnknown()
+	}
+	if m.ODataContainment.IsNull() {
+		m.ODataContainment = types.BoolUnknown()
+	}
 	m.Timeouts = timeouts.Value{Object: types.ObjectNull(map[string]attr.Type{
 		"create": types.StringType,
 		"update": types.StringType,
@@ -67,7 +74,7 @@ func sampleBusinessDataGraph() businessDataGraphModel {
 			}},
 		}},
 		LocatingPolicy: &locatingPolicyModel{
-			Cues: []locatingCueModel{{Name: types.StringValue("emea"), Description: types.StringNull()}},
+			Cues: []locatingCueModel{{Name: types.StringValue("emea"), Description: types.StringValue("European subsidiaries")}},
 			Rules: []locatingRuleModel{{
 				Name:         types.StringValue("sap.s4.*"),
 				Leading:      types.StringValue("s4"),
@@ -189,7 +196,7 @@ func TestBusinessDataGraphResource_Create_PollsUntilDeploymentInitiated(t *testi
 	if getCount == 0 {
 		t.Error("expected Create to poll GET at least once to leave PROCESSING")
 	}
-	if got := string(posted["locatingPolicy"]); got != `{"cues":[{"name":"emea"}],"rules":[{"name":"sap.s4.*","leading":"s4","cues":["emea"]}]}` {
+	if got := string(posted["locatingPolicy"]); got != `{"cues":[{"name":"emea","description":"European subsidiaries"}],"rules":[{"name":"sap.s4.*","leading":"s4","cues":["emea"]}]}` {
 		t.Errorf("locatingPolicy sent as %s", got)
 	}
 	for _, key := range []string{"schemaVersion", "graphModelVersion"} {

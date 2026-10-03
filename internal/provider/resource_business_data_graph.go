@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -48,8 +49,10 @@ type businessDataGraphModel struct {
 	ID                          types.String              `tfsdk:"id"`
 	BusinessDataGraphIdentifier types.String              `tfsdk:"business_data_graph_identifier"`
 	SchemaVersion               types.String              `tfsdk:"schema_version"`
+	Description                 types.String              `tfsdk:"description"`
 	GraphModelVersion           types.String              `tfsdk:"graph_model_version"`
 	EffectiveGraphModelVersion  types.String              `tfsdk:"effective_graph_model_version"`
+	ODataContainment            types.Bool                `tfsdk:"odata_containment"`
 	Exclude                     []string                  `tfsdk:"exclude"`
 	DataSources                 []businessDataSourceModel `tfsdk:"data_sources"`
 	LocatingPolicy              *locatingPolicyModel      `tfsdk:"locating_policy"`
@@ -72,9 +75,10 @@ type businessDataSourceServiceModel struct {
 }
 
 type locatingPolicyModel struct {
-	Cues       []locatingCueModel  `tfsdk:"cues"`
-	KeyMapping []keyMappingModel   `tfsdk:"key_mapping"`
-	Rules      []locatingRuleModel `tfsdk:"rules"`
+	Description types.String        `tfsdk:"description"`
+	Cues        []locatingCueModel  `tfsdk:"cues"`
+	KeyMapping  []keyMappingModel   `tfsdk:"key_mapping"`
+	Rules       []locatingRuleModel `tfsdk:"rules"`
 }
 
 type locatingCueModel struct {
@@ -83,6 +87,7 @@ type locatingCueModel struct {
 }
 
 type keyMappingModel struct {
+	Cues       []string             `tfsdk:"cues"`
 	ForeignKey *keyMappingSideModel `tfsdk:"foreign_key"`
 	References *keyMappingSideModel `tfsdk:"references"`
 }
@@ -206,6 +211,24 @@ func (r *businessDataGraphResource) Schema(ctx context.Context, _ resource.Schem
 				Description:   "Version of the configuration schema. SAP fills it when left out.",
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
+			"description": schema.StringAttribute{
+				Optional:   true,
+				Computed:   true,
+				Validators: nonEmptyString(),
+				Description: "Description of the graph. Unofficial: the property is known only from the " +
+					"API's $metadata, so setting it needs enable_unofficial = true. When left out, SAP's " +
+					"value is kept and shown.",
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+			},
+			"odata_containment": schema.BoolAttribute{
+				Optional: true,
+				Computed: true,
+				Description: "Whether contained entities are reached only through their parent entity " +
+					"(OData containment). SAP enables it by default. Unofficial: SAP describes the setting " +
+					"but names the property (odataContainment) only in the API's $metadata, so setting it " +
+					"needs enable_unofficial = true. When left out, SAP's value is kept and shown.",
+				PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
+			},
 			"graph_model_version": schema.StringAttribute{
 				Optional: true,
 				Computed: true,
@@ -274,6 +297,12 @@ func (r *businessDataGraphResource) Schema(ctx context.Context, _ resource.Schem
 				Description: "Tells API Composition which data source to read each entity from, and " +
 					"how to translate keys between systems.",
 				Attributes: map[string]schema.Attribute{
+					"description": schema.StringAttribute{
+						Optional:   true,
+						Validators: nonEmptyString(),
+						Description: "Description of the locating policy. Unofficial: known only from the API's " +
+							"$metadata, so setting it needs enable_unofficial = true.",
+					},
 					"cues": schema.ListNestedAttribute{
 						Optional:    true,
 						Validators:  nonEmptyList(),
@@ -282,9 +311,10 @@ func (r *businessDataGraphResource) Schema(ctx context.Context, _ resource.Schem
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{Required: true, Description: "Name of the cue."},
 								"description": schema.StringAttribute{
-									Optional:    true,
-									Validators:  nonEmptyString(),
-									Description: "What the cue selects.",
+									Required:   true,
+									Validators: nonEmptyString(),
+									Description: "What the cue selects. Required: SAP rejects a cue without a " +
+										"description (HTTP 400, \"must have required property 'description'\").",
 								},
 							},
 						},
@@ -293,10 +323,17 @@ func (r *businessDataGraphResource) Schema(ctx context.Context, _ resource.Schem
 						Optional:   true,
 						Validators: nonEmptyList(),
 						Description: "Foreign key mappings for systems that identify the same entity " +
-							"with different keys. SAP also scopes key mappings by cues, but documents no " +
-							"property for that, so this provider does not support it.",
+							"with different keys.",
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
+								"cues": schema.ListAttribute{
+									Optional:    true,
+									ElementType: types.StringType,
+									Validators:  nonEmptyList(),
+									Description: "Cues that select this key mapping. SAP describes cue-scoped key " +
+										"mappings but names the property only in the API's $metadata, so setting it " +
+										"needs enable_unofficial = true.",
+								},
 								"foreign_key": keyMappingSideAttribute("The referencing side: the entity and attribute holding the foreign key."),
 								"references":  keyMappingSideAttribute("The referenced side: the entity and key attribute in the other system."),
 							},
@@ -434,8 +471,10 @@ func businessDataGraphToClient(m businessDataGraphModel) apicomposition.GraphCon
 				Description: cue.Description.ValueString(),
 			})
 		}
+		policy.Description = p.Description.ValueString()
 		for _, km := range p.KeyMapping {
 			policy.KeyMapping = append(policy.KeyMapping, apicomposition.KeyMapping{
+				Cues:       km.Cues,
 				ForeignKey: keyMappingSideToClient(km.ForeignKey),
 				References: keyMappingSideToClient(km.References),
 			})
@@ -459,18 +498,27 @@ func businessDataGraphToClient(m businessDataGraphModel) apicomposition.GraphCon
 		graphModelVersion = m.GraphModelVersion.ValueString()
 	}
 
+	var description string
+	if !m.Description.IsUnknown() {
+		description = m.Description.ValueString()
+	}
+	var containment *bool
+	if !m.ODataContainment.IsUnknown() && !m.ODataContainment.IsNull() {
+		containment = m.ODataContainment.ValueBoolPointer()
+	}
+
 	return apicomposition.GraphConfigurationInput{
 		BusinessDataGraphIdentifier: m.BusinessDataGraphIdentifier.ValueString(),
 		SchemaVersion:               schemaVersion,
+		Description:                 description,
 		GraphModelVersion:           graphModelVersion,
+		ODataContainment:            containment,
 		Exclude:                     m.Exclude,
 		DataSources:                 dataSources,
 		LocatingPolicy:              policy,
 	}
 }
 
-// listOrNull maps an empty list from SAP to null, the form an omitted
-// optional list has in the configuration.
 // stringListValue turns values into a list attribute. Computed lists must be
 // types.List in the model: Terraform plans them as unknown on create, which a
 // []string field cannot hold (the first tenant run failed with "Value
@@ -487,6 +535,8 @@ func stringListValue(values []string, nullIfEmpty bool) types.List {
 	return types.ListValueMust(types.StringType, elems)
 }
 
+// listOrNull maps an empty list from SAP to null, the form an omitted
+// optional list has in the configuration.
 func listOrNull[T any](v []T) []T {
 	if len(v) == 0 {
 		return nil
@@ -527,7 +577,7 @@ func businessDataGraphFromClient(cfg *apicomposition.GraphConfiguration) busines
 		})
 	}
 
-	policy := &locatingPolicyModel{}
+	policy := &locatingPolicyModel{Description: stringOrNull(cfg.LocatingPolicy.Description)}
 	for _, cue := range cfg.LocatingPolicy.Cues {
 		policy.Cues = append(policy.Cues, locatingCueModel{
 			Name:        types.StringValue(cue.Name),
@@ -536,6 +586,7 @@ func businessDataGraphFromClient(cfg *apicomposition.GraphConfiguration) busines
 	}
 	for _, km := range cfg.LocatingPolicy.KeyMapping {
 		policy.KeyMapping = append(policy.KeyMapping, keyMappingModel{
+			Cues:       listOrNull(km.Cues),
 			ForeignKey: keyMappingSideFromClient(km.ForeignKey),
 			References: keyMappingSideFromClient(km.References),
 		})
@@ -559,8 +610,10 @@ func businessDataGraphFromClient(cfg *apicomposition.GraphConfiguration) busines
 		ID:                          types.StringValue(cfg.BusinessDataGraphIdentifier),
 		BusinessDataGraphIdentifier: types.StringValue(cfg.BusinessDataGraphIdentifier),
 		SchemaVersion:               stringOrNull(cfg.SchemaVersion),
+		Description:                 stringOrNull(cfg.Description),
 		GraphModelVersion:           stringOrNull(cfg.GraphModelVersion),
 		EffectiveGraphModelVersion:  stringOrNull(cfg.EffectiveGraphModelVersion),
+		ODataContainment:            types.BoolPointerValue(cfg.ODataContainment),
 		Exclude:                     listOrNull(cfg.Exclude),
 		DataSources:                 dataSources,
 		LocatingPolicy:              policy,
@@ -619,6 +672,9 @@ func businessDataGraphErrorDetail(err error) string {
 }
 
 func (r *businessDataGraphResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	if !r.requireMetadataSettings(ctx, req.Config, &resp.Diagnostics) {
+		return
+	}
 	var plan businessDataGraphModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
@@ -662,14 +718,58 @@ func (r *businessDataGraphResource) Read(ctx context.Context, req resource.ReadR
 const (
 	businessDataGraphUpdateOp = "update (PATCH with the writable properties)"
 	businessDataGraphDeleteOp = "delete (DELETE on the graph)"
+	// The settings SAP's pages do not name; the $metadata does.
+	businessDataGraphSettingsOp = "settings named only in the $metadata (description, odata_containment, locating_policy.description, key_mapping cues)"
 )
 
 // ModifyPlan stops, without enable_unofficial, a plan that updates a graph in
 // place or deletes it (destroy or replacement). Both work on a tenant but SAP
 // does not document them.
-func (r *businessDataGraphResource) ModifyPlan(_ context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+// metadataOnlySettings lists the settings of m that SAP's documentation does
+// not name, so that setting them can be gated behind enable_unofficial. m is
+// the configuration: an attribute left out is null there.
+func metadataOnlySettings(m businessDataGraphModel) []string {
+	var set []string
+	if !m.Description.IsNull() {
+		set = append(set, "description")
+	}
+	if !m.ODataContainment.IsNull() {
+		set = append(set, "odata_containment")
+	}
+	if p := m.LocatingPolicy; p != nil {
+		if !p.Description.IsNull() {
+			set = append(set, "locating_policy.description")
+		}
+		for _, km := range p.KeyMapping {
+			if km.Cues != nil {
+				set = append(set, "locating_policy.key_mapping.cues")
+				break
+			}
+		}
+	}
+	return set
+}
+
+// requireMetadataSettings refuses a configuration that sets a $metadata-only
+// setting without enable_unofficial.
+func (r *businessDataGraphResource) requireMetadataSettings(ctx context.Context, config tfsdk.Config, diags *diag.Diagnostics) bool {
+	if r.allowUnofficial || config.Raw.IsNull() {
+		return true
+	}
+	var m businessDataGraphModel
+	diags.Append(config.Get(ctx, &m)...)
+	if diags.HasError() || len(metadataOnlySettings(m)) == 0 {
+		return !diags.HasError()
+	}
+	return requireUnofficialOperation(r.allowUnofficial, "sapintegrationsuite_business_data_graph", businessDataGraphSettingsOp, diags)
+}
+
+func (r *businessDataGraphResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if r.client == nil {
-		return // provider not configured yet; Update and Delete check again
+		return // provider not configured yet; Create, Update and Delete check again
+	}
+	if !req.Plan.Raw.IsNull() {
+		r.requireMetadataSettings(ctx, req.Config, &resp.Diagnostics)
 	}
 	switch {
 	case isPlannedDelete(req, resp):

@@ -28,9 +28,20 @@ which that login made readable for the first time.
   2707) on every request; the token of a user with the role collection
   `Graph.KeyUser` carried the scope and was accepted. `origin` is sent as
   `login_hint` for users of an identity provider other than the default.
+- `sapintegrationsuite_business_data_graph` can set the settings that only
+  the Configuration API's `$metadata` names: `description`,
+  `odata_containment` (SAP enables OData containment by default),
+  `locating_policy.description` and the `cues` of a key mapping. Setting
+  them needs `enable_unofficial = true`. The first three passed an
+  acceptance test on a tenant; SAP accepted key mapping cues, but their
+  round trip has not run yet. The data source shows all four.
 
 ### Changed
 
+- **A locating policy cue needs a `description`.** SAP rejects a cue
+  without one with HTTP 400 ("must have required property 'description'"),
+  so the provider now requires it while planning. A configuration without
+  it never created a graph.
 - **The business data graph is supported.** `TestAccBusinessDataGraph_basic`
   created a graph over a custom OData destination, changed it in place,
   imported it and deleted it on a tenant. The resource and the data source
@@ -46,16 +57,21 @@ which that login made readable for the first time.
 
 ### Fixed
 
+- Errors of the Configuration API now include SAP's details. A rejected
+  configuration said only "Multiple errors occurred. Please see the details
+  for more information."; the provider now lists each reason, for example
+  which key mapping no rule matches.
+- Creating a business data graph failed before any request with "Value
+  Conversion Error" on `log_messages`, because the computed lists were not
+  allowed to be unknown in the plan.
 - `extensions` of a business data graph is a list of objects with a `name`
   in the API's `$metadata`. The provider decoded it as a list of strings, so
   reading a graph with extensions failed. It now shows the extension names.
 
 ### Known limitations
 
-- The `$metadata` names settings SAP's pages describe without a name:
-  `odataContainment`, a graph and locating policy `description` and `cues`
-  on key mappings. The provider does not set them yet; updates leave them
-  alone.
+- A destination serves only one data source of a graph; a key mapping
+  between two data sources needs two destinations.
 - The password grant needs an identity provider that accepts passwords
   without a second factor. A technical user is recommended.
 

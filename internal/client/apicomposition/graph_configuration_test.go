@@ -298,3 +298,19 @@ func TestClient_GetGraphConfiguration_DeletedIsNotFound(t *testing.T) {
 		t.Fatalf("error = %v, want a not-found error for a graph marked deleted", err)
 	}
 }
+
+// A 400 for an invalid configuration names the reasons only in the OData V4
+// details list (tenant, 2026-10-03); the messages here are made up.
+func TestParseError_KeepsODataV4Details(t *testing.T) {
+	err := ParseError(http.StatusBadRequest, []byte(`{"error":{"code":"3000","message":"Multiple errors occurred. Please see the details for more information.",
+		"details":[{"code":"3001","message":"first reason","target":"locatingPolicy/keyMapping/0"},{"code":"3002","message":"second reason"}]}}`))
+	if len(err.Details) != 2 {
+		t.Fatalf("details = %+v, want 2", err.Details)
+	}
+	if err.Details[0].Code != "3001" || err.Details[0].Message != "first reason (locatingPolicy/keyMapping/0)" {
+		t.Errorf("first detail = %+v", err.Details[0])
+	}
+	if err.Details[1].Message != "second reason" {
+		t.Errorf("second detail = %+v", err.Details[1])
+	}
+}

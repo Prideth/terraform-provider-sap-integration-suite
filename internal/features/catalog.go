@@ -1960,13 +1960,14 @@ var Catalog = []Feature{
 		Description: "A business data graph combines the business systems of a landscape (S/4HANA, " +
 			"SAP Sales Cloud, custom OData services and others) into one connected API. Managed " +
 			"through API Composition's Configuration API.",
-		SupportStatus:          StatusSupported,
-		ContractSource:         SourceSAPDocumentation,
-		UndocumentedOperations: []string{"delete (DELETE on the graph)", "update body (PATCH with the writable properties)"},
-		ResourceTypes:          []string{"sapintegrationsuite_business_data_graph"},
-		DataSourceTypes:        []string{"sapintegrationsuite_business_data_graph"},
-		PublicAPI:              true,
-		APIProtocol:            "OData V4 (Configuration API)",
+		SupportStatus:  StatusSupported,
+		ContractSource: SourceSAPDocumentation,
+		UndocumentedOperations: []string{"delete (DELETE on the graph)", "update body (PATCH with the writable properties)",
+			"settings named only in the $metadata (description, odata_containment, locating_policy.description, key_mapping cues)"},
+		ResourceTypes:   []string{"sapintegrationsuite_business_data_graph"},
+		DataSourceTypes: []string{"sapintegrationsuite_business_data_graph"},
+		PublicAPI:       true,
+		APIProtocol:     "OData V4 (Configuration API)",
 		Limitations: []string{
 			"Needs its own credentials in provider.api_composition: a service key of an API " +
 				"Composition service instance with plan \"configuration\". SAP does not document that " +
@@ -1988,9 +1989,13 @@ var Catalog = []Feature{
 				"FAILED is kept in state and marked tainted.",
 			"Extensions cannot be managed through the Configuration API, according to SAP; " +
 				"extensions is read-only and left alone on update.",
-			"The $metadata names odataContainment, a graph and locating policy description and cues " +
-				"on key mappings, which SAP's pages describe without a name or not at all. They cannot " +
-				"be set yet and are left alone on update.",
+			"description, odata_containment, locating_policy.description and the cues of a key " +
+				"mapping are named only in the $metadata, so setting them needs enable_unofficial. The " +
+				"first three passed an acceptance test on a tenant (create, in-place change, import); " +
+				"SAP accepted key mapping cues, but their round trip needs a second destination and has " +
+				"not run yet.",
+			"SAP requires a description on every cue, and rules with the same cue for both sides of " +
+				"a cue-scoped key mapping. A destination serves only one data source.",
 			"A graph can only be read by its identifier; the collection is not readable (HTTP 405).",
 			"Each logMessages entry (level, message and code in the $metadata) is exposed as the " +
 				"JSON text SAP returned.",

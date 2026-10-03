@@ -188,6 +188,7 @@ Individual operations of an otherwise documented feature can be unofficial too. 
 |---|---|
 | `api_composition.business_data_graph` | delete (DELETE on the graph) |
 | `api_composition.business_data_graph` | update body (PATCH with the writable properties) |
+| `api_composition.business_data_graph` | settings named only in the $metadata (description, odata_containment, locating_policy.description, key_mapping cues) |
 | `cloud_integration.design_time_versioning` | save_as_version on script collections (ScriptCollectionDesigntimeArtifactSaveAsVersion is only in $metadata; integration flows and message mappings are documented) |
 | `cloud_integration.message_mapping` | update of the content (PUT; SAP documents read, create and delete) |
 | `cloud_integration.number_range` | read by name |

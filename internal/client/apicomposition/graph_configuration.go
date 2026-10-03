@@ -70,6 +70,10 @@ type KeyMappingSide struct {
 // entity in another, so references can be followed across systems that use
 // different keys.
 type KeyMapping struct {
+	// Cues scope the mapping to requests with these cues. SAP's pages
+	// describe cue-scoped key mappings without naming the property; the
+	// name comes from the $metadata (InterSourceForeignKey.cues).
+	Cues       []string       `json:"cues,omitempty"`
 	ForeignKey KeyMappingSide `json:"foreignKey"`
 	References KeyMappingSide `json:"references"`
 }
@@ -91,9 +95,11 @@ type LocatingRule struct {
 // but both the API page's Create example and the configuration file page
 // show an object, and the object is what this client sends.
 type LocatingPolicy struct {
-	Cues       []LocatingCue  `json:"cues,omitempty"`
-	KeyMapping []KeyMapping   `json:"keyMapping,omitempty"`
-	Rules      []LocatingRule `json:"rules,omitempty"`
+	// Description is in the $metadata only.
+	Description string         `json:"description,omitempty"`
+	Cues        []LocatingCue  `json:"cues,omitempty"`
+	KeyMapping  []KeyMapping   `json:"keyMapping,omitempty"`
+	Rules       []LocatingRule `json:"rules,omitempty"`
 }
 
 // ExtensionRef names an extension applied to a graph. The $metadata types
@@ -121,8 +127,10 @@ func (g *GraphConfiguration) ExtensionNames() []string {
 type GraphConfiguration struct {
 	BusinessDataGraphIdentifier string            `json:"businessDataGraphIdentifier"`
 	SchemaVersion               string            `json:"schemaVersion,omitempty"`
+	Description                 string            `json:"description,omitempty"`
 	GraphModelVersion           string            `json:"graphModelVersion,omitempty"`
 	EffectiveGraphModelVersion  string            `json:"effectiveGraphModelVersion,omitempty"`
+	ODataContainment            *bool             `json:"odataContainment,omitempty"`
 	Exclude                     []string          `json:"exclude,omitempty"`
 	DataSources                 []DataSource      `json:"dataSources"`
 	LocatingPolicy              LocatingPolicy    `json:"locatingPolicy"`
@@ -141,12 +149,17 @@ type GraphConfiguration struct {
 // list that was removed from the configuration. Properties it leaves out,
 // such as extensions, are not touched by an Update.
 type GraphConfigurationInput struct {
-	BusinessDataGraphIdentifier string         `json:"businessDataGraphIdentifier"`
-	SchemaVersion               string         `json:"schemaVersion,omitempty"`
-	GraphModelVersion           string         `json:"graphModelVersion,omitempty"`
-	Exclude                     []string       `json:"exclude"`
-	DataSources                 []DataSource   `json:"dataSources"`
-	LocatingPolicy              LocatingPolicy `json:"locatingPolicy"`
+	BusinessDataGraphIdentifier string `json:"businessDataGraphIdentifier"`
+	SchemaVersion               string `json:"schemaVersion,omitempty"`
+	// Description and ODataContainment are in the $metadata only; SAP's
+	// pages describe OData containment without its property name. They are
+	// sent only when set, so an update leaves SAP's values alone otherwise.
+	Description       string         `json:"description,omitempty"`
+	GraphModelVersion string         `json:"graphModelVersion,omitempty"`
+	ODataContainment  *bool          `json:"odataContainment,omitempty"`
+	Exclude           []string       `json:"exclude"`
+	DataSources       []DataSource   `json:"dataSources"`
+	LocatingPolicy    LocatingPolicy `json:"locatingPolicy"`
 }
 
 // ProcessingFailedError reports a business data graph whose processing

@@ -25,8 +25,10 @@ type businessDataGraphDataSource struct {
 type businessDataGraphDataSourceModel struct {
 	BusinessDataGraphIdentifier types.String              `tfsdk:"business_data_graph_identifier"`
 	SchemaVersion               types.String              `tfsdk:"schema_version"`
+	Description                 types.String              `tfsdk:"description"`
 	GraphModelVersion           types.String              `tfsdk:"graph_model_version"`
 	EffectiveGraphModelVersion  types.String              `tfsdk:"effective_graph_model_version"`
+	ODataContainment            types.Bool                `tfsdk:"odata_containment"`
 	Exclude                     []string                  `tfsdk:"exclude"`
 	DataSources                 []businessDataSourceModel `tfsdk:"data_sources"`
 	LocatingPolicy              *locatingPolicyModel      `tfsdk:"locating_policy"`
@@ -41,8 +43,10 @@ func businessDataGraphToDataSourceModel(cfg *apicomposition.GraphConfiguration) 
 	return businessDataGraphDataSourceModel{
 		BusinessDataGraphIdentifier: full.BusinessDataGraphIdentifier,
 		SchemaVersion:               full.SchemaVersion,
+		Description:                 full.Description,
 		GraphModelVersion:           full.GraphModelVersion,
 		EffectiveGraphModelVersion:  full.EffectiveGraphModelVersion,
+		ODataContainment:            full.ODataContainment,
 		Exclude:                     full.Exclude,
 		DataSources:                 full.DataSources,
 		LocatingPolicy:              full.LocatingPolicy,
@@ -96,7 +100,12 @@ func (d *businessDataGraphDataSource) Schema(_ context.Context, _ datasource.Sch
 				Required:    true,
 				Description: "Identifier of the graph to read.",
 			},
-			"schema_version":                computedString("Version of the configuration schema."),
+			"schema_version": computedString("Version of the configuration schema."),
+			"description":    computedString("Description of the graph."),
+			"odata_containment": schema.BoolAttribute{
+				Computed:    true,
+				Description: "Whether contained entities are reached only through their parent entity.",
+			},
 			"graph_model_version":           computedString("Requested version of the unified entity model."),
 			"effective_graph_model_version": computedString("Model version SAP actually applied."),
 			"exclude":                       computedStringList("Mirrored entities removed from the graph's API."),
@@ -124,6 +133,7 @@ func (d *businessDataGraphDataSource) Schema(_ context.Context, _ datasource.Sch
 				Computed:    true,
 				Description: "Where each entity is read from and how keys are translated.",
 				Attributes: map[string]schema.Attribute{
+					"description": computedString("Description of the locating policy."),
 					"cues": schema.ListNestedAttribute{
 						Computed:    true,
 						Description: "Declared cues.",
@@ -139,6 +149,7 @@ func (d *businessDataGraphDataSource) Schema(_ context.Context, _ datasource.Sch
 						Description: "Foreign key mappings between systems.",
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
+								"cues":        computedStringList("Cues that select this key mapping."),
 								"foreign_key": keyMappingSideDataSourceAttribute("The referencing side."),
 								"references":  keyMappingSideDataSourceAttribute("The referenced side."),
 							},

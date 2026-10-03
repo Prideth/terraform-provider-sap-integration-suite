@@ -14,14 +14,21 @@ import (
 //	{"error": {"code": "2707", "message": "You don't have permission ...",
 //	  "@Graph.traceId": "<uuid>", "@Common.numericSeverity": 4}}
 //
-// The trace ID identifies the request for SAP support. If body does not
-// parse this way, the resulting error still carries statusCode so callers
-// can act on IsNotFound and similar checks.
+// A 400 for an invalid configuration says only "Multiple errors occurred.
+// Please see the details" (code 3000, 2026-10-03), so the OData V4 details
+// list carries the actual reasons. The trace ID identifies the request for
+// SAP support. If body does not parse this way, the resulting error still
+// carries statusCode so callers can act on IsNotFound and similar checks.
 type errorBody struct {
 	Error struct {
 		Code    string `json:"code"`
 		Message string `json:"message"`
 		TraceID string `json:"@Graph.traceId"`
+		Details []struct {
+			Code    string `json:"code"`
+			Message string `json:"message"`
+			Target  string `json:"target"`
+		} `json:"details"`
 	} `json:"error"`
 }
 
@@ -38,5 +45,12 @@ func ParseError(statusCode int, body []byte) *apierror.Error {
 	result.Code = parsed.Error.Code
 	result.Message = parsed.Error.Message
 	result.RequestID = parsed.Error.TraceID
+	for _, d := range parsed.Error.Details {
+		message := d.Message
+		if d.Target != "" {
+			message += " (" + d.Target + ")"
+		}
+		result.Details = append(result.Details, apierror.Detail{Code: d.Code, Message: message})
+	}
 	return result
 }

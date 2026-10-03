@@ -141,8 +141,9 @@ this at plan time. Changing the identifier replaces the graph.
 
 **Data sources.** Each entry in `data_sources` is one system. Its `name` is your choice. It
 appears in key-based references in response payloads (for example `s4~1356`), so SAP recommends
-short names. `services` lists the destinations. `path` lets one destination defined on a root URL
-serve several services:
+short names. `services` lists the destinations. A destination serves only one data source: when two
+data sources named the same destination on a tenant, the first one stayed empty. `path` lets one
+destination defined on a root URL serve several services:
 
 ```hcl
 data_sources = [
@@ -172,13 +173,34 @@ entity:
   leading S/4 system.
 - **Cues** are labels a client can send with a request to select a different rule. Declare them
   in `locating_policy.cues` and reference them by name in a rule's `cues`. A cue may appear in
-  only one rule per entity.
+  only one rule per entity. Every cue needs a `description`: SAP rejects a cue without one, so the
+  provider requires it.
 - `source_entity` is for composite custom entities whose parts come from different systems. Each
   part from a system other than the main one needs its own rule.
 - **Key mappings** translate keys when two systems identify the same entity differently. Each
   mapping has a `foreign_key` side (the referencing attribute) and a `references` side (the key
   in the other system). SAP supports one attribute per side. An optional `strategy` with name
   `format` rewrites the value using an RE2 `match` with named groups and a `replace` pattern.
+  A key mapping with `cues` applies only to requests with those cues; SAP then requires rules
+  with the same cue for the entities of both sides ("No rule matches declared 'foreignKey'"
+  otherwise).
+
+**Settings named only in the `$metadata`.** SAP's pages describe OData containment and
+cue-scoped key mappings, but the property names come only from the API's `$metadata`, and the
+descriptions are not on SAP's pages at all. Setting any of these needs `enable_unofficial = true`:
+
+| Attribute | Meaning |
+|---|---|
+| `description` | Description of the graph. |
+| `odata_containment` | Whether contained entities are reached only through their parent entity. SAP enables it by default. |
+| `locating_policy.description` | Description of the locating policy. |
+| `locating_policy.key_mapping[].cues` | Cues that select a key mapping. |
+
+`description` and `odata_containment` keep SAP's value when you leave them out, so removing them
+from the configuration changes nothing in SAP. An acceptance test created a graph with the first
+three, changed them in place and imported it on a tenant (October 2026). SAP accepted and
+evaluated the cues of a key mapping in the same test series; a complete round trip needs two
+destinations and has not run yet.
 
 ```hcl
 locating_policy = {
@@ -284,10 +306,10 @@ described, although SAP does not document them.
   documentation says the Configuration API does not manage them, although the `$metadata`
   declares an `Extension` entity set. `extensions` is read-only, and updates leave SAP's
   extensions alone.
-- **Settings the `$metadata` adds.** The `$metadata` names properties that SAP's pages describe
-  without a name or not at all: `odataContainment` (OData containment, enabled by default),
-  `description` of the graph and of the locating policy, and `cues` on key mappings. The
-  provider does not set them yet; updates leave them as they are in SAP.
+- **Entity names of custom services.** API Composition names the entities of a custom OData
+  service after its entity sets, prefixed with the data source's namespace (for example
+  `company.custom.Categories`). SAP does not document this; it showed in a tenant's validation
+  messages.
 - The graph's data API, the API Composition Navigator in Developer Hub, and the service
   instances for client applications are outside this provider's scope.
 

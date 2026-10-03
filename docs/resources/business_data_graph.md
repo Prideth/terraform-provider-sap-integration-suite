@@ -117,8 +117,10 @@ resource "sapintegrationsuite_business_data_graph" "sales" {
 
 ### Optional
 
+- `description` (String) Description of the graph. Unofficial: the property is known only from the API's $metadata, so setting it needs enable_unofficial = true. When left out, SAP's value is kept and shown.
 - `exclude` (List of String) Mirrored entities to remove from the graph's API, by full name, with an optional trailing wildcard, for example ["sap.s4.A_Product", "sap.c4c.*"]. Associations to them disappear as well; custom entities can still use them as a source.
 - `graph_model_version` (String) Version of API Composition's unified entity model to build the graph against, for example "1.0.0". SAP fills it when left out.
+- `odata_containment` (Boolean) Whether contained entities are reached only through their parent entity (OData containment). SAP enables it by default. Unofficial: SAP describes the setting but names the property (odataContainment) only in the API's $metadata, so setting it needs enable_unofficial = true. When left out, SAP's value is kept and shown.
 - `schema_version` (String) Version of the configuration schema. SAP fills it when left out.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
@@ -166,7 +168,8 @@ Required:
 Optional:
 
 - `cues` (Attributes List) Cues that rules can reference. Every cue used in a rule must be declared here. (see [below for nested schema](#nestedatt--locating_policy--cues))
-- `key_mapping` (Attributes List) Foreign key mappings for systems that identify the same entity with different keys. SAP also scopes key mappings by cues, but documents no property for that, so this provider does not support it. (see [below for nested schema](#nestedatt--locating_policy--key_mapping))
+- `description` (String) Description of the locating policy. Unofficial: known only from the API's $metadata, so setting it needs enable_unofficial = true.
+- `key_mapping` (Attributes List) Foreign key mappings for systems that identify the same entity with different keys. (see [below for nested schema](#nestedatt--locating_policy--key_mapping))
 
 <a id="nestedatt--locating_policy--rules"></a>
 ### Nested Schema for `locating_policy.rules`
@@ -188,11 +191,8 @@ Optional:
 
 Required:
 
+- `description` (String) What the cue selects. Required: SAP rejects a cue without a description (HTTP 400, "must have required property 'description'").
 - `name` (String) Name of the cue.
-
-Optional:
-
-- `description` (String) What the cue selects.
 
 
 <a id="nestedatt--locating_policy--key_mapping"></a>
@@ -202,6 +202,10 @@ Required:
 
 - `foreign_key` (Attributes) The referencing side: the entity and attribute holding the foreign key. (see [below for nested schema](#nestedatt--locating_policy--key_mapping--foreign_key))
 - `references` (Attributes) The referenced side: the entity and key attribute in the other system. (see [below for nested schema](#nestedatt--locating_policy--key_mapping--references))
+
+Optional:
+
+- `cues` (List of String) Cues that select this key mapping. SAP describes cue-scoped key mappings but names the property only in the API's $metadata, so setting it needs enable_unofficial = true.
 
 <a id="nestedatt--locating_policy--key_mapping--foreign_key"></a>
 ### Nested Schema for `locating_policy.key_mapping.foreign_key`
