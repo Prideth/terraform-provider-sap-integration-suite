@@ -102,10 +102,10 @@ var Evidence = map[string]EvidenceRecord{
 		"TestAccDataType_basic passed on a tenant: create, in-place change of schema and description, import and SaveAsVersion. Create, update (PUT), SaveAsVersion and delete work on a tenant with the bundle SAP stores for a data type (XSD, additionalAttributes.json, metainfo.prop); elements added on create and update are kept. SAP Help documents no request, so the contract comes from the $metadata and the probes.",
 		"None within the provider; it becomes supported if SAP documents the Data Types API (the Hub and SAP Help list none today).",
 		srcHelp, srcMetaCI, srcExport, srcGapProbe),
-	"cloud_integration.message_type": ev(
-		"$metadata has MessageTypeDesigntimeArtifacts and FaultMessageTypeDesigntimeArtifacts with SaveAsVersion; SAP Help documents neither.",
-		"The data type probe result decides the pattern; a message type probe follows with content that references a data type.",
-		srcHelp, srcMetaCI),
+	"cloud_integration.message_type": evOn("2026-10-03",
+		"Create without content, update of Description and DataTypeUsed (PUT without Name, which SAP refuses), SaveAsVersion and delete work on a tenant; SAP generates the schema from DataTypeUsed. SAP Help documents neither message types nor fault message types.",
+		"TestAccMessageType_basic on a tenant; passing it makes both resources unofficial.",
+		srcHelp, srcMetaCI, srcTenant),
 	"cloud_integration.service_interface": ev(
 		"$metadata has ServiceInterfaceDesigntimeArtifacts with SaveAsVersion and a Resources navigation; SAP Help documents only the UI and ESR import.",
 		"Same as message types, after data types are settled.",

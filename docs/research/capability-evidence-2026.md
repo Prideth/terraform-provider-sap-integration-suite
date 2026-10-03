@@ -19,8 +19,9 @@ And the provider never uses browser endpoints of SAP's UIs.
 |---|---:|
 | 🟡 Partial (`partial`) | 10 |
 | 👁️ Read-only (`read_only`) | 3 |
+| 🧪 Experimental (`experimental`) | 1 |
 | 🧭 Unofficial (`unofficial`) | 5 |
-| 🔬 Research required (`research_required`) | 9 |
+| 🔬 Research required (`research_required`) | 8 |
 | ❌ Public API incomplete (`public_api_incomplete`) | 8 |
 | ❌ Unsafe Terraform lifecycle (`unsafe_terraform_lifecycle`) | 2 |
 | ❌ No public API (`no_public_api`) | 26 |
@@ -173,6 +174,21 @@ Available as a data source only; the provider never creates, changes or deletes 
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
   - tenant probes and acceptance runs on a development tenant (September 2026)
 
+## 🧪 Experimental
+
+Implementation exists, but its lifecycle has not yet been sufficiently validated against a real SAP tenant.
+
+### Message Type
+
+`cloud_integration.message_type` · checked 2026-10-03
+
+- **Finding:** Create without content, update of Description and DataTypeUsed (PUT without Name, which SAP refuses), SaveAsVersion and delete work on a tenant; SAP generates the schema from DataTypeUsed. SAP Help documents neither message types nor fault message types.
+- **Next step:** TestAccMessageType_basic on a tenant; passing it makes both resources unofficial.
+- **Sources:**
+  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
+  - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
+  - tenant probes and acceptance runs on a development tenant (September 2026)
+
 ## 🧭 Unofficial
 
 Implementation has been validated, but relies on an API contract that SAP does not fully publish or officially document.
@@ -280,16 +296,6 @@ The capability has been identified, but its public API coverage, lifecycle seman
   - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
   - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
   - tenant probes and acceptance runs on a development tenant (September 2026)
-
-### Message Type
-
-`cloud_integration.message_type` · checked 2026-09-26
-
-- **Finding:** $metadata has MessageTypeDesigntimeArtifacts and FaultMessageTypeDesigntimeArtifacts with SaveAsVersion; SAP Help documents neither.
-- **Next step:** The data type probe result decides the pattern; a message type probe follows with content that references a data type.
-- **Sources:**
-  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
-  - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
 
 ### Service Interface
 

@@ -296,20 +296,31 @@ var Catalog = []Feature{
 		Operations: Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
 	},
 	{
-		Key:           "cloud_integration.message_type",
-		Domain:        "cloud_integration",
-		Name:          "Message Type",
-		Description:   "A message type artifact that wraps a data type as a message root element.",
-		SupportStatus: StatusResearchRequired,
-		SupportReason: ReasonPublicAPIIncomplete,
-		PublicAPI:     true,
-		APIProtocol:   "OData V2",
+		Key:    "cloud_integration.message_type",
+		Domain: "cloud_integration",
+		Name:   "Message Type",
+		Description: "A message type artifact that wraps a data type as a message root element, " +
+			"and the fault message type, which adds SAP's standard fault data.",
+		SupportStatus:  StatusExperimental,
+		SupportReason:  ReasonPublicAPIIncomplete,
+		ContractSource: SourceMetadataOnly,
+		ResourceTypes:  []string{"sapintegrationsuite_message_type", "sapintegrationsuite_fault_message_type"},
+		PublicAPI:      true,
+		APIProtocol:    "OData V2",
 		Limitations: []string{
 			"The tenant $metadata defines MessageTypeDesigntimeArtifacts (Id and Version as key, " +
 				"PackageId, Name, Namespace, Description, DataTypeUsed, ArtifactContent) and a " +
 				"SaveAsVersion function import; FaultMessageTypeDesigntimeArtifacts has the same shape " +
 				"for fault messages. SAP Help documents only the UI for both.",
+			"ESR probes on a tenant (2026-10-03): a create without content works, and SAP generates " +
+				"the schema from DataTypeUsed (an element of that data type; a fault message type adds " +
+				"ExchangeFaultData). An update changes Description and DataTypeUsed and regenerates the " +
+				"content, but SAP refuses to update Name, so changing the name replaces the artifact.",
+			"A read returns DataTypeUsed empty even when it took effect; the provider reads the data " +
+				"type from the generated bundle (dtUsedinMT in additionalAttributes.json).",
+			"SAP does not check references: a data type that a message type uses can be deleted.",
 		},
+		Operations: Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
 	},
 	{
 		Key:    "cloud_integration.service_interface",

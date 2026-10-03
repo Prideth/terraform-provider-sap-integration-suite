@@ -1,0 +1,62 @@
+---
+page_title: "sapintegrationsuite_fault_message_type Resource - sapintegrationsuite"
+subcategory: "Cloud Integration"
+description: |-
+  A fault message type in an integration package, built on a data type. Experimental; needs enable_experimental.
+---
+
+# sapintegrationsuite_fault_message_type (Resource)
+
+Manages a fault message type: the message structure that service interfaces and mappings refer to.
+SAP generates the fault message type's schema itself: a root element named `name` with SAP's
+standard fault data (`ExchangeFaultData`) and, as additional detail, the data type given in
+`data_type_id`. You do not upload a schema.
+
+**Status:** experimental. Needs `enable_experimental = true`. SAP documents no request for
+fault message types: the Integration Content API's `$metadata` declares them, and the create, update,
+`SaveAsVersion` and delete requests this resource sends were tested on a tenant with probes. Its
+acceptance test decides whether it becomes unofficial.
+
+## Prerequisites
+
+- An integration package, usually [`sapintegrationsuite_integration_package`](integration_package.md).
+- Usually a data type, [`sapintegrationsuite_data_type`](data_type.md).
+- An OAuth client with `WorkspacePackagesEdit`.
+
+## Lifecycle
+
+| Operation | What happens |
+|---|---|
+| Create | Creates the fault message type without content; SAP generates the schema. With `save_as_version`, saves it under that version. |
+| Read | Reads name, namespace, description and version, and the data type from SAP's generated bundle. |
+| Update | A change of `description` or `data_type_id` updates the fault message type in place; SAP regenerates the schema. |
+| Replacement | Changing `fault_message_type_id`, `package_id`, `name` or `namespace`, or removing `description` or `data_type_id`, creates a new fault message type. SAP refuses to update the name. |
+| Delete | Deletes the fault message type. |
+
+**The data type reference.** SAP's read returns `DataTypeUsed` empty even when it took effect, so
+the provider reads the data type from the bundle SAP generated. SAP does not check references: it
+lets you delete a data type that a fault message type uses. Refer to the data type resource, as in the
+example, so that Terraform deletes the fault message type first.
+
+## Example Usage
+
+{{ tffile "examples/resources/sapintegrationsuite_fault_message_type/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ codefile "shell" "examples/resources/sapintegrationsuite_fault_message_type/import.sh" }}
+
+The ID is `<package_id>/<fault_message_type_id>`.
+
+## Limitations
+
+- **SAP:** no documented request; the contract comes from the `$metadata` and tenant tests.
+- The schema is always generated from the data type; a fault message type with its own schema content is not
+  supported.
+
+## Related
+
+- [`sapintegrationsuite_data_type`](data_type.md): the data type the fault message type is built on.
+- [Integration Content and Deployments](../guides/integration-content.md).

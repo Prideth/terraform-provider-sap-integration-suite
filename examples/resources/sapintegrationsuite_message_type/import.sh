@@ -1,0 +1,1 @@
+terraform import sapintegrationsuite_message_type.order Sales/OrderMessage

@@ -100,7 +100,7 @@ Legend: ✅ Supported · 🟡 Partial · 👁️ Read-only · 🧪 Experimental 
 | Message Mapping Deployment | ✅ | Resource |
 | Message Processing Logs | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
 | Message Store Entries / JMS Resources | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
-| Message Type | 🔬 | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
+| Message Type | 🧪 | Resource — see [feature-support.md](docs/feature-support.md#all-features) |
 | Number Range | ✅ | Resource |
 | Script Collection | ✅ | Resource + Data Source |
 | Script Collection Deployment | ✅ | Resource |
@@ -234,7 +234,7 @@ Legend: ✅ Supported · 🟡 Partial · 👁️ Read-only · 🧪 Experimental 
 | Trading Partner Management Partner Directory Generation | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
 | Trading Partner Management Partner Profile | ❌ | No suitable public API — see [feature-support.md](docs/feature-support.md#all-features) |
 
-21 supported · 10 partial · 3 read-only · 0 experimental · 5 unofficial · 9 research required · 49 unsupported · 2 separate provider, out of 99 evaluated Integration Suite features.
+21 supported · 10 partial · 3 read-only · 1 experimental · 5 unofficial · 8 research required · 49 unsupported · 2 separate provider, out of 99 evaluated Integration Suite features.
 
 <!-- END GENERATED FEATURE SUPPORT -->
 

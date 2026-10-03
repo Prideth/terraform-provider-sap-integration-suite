@@ -1,0 +1,1 @@
+terraform import sapintegrationsuite_fault_message_type.order_rejected Sales/OrderRejected
