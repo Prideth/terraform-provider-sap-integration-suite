@@ -102,7 +102,7 @@ block wins; an attribute that is unset or an empty string falls back to its vari
 | `oauth.client_id` | `SAP_INTEGRATION_SUITE_CLIENT_ID` |
 | `oauth.client_secret` | `SAP_INTEGRATION_SUITE_CLIENT_SECRET` |
 | `api_management.*` | `SAP_INTEGRATION_SUITE_API_MANAGEMENT_HOST`, `_TOKEN_URL`, `_CLIENT_ID`, `_CLIENT_SECRET` |
-| `api_composition.*` | `SAP_INTEGRATION_SUITE_API_COMPOSITION_HOST`, `_TOKEN_URL`, `_CLIENT_ID`, `_CLIENT_SECRET` |
+| `api_composition.*` | `SAP_INTEGRATION_SUITE_API_COMPOSITION_HOST`, `_TOKEN_URL`, `_CLIENT_ID`, `_CLIENT_SECRET`, `_USERNAME`, `_PASSWORD`, `_ORIGIN` |
 | `integration_assessment.*` | `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_ENTITIES_URL`, `_TOKEN_URL`, `_CLIENT_ID`, `_CLIENT_SECRET` |
 | `enable_experimental` | `SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL` |
 | `enable_unofficial` | `SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL` |
@@ -110,7 +110,8 @@ block wins; an attribute that is unset or an empty string falls back to its vari
 Missing Cloud Integration credentials do not fail the provider configuration; a resource or
 data source that needs them fails with an error that says what is missing. The `api_management`
 `api_composition` and `integration_assessment` blocks must have all four values or none; a
-partial block fails at once.
+partial block fails at once. The optional user login of `api_composition` needs `username` and
+`password` together.
 The feature catalog data sources work without any credentials.
 
 ## Example usage

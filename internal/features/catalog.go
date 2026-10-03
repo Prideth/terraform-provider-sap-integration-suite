@@ -1966,20 +1966,29 @@ var Catalog = []Feature{
 			"Needs its own credentials in provider.api_composition: a service key of an API " +
 				"Composition service instance with plan \"configuration\". SAP does not document that " +
 				"service key field by field, so the four values are entered as they are.",
+			"The API accepts only tokens with its scope config, which SAP grants with the role " +
+				"Graph_Key_User. A client-credentials token of a configuration key lacked it on a tenant " +
+				"(HTTP 403), a key user's token through the same client (password grant: username, " +
+				"password, origin) carried it. The password grant needs an identity provider that " +
+				"accepts passwords without a second factor.",
 			"SAP documents the Create body, GET and PATCH on GraphConfiguration/{id}, and the status " +
 				"model. It gives no PATCH body and no delete request. The provider sends the writable " +
-				"properties as the PATCH body and DELETE to the graph's URL. Not yet verified against " +
-				"a live system. Both need enable_unofficial in addition to enable_experimental, so " +
-				"without it a graph can be created and read, but not changed in place or destroyed.",
+				"properties as the PATCH body and DELETE to the graph's URL. The tenant's $metadata " +
+				"confirms the property names; creating, changing and deleting a graph is not yet " +
+				"verified against a live system. Both need enable_unofficial in addition to " +
+				"enable_experimental, so without it a graph can be created and read, but not changed " +
+				"in place or destroyed.",
 			"SAP processes graphs asynchronously. Create and Update wait until the status leaves " +
 				"PROCESSING (20 minutes by default, configurable with timeouts). A graph that ends in " +
 				"FAILED is kept in state and marked tainted.",
 			"Extensions cannot be managed through the Configuration API, according to SAP; " +
 				"extensions is read-only and left alone on update.",
-			"Cue-scoped key mappings and the OData containment setting are described by SAP without " +
-				"a property name and cannot be set.",
-			"SAP does not describe a logMessages entry, so each is exposed as the JSON text SAP " +
-				"returned.",
+			"The $metadata names odataContainment, a graph and locating policy description and cues " +
+				"on key mappings, which SAP's pages describe without a name or not at all. They cannot " +
+				"be set yet and are left alone on update.",
+			"A graph can only be read by its identifier; the collection is not readable (HTTP 405).",
+			"Each logMessages entry (level, message and code in the $metadata) is exposed as the " +
+				"JSON text SAP returned.",
 		},
 		Operations: Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
 	},

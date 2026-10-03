@@ -267,3 +267,34 @@ func TestClient_GetGraphConfiguration_ForbiddenKeepsCodeAndTraceID(t *testing.T)
 		t.Errorf("RequestID = %q, want the @Graph.traceId", apiErr.RequestID)
 	}
 }
+
+// The $metadata types extensions as ExtensionRef objects; a []string field
+// failed to decode such a graph.
+func TestClient_GetGraphConfiguration_DecodesExtensionRefs(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{"businessDataGraphIdentifier": "my-bdg", "status": "DEPLOYMENT_INITIATED",
+			"extensions": [{"name": "my-extension"}, {"name": "other"}], "deleted": false}`))
+	}))
+	defer server.Close()
+
+	cfg, err := New(http.DefaultClient, server.URL).GetGraphConfiguration(context.Background(), "my-bdg")
+	if err != nil {
+		t.Fatalf("GetGraphConfiguration() error: %v", err)
+	}
+	if got := strings.Join(cfg.ExtensionNames(), ","); got != "my-extension,other" {
+		t.Errorf("ExtensionNames() = %q", got)
+	}
+}
+
+func TestClient_GetGraphConfiguration_DeletedIsNotFound(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{"businessDataGraphIdentifier": "my-bdg", "status": "DEPLOYMENT_INITIATED", "deleted": true}`))
+	}))
+	defer server.Close()
+
+	_, err := New(http.DefaultClient, server.URL).GetGraphConfiguration(context.Background(), "my-bdg")
+	var apiErr *apierror.Error
+	if !errors.As(err, &apiErr) || !apiErr.IsNotFound() {
+		t.Fatalf("error = %v, want a not-found error for a graph marked deleted", err)
+	}
+}

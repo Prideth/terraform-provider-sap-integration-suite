@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/apierror"
 )
 
 const graphConfigurationResource = "GraphConfiguration"
@@ -93,10 +96,27 @@ type LocatingPolicy struct {
 	Rules      []LocatingRule `json:"rules,omitempty"`
 }
 
+// ExtensionRef names an extension applied to a graph. The $metadata types
+// extensions as objects with a name (ExtensionRef), not as plain strings.
+type ExtensionRef struct {
+	Name string `json:"name"`
+}
+
+// ExtensionNames returns the names of the graph's extensions, or nil when
+// it has none.
+func (g *GraphConfiguration) ExtensionNames() []string {
+	var names []string
+	for _, e := range g.Extensions {
+		names = append(names, e.Name)
+	}
+	return names
+}
+
 // GraphConfiguration is a business data graph as the Configuration API
 // returns it. EffectiveGraphModelVersion, StatusDetails, LogMessages and
-// Status are read-only. SAP does not document the shape of a log message,
-// so each one is kept as raw JSON. Extensions cannot be managed through
+// Status are read-only. The $metadata types a log message as level,
+// message and code, but each one is kept as the raw JSON SAP returned, as
+// before the $metadata was known. Extensions cannot be managed through
 // this API, according to SAP, and are only read.
 type GraphConfiguration struct {
 	BusinessDataGraphIdentifier string            `json:"businessDataGraphIdentifier"`
@@ -106,10 +126,13 @@ type GraphConfiguration struct {
 	Exclude                     []string          `json:"exclude,omitempty"`
 	DataSources                 []DataSource      `json:"dataSources"`
 	LocatingPolicy              LocatingPolicy    `json:"locatingPolicy"`
-	Extensions                  []string          `json:"extensions,omitempty"`
+	Extensions                  []ExtensionRef    `json:"extensions,omitempty"`
 	StatusDetails               string            `json:"statusDetails,omitempty"`
 	LogMessages                 []json.RawMessage `json:"logMessages,omitempty"`
 	Status                      string            `json:"status,omitempty"`
+	// Deleted is in the $metadata (default false) but not in SAP's
+	// documentation. A graph marked deleted is treated as gone.
+	Deleted bool `json:"deleted,omitempty"`
 }
 
 // GraphConfigurationInput is the writable part of a business data graph.
@@ -172,6 +195,9 @@ func (c *Client) GetGraphConfiguration(ctx context.Context, id string) (*GraphCo
 	var cfg GraphConfiguration
 	if err := json.Unmarshal(body, &cfg); err != nil {
 		return nil, fmt.Errorf("apicomposition: decoding business data graph configuration: %w", err)
+	}
+	if cfg.Deleted {
+		return nil, &apierror.Error{StatusCode: http.StatusNotFound, Message: "SAP marks the business data graph as deleted"}
 	}
 	return &cfg, nil
 }

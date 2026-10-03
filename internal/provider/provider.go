@@ -65,12 +65,6 @@ type apiManagementModel struct {
 	ClientSecret types.String `tfsdk:"client_secret"`
 }
 
-// apiCompositionModel mirrors the optional api_composition block. API
-// Composition's Configuration API has its own region-specific host and its
-// own OAuth client, which come from an instance of the API Composition
-// service with plan "configuration". SAP does not document the field names
-// of that instance's service key, so the four values are taken as they are
-// rather than parsed from a key file. See docs/guides/api-composition.md.
 type integrationAssessmentModel struct {
 	EntitiesURL  types.String `tfsdk:"entities_url"`
 	TokenURL     types.String `tfsdk:"token_url"`
@@ -78,11 +72,22 @@ type integrationAssessmentModel struct {
 	ClientSecret types.String `tfsdk:"client_secret"`
 }
 
+// apiCompositionModel mirrors the optional api_composition block. API
+// Composition's Configuration API has its own region-specific host and its
+// own OAuth client, which come from an instance of the API Composition
+// service with plan "configuration". SAP does not document the field names
+// of that instance's service key, so the four values are taken as they are
+// rather than parsed from a key file. Username, Password and Origin log a
+// key user in through that client (password grant): on a tenant only such
+// a token carried the API's scope. See docs/guides/api-composition.md.
 type apiCompositionModel struct {
 	Host         types.String `tfsdk:"host"`
 	TokenURL     types.String `tfsdk:"token_url"`
 	ClientID     types.String `tfsdk:"client_id"`
 	ClientSecret types.String `tfsdk:"client_secret"`
+	Username     types.String `tfsdk:"username"`
+	Password     types.String `tfsdk:"password"`
+	Origin       types.String `tfsdk:"origin"`
 }
 
 // Data is the fully resolved provider configuration made available to every
@@ -262,7 +267,9 @@ func (p *sapIntegrationSuiteProvider) Schema(_ context.Context, _ provider.Schem
 					"sapintegrationsuite_business_data_graph. The API has its own region-specific host " +
 					"and OAuth client, from a service key of an API Composition service instance with " +
 					"plan \"configuration\"; the oauth and api_management credentials do not work " +
-					"there. Set all four values, or none. Each can also come from a " +
+					"there. Set host, token_url, client_id and client_secret together, or none. " +
+					"username and password add a key user's login through that client, which the " +
+					"Configuration API needed on a tenant. Each value can also come from a " +
 					"SAP_INTEGRATION_SUITE_API_COMPOSITION_* environment variable.",
 				Attributes: map[string]schema.Attribute{
 					"host": schema.StringAttribute{
@@ -288,6 +295,26 @@ func (p *sapIntegrationSuiteProvider) Schema(_ context.Context, _ provider.Schem
 						Sensitive: true,
 						Description: "OAuth 2.0 client secret from the service key. Environment variable: " +
 							"SAP_INTEGRATION_SUITE_API_COMPOSITION_CLIENT_SECRET.",
+					},
+					"username": schema.StringAttribute{
+						Optional: true,
+						Description: "User with the role collection Graph.KeyUser. With username and password the " +
+							"provider requests the token with the password grant through the service key's client, " +
+							"so it carries the user's roles. The identity provider must accept passwords " +
+							"without a second factor. Set together with password. Environment variable: " +
+							"SAP_INTEGRATION_SUITE_API_COMPOSITION_USERNAME.",
+					},
+					"password": schema.StringAttribute{
+						Optional:  true,
+						Sensitive: true,
+						Description: "Password of username. Environment variable: " +
+							"SAP_INTEGRATION_SUITE_API_COMPOSITION_PASSWORD.",
+					},
+					"origin": schema.StringAttribute{
+						Optional: true,
+						Description: "Origin key of the user's identity provider in the subaccount (Security, " +
+							"Trust Configuration), sent as login_hint. Leave it out for the default identity " +
+							"provider. Environment variable: SAP_INTEGRATION_SUITE_API_COMPOSITION_ORIGIN.",
 					},
 				},
 			},
@@ -436,11 +463,18 @@ type credentialBlock struct {
 	usedBy    string // what stays unconfigured without it
 }
 
+// userLogin is the optional key user of a credential block. With it, the
+// block's client requests tokens with the password grant.
+type userLogin struct {
+	username, password, origin types.String
+}
+
 // resolve reads the block's four values, each falling back to its
 // environment variable, and builds the authenticated HTTP client when all
 // four are present. It returns a nil client when none is set, and fails only
-// when some but not all are.
-func (b credentialBlock) resolve(ctx context.Context, version string, url, tokenURL, clientID, clientSecret types.String, diags *diag.Diagnostics) (string, *sapthttp.Client, bool) {
+// when some but not all are. user, if not nil, adds the block's optional
+// username, password and origin.
+func (b credentialBlock) resolve(ctx context.Context, version string, url, tokenURL, clientID, clientSecret types.String, user *userLogin, diags *diag.Diagnostics) (string, *sapthttp.Client, bool) {
 	values := []string{
 		stringOrEnv(url, b.envPrefix+strings.ToUpper(b.urlAttr)),
 		stringOrEnv(tokenURL, b.envPrefix+"TOKEN_URL"),
@@ -465,11 +499,26 @@ func (b credentialBlock) resolve(ctx context.Context, version string, url, token
 		)
 		return "", nil, false
 	}
-	authenticatedClient, invalidateToken, err := auth.Config{
+	authConfig := auth.Config{
 		TokenURL:     values[1],
 		ClientID:     values[2],
 		ClientSecret: values[3],
-	}.HTTPClient(ctx, http.DefaultClient)
+	}
+	if user != nil {
+		authConfig.Username = stringOrEnv(user.username, b.envPrefix+"USERNAME")
+		authConfig.Password = stringOrEnv(user.password, b.envPrefix+"PASSWORD")
+		authConfig.Origin = stringOrEnv(user.origin, b.envPrefix+"ORIGIN")
+		if (authConfig.Username == "") != (authConfig.Password == "") || (authConfig.Origin != "" && authConfig.Username == "") {
+			diags.AddError(
+				"Incomplete "+b.title+" user login",
+				fmt.Sprintf("provider.%s requires username and password together (or %sUSERNAME and "+
+					"%sPASSWORD), and origin only with them. Supply both to log in as a user, or neither "+
+					"to use the client's own credentials.", b.block, b.envPrefix, b.envPrefix),
+			)
+			return "", nil, false
+		}
+	}
+	authenticatedClient, invalidateToken, err := authConfig.HTTPClient(ctx, http.DefaultClient)
 	if err != nil {
 		diags.AddError("Unable to configure "+b.title+" authentication", err.Error())
 		return "", nil, false
@@ -485,14 +534,16 @@ func (b credentialBlock) resolve(ctx context.Context, version string, url, token
 // API Composition's Configuration API.
 func (p *sapIntegrationSuiteProvider) configureAPIComposition(ctx context.Context, cfg *apiCompositionModel, data *Data, diags *diag.Diagnostics) bool {
 	var host, tokenURL, clientID, clientSecret types.String
+	user := &userLogin{}
 	if cfg != nil {
 		host, tokenURL, clientID, clientSecret = cfg.Host, cfg.TokenURL, cfg.ClientID, cfg.ClientSecret
+		user = &userLogin{username: cfg.Username, password: cfg.Password, origin: cfg.Origin}
 	}
 	block := credentialBlock{
 		title: "API Composition", block: "api_composition", urlAttr: "host",
 		envPrefix: "SAP_INTEGRATION_SUITE_API_COMPOSITION_", usedBy: "sapintegrationsuite_business_data_graph",
 	}
-	resolved, client, ok := block.resolve(ctx, p.version, host, tokenURL, clientID, clientSecret, diags)
+	resolved, client, ok := block.resolve(ctx, p.version, host, tokenURL, clientID, clientSecret, user, diags)
 	data.APICompositionHost, data.APICompositionHTTPClient = resolved, client
 	return ok
 }
@@ -508,7 +559,7 @@ func (p *sapIntegrationSuiteProvider) configureIntegrationAssessment(ctx context
 		title: "Integration Assessment", block: "integration_assessment", urlAttr: "entities_url",
 		envPrefix: "SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_", usedBy: "the integration_assessment resources and data sources",
 	}
-	resolved, client, ok := block.resolve(ctx, p.version, entitiesURL, tokenURL, clientID, clientSecret, diags)
+	resolved, client, ok := block.resolve(ctx, p.version, entitiesURL, tokenURL, clientID, clientSecret, nil, diags)
 	data.IntegrationAssessmentURL, data.IntegrationAssessmentHTTPClient = resolved, client
 	return ok
 }

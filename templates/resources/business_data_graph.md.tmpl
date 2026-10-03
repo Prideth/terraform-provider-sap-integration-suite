@@ -26,6 +26,10 @@ against a live system yet, and its schema may change before it is promoted.
 - The `api_composition` block in the provider configuration, with a key of an API Composition
   service instance of plan `configuration`. The Cloud Integration and API portal credentials do
   not work for this API.
+- Usually a key user login in that block (`username`, `password`, and `origin` for an identity
+  provider other than the default): on a test tenant only a user's token with the role collection
+  `Graph.KeyUser` was allowed to use the API. See "Logging in as a key user" in the
+  [API Composition guide](../guides/api-composition.md).
 - The BTP destinations each data source reads from, in the subaccount, with the additional
   property `IntegrationCell.Include = true`. Destinations belong to the SAP/btp provider.
 

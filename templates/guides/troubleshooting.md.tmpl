@@ -42,6 +42,15 @@ the resource page explains why.
 `SAP_INTEGRATION_SUITE_API_MANAGEMENT_*` environment variables, has some but not all of host,
 token URL, client ID and secret. Set all four or none. The same applies to `api_composition`.
 
+**`Incomplete API Composition user login`.** `api_composition` has `username` without
+`password`, or the reverse, or `origin` without both. Set username and password together.
+
+**Business data graph: HTTP 403, code 2707.** The token of `api_composition` lacks the
+Configuration API's scope. Add the login of a user with the role collection `Graph.KeyUser`; see
+"Logging in as a key user" in the [API Composition guide](api-composition.md). A token error
+`invalid_grant` "User authentication failed." means the user login itself failed: check the
+password, the origin, and whether the identity provider enforces a second factor.
+
 **Write-only attributes are rejected.** Terraform older than 1.11 cannot handle `*_wo`
 attributes. Upgrade Terraform; the provider itself does not check the version.
 

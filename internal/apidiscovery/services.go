@@ -27,11 +27,16 @@ const (
 	CapDataSpaceIntegration  = "DATA_SPACE_INTEGRATION"
 )
 
-// Credentials are the OAuth client credentials of one service.
+// Credentials are the OAuth client credentials of one service. Username,
+// Password and Origin are an optional user login through that client
+// (password grant); only services resolved with userLoginService read them.
 type Credentials struct {
 	TokenURL     string
 	ClientID     string
 	ClientSecret string
+	Username     string
+	Password     string
+	Origin       string
 }
 
 // Service is one documented service root.
@@ -140,10 +145,11 @@ var Services = []Service{
 		Capabilities: []string{CapAPIComposition},
 		Families:     []string{"api_composition"},
 		Evidence: "SAP Help, API Composition Configuration API: <host>/configuration/v1/sap.graph with a service key of " +
-			"plan configuration; Business Accelerator Hub lists the API as OData V4.",
+			"plan configuration; Business Accelerator Hub lists the API as OData V4. On a tenant only a key user's " +
+			"token (password grant through that key's client) was allowed to read it.",
 		Env: []string{"SAP_INTEGRATION_SUITE_API_COMPOSITION_HOST", "SAP_INTEGRATION_SUITE_API_COMPOSITION_TOKEN_URL",
 			"SAP_INTEGRATION_SUITE_API_COMPOSITION_CLIENT_ID", "SAP_INTEGRATION_SUITE_API_COMPOSITION_CLIENT_SECRET"},
-		Resolve: prefixedService("SAP_INTEGRATION_SUITE_API_COMPOSITION_", "HOST", "/configuration/v1/sap.graph"),
+		Resolve: userLoginService("SAP_INTEGRATION_SUITE_API_COMPOSITION_", "HOST", "/configuration/v1/sap.graph"),
 	},
 	{
 		ID: "integration-assessment-entities", Title: "Integration Assessment, entities API (landscape and ISA-M data)",
@@ -199,6 +205,19 @@ func apiManagementService(path string) func(func(string) string) (string, Creden
 func prefixedService(prefix, urlVar, path string) func(func(string) string) (string, Credentials, []string) {
 	return func(getenv func(string) string) (string, Credentials, []string) {
 		return resolve(getenv, prefix+urlVar, prefix, path)
+	}
+}
+
+// userLoginService is prefixedService plus the optional <prefix>USERNAME,
+// <prefix>PASSWORD and <prefix>ORIGIN of a user login. They are never
+// reported as missing.
+func userLoginService(prefix, urlVar, path string) func(func(string) string) (string, Credentials, []string) {
+	return func(getenv func(string) string) (string, Credentials, []string) {
+		root, creds, missing := resolve(getenv, prefix+urlVar, prefix, path)
+		creds.Username = getenv(prefix + "USERNAME")
+		creds.Password = getenv(prefix + "PASSWORD")
+		creds.Origin = getenv(prefix + "ORIGIN")
+		return root, creds, missing
 	}
 }
 

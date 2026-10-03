@@ -11,28 +11,57 @@ only fix defects in their minor release.
 
 ## Unreleased (planned as 0.6.0)
 
-0.6.0 is planned to harden the API Composition business data graph. So far
-a tenant has refused every request to the Configuration API with HTTP 403,
-so this section collects what is already known and how the provider reports
-it.
+0.6.0 is planned to harden the API Composition business data graph. The
+provider can now log in to the Configuration API the way a test tenant
+accepted it, and its requests are checked against the API's `$metadata`,
+which that login made readable for the first time.
+
+### New
+
+- `provider.api_composition` has an optional key user login: `username`,
+  `password` (sensitive) and `origin`, also as
+  `SAP_INTEGRATION_SUITE_API_COMPOSITION_USERNAME`, `_PASSWORD` and
+  `_ORIGIN`. With it, the provider requests its tokens with the password
+  grant through the service key's client, so they carry the user's roles.
+  On a test tenant, a client-credentials token of a `configuration` service
+  key lacked the API's scope `config` and was refused with HTTP 403 (code
+  2707) on every request; the token of a user with the role collection
+  `Graph.KeyUser` carried the scope and was accepted. `origin` is sent as
+  `login_hint` for users of an identity provider other than the default.
 
 ### Changed
 
-- When the API Composition Configuration API refuses a request with HTTP
-  403, the error of `sapintegrationsuite_business_data_graph` (resource and
-  data source) now names the role SAP protects the API with,
-  `Graph_Key_User`, and explains that a client-credentials token of a
-  `configuration` service key can carry no graph role at all. Every error of
-  the API also shows SAP's trace ID (`@Graph.traceId`), which SAP support
-  asks for. The error format was confirmed by a tenant's answer.
+- When the Configuration API refuses a request with HTTP 403, the error of
+  `sapintegrationsuite_business_data_graph` (resource and data source) names
+  the missing scope and the user login. Every error of the API also shows
+  SAP's trace ID (`@Graph.traceId`), which SAP support asks for.
+- A business data graph that SAP marks as `deleted` is treated as gone: a
+  refresh removes it from state, as for a graph that no longer exists.
+
+### Fixed
+
+- `extensions` of a business data graph is a list of objects with a `name`
+  in the API's `$metadata`. The provider decoded it as a list of strings, so
+  reading a graph with extensions failed. It now shows the extension names.
 
 ### Known limitations
 
-- On a test tenant, a token that a `configuration` service key issued for
-  client credentials carried no scope except `uaa.resource`, and the API
-  answered 403 with code 2707 even for `$metadata`. SAP does not document
-  how that plan's client obtains `Graph_Key_User`. The API Composition guide
-  describes the finding; the business data graph stays experimental.
+- Creating, changing and deleting a graph has still not run on a tenant: it
+  needs a destination that API Composition can reach. The business data
+  graph stays experimental, and its update body and delete request stay
+  unofficial.
+- The `$metadata` names settings SAP's pages describe without a name:
+  `odataContainment`, a graph and locating policy `description` and `cues`
+  on key mappings. The provider does not set them yet; updates leave them
+  alone.
+- The password grant needs an identity provider that accepts passwords
+  without a second factor. A technical user is recommended.
+
+### Upgrade notes
+
+Nothing to do for configurations without business data graphs. If your
+business data graphs failed with HTTP 403, add `username` and `password` of
+a user with the role collection `Graph.KeyUser` to `api_composition`.
 
 ## 0.5.0 — 2026-09-29
 

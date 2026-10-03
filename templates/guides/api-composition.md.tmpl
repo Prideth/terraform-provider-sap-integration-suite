@@ -38,10 +38,12 @@ done before the first `apply`:
    them, otherwise API Composition does not offer them. The optional property
    `URL.ConnectionTimeoutInSeconds` sets a per-destination timeout.
 4. **Credentials.** Create an instance of the API Composition service with plan `configuration`
-   and a service key for it. The next section explains what to take from the key.
+   and a service key for it, and pick the user the provider logs in as. The next section
+   explains what to take from the key and why the user is needed.
 
 People who build graphs in the UI need the role collection `Graph.KeyUser` (role
 `Graph_Key_User`); `Graph.Guest` gives read-only access to the UI and to the Configuration API.
+The user the provider logs in as needs `Graph.KeyUser` as well.
 
 ## Credentials: a third, separate block
 
@@ -65,15 +67,20 @@ provider "sapintegrationsuite" {
     token_url     = var.api_composition_token_url # full URL ending in /oauth/token
     client_id     = var.api_composition_client_id
     client_secret = var.api_composition_client_secret
+
+    # A user with the role collection Graph.KeyUser; see "Logging in as a key user".
+    username = var.api_composition_username
+    password = var.api_composition_password
+    origin   = var.api_composition_origin # only for an identity provider other than the default
   }
 }
 ```
 
 Each attribute can also come from an environment variable:
-`SAP_INTEGRATION_SUITE_API_COMPOSITION_HOST`, `_TOKEN_URL`, `_CLIENT_ID` and `_CLIENT_SECRET`.
-Set all four or none. Configurations without business data graphs leave the block out and are
-not affected. The business data graph resource and data source report a clear error when the
-block is missing.
+`SAP_INTEGRATION_SUITE_API_COMPOSITION_HOST`, `_TOKEN_URL`, `_CLIENT_ID`, `_CLIENT_SECRET`,
+`_USERNAME`, `_PASSWORD` and `_ORIGIN`. Set the first four together, or none. Configurations
+without business data graphs leave the block out and are not affected. The business data graph
+resource and data source report a clear error when the block is missing.
 
 **What to copy from the service key.** SAP does not document the service key of the
 `configuration` plan field by field. For the consumption keys of *Process Integration Runtime*,
@@ -84,16 +91,43 @@ If the key only contains the authentication server's base URL, append `/oauth/to
 `/configuration/v1/sap.graph`. On a test tenant, the key's `url` was the region host followed
 by `/configuration`; leave that path out.
 
-**Authorization: an open question.** SAP protects the Configuration API with the role
-`Graph_Key_User` (`Graph_Guest` for reading only) and describes both only as roles that an
-administrator assigns to people. SAP does not say how a service key of the `configuration` plan
-obtains that role. On a test tenant (checked on 2026-09-29 and 2026-10-01), a token that the
-key's client obtained with client credentials carried no scope except `uaa.resource`. The API
-answered every request, even `$metadata`, with HTTP 403 and code 2707 ("You don't have
-permission to access this resource. Please check your assigned roles in your SAP BTP
-subaccount."). Whether a user token of a key user works instead has not been tested yet. Until
-it is clear which token SAP expects, plan for this 403. When the provider receives it, its error
-names the role and shows SAP's trace ID for a support ticket.
+### Logging in as a key user
+
+The Configuration API accepts only tokens that carry its scope `config`. SAP grants that scope
+with the role `Graph_Key_User` (`Graph_Guest` for reading only) and describes both only as roles
+that an administrator assigns to people. SAP does not say how the client of a `configuration`
+service key obtains the scope on its own, and on a test tenant it did not:
+
+- A token that the key's client requested with **client credentials** carried no scope except
+  `uaa.resource`. The API answered every request, even `$metadata`, with HTTP 403 and code 2707
+  ("You don't have permission to access this resource. Please check your assigned roles in your
+  SAP BTP subaccount."). Checked on 2026-09-29, 2026-10-01 and 2026-10-03.
+- A token that the same client requested for a user with the role collection `Graph.KeyUser`,
+  with the **password grant**, carried the scope `config`. The API returned its service document
+  and `$metadata` (2026-10-03).
+
+With `username` and `password`, the provider requests its tokens the second way: the service
+key's client authenticates itself as before, and the token carries the user's roles. Without
+them, it uses client credentials, which only works if your tenant grants that client the scope.
+The API's `$metadata` declares client credentials and the authorization code flow as its
+security schemes; the password grant is a feature of the SAP BTP token service, so it is
+verified on a tenant but not part of SAP's description of this API.
+
+What the user login needs:
+
+- **A user with `Graph.KeyUser`.** Prefer a technical user that exists only for Terraform over a
+  person's account, because every change in SAP is then made in that user's name.
+- **An identity provider that accepts passwords.** The password grant cannot answer a second
+  factor or a browser login. Users of SAP ID service work; users of SAP Cloud Identity Services
+  work when no second factor is enforced for them.
+- **`origin` for an identity provider other than the default.** The provider sends the origin
+  key as `login_hint`, so the token service checks the password against that identity provider.
+  The origin key is shown in the subaccount under *Security* > *Trust Configuration*.
+
+A wrong password answers with `invalid_grant` "User authentication failed." from the token
+service. Repeated failures can lock the user, so check `username`, `password` and `origin` before
+running `apply` again. When the API itself answers 403, the provider's error names the missing
+scope and the user login, and shows SAP's trace ID for a support ticket.
 
 ## The configuration model
 
@@ -208,18 +242,28 @@ SAP's page *Configuration API Specification and Usage* documents the service roo
 .../GraphConfiguration/{id}`) and the status model. The field-level details of data sources, the
 locating policy, cues and key mappings come from the *Business Data Graph Configuration File*
 page. The Business Accelerator Hub lists the API as *Graph - Configuration*
-(`Graph_ConfigurationAPI`) of type OData V4. It serves its metadata at
-`/configuration/v1/sap.graph/$metadata`, but that document is only reachable with credentials
-and is not published; fetching it with a service key of the `configuration` plan would confirm
-the property names and the PATCH semantics. So far, a live system has answered only with the
-403 described under "Credentials", so no part of this resource has been checked against SAP yet.
+(`Graph_ConfigurationAPI`) of type OData V4.
 
-The following parts are the provider's own inference:
+The API's `$metadata` is not published, but a key user's token read it from a test tenant on
+2026-10-03, and the provider checks its requests against that document. It confirms every
+property name the provider sends and reads, including the shape of the locating policy (a single
+object) and of key mappings. It also settles three details SAP's pages leave open:
+
+- A graph can only be read by its identifier. The collection itself is declared not readable,
+  and `GET .../GraphConfiguration` answered HTTP 405. The data source therefore needs the
+  identifier; there is no lookup by other attributes.
+- `extensions` is a list of objects with a `name`, not a list of strings. The provider shows the
+  names.
+- A graph has a `deleted` flag. The provider treats a graph that SAP marks as deleted like one
+  that no longer exists: a refresh removes it from state.
+
+The following parts are still the provider's own inference:
 
 - **Update body.** SAP names the method and URL but shows no body. The provider sends the
   writable properties: identifier, versions, `exclude`, `dataSources` and `locatingPolicy`.
   `exclude` is always sent, as `[]` when empty, so removing it in HCL also removes it in SAP.
-  Read-only properties and extensions are never sent.
+  Read-only properties and extensions are never sent. The `$metadata` confirms the property
+  names but not how SAP applies a `PATCH`.
 - **Delete.** SAP says the API can delete graphs but documents no request. The provider sends
   `DELETE` to the graph's URL.
 
@@ -227,20 +271,22 @@ The following parts are the provider's own inference:
   operations and need `enable_unofficial = true` in the provider block, in addition to
   `enable_experimental`. Without it, a graph can be created and read, but a plan that updates
   it in place, replaces it or destroys it fails with an error that names the operation.
-- **Shape of the locating policy.** The property table calls it an "array of locating policies",
-  but both SAP examples show a single object with `cues`, `keyMapping` and `rules`. The provider
-  follows the examples.
-- **Log messages.** SAP does not describe an entry of `logMessages`. The provider keeps each entry
-  as the JSON text SAP returned.
+- **Log messages.** The `$metadata` types an entry of `logMessages` as `level`, `message` and
+  `code`. The provider keeps each entry as the JSON text SAP returned.
+
+No graph has been created, changed or deleted through this resource on a tenant yet: that needs a
+destination that API Composition can reach.
 
 ## Limitations
 
-- **Extensions** (custom entity projections) cannot be managed through the Configuration API.
-  SAP says so explicitly. `extensions` is read-only, and updates leave SAP's extensions alone.
-- **Cues on key mappings.** SAP describes key mappings scoped by cues but documents no property
-  for them, so the provider does not support them.
-- **OData containment** is described as a graph setting in SAP's configuration file page, but
-  without a property name, so it cannot be set through this resource.
+- **Extensions** (custom entity projections) cannot be managed through this resource. SAP's
+  documentation says the Configuration API does not manage them, although the `$metadata`
+  declares an `Extension` entity set. `extensions` is read-only, and updates leave SAP's
+  extensions alone.
+- **Settings the `$metadata` adds.** The `$metadata` names properties that SAP's pages describe
+  without a name or not at all: `odataContainment` (OData containment, enabled by default),
+  `description` of the graph and of the locating policy, and `cues` on key mappings. The
+  provider does not set them yet; updates leave them as they are in SAP.
 - The graph's data API, the API Composition Navigator in Developer Hub, and the service
   instances for client applications are outside this provider's scope.
 

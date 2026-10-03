@@ -154,6 +154,7 @@ var classification = map[string][]rule{
 	"classic-api-management":            classicAPIManagementClassification,
 	"integration-assessment-entities":   integrationAssessmentEntitiesClassification,
 	"integration-assessment-management": integrationAssessmentManagementClassification,
+	"api-composition-configuration":     apiCompositionConfigurationClassification,
 }
 
 const (
@@ -184,6 +185,14 @@ var integrationAssessmentEntitiesClassification = concat(
 var integrationAssessmentManagementClassification = []rule{
 	excluded("ImportContent", "Imports an exported content archive into the tenant; a one-shot transport action, not desired state."),
 	excluded("ExportContent", "Exports the tenant's content as an archive; a one-shot transport action."),
+}
+
+// API Composition Configuration API ($metadata read with a key user's token,
+// 2026-10-03). GraphConfiguration is used by the business data graph.
+var apiCompositionConfigurationClassification = []rule{
+	excludedFor("Extension", "api_composition.business_data_graph",
+		"Custom entity projections. SAP's documentation says the Configuration API does not manage extensions, "+
+			"although the $metadata declares the entity set; a graph's extensions are read-only."),
 }
 
 const (

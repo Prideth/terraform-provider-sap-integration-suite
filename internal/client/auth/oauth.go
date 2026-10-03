@@ -1,12 +1,15 @@
-// Package auth provides OAuth 2.0 client credentials authentication for SAP
-// Integration Suite APIs, with token caching, expiry handling, and
-// on-demand invalidation built on golang.org/x/oauth2.
+// Package auth provides OAuth 2.0 authentication for SAP Integration Suite
+// APIs, with token caching, expiry handling, and on-demand invalidation
+// built on golang.org/x/oauth2. Tokens come from the client credentials
+// grant, or from the password grant when a user is configured.
 package auth
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"sync"
 	"time"
 
@@ -28,6 +31,20 @@ type Config struct {
 	// scopes from the role collections assigned to the service key instead
 	// of requesting explicit scopes.
 	Scopes []string
+
+	// Username and Password switch to the password grant through the same
+	// client: the token then carries the user's roles instead of the
+	// client's own authorities. API Composition's Configuration API needs
+	// this, because a client-credentials token of its service key carried no
+	// scope for the API on a tenant (see docs/guides/api-composition.md).
+	Username string
+	Password string
+
+	// Origin is the origin key of the user's identity provider in the BTP
+	// subaccount. It is sent as login_hint so that the token service checks
+	// the password against that identity provider instead of the default
+	// one. Only used with Username.
+	Origin string
 }
 
 func (c Config) validate() error {
@@ -39,6 +56,12 @@ func (c Config) validate() error {
 	}
 	if c.ClientSecret == "" {
 		return fmt.Errorf("oauth: client secret must not be empty")
+	}
+	if (c.Username == "") != (c.Password == "") {
+		return fmt.Errorf("oauth: username and password must be set together")
+	}
+	if c.Origin != "" && c.Username == "" {
+		return fmt.Errorf("oauth: an origin needs a username and password")
 	}
 	return nil
 }
@@ -81,7 +104,7 @@ func (s *invalidatableTokenSource) Invalidate() {
 	s.cached = nil
 }
 
-// HTTPClient builds an OAuth2 client-credentials authenticated *http.Client
+// HTTPClient builds an OAuth2 authenticated *http.Client
 // and returns an invalidate function alongside it: calling invalidate
 // forces the next outgoing request to fetch a fresh token rather than reuse
 // the cached one. Both the client and invalidate are safe for concurrent
@@ -100,6 +123,9 @@ func (c Config) HTTPClient(ctx context.Context, base *http.Client) (client *http
 		ClientSecret: c.ClientSecret,
 		TokenURL:     c.TokenURL,
 		Scopes:       c.Scopes,
+	}
+	if c.Username != "" {
+		ccConfig.EndpointParams = c.passwordGrantParams()
 	}
 
 	// The client outlives ctx: the provider builds it in ConfigureProvider,
@@ -137,6 +163,25 @@ func (c Config) HTTPClient(ctx context.Context, base *http.Client) (client *http
 	}
 
 	return client, source.Invalidate, nil
+}
+
+// passwordGrantParams turns the client-credentials request into a password
+// grant. clientcredentials.Config lets EndpointParams override grant_type,
+// so the token cache, the invalidation and the client authentication stay
+// the same for both grants.
+func (c Config) passwordGrantParams() url.Values {
+	params := url.Values{
+		"grant_type": {"password"},
+		"username":   {c.Username},
+		"password":   {c.Password},
+	}
+	if c.Origin != "" {
+		hint, _ := json.Marshal(struct {
+			Origin string `json:"origin"`
+		}{c.Origin}) // a struct of one string cannot fail to encode
+		params.Set("login_hint", string(hint))
+	}
+	return params
 }
 
 // transportOf returns base's RoundTripper, or nil if base is nil or has no

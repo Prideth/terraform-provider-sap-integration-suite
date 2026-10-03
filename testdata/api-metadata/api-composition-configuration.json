@@ -1,0 +1,627 @@
+{
+  "id": "api-composition-configuration",
+  "protocol": "odata-v4",
+  "capturedAt": "2026-10-03",
+  "source": "live /$metadata",
+  "namespaces": [
+    "ExternalCustomerConfigurationService",
+    "sap.graph.controlPlane.configurationServer.common",
+    "sap.graph.controlPlane.configurationServer.externalCustomer"
+  ],
+  "entitySets": [
+    {
+      "name": "Extension",
+      "entityType": "ExternalCustomerConfigurationService.Extension"
+    },
+    {
+      "name": "GraphConfiguration",
+      "entityType": "ExternalCustomerConfigurationService.GraphConfiguration"
+    }
+  ],
+  "entityTypes": [
+    {
+      "name": "ExternalCustomerConfigurationService.Extension",
+      "key": [
+        "id"
+      ],
+      "properties": [
+        {
+          "name": "createdAt",
+          "type": "Edm.DateTimeOffset",
+          "nullable": true,
+          "precision": "7"
+        },
+        {
+          "name": "description",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "Description of the extension.",
+            "Org.OData.Core.V1.LongDescription": "Describes the extension."
+          }
+        },
+        {
+          "name": "files",
+          "type": "Collection(sap.graph.controlPlane.configurationServer.common.ExtensionFile)",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.LongDescription": "An array of custom entity projection definitions."
+          }
+        },
+        {
+          "name": "id",
+          "type": "Edm.String",
+          "nullable": false,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "abc-xyz-123mn",
+            "Org.OData.Core.V1.LongDescription": "A unique string that identifies the extension. If the extension ID is not provided, a UUID is generated."
+          }
+        },
+        {
+          "name": "lastModified",
+          "type": "Edm.DateTimeOffset",
+          "nullable": true,
+          "precision": "7",
+          "annotations": {
+            "Org.OData.Core.V1.Description": "The timestamp of the last change made to the entity."
+          }
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "my-extension",
+            "Org.OData.Core.V1.LongDescription": "The name of the extension."
+          }
+        }
+      ],
+      "annotations": {
+        "Org.OData.Core.V1.Description": "Extension",
+        "Org.OData.Core.V1.LongDescription": "Extends a business data graph with custom entity projections.",
+        "com.sap.vocabularies.Common.v1.Label": "Extension"
+      }
+    },
+    {
+      "name": "ExternalCustomerConfigurationService.GraphConfiguration",
+      "key": [
+        "businessDataGraphIdentifier"
+      ],
+      "properties": [
+        {
+          "name": "businessDataGraphIdentifier",
+          "type": "Edm.String",
+          "nullable": false,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "abc-xyz-123mn",
+            "Org.OData.Core.V1.LongDescription": "A unique identifier that developers use in the Graph URL to access the business data graph. It must be a short string of up to 20 lowercase alphanumeric characters and hyphen separators."
+          }
+        },
+        {
+          "name": "dataSources",
+          "type": "Collection(sap.graph.controlPlane.configurationServer.common.DataSource)",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.LongDescription": "Lists the services (APIs) that are configured as destinations in the landscape."
+          }
+        },
+        {
+          "name": "deleted",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "description",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "Description of the Graph configuration.",
+            "Org.OData.Core.V1.LongDescription": "Describes the Graph configuration."
+          }
+        },
+        {
+          "name": "effectiveGraphModelVersion",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "1.0.0",
+            "Org.OData.Core.V1.LongDescription": "The Graph model version that is in use for the current Graph configuration."
+          }
+        },
+        {
+          "name": "exclude",
+          "type": "Collection(Edm.String)",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "sap.s4.A_Product",
+            "Org.OData.Core.V1.LongDescription": "Excludes mirrored entities from the business data graph."
+          }
+        },
+        {
+          "name": "extensions",
+          "type": "Collection(sap.graph.controlPlane.configurationServer.externalCustomer.ExtensionRef)",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.LongDescription": "Specifies the name of the extensions that are applied to the business data graph."
+          }
+        },
+        {
+          "name": "graphModelVersion",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "1.0.0",
+            "Org.OData.Core.V1.LongDescription": "The latest version of the unified API entities of Graph. When generating the configuration, the version is set to the latest available graph model version."
+          }
+        },
+        {
+          "name": "locatingPolicy",
+          "type": "sap.graph.controlPlane.configurationServer.common.LocatingPolicy",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Description": "LocatingPolicy",
+            "Org.OData.Core.V1.LongDescription": "Provides Graph with the information to determine where requested data is located.",
+            "com.sap.vocabularies.Common.v1.Label": "Locating Policy"
+          }
+        },
+        {
+          "name": "logMessages",
+          "type": "Collection(sap.graph.controlPlane.configurationServer.externalCustomer.LogMessage)",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Computed": "true",
+            "Org.OData.Core.V1.LongDescription": "A log that provides information, warning, and error messages from the last activation of the business data graph."
+          }
+        },
+        {
+          "name": "odataContainment",
+          "type": "Edm.Boolean",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.LongDescription": "Indicates whether OData containment is enabled or disabled for this BDG. The default is true (enabled)."
+          }
+        },
+        {
+          "name": "schemaVersion",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "1.2.0",
+            "Org.OData.Core.V1.LongDescription": "The version of the Graph configuration object."
+          }
+        },
+        {
+          "name": "status",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Computed": "true",
+            "Org.OData.Core.V1.Example/Value": "DEPLOYMENT_INITIATED",
+            "Org.OData.Core.V1.LongDescription": "The state of the business data graph during design time."
+          }
+        },
+        {
+          "name": "statusDetails",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "Graph configuration processing completed successfully, deployment has been initiated.",
+            "Org.OData.Core.V1.LongDescription": "Detailed information about the state of the business data graph."
+          }
+        }
+      ],
+      "annotations": {
+        "Org.OData.Core.V1.Description": "GraphConfiguration",
+        "Org.OData.Core.V1.LongDescription": "Configuration specifies a business data graph.",
+        "com.sap.vocabularies.Common.v1.Label": "Graph Configuration"
+      }
+    }
+  ],
+  "complexTypes": [
+    {
+      "name": "sap.graph.controlPlane.configurationServer.common.Cue",
+      "properties": [
+        {
+          "name": "description",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "Europe"
+          }
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "EU",
+            "Org.OData.Core.V1.LongDescription": "Name of the cue."
+          }
+        }
+      ],
+      "annotations": {
+        "Org.OData.Core.V1.Description": "Cue",
+        "Org.OData.Core.V1.LongDescription": "A short string label used to select non-default locating rules in requests.",
+        "com.sap.vocabularies.Common.v1.Label": "Cue"
+      }
+    },
+    {
+      "name": "sap.graph.controlPlane.configurationServer.common.DataSource",
+      "properties": [
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "s4",
+            "Org.OData.Core.V1.LongDescription": "The data source name."
+          }
+        },
+        {
+          "name": "namespace",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "company.custom",
+            "Org.OData.Core.V1.LongDescription": "The namespace for entities of custom OData services. You do not need to specify a namespace for SAP systems known by Graph."
+          }
+        },
+        {
+          "name": "services",
+          "type": "Collection(sap.graph.controlPlane.configurationServer.common.DataSourceService)",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.LongDescription": "The services belonging to the data source."
+          }
+        }
+      ],
+      "annotations": {
+        "Org.OData.Core.V1.Description": "DataSource",
+        "Org.OData.Core.V1.LongDescription": "Defines a set of services (APIs) configured as destinations in the landscape.",
+        "com.sap.vocabularies.Common.v1.Label": "Data Source"
+      }
+    },
+    {
+      "name": "sap.graph.controlPlane.configurationServer.common.DataSourceService",
+      "properties": [
+        {
+          "name": "destinationName",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "s4-business-partner",
+            "Org.OData.Core.V1.LongDescription": "The destination name of the service."
+          }
+        },
+        {
+          "name": "path",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "/odata/sap/API_BUSINESS_PARTNER",
+            "Org.OData.Core.V1.LongDescription": "The path of the service."
+          }
+        }
+      ],
+      "annotations": {
+        "Org.OData.Core.V1.Description": "DataSourceService",
+        "Org.OData.Core.V1.LongDescription": "Specifies a service (API) configured as a destination in the landscape.",
+        "com.sap.vocabularies.Common.v1.Label": "Data Source Service"
+      }
+    },
+    {
+      "name": "sap.graph.controlPlane.configurationServer.common.ExtensionFile",
+      "properties": [
+        {
+          "name": "content",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.LongDescription": "A custom entity projection definition serialized as JSON or JSON-C."
+          }
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "my-extension-file.json",
+            "Org.OData.Core.V1.LongDescription": "The name of the file."
+          }
+        },
+        {
+          "name": "type",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.LongDescription": "The type of the extension file."
+          }
+        }
+      ],
+      "annotations": {
+        "Org.OData.Core.V1.Description": "ExtensionFile",
+        "Org.OData.Core.V1.LongDescription": "Defines a custom entity projection.",
+        "com.sap.vocabularies.Common.v1.Label": "Extension File"
+      }
+    },
+    {
+      "name": "sap.graph.controlPlane.configurationServer.common.InterSourceForeignKey",
+      "properties": [
+        {
+          "name": "cues",
+          "type": "Collection(Edm.String)",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "EU",
+            "Org.OData.Core.V1.LongDescription": "Optionally, restricts the foreign key to locating rules with an identical set of cues."
+          }
+        },
+        {
+          "name": "foreignKey",
+          "type": "sap.graph.controlPlane.configurationServer.common.TupleSpecification",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Description": "TupleSpecification",
+            "Org.OData.Core.V1.LongDescription": "Specifies a foreign key.",
+            "com.sap.vocabularies.Common.v1.Label": "Tuple Specification"
+          }
+        },
+        {
+          "name": "references",
+          "type": "sap.graph.controlPlane.configurationServer.common.TupleSpecification",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Description": "TupleSpecification",
+            "Org.OData.Core.V1.LongDescription": "Specifies a reference to the foreign key.",
+            "com.sap.vocabularies.Common.v1.Label": "Tuple Specification"
+          }
+        }
+      ],
+      "annotations": {
+        "Org.OData.Core.V1.Description": "InterSourceForeignKey",
+        "Org.OData.Core.V1.LongDescription": "Defines a reference between two entities provided by different services. Technically, this defines an inclusion dependency stating that every existing list of the given attributes in the source is contained as a list of given attributes in the target.",
+        "com.sap.vocabularies.Common.v1.Label": "Inter Source Foreign Key"
+      }
+    },
+    {
+      "name": "sap.graph.controlPlane.configurationServer.common.KeyMappingDecoratorStrategy",
+      "properties": [
+        {
+          "name": "match",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "0{4}(?<category>.{5}).(?<num>[+ 0-9]{3})$",
+            "Org.OData.Core.V1.LongDescription": "Specific to strategy \"format\". A regular expression to extract the parts of the attribute value. Use named capturing groups to identify each part."
+          }
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "format",
+            "Org.OData.Core.V1.LongDescription": "Name of the strategy."
+          }
+        },
+        {
+          "name": "replace",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "$<category>_$<num>",
+            "Org.OData.Core.V1.LongDescription": "Specific to strategy \"format\". A pattern of the referenced attribute value. Use $<name> to reference the values of the capturing groups used in match (keep < and >). Every name used in replace must occur in match."
+          }
+        }
+      ],
+      "annotations": {
+        "Org.OData.Core.V1.Description": "KeyMappingDecoratorStrategy",
+        "Org.OData.Core.V1.LongDescription": "Strategy defining a bi-directional transformation of key values.",
+        "com.sap.vocabularies.Common.v1.Label": "Key Mapping Decorator Strategy"
+      }
+    },
+    {
+      "name": "sap.graph.controlPlane.configurationServer.common.LocatingPolicy",
+      "properties": [
+        {
+          "name": "cues",
+          "type": "Collection(sap.graph.controlPlane.configurationServer.common.Cue)",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.LongDescription": "Specifies OData query options used to select a subset of locating rules that are not the default ones."
+          }
+        },
+        {
+          "name": "description",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "Description of the locating policy.",
+            "Org.OData.Core.V1.LongDescription": "Describes the locating policy."
+          }
+        },
+        {
+          "name": "keyMapping",
+          "type": "Collection(sap.graph.controlPlane.configurationServer.common.InterSourceForeignKey)",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.LongDescription": "A set of intersource foreign key definitions. That is, foreign keys that cross the boundary between two services."
+          }
+        },
+        {
+          "name": "rules",
+          "type": "Collection(sap.graph.controlPlane.configurationServer.common.LocatingPolicyRule)",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.LongDescription": "Describes the location of the data for specific entity types."
+          }
+        }
+      ],
+      "annotations": {
+        "Org.OData.Core.V1.Description": "LocatingPolicy",
+        "Org.OData.Core.V1.LongDescription": "Provides Graph with the information to determine where requested data is located.",
+        "com.sap.vocabularies.Common.v1.Label": "Locating Policy"
+      }
+    },
+    {
+      "name": "sap.graph.controlPlane.configurationServer.common.LocatingPolicyRule",
+      "properties": [
+        {
+          "name": "cues",
+          "type": "Collection(Edm.String)",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "EU",
+            "Org.OData.Core.V1.LongDescription": "Optionally, specifies OData query options used to select a subset of locating rules that are not the default ones. The associated cues must exist in the locating policy cues array."
+          }
+        },
+        {
+          "name": "leading",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "s4",
+            "Org.OData.Core.V1.LongDescription": "Name of the data source that is the leading system for this entity. The leading system is considered the default source of truth for a given entity."
+          }
+        },
+        {
+          "name": "local",
+          "type": "Collection(Edm.String)",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "s4_2",
+            "Org.OData.Core.V1.LongDescription": "List of data sources, where key-based references to this entity are treated as local references, overriding the leading system."
+          }
+        },
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "sap.s4.A_Product",
+            "Org.OData.Core.V1.LongDescription": "Entity name, including a namespace, that the rule applies to. An asterisk * (wildcard) applies to all the entities in this namespace."
+          }
+        },
+        {
+          "name": "sourceEntity",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "company.custom.CustomProduct",
+            "Org.OData.Core.V1.LongDescription": "The full name of the mirrored source entity for which the rule applies. It is only applicable to composite custom entities."
+          }
+        }
+      ],
+      "annotations": {
+        "Org.OData.Core.V1.Description": "LocatingPolicyRule",
+        "Org.OData.Core.V1.LongDescription": "Describes the location of data of a specific entity type.",
+        "com.sap.vocabularies.Common.v1.Label": "Locating Policy Rule"
+      }
+    },
+    {
+      "name": "sap.graph.controlPlane.configurationServer.common.TupleSpecification",
+      "properties": [
+        {
+          "name": "attributes",
+          "type": "Collection(Edm.String)",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "Product",
+            "Org.OData.Core.V1.LongDescription": "An ordered list of attributes identifying the entity in the other data source."
+          }
+        },
+        {
+          "name": "dataSource",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "s4",
+            "Org.OData.Core.V1.LongDescription": "Name of the data source."
+          }
+        },
+        {
+          "name": "entityName",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "sap.s4.A_Product",
+            "Org.OData.Core.V1.LongDescription": "Fully qualified name of the entity."
+          }
+        },
+        {
+          "name": "strategy",
+          "type": "sap.graph.controlPlane.configurationServer.common.KeyMappingDecoratorStrategy",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Description": "KeyMappingDecoratorStrategy",
+            "Org.OData.Core.V1.LongDescription": "Defines a strategy to convert key values if the relationship between the foreign key and its reference does not have the same format.",
+            "com.sap.vocabularies.Common.v1.Label": "Key Mapping Decorator Strategy"
+          }
+        }
+      ],
+      "annotations": {
+        "Org.OData.Core.V1.Description": "TupleSpecification",
+        "Org.OData.Core.V1.LongDescription": "Specifies a tuple of attributes of a given entity and data source.",
+        "com.sap.vocabularies.Common.v1.Label": "Tuple Specification"
+      }
+    },
+    {
+      "name": "sap.graph.controlPlane.configurationServer.externalCustomer.ExtensionRef",
+      "properties": [
+        {
+          "name": "name",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.LongDescription": "The name of the extension provided by the user."
+          }
+        }
+      ]
+    },
+    {
+      "name": "sap.graph.controlPlane.configurationServer.externalCustomer.LogMessage",
+      "properties": [
+        {
+          "name": "code",
+          "type": "Edm.String",
+          "nullable": true,
+          "annotations": {
+            "Org.OData.Core.V1.Example/Value": "1000",
+            "Org.OData.Core.V1.LongDescription": "A unique code for error messages in the log."
+          }
+        },
+        {
+          "name": "level",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "message",
+          "type": "Edm.String",
+          "nullable": true
+        }
+      ]
+    }
+  ],
+  "serviceDocument": [
+    "Extension",
+    "GraphConfiguration"
+  ],
+  "graph": {
+    "reachable": [
+      "ExternalCustomerConfigurationService.Extension",
+      "ExternalCustomerConfigurationService.GraphConfiguration",
+      "sap.graph.controlPlane.configurationServer.common.Cue",
+      "sap.graph.controlPlane.configurationServer.common.DataSource",
+      "sap.graph.controlPlane.configurationServer.common.DataSourceService",
+      "sap.graph.controlPlane.configurationServer.common.ExtensionFile",
+      "sap.graph.controlPlane.configurationServer.common.InterSourceForeignKey",
+      "sap.graph.controlPlane.configurationServer.common.KeyMappingDecoratorStrategy",
+      "sap.graph.controlPlane.configurationServer.common.LocatingPolicy",
+      "sap.graph.controlPlane.configurationServer.common.LocatingPolicyRule",
+      "sap.graph.controlPlane.configurationServer.common.TupleSpecification",
+      "sap.graph.controlPlane.configurationServer.externalCustomer.ExtensionRef",
+      "sap.graph.controlPlane.configurationServer.externalCustomer.LogMessage"
+    ]
+  }
+}

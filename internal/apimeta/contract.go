@@ -231,6 +231,10 @@ func (v *verifier) structUse(u StructUse, decoded bool) {
 		switch {
 		case !isProp && !isNav:
 			v.problem("%T: JSON field %q is not a property of %s (entity set %s)", u.Value, field.name, t.Name, u.EntitySet)
+		case v.s.Protocol == ProtocolODataV4 && isProp:
+			// V4 bodies are plain JSON for reads and writes alike, so both are
+			// checked down to the leaves of collections and complex types.
+			v.edmV4(fmt.Sprintf("%T", u.Value), t.Name+"."+field.name, p.Type, field.typ, 0)
 		case !decoded:
 		case isNav:
 			if !decodesNavigation(field.typ) {
@@ -245,6 +249,93 @@ func (v *verifier) structUse(u StructUse, decoded bool) {
 			}
 		}
 	}
+}
+
+// edmV4 checks that a Go type can carry an OData V4 JSON value of edmType,
+// descending into collections and complex types: a complex type needs a
+// struct whose JSON fields are all properties of it, a collection a slice.
+// Types that decode themselves (json.RawMessage, interfaces, Unmarshalers)
+// are accepted as they are.
+func (v *verifier) edmV4(owner, where, edmType string, typ reflect.Type, depth int) {
+	for typ.Kind() == reflect.Pointer {
+		typ = typ.Elem()
+	}
+	if depth > 16 || typ == rawMessageType || typ.Kind() == reflect.Interface || reflect.PointerTo(typ).Implements(unmarshalerType) {
+		return
+	}
+	if inner, ok := strings.CutPrefix(edmType, "Collection("); ok {
+		inner = strings.TrimSuffix(inner, ")")
+		if typ.Kind() != reflect.Slice {
+			v.problem("%s: %s is %s, but %s is a JSON array", owner, where, typ, edmType)
+			return
+		}
+		v.edmV4(owner, where+"[]", inner, typ.Elem(), depth+1)
+		return
+	}
+	if props, ok := v.complexProperties(edmType); ok {
+		if typ.Kind() != reflect.Struct {
+			v.problem("%s: %s is %s, but %s is a complex type, a JSON object", owner, where, typ, edmType)
+			return
+		}
+		for _, f := range jsonFields(typ) {
+			p, ok := props[f.name]
+			if !ok {
+				v.problem("%s: JSON field %q of %s is not a property of %s", owner, f.name, where, edmType)
+				continue
+			}
+			v.edmV4(owner, where+"."+f.name, p.Type, f.typ, depth+1)
+		}
+		return
+	}
+	kind := typ.Kind()
+	isInt := kind >= reflect.Int && kind <= reflect.Uint64
+	isFloat := kind == reflect.Float32 || kind == reflect.Float64
+	ok, want := true, ""
+	switch edmType {
+	case "Edm.String", "Edm.Guid", "Edm.Date", "Edm.DateTimeOffset", "Edm.TimeOfDay", "Edm.Duration", "Edm.Binary":
+		ok, want = kind == reflect.String, "a JSON string"
+	case "Edm.Boolean":
+		ok, want = kind == reflect.Bool, "true or false"
+	case "Edm.Byte", "Edm.SByte", "Edm.Int16", "Edm.Int32", "Edm.Int64":
+		ok, want = isInt || typ == numberType, "a JSON number"
+	case "Edm.Single", "Edm.Double", "Edm.Decimal":
+		ok, want = isInt || isFloat || typ == numberType || kind == reflect.String, "a JSON number"
+	default:
+		for _, e := range v.s.EnumTypes {
+			if e.Name == edmType {
+				ok, want = kind == reflect.String, "a JSON string (enum member)"
+			}
+		}
+	}
+	if !ok {
+		v.problem("%s: %s is %s, but %s arrives as %s", owner, where, typ, edmType, want)
+	}
+}
+
+// complexProperties returns the properties of a complex type, including
+// those of its base types, and whether the type is a complex type at all.
+func (v *verifier) complexProperties(name string) (map[string]Property, bool) {
+	props := map[string]Property{}
+	found := false
+	seen := map[string]bool{}
+	for name != "" && !seen[name] {
+		seen[name] = true
+		next := ""
+		for _, ct := range v.s.ComplexTypes {
+			if ct.Name != name {
+				continue
+			}
+			found = true
+			for _, p := range ct.Properties {
+				if _, ok := props[p.Name]; !ok {
+					props[p.Name] = p
+				}
+			}
+			next = ct.BaseType
+		}
+		name = next
+	}
+	return props, found
 }
 
 func (v *verifier) key(k KeyUse) {
@@ -294,6 +385,7 @@ var (
 	unmarshalerType = reflect.TypeOf((*json.Unmarshaler)(nil)).Elem()
 	timeType        = reflect.TypeOf(time.Time{})
 	numberType      = reflect.TypeOf(json.Number(""))
+	rawMessageType  = reflect.TypeOf(json.RawMessage(nil))
 )
 
 // decodesEdmV2 reports whether a Go field can decode a property's value as

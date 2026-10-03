@@ -102,7 +102,7 @@ block wins; an attribute that is unset or an empty string falls back to its vari
 | `oauth.client_id` | `SAP_INTEGRATION_SUITE_CLIENT_ID` |
 | `oauth.client_secret` | `SAP_INTEGRATION_SUITE_CLIENT_SECRET` |
 | `api_management.*` | `SAP_INTEGRATION_SUITE_API_MANAGEMENT_HOST`, `_TOKEN_URL`, `_CLIENT_ID`, `_CLIENT_SECRET` |
-| `api_composition.*` | `SAP_INTEGRATION_SUITE_API_COMPOSITION_HOST`, `_TOKEN_URL`, `_CLIENT_ID`, `_CLIENT_SECRET` |
+| `api_composition.*` | `SAP_INTEGRATION_SUITE_API_COMPOSITION_HOST`, `_TOKEN_URL`, `_CLIENT_ID`, `_CLIENT_SECRET`, `_USERNAME`, `_PASSWORD`, `_ORIGIN` |
 | `integration_assessment.*` | `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_ENTITIES_URL`, `_TOKEN_URL`, `_CLIENT_ID`, `_CLIENT_SECRET` |
 | `enable_experimental` | `SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL` |
 | `enable_unofficial` | `SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL` |
@@ -110,7 +110,8 @@ block wins; an attribute that is unset or an empty string falls back to its vari
 Missing Cloud Integration credentials do not fail the provider configuration; a resource or
 data source that needs them fails with an error that says what is missing. The `api_management`
 `api_composition` and `integration_assessment` blocks must have all four values or none; a
-partial block fails at once.
+partial block fails at once. The optional user login of `api_composition` needs `username` and
+`password` together.
 The feature catalog data sources work without any credentials.
 
 ## Example usage
@@ -294,7 +295,7 @@ The [Troubleshooting guide](guides/troubleshooting.md) covers more cases, and
 
 ### Optional
 
-- `api_composition` (Block, Optional) Credentials for API Composition's Configuration API, used only by sapintegrationsuite_business_data_graph. The API has its own region-specific host and OAuth client, from a service key of an API Composition service instance with plan "configuration"; the oauth and api_management credentials do not work there. Set all four values, or none. Each can also come from a SAP_INTEGRATION_SUITE_API_COMPOSITION_* environment variable. (see [below for nested schema](#nestedblock--api_composition))
+- `api_composition` (Block, Optional) Credentials for API Composition's Configuration API, used only by sapintegrationsuite_business_data_graph. The API has its own region-specific host and OAuth client, from a service key of an API Composition service instance with plan "configuration"; the oauth and api_management credentials do not work there. Set host, token_url, client_id and client_secret together, or none. username and password add a key user's login through that client, which the Configuration API needed on a tenant. Each value can also come from a SAP_INTEGRATION_SUITE_API_COMPOSITION_* environment variable. (see [below for nested schema](#nestedblock--api_composition))
 - `api_management` (Block, Optional) Optional, and independent of the oauth block above. Classic API Management (API Providers, API Products, Key Value Maps, Certificate Store References) authenticates against its own API Portal application URL and its own OAuth 2.0 client, generated from the apiportal-apiaccess service plan — never the Cloud Integration credentials configured above. Leave this entire block out if you do not use any sapintegrationsuite_api_provider, sapintegrationsuite_api_product, sapintegrationsuite_api_key_value_map, or sapintegrationsuite_api_management_certificate_store_reference resource or data source. All four values (or their SAP_INTEGRATION_SUITE_API_MANAGEMENT_* environment variable equivalents) must be supplied together, or all left unset. (see [below for nested schema](#nestedblock--api_management))
 - `enable_experimental` (Boolean) Allows resources and data sources whose support status is "experimental": implemented on a documented API, but their lifecycle has not yet passed an acceptance test on a tenant, so behavior or schema may still change. Off by default; a configuration that uses one fails until this is true. Can also be set via the SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL environment variable. See docs/feature-support.md for which ones they are.
 - `enable_unofficial` (Boolean) Allows resources and data sources whose support status is "unofficial": they work and were verified on a tenant, but SAP does not document the API behind them (it is known only from the service's $metadata), so SAP may change it without notice. It also allows the unofficial operations of otherwise documented resources, for example updating a message mapping's content in place or deleting a number range. Off by default; a configuration or plan that needs one fails until this is true. Can also be set via the SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL environment variable.
@@ -310,7 +311,10 @@ Optional:
 - `client_id` (String) OAuth 2.0 client ID from the service key. Environment variable: SAP_INTEGRATION_SUITE_API_COMPOSITION_CLIENT_ID.
 - `client_secret` (String, Sensitive) OAuth 2.0 client secret from the service key. Environment variable: SAP_INTEGRATION_SUITE_API_COMPOSITION_CLIENT_SECRET.
 - `host` (String) Region-specific API Composition host from the service key, for example https://eu10.graph.sap. The provider appends /configuration/v1/sap.graph. Environment variable: SAP_INTEGRATION_SUITE_API_COMPOSITION_HOST.
+- `origin` (String) Origin key of the user's identity provider in the subaccount (Security, Trust Configuration), sent as login_hint. Leave it out for the default identity provider. Environment variable: SAP_INTEGRATION_SUITE_API_COMPOSITION_ORIGIN.
+- `password` (String, Sensitive) Password of username. Environment variable: SAP_INTEGRATION_SUITE_API_COMPOSITION_PASSWORD.
 - `token_url` (String) Full OAuth 2.0 token endpoint URL, ending in /oauth/token. If the service key only has the authentication server URL, append /oauth/token. Environment variable: SAP_INTEGRATION_SUITE_API_COMPOSITION_TOKEN_URL.
+- `username` (String) User with the role collection Graph.KeyUser. With username and password the provider requests the token with the password grant through the service key's client, so it carries the user's roles. The identity provider must accept passwords without a second factor. Set together with password. Environment variable: SAP_INTEGRATION_SUITE_API_COMPOSITION_USERNAME.
 
 
 <a id="nestedblock--api_management"></a>

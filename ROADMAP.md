@@ -27,7 +27,7 @@ Each 0.x minor release has one theme. Released so far: 0.1.0 (the broad first pr
 | Version | Theme | State | Precondition |
 |---|---|---|---|
 | 0.5.0 | Integration Assessment technology profiles and the ISA-M taxonomy | prepared on `release/0.5.0` | releasing 0.4.0 first |
-| 0.6.0 | API Composition: business data graph hardening | in progress on `feature/api-composition-hardening` | a token with `Graph_Key_User` and a destination (P1 item 2) |
+| 0.6.0 | API Composition: business data graph hardening | in progress on `feature/api-composition-hardening` | a destination API Composition can reach (P1 item 2) |
 | 0.7.0 | Cloud Integration data types, message types, fault message types, service interfaces | proposed | proof that content written through the API is kept (P1 item 4) |
 | 0.8.0 | Security Content completion | proposed | the upload formats in P2 item 5 |
 | 0.9.0 | Classic API Management infrastructure, above all virtual hosts; the API proxy only if the official Transport API request passes its acceptance test | proposed | P2 item 6 and the Transport API specification |
@@ -57,13 +57,14 @@ These need no further research, only a run of the prepared tests:
    and `TestAccIntegrationAssessment_taxonomy` passed on 2026-09-29. The Hub specification of
    the Entities API would make them supported; it still needs an SAP login. Requests and
    assessment results stay out of scope as workflow.
-2. **API Composition hardening.** `TestAccBusinessDataGraph_basic` needs a token that carries
-   `Graph_Key_User` and a destination; the Configuration API's `$metadata` goes through
-   `cmd/apidiscovery`. A client-credentials token of a `configuration` service key carried no
-   graph role on the test tenant and got 403 everywhere (2026-09-29, 2026-10-01); a user token
-   of a key user is tested next. The provider already reports the 403 with the role and SAP's
-   trace ID. Passing both promotes the business data graph from experimental and
-   settles the PATCH body and the delete request, which may then leave `enable_unofficial`.
+2. **API Composition hardening.** A key user's token (password grant through the
+   `configuration` client) reads the Configuration API; a client-credentials token got 403. The
+   provider has that login since `feature/api-composition-hardening`, `TestAccMetadata` passes
+   with it, and the client is checked against the `$metadata` snapshot. Still open:
+   `TestAccBusinessDataGraph_basic` needs a destination API Composition can reach. Passing it
+   promotes the business data graph from experimental and settles the PATCH body and the delete
+   request, which may then leave `enable_unofficial`. The settings the `$metadata` adds
+   (`odataContainment`, descriptions, cues on key mappings) can follow once a graph round-trips.
 3. **Edge Integration Cell targeting.** `TestAccEdgeIntegrationCell_securityAndPartnerDirectory`
    needs a tenant with an Edge Integration Cell. Passing it makes `runtime_location_id`
    supported for the tested resources; the deployment resources follow with their own test.

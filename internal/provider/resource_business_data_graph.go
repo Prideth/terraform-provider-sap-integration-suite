@@ -547,7 +547,7 @@ func businessDataGraphFromClient(cfg *apicomposition.GraphConfiguration) busines
 		Exclude:                     listOrNull(cfg.Exclude),
 		DataSources:                 dataSources,
 		LocatingPolicy:              policy,
-		Extensions:                  cfg.Extensions,
+		Extensions:                  cfg.ExtensionNames(),
 		Status:                      stringOrNull(cfg.Status),
 		StatusDetails:               stringOrNull(cfg.StatusDetails),
 		LogMessages:                 logMessages,
@@ -575,11 +575,12 @@ func saveProcessedGraph(ctx context.Context, state *tfsdk.State, tf timeouts.Val
 
 // businessDataGraphErrorDetail is diagnosticDetail plus what helps with the
 // Configuration API's errors: SAP's trace ID, which SAP support asks for,
-// and on HTTP 403 the role SAP protects the API with. SAP's 403 text only
-// says to check the assigned roles; on a test tenant (2026-09-29 and
-// 2026-10-01) a client-credentials token of a `configuration` service key
-// carried no graph role and was refused with code 2707 on every request,
-// including $metadata.
+// and on HTTP 403 the way to a token that carries the API's scope. SAP's
+// 403 text only says to check the assigned roles. On a test tenant a
+// client-credentials token of a `configuration` service key carried no
+// scope for the API and was refused with code 2707 on every request,
+// including $metadata; a key user's token through the same client
+// (password grant) carried the scope `config` and was accepted (2026-10-03).
 func businessDataGraphErrorDetail(err error) string {
 	detail := diagnosticDetail(err)
 	var apiErr *apierror.Error
@@ -590,11 +591,12 @@ func businessDataGraphErrorDetail(err error) string {
 		detail += "\nSAP trace ID: " + apiErr.RequestID
 	}
 	if apiErr.StatusCode == http.StatusForbidden {
-		detail += "\n\nSAP protects the API Composition Configuration API with the role " +
-			"Graph_Key_User (Graph_Guest for reading only). The access token of the " +
-			"api_composition credentials does not grant it. A token that a service key of " +
-			"plan \"configuration\" issues for client credentials can carry no graph role " +
-			"at all; see \"Credentials\" in the API Composition guide."
+		detail += "\n\nThe access token of provider.api_composition lacks the Configuration API's " +
+			"scope (\"config\"), which SAP grants with the role Graph_Key_User. A token that a " +
+			"service key of plan \"configuration\" issues for client credentials can lack it. Set " +
+			"username and password (and origin for an identity provider other than the default) " +
+			"to log in as a user with the role collection Graph.KeyUser; see \"Credentials\" in " +
+			"the API Composition guide."
 	}
 	return detail
 }

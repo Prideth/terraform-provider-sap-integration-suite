@@ -105,3 +105,86 @@ func TestContract_EntitySets(t *testing.T) {
 		t.Errorf("EntitySets = %s", got)
 	}
 }
+
+// A small OData V4 service with collections, a nested complex type and an
+// enum, built in code because only the shape matters.
+func v4TestService() *Service {
+	return &Service{
+		ID:         "v4",
+		Protocol:   ProtocolODataV4,
+		EntitySets: []EntitySet{{Name: "Graphs", EntityType: "ns.Graph"}},
+		EntityTypes: []EntityType{{Name: "ns.Graph", Key: []string{"id"}, Properties: []Property{
+			{Name: "id", Type: "Edm.String"},
+			{Name: "enabled", Type: "Edm.Boolean"},
+			{Name: "sources", Type: "Collection(ns.Source)"},
+			{Name: "refs", Type: "Collection(ns.Ref)"},
+			{Name: "level", Type: "ns.Level"},
+		}}},
+		ComplexTypes: []EntityType{
+			{Name: "ns.Source", Properties: []Property{{Name: "name", Type: "Edm.String"}, {Name: "services", Type: "Collection(ns.Service)"}}},
+			{Name: "ns.Service", Properties: []Property{{Name: "path", Type: "Edm.String"}}},
+			{Name: "ns.Ref", Properties: []Property{{Name: "name", Type: "Edm.String"}}},
+		},
+		EnumTypes: []EnumType{{Name: "ns.Level", Members: []string{"INFO"}}},
+	}
+}
+
+type v4Service struct {
+	Path string `json:"path"`
+}
+
+type v4Source struct {
+	Name     string      `json:"name"`
+	Services []v4Service `json:"services"`
+}
+
+type v4Graph struct {
+	ID      string            `json:"id"`
+	Enabled *bool             `json:"enabled,omitempty"`
+	Sources []v4Source        `json:"sources"`
+	Refs    []json.RawMessage `json:"refs"` // decodes any shape
+	Level   string            `json:"level"`
+}
+
+type v4WrongService struct {
+	Path  int    `json:"path"`
+	Other string `json:"other"`
+}
+
+type v4WrongSource struct {
+	Services []v4WrongService `json:"services"`
+}
+
+type v4WrongGraph struct {
+	Enabled string          `json:"enabled"`
+	Sources []v4WrongSource `json:"sources"`
+	Refs    []string        `json:"refs"`
+	Level   int             `json:"level"`
+}
+
+func TestVerify_ODataV4Types(t *testing.T) {
+	s := v4TestService()
+	ok := Contract{Reads: []StructUse{{EntitySet: "Graphs", Value: v4Graph{}}}, Writes: []StructUse{{EntitySet: "Graphs", Value: v4Graph{}}}}
+	if problems := Verify(s, ok); len(problems) != 0 {
+		t.Errorf("problems = %v", problems)
+	}
+
+	// Writes are checked as deeply as reads: a V4 body is plain JSON.
+	for _, c := range []Contract{
+		{Reads: []StructUse{{EntitySet: "Graphs", Value: v4WrongGraph{}}}},
+		{Writes: []StructUse{{EntitySet: "Graphs", Value: v4WrongGraph{}}}},
+	} {
+		problems := strings.Join(Verify(s, c), "\n")
+		for _, want := range []string{
+			`ns.Graph.enabled is string, but Edm.Boolean arrives as true or false`,
+			`ns.Graph.sources[].services[].path is int, but Edm.String arrives as a JSON string`,
+			`JSON field "other" of ns.Graph.sources[].services[] is not a property of ns.Service`,
+			`ns.Graph.refs[] is string, but ns.Ref is a complex type, a JSON object`,
+			`ns.Graph.level is int, but ns.Level arrives as a JSON string (enum member)`,
+		} {
+			if !strings.Contains(problems, want) {
+				t.Errorf("missing %q in\n%s", want, problems)
+			}
+		}
+	}
+}

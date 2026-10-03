@@ -42,7 +42,10 @@ func Fetch(ctx context.Context, svc Service) (*Result, error) {
 		return nil, fmt.Errorf("%s: not configured, missing %s", svc.ID, strings.Join(missing, ", "))
 	}
 	base := &http.Client{Timeout: 60 * time.Second}
-	client, _, err := auth.Config{TokenURL: creds.TokenURL, ClientID: creds.ClientID, ClientSecret: creds.ClientSecret}.HTTPClient(ctx, base)
+	client, _, err := auth.Config{
+		TokenURL: creds.TokenURL, ClientID: creds.ClientID, ClientSecret: creds.ClientSecret,
+		Username: creds.Username, Password: creds.Password, Origin: creds.Origin,
+	}.HTTPClient(ctx, base)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", svc.ID, err)
 	}

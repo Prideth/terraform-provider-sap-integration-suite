@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/apimeta"
+	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/apicomposition"
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/apimanagementclassic"
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/cloudintegration"
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/integrationassessment"
@@ -21,6 +22,7 @@ func Contracts() []apimeta.Contract {
 		partnerdirectory.Contract,
 		apimanagementclassic.Contract,
 		integrationassessment.Contract,
+		apicomposition.Contract,
 	}
 }
 

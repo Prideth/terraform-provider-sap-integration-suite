@@ -88,14 +88,15 @@ Implemented; the lifecycle still has to pass its acceptance test on a tenant.
 
 ### API Composition Business Data Graph
 
-`api_composition.business_data_graph` · checked 2026-10-02
+`api_composition.business_data_graph` · checked 2026-10-03
 
-- **Finding:** Create body, GET and PATCH documented; no PATCH body and no delete request documented. The Hub lists the Configuration API as OData V4. SAP protects the API with the role Graph_Key_User, which it describes only as a role for people. A client-credentials token of a configuration service key carried no scope but uaa.resource, and the API answered 403 (code 2707) on the service root, $metadata and GraphConfiguration.
-- **Next step:** A token that carries Graph_Key_User: first a user token of a key user through the configuration client (pending tenant check #50), then TestAccBusinessDataGraph_basic and the service's $metadata through cmd/apidiscovery.
+- **Finding:** Create body, GET and PATCH documented; no PATCH body and no delete request documented. The Hub lists the Configuration API as OData V4. A client-credentials token of a configuration service key carried no scope but uaa.resource and got 403 (code 2707) everywhere; a key user's token through the same client (password grant) carried the scope config and read the service document and $metadata. The $metadata confirms the client's property names, shows extensions as objects, a deleted flag and that the collection is readable only by key.
+- **Next step:** TestAccBusinessDataGraph_basic with the key user login and a destination API Composition can reach (pending tenant check #24); it would settle the PATCH body and the delete request.
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
   - apicomp-probe on the development tenant (2026-09-29 18:44 and 2026-10-01 15:32, read-only): token scopes of a configuration service key and the status of the service root, $metadata and GraphConfiguration
+  - apicomp-probe with a key user on the development tenant (2026-10-03 12:59 and 13:17, read-only): password grant through the configuration client, scope config, service document and $metadata read (snapshot testdata/api-metadata/api-composition-configuration.json), GraphConfiguration list 405; TestAccMetadata passed with the provider's own user login
 
 ## Partial
 

@@ -28,7 +28,7 @@ SAP documentation, official SAP tooling, or a safe verification on a tenant
 | [classic-api-management-content-archive](#classic-api-management-content-archive) | OpenAPI | none yet | | | | | | |
 | [classic-api-management-virtual-host-request](#classic-api-management-virtual-host-request) | OData V2 | none yet | | | | | | |
 | [edge-integration-cell](#edge-integration-cell) | OData V2 | none yet | | | | | | |
-| [api-composition-configuration](#api-composition-configuration) | OData V4 | none yet | | | | | | |
+| [api-composition-configuration](#api-composition-configuration) | OData V4 | 2026-10-03 | 2 | 0 | 0 | 1 | 0 | 1 |
 | [integration-assessment-entities](#integration-assessment-entities) | OData V2 | 2026-09-27 | 27 | 1 | 0 | 18 | 0 | 10 |
 | [integration-assessment-management](#integration-assessment-management) | OData V2 | 2026-09-27 | 1 | 1 | 0 | 0 | 0 | 2 |
 | [data-space-integration](#data-space-integration) | OpenAPI | none yet | | | | | | |
@@ -270,10 +270,23 @@ Cloud Integration APIs of an Edge Integration Cell runtime location.
 API Composition, Configuration API (business data graph).
 
 - Protocol: OData V4
-- Evidence for the service root: SAP Help, API Composition Configuration API: <host>/configuration/v1/sap.graph with a service key of plan configuration; Business Accelerator Hub lists the API as OData V4.
+- Evidence for the service root: SAP Help, API Composition Configuration API: <host>/configuration/v1/sap.graph with a service key of plan configuration; Business Accelerator Hub lists the API as OData V4. On a tenant only a key user's token (password grant through that key's client) was allowed to read it.
 - Acceptance suites: `SAP_INTEGRATION_SUITE_ACC_API_COMPOSITION`
 - Configuration: `SAP_INTEGRATION_SUITE_API_COMPOSITION_HOST`, `SAP_INTEGRATION_SUITE_API_COMPOSITION_TOKEN_URL`, `SAP_INTEGRATION_SUITE_API_COMPOSITION_CLIENT_ID`, `SAP_INTEGRATION_SUITE_API_COMPOSITION_CLIENT_SECRET`
-- Snapshot: none yet. Create one with `go run ./cmd/apidiscovery -services api-composition-configuration -update` (with `-spec-dir <dir>` for a specification), then classify what it lists.
+- Snapshot: `testdata/api-metadata/api-composition-configuration.json`, captured 2026-10-03 from live /$metadata
+- Contract: 2 entity sets, 0 singletons, 2 entity types, 11 complex types, 0 enum types, 0 operations; 13 types reachable from the entity sets and operations, 0 unreachable, 0 unresolved references
+
+### Used by the provider (1)
+
+| Name | Kind | Type or method | Client packages |
+|---|---|---|---|
+| GraphConfiguration | entity set | GraphConfiguration | `apicomposition` |
+
+### Excluded (1)
+
+| Names | Reason | Catalog entry |
+|---|---|---|
+| Extension | Custom entity projections. SAP's documentation says the Configuration API does not manage extensions, although the $metadata declares the entity set; a graph's extensions are read-only. | `api_composition.business_data_graph` |
 
 ## integration-assessment-entities
 
