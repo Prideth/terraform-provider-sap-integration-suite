@@ -149,7 +149,7 @@ taxonomy readable.
 Nothing to do. All additions are optional and need `enable_unofficial`; no
 state migration is needed when upgrading from 0.4.
 
-## 0.4.0 — 2026-09-29
+## 0.4.0 — 2026-10-03
 
 0.4.0 adds the Integration Assessment landscape. It changes nothing for
 existing configurations. The acceptance test of the landscape, including
