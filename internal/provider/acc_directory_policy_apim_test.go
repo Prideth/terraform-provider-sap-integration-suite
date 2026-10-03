@@ -188,6 +188,73 @@ data "sapintegrationsuite_access_policy" "test" {
 	})
 }
 
+// SAP silently shortens the role name and the reference's name, description
+// and value (tenant probe, 2026-10-03). Values exactly at the limit must
+// round-trip without a diff, and one character more must fail at plan time.
+// The reference value matches no real flow, so the policy restricts nothing.
+func TestAccAccessPolicy_stringLimits(t *testing.T) {
+	accgate.Require(t, accgate.SecurityContent)
+	pad := func(prefix string, n int) string { return prefix + strings.Repeat("x", n-len(prefix)) }
+	role := pad(testAccName()+"_", accessPolicyRoleNameMaxLength)
+	refName := pad("tfacc limit ", accessPolicyReferenceNameMaxLength)
+	refDescription := pad("tfacc limit description ", accessPolicyReferenceDescriptionLength)
+	refValue := pad(testAccName()+"NoSuchFlow", accessPolicyReferenceValueMaxLength)
+	config := func(role, name, description, value string) string {
+		return fmt.Sprintf(`
+resource "sapintegrationsuite_access_policy" "test" {
+  role_name = %q
+}
+
+resource "sapintegrationsuite_access_policy_reference" "test" {
+  access_policy_id = sapintegrationsuite_access_policy.test.id
+  name             = %q
+  description      = %q
+  artifact_type    = "INTEGRATION_FLOW"
+  attribute        = "Name"
+  operator         = "exactString"
+  value            = %q
+}
+`, role, name, description, value)
+	}
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: config(role, refName, refDescription, refValue),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sapintegrationsuite_access_policy.test", "role_name", role),
+					resource.TestCheckResourceAttr("sapintegrationsuite_access_policy_reference.test", "name", refName),
+					resource.TestCheckResourceAttr("sapintegrationsuite_access_policy_reference.test", "description", refDescription),
+					resource.TestCheckResourceAttr("sapintegrationsuite_access_policy_reference.test", "value", refValue),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+			},
+			{
+				Config:      config(role+"x", refName, refDescription, refValue),
+				ExpectError: regexp.MustCompile(`Access policy role name is too long`),
+			},
+			{
+				Config:      config(role, refName+"x", refDescription, refValue),
+				ExpectError: regexp.MustCompile(`Access policy reference name is too long`),
+			},
+			{
+				Config:      config(role, refName, refDescription+"x", refValue),
+				ExpectError: regexp.MustCompile(`Access policy reference description is too long`),
+			},
+			{
+				Config:      config(role, refName, refDescription, refValue+"x"),
+				ExpectError: regexp.MustCompile(`Access policy reference value is too long`),
+			},
+			{
+				Config:   config(role, refName, refDescription, refValue),
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
 // A key value map scoped to a proxy name that does not exist; SAP accepts
 // that, and nothing outside the map is touched. Entries force a new map.
 func TestAccAPIKeyValueMap_basic(t *testing.T) {

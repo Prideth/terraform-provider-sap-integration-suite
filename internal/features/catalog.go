@@ -720,6 +720,9 @@ var Catalog = []Feature{
 				"declare no limit, but a tenant accepts a longer description on create and stores only " +
 				"its first 200 characters (observed on a tenant). The provider rejects a longer " +
 				"description at plan time instead of letting the apply fail after the policy exists.",
+			"role_name is limited to 200 characters for the same reason: a tenant probe " +
+				"(2026-10-03) found that SAP stores only the first 200 characters of a longer role " +
+				"name without an error. The provider rejects a longer name at plan time.",
 		},
 		Operations: Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
 	},
@@ -754,6 +757,9 @@ var Catalog = []Feature{
 				"enable_unofficial.",
 			"Releases before this correction sent invented field names (ArtifactType, Attribute, " +
 				"Operator, Value) and could not have worked against a real tenant.",
+			"name is limited to 50 characters, description to 200 and value to 150. SAP declares no " +
+				"limit, but a tenant probe (2026-10-03) found that it stores only the first characters " +
+				"of a longer value without an error. The provider rejects longer values at plan time.",
 		},
 		Operations: Operations{Create: true, Read: true, Update: false, Delete: true, Import: true},
 	},

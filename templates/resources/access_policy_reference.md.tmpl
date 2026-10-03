@@ -112,6 +112,11 @@ patterns that Java rejects as well: unbalanced parentheses or brackets, a leadin
 character range. The check uses Go's regular expression parser, which is not Java's, so it reports
 only these errors; a pattern that passes can still be rejected by SAP.
 
+`value` may contain at most 150 characters, `name` at most 50 and `description` at most 200.
+SAP accepts longer values but keeps only their first characters, so the provider rejects them
+while planning (since 0.3.2). A long list of exact names is better written as one
+`regularExpression` or split into several references.
+
 ## Example Usage
 
 {{ tffile "examples/resources/sapintegrationsuite_access_policy_reference/resource.tf" }}

@@ -46,6 +46,9 @@ Without that check (provider versions before 0.3.1), the policy was created, the
 with "Provider produced inconsistent result after apply", and the policy's references were never
 created. An empty string is rejected too; omit the attribute instead.
 
+`role_name` may contain at most 200 characters as well; SAP shortens a longer name the same way,
+and the provider rejects it while planning (since 0.3.2).
+
 The limit is not stated in SAP's documentation or the API's `$metadata`; it was observed on a
 tenant. Keep the description to a short summary of who the policy is for, for example
 `"Sales team access to its Cloud Integration artifacts."` The artifacts the policy
@@ -68,7 +71,7 @@ resource "sapintegrationsuite_access_policy" "utilities" {
 
 ### Required
 
-- `role_name` (String) Role name the policy is associated with. Users only get access to the protected artifacts when a BTP custom role carries exactly this string in its Values attribute. Unique per tenant. Changing it replaces the policy, because SAP does not document renaming a policy in place.
+- `role_name` (String) Role name the policy is associated with. Users only get access to the protected artifacts when a BTP custom role carries exactly this string in its Values attribute. Unique per tenant. Changing it replaces the policy, because SAP does not document renaming a policy in place. At most 200 characters: SAP stores only the first 200, so the provider rejects a longer name during planning.
 
 ### Optional
 

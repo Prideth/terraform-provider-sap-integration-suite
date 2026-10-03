@@ -124,6 +124,21 @@ longer one, which used to fail the apply after the policy had been created and l
 references; since 0.3.1 the provider rejects such a description while planning. Use the
 description for a one-line summary and leave the artifact scope to the references.
 
+SAP shortens the other strings of a policy the same way, without an error. A tenant probe
+(October 2026) found these limits, and since 0.3.2 the provider checks all of them while
+planning:
+
+| Attribute | SAP keeps |
+|---|---|
+| policy `role_name` | 200 characters |
+| policy `description` | 200 characters |
+| reference `name` | 50 characters |
+| reference `description` | 200 characters |
+| reference `value` | 150 characters |
+
+SAP counts characters, not bytes: 200 umlauts are kept. A character outside the Basic
+Multilingual Plane, such as an emoji, counts as two, because how SAP counts it was not tested.
+
 **Update.** Changing a policy's `description` is an in-place update: the provider sends a
 `PATCH` with only `Description`. A tenant test (September 2026) settled the method. `PUT`
 answers `501 Not Implemented`, with or without `Id` in the body, even though SAP's CI/CD
