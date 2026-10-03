@@ -21,14 +21,14 @@ Priorities:
 
 Each 0.x minor release has one theme. Released so far: 0.1.0 (the broad first provider), 0.2.0
 (the tenant-verified rework), 0.3.0 (contract sources, opt-in switches, Registry documentation)
-with the patch 0.3.1. Each minor line has one release branch, `release/<minor>.x`, and
-every release is a tag on it: 0.3.2 (access policy string limits) is prepared on `release/0.3.x`,
-0.4.0 (the Integration Assessment landscape) on `release/0.4.x`, 0.5.0 on `release/0.5.x`.
+with the patches 0.3.1 and 0.3.2, and 0.4.0 (the Integration Assessment landscape). Each minor
+line has one release branch, `release/<minor>.x`, and every release is a tag on it: 0.5.0 is
+prepared on `release/0.5.x`, 0.6.0 on `release/0.6.x`.
 
 | Version | Theme | State | Precondition |
 |---|---|---|---|
-| 0.5.0 | Integration Assessment technology profiles and the ISA-M taxonomy | prepared on `release/0.5.x` | releasing 0.4.0 first |
-| 0.6.0 | API Composition: business data graph hardening | complete on `feature/api-composition-hardening`; every change is tenant-verified | releasing 0.5.0 first |
+| 0.5.0 | Integration Assessment technology profiles and the ISA-M taxonomy | prepared on `release/0.5.x` | — |
+| 0.6.0 | API Composition: business data graph hardening | prepared on `release/0.6.x`; every change is tenant-verified | releasing 0.5.0 first |
 | 0.7.0 | Cloud Integration data types, message types, fault message types, service interfaces | proposed | proof that content written through the API is kept (P1 item 4) |
 | 0.8.0 | Security Content completion | proposed | the upload formats in P2 item 5 |
 | 0.9.0 | Classic API Management infrastructure, above all virtual hosts; the API proxy only if the official Transport API request passes its acceptance test | proposed | P2 item 6 and the Transport API specification |

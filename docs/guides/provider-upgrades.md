@@ -36,8 +36,17 @@ Integration Assessment; see the [Integration Assessment guide](integration-asses
 
 ## 0.5 to 0.6
 
-0.6 changes nothing for configurations without business data graphs.
+No state migration. Configurations without business data graphs need no change, with one
+exception:
 
+- The feature data sources report the new status `research_required` for ten capabilities that
+  are still under investigation; they used to report `unsupported`. A configuration that filters
+  `support_status == "unsupported"` to list gaps should also include `"research_required"`.
+
+For business data graphs:
+
+- Every entry of `locating_policy.cues` needs a `description`. SAP rejects a cue without one, so
+  such a configuration never created a graph; the plan now says so.
 - `sapintegrationsuite_business_data_graph` (resource and data source) is supported and no longer
   needs `enable_experimental = true`. Updating and destroying a graph still need
   `enable_unofficial = true`, because SAP does not document those requests.

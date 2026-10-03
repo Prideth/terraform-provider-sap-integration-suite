@@ -9,12 +9,42 @@ contain breaking schema or lifecycle changes; each one is listed under
 "Breaking changes" together with the steps it needs. Patch releases (0.2.1)
 only fix defects in their minor release.
 
-## Unreleased (planned as 0.6.0)
+## 0.6.0 — 2026-10-03
 
-0.6.0 is planned to harden the API Composition business data graph. The
-provider can now log in to the Configuration API the way a test tenant
-accepted it, and its requests are checked against the API's `$metadata`,
-which that login made readable for the first time.
+0.6.0 makes the API Composition business data graph usable on a tenant. The
+provider logs in to the Configuration API the way a tenant accepted it, its
+requests are checked against the API's `$metadata`, and the whole lifecycle
+of a graph passed acceptance tests. It also separates three support
+statuses that the feature catalog used to mix.
+
+### Breaking changes
+
+#### Features under investigation have their own status
+
+Old behavior: a capability that is known but still under investigation had
+`support_status = "unsupported"` in `sapintegrationsuite_provider_features`
+and `sapintegrationsuite_provider_feature`, like one whose investigation is
+finished.
+
+New behavior: it has the new value `research_required`. Ten capabilities
+change: data types, message types, service interfaces, classic API proxies,
+virtual hosts and environment key value maps, Edge Integration Cell
+deployment targets, certificate chains, PGP keyrings and Data Space
+Integration. The other values are unchanged.
+
+What to do: a configuration that filters `support_status == "unsupported"`
+to list gaps should also include `"research_required"`.
+
+#### A locating policy cue needs a `description`
+
+Old behavior: `locating_policy.cues[].description` of
+`sapintegrationsuite_business_data_graph` was optional.
+
+New behavior: it is required. SAP rejects a cue without a description with
+HTTP 400 ("must have required property 'description'"), so such a
+configuration never created a graph.
+
+What to do: add a description to every cue.
 
 ### New
 
@@ -37,22 +67,12 @@ which that login made readable for the first time.
 
 ### Changed
 
-- **New support status `research_required`.** The feature catalog and the
-  `sapintegrationsuite_provider_feature(s)` data sources now distinguish a
-  capability that is known but still under investigation (🔬 Research
-  required) from one that is implemented but not yet validated on a tenant
-  (🧪 Experimental) and from one that is validated but relies on a contract
-  SAP does not fully document (🧭 Unofficial, previously shown with 🔸).
-  Ten capabilities with an open investigation step move from `unsupported`
-  to `research_required`: data types, message types, service interfaces,
-  classic API proxies, virtual hosts and environment key value maps, Edge
-  Integration Cell deployment targets, certificate chains, PGP keyrings and
-  Data Space Integration. Configurations that filter `support_status ==
-  "unsupported"` no longer list them. Partial support is now shown with 🟡.
-- **A locating policy cue needs a `description`.** SAP rejects a cue
-  without one with HTTP 400 ("must have required property 'description'"),
-  so the provider now requires it while planning. A configuration without
-  it never created a graph.
+- **The documentation keeps three statuses apart:** 🔬 Research required
+  (known, still under investigation, no implementation), 🧪 Experimental
+  (implemented, not yet validated on a tenant) and 🧭 Unofficial (validated,
+  but the SAP contract is not fully documented; previously shown with 🔸).
+  Feature Support has a status legend with every value and its definition,
+  and partial support is shown with 🟡.
 - **The business data graph is supported.** `TestAccBusinessDataGraph_basic`
   created a graph over a custom OData destination, changed it in place,
   imported it and deleted it on a tenant. The resource and the data source
@@ -88,11 +108,13 @@ which that login made readable for the first time.
 
 ### Upgrade notes
 
-Nothing to do for configurations without business data graphs.
-`enable_experimental = true` is no longer needed for them; keep
-`enable_unofficial = true` to update or destroy graphs. If your business
-data graphs failed with HTTP 403, add `username` and `password` of a user
-with the role collection `Graph.KeyUser` to `api_composition`.
+No state migration. Configurations without business data graphs need no
+change, unless they filter the feature data sources by `support_status`
+(see Breaking changes). For business data graphs, `enable_experimental =
+true` is no longer needed; keep `enable_unofficial = true` to update or
+destroy graphs, add a `description` to every cue, and, if your graphs
+failed with HTTP 403, add `username` and `password` of a user with the
+role collection `Graph.KeyUser` to `api_composition`.
 
 ## 0.5.0 — 2026-09-29
 
