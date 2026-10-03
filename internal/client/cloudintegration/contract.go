@@ -24,6 +24,7 @@ var Contract = apimeta.Contract{
 		{EntitySet: dataTypeDesigntimeArtifactsEntitySet, Value: DataType{}},
 		{EntitySet: messageTypeDesigntimeArtifactsEntitySet, Value: MessageType{}},
 		{EntitySet: faultMessageTypeDesigntimeArtifactsEntitySet, Value: MessageType{}},
+		{EntitySet: serviceInterfaceDesigntimeArtifactsEntitySet, Value: ServiceInterface{}},
 		{EntitySet: numberRangesEntitySet, Value: numberRangeWireModel{}},
 		{EntitySet: numberRangesEntitySet, Value: NumberRangeState{}},
 		{EntitySet: integrationPackagesEntitySet, Value: Package{}},
@@ -49,6 +50,7 @@ var Contract = apimeta.Contract{
 		{EntitySet: messageTypeDesigntimeArtifactsEntitySet, Value: messageTypeUpdate{}},
 		{EntitySet: faultMessageTypeDesigntimeArtifactsEntitySet, Value: messageTypeCreate{}},
 		{EntitySet: faultMessageTypeDesigntimeArtifactsEntitySet, Value: messageTypeUpdate{}},
+		{EntitySet: serviceInterfaceDesigntimeArtifactsEntitySet, Value: serviceInterfaceCreate{}},
 		{EntitySet: scriptCollectionDesigntimeArtifactsEntitySet, Value: designtimeUpdateRequest{}},
 		// Create body that links the policy (deep link); never decoded.
 		{EntitySet: artifactReferencesEntitySet, Value: accessPolicyReferenceCreate{}},
@@ -63,6 +65,7 @@ var Contract = apimeta.Contract{
 		apimeta.Key(dataTypeDesigntimeArtifactsEntitySet, "Id", "Edm.String", "Version", "Edm.String"),
 		apimeta.Key(messageTypeDesigntimeArtifactsEntitySet, "Id", "Edm.String", "Version", "Edm.String"),
 		apimeta.Key(faultMessageTypeDesigntimeArtifactsEntitySet, "Id", "Edm.String", "Version", "Edm.String"),
+		apimeta.Key(serviceInterfaceDesigntimeArtifactsEntitySet, "Id", "Edm.String", "Version", "Edm.String"),
 		apimeta.Key(scriptCollectionDesigntimeArtifactsEntitySet, "Id", "Edm.String", "Version", "Edm.String"),
 		apimeta.Key(valueMappingDesigntimeArtifactsEntitySet, "Id", "Edm.String", "Version", "Edm.String"),
 		apimeta.Key(integrationAdapterDesigntimeArtifactsEntitySet, "Id", "Edm.String"),
@@ -88,6 +91,7 @@ var Contract = apimeta.Contract{
 		{Name: "DataTypeDesigntimeArtifactSaveAsVersion", HTTPMethod: "POST", Parameters: []string{"Id", "SaveAsVersion"}},
 		{Name: "MessageTypeDesigntimeArtifactSaveAsVersion", HTTPMethod: "POST", Parameters: []string{"Id", "SaveAsVersion"}},
 		{Name: "FaultMessageTypeDesigntimeArtifactSaveAsVersion", HTTPMethod: "POST", Parameters: []string{"Id", "SaveAsVersion"}},
+		{Name: serviceInterfaceSaveAsVersion, HTTPMethod: "POST", Parameters: []string{"Id", "SaveAsVersion"}},
 		{Name: "ScriptCollectionDesigntimeArtifactSaveAsVersion", HTTPMethod: "POST", Parameters: []string{"Id", "SaveAsVersion"}},
 	},
 }
