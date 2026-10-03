@@ -38,7 +38,7 @@ Do not conflate these: a feature can be fully supported by this provider and sti
 
 | Feature | Domain | Status | Contract source | Public API | Create | Read | Update | Delete | Import | Deploy | Terraform |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| `api_composition.business_data_graph` | api_composition | experimental (public_api_incomplete) | sap_documentation (some operations unofficial) | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
+| `api_composition.business_data_graph` | api_composition | supported | sap_documentation (some operations unofficial) | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
 | `api_gateway.api_artifact` | api_gateway | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
 | `api_gateway.api_artifact_deployment` | api_gateway | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
 | `api_gateway.api_policy` | api_gateway | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
@@ -163,7 +163,6 @@ provider "sapintegrationsuite" {
 | Type | Status | Switch |
 |---|---|---|
 | `sapintegrationsuite_access_policy_runtime_assignments` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_business_data_graph` | experimental | `enable_experimental` |
 | `sapintegrationsuite_integration_assessment_application_instance` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_application` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_deployment_model` | unofficial | `enable_unofficial` |
@@ -211,15 +210,6 @@ Grouped by why, not just that. A feature can be `partial` and reachable via one 
 
 ### Public API details are not fully confirmed
 
-- **`api_composition.business_data_graph`** — A business data graph combines the business systems of a landscape (S/4HANA, SAP Sales Cloud, custom OData services and others) into one connected API. Managed through API Composition's Configuration API.
-  - Needs its own credentials in provider.api_composition: a service key of an API Composition service instance with plan "configuration". SAP does not document that service key field by field, so the four values are entered as they are.
-  - The API accepts only tokens with its scope config, which SAP grants with the role Graph_Key_User. A client-credentials token of a configuration key lacked it on a tenant (HTTP 403), a key user's token through the same client (password grant: username, password, origin) carried it. The password grant needs an identity provider that accepts passwords without a second factor.
-  - SAP documents the Create body, GET and PATCH on GraphConfiguration/{id}, and the status model. It gives no PATCH body and no delete request. The provider sends the writable properties as the PATCH body and DELETE to the graph's URL. The tenant's $metadata confirms the property names; creating, changing and deleting a graph is not yet verified against a live system. Both need enable_unofficial in addition to enable_experimental, so without it a graph can be created and read, but not changed in place or destroyed.
-  - SAP processes graphs asynchronously. Create and Update wait until the status leaves PROCESSING (20 minutes by default, configurable with timeouts). A graph that ends in FAILED is kept in state and marked tainted.
-  - Extensions cannot be managed through the Configuration API, according to SAP; extensions is read-only and left alone on update.
-  - The $metadata names odataContainment, a graph and locating policy description and cues on key mappings, which SAP's pages describe without a name or not at all. They cannot be set yet and are left alone on update.
-  - A graph can only be read by its identifier; the collection is not readable (HTTP 405).
-  - Each logMessages entry (level, message and code in the $metadata) is exposed as the JSON text SAP returned.
 - **`api_management.classic.api_proxy`** — A classic API Management API proxy definition: the ZIP-bundled design-time content (proxy endpoint, target endpoint, policies, resources) deployed as a callable API.
   - An implementation exists in the repository but is not part of the provider yet: the API portal answered its import, the request SAP's Client SDK 3.0.6 sends, with 400 APIPROXY_ZIP_ERROR ("Verify the directory structure inside the zip"), even for a bundle the same API portal had exported (tenant test, 2026-09-27). It is added once the request documented in the official Transport API specification (APIPortal_Transport_CF) works.
   - Experimental until the acceptance test (TestAccAPIProxy_sample) passes on a tenant. Upload follows SAP's API Management Client SDK 3.0.6 (published 2026-09-24) byte for byte: POST /apiportal/api/1.0/Transport.svc/APIProxies with the SDK's own query and the raw ZIP as application/octet-stream. The Business Accelerator Hub lists "API Portal - Transport (CF)" ("Export and Import API Proxy via zip bundle") as the official API; its specification needs an SAP login.

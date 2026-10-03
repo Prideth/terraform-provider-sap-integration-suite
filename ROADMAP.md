@@ -28,7 +28,7 @@ every release is a tag on it: 0.3.2 (access policy string limits) is prepared on
 | Version | Theme | State | Precondition |
 |---|---|---|---|
 | 0.5.0 | Integration Assessment technology profiles and the ISA-M taxonomy | prepared on `release/0.5.x` | releasing 0.4.0 first |
-| 0.6.0 | API Composition: business data graph hardening | in progress on `feature/api-composition-hardening` | a destination API Composition can reach (P1 item 2) |
+| 0.6.0 | API Composition: business data graph hardening | in progress on `feature/api-composition-hardening`; the graph is supported | the `$metadata` settings pass a tenant test (P1 item 2) |
 | 0.7.0 | Cloud Integration data types, message types, fault message types, service interfaces | proposed | proof that content written through the API is kept (P1 item 4) |
 | 0.8.0 | Security Content completion | proposed | the upload formats in P2 item 5 |
 | 0.9.0 | Classic API Management infrastructure, above all virtual hosts; the API proxy only if the official Transport API request passes its acceptance test | proposed | P2 item 6 and the Transport API specification |
@@ -61,11 +61,12 @@ These need no further research, only a run of the prepared tests:
 2. **API Composition hardening.** A key user's token (password grant through the
    `configuration` client) reads the Configuration API; a client-credentials token got 403. The
    provider has that login since `feature/api-composition-hardening`, `TestAccMetadata` passes
-   with it, and the client is checked against the `$metadata` snapshot. Still open:
-   `TestAccBusinessDataGraph_basic` needs a destination API Composition can reach. Passing it
-   promotes the business data graph from experimental and settles the PATCH body and the delete
-   request, which may then leave `enable_unofficial`. The settings the `$metadata` adds
-   (`odataContainment`, descriptions, cues on key mappings) can follow once a graph round-trips.
+   with it, and the client is checked against the `$metadata` snapshot.
+   `TestAccBusinessDataGraph_basic` passed on 2026-10-03, so the business data graph is
+   supported; its update body and delete request work but stay behind `enable_unofficial`,
+   because SAP does not document them. Next: the settings the `$metadata` adds
+   (`odataContainment`, descriptions, cues on key mappings), behind `enable_unofficial` and with
+   a tenant test.
 3. **Edge Integration Cell targeting.** `TestAccEdgeIntegrationCell_securityAndPartnerDirectory`
    needs a tenant with an Edge Integration Cell. Passing it makes `runtime_location_id`
    supported for the tested resources; the deployment resources follow with their own test.

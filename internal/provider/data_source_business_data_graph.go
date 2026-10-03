@@ -88,7 +88,7 @@ func keyMappingSideDataSourceAttribute(description string) schema.SingleNestedAt
 
 func (d *businessDataGraphDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "EXPERIMENTAL: needs enable_experimental = true in the provider block. Reads the configuration and processing status of a business data graph from API " +
+		Description: "Reads the configuration and processing status of a business data graph from API " +
 			"Composition's Configuration API. Needs provider.api_composition. The attributes match " +
 			"sapintegrationsuite_business_data_graph.",
 		Attributes: map[string]schema.Attribute{

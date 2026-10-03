@@ -2,7 +2,7 @@
 page_title: "sapintegrationsuite_business_data_graph Data Source - sapintegrationsuite"
 subcategory: "API Management"
 description: |-
-  Reads the configuration and processing status of an API Composition business data graph. Experimental.
+  Reads the configuration and processing status of an API Composition business data graph.
 ---
 
 # sapintegrationsuite_business_data_graph (Data Source)
@@ -10,14 +10,14 @@ description: |-
 Reads a business data graph's configuration and processing status, with the same attributes as
 the resource. Needs the `api_composition` block in the provider configuration.
 
-**Status:** experimental. Needs `enable_experimental = true`; see the resource page for why.
+**Status:** supported. A graph is read by its identifier only; SAP does not let the collection be
+listed.
 
 If the object does not exist, the plan fails with SAP's `404`.
 
 ## Example Usage
 
 ```terraform
-# Experimental: needs enable_experimental = true in the provider block.
 # Read a graph that is maintained elsewhere, for example in the
 # Integration Suite UI, and check whether SAP processed it.
 data "sapintegrationsuite_business_data_graph" "sales" {

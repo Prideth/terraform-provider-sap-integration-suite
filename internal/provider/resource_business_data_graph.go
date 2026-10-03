@@ -169,7 +169,7 @@ func keyMappingSideAttribute(description string) schema.SingleNestedAttribute {
 
 func (r *businessDataGraphResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "EXPERIMENTAL: needs enable_experimental = true in the provider block. Manages a business data graph through API Composition's Configuration API. A " +
+		Description: "Manages a business data graph through API Composition's Configuration API. A " +
 			"business data graph exposes the business systems of a landscape as one connected API. " +
 			"This resource needs provider.api_composition, a credential set separate from " +
 			"provider.oauth and provider.api_management.\n\n" +

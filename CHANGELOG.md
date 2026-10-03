@@ -31,6 +31,12 @@ which that login made readable for the first time.
 
 ### Changed
 
+- **The business data graph is supported.** `TestAccBusinessDataGraph_basic`
+  created a graph over a custom OData destination, changed it in place,
+  imported it and deleted it on a tenant. The resource and the data source
+  no longer need `enable_experimental = true`. Updating and destroying a
+  graph still need `enable_unofficial = true`, because SAP documents neither
+  the update body nor the delete request; both worked on the tenant.
 - When the Configuration API refuses a request with HTTP 403, the error of
   `sapintegrationsuite_business_data_graph` (resource and data source) names
   the missing scope and the user login. Every error of the API also shows
@@ -46,10 +52,6 @@ which that login made readable for the first time.
 
 ### Known limitations
 
-- Creating, changing and deleting a graph has still not run on a tenant: it
-  needs a destination that API Composition can reach. The business data
-  graph stays experimental, and its update body and delete request stay
-  unofficial.
 - The `$metadata` names settings SAP's pages describe without a name:
   `odataContainment`, a graph and locating policy `description` and `cues`
   on key mappings. The provider does not set them yet; updates leave them
@@ -59,9 +61,11 @@ which that login made readable for the first time.
 
 ### Upgrade notes
 
-Nothing to do for configurations without business data graphs. If your
-business data graphs failed with HTTP 403, add `username` and `password` of
-a user with the role collection `Graph.KeyUser` to `api_composition`.
+Nothing to do for configurations without business data graphs.
+`enable_experimental = true` is no longer needed for them; keep
+`enable_unofficial = true` to update or destroy graphs. If your business
+data graphs failed with HTTP 403, add `username` and `password` of a user
+with the role collection `Graph.KeyUser` to `api_composition`.
 
 ## 0.5.0 — 2026-09-29
 

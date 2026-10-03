@@ -25,10 +25,9 @@ const envGraphNamespace = "SAP_INTEGRATION_SUITE_ACC_GRAPH_NAMESPACE"
 // The whole lifecycle of a business data graph over one existing
 // destination: create (asynchronous, waits until SAP reports the graph
 // active), change the excluded entities in place, import, destroy. This is
-// the check the resource needs before it can leave experimental.
+// the check that took the resource out of experimental (passed 2026-10-03).
 func TestAccBusinessDataGraph_basic(t *testing.T) {
 	accgate.Require(t, accgate.APIComposition, envGraphDestination)
-	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL", "true")
 	// The in-place update (PATCH) and the delete are unofficial operations.
 	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "true")
 	id := testAccName()

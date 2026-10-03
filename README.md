@@ -4,8 +4,7 @@ A Terraform provider for the content **inside an existing** SAP Integration
 Suite tenant: Cloud Integration packages, artifacts and deployments,
 externalized parameters, security material, the Partner Directory, access
 policies and Classic API Management, the Integration Assessment landscape
-(unofficial), and experimental support for API Composition business data
-graphs.
+(unofficial), and API Composition business data graphs.
 
 > **This project is an independent open-source Terraform provider and is
 > not an official SAP product**, unless and until SAP formally adopts or
@@ -179,7 +178,7 @@ Legend: ✅ Supported · ⚠️ Partial support / important limitations · 👁�
 
 | Feature | Status | Terraform Support |
 |---|:---:|---|
-| API Composition Business Data Graph | 🧪 | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
+| API Composition Business Data Graph | ✅ | Resource + Data Source |
 
 ### Integration Cell
 
@@ -235,7 +234,7 @@ Legend: ✅ Supported · ⚠️ Partial support / important limitations · 👁�
 | Trading Partner Management Partner Directory Generation | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
 | Trading Partner Management Partner Profile | ❌ | No suitable public API — see [feature-support.md](docs/feature-support.md#all-features) |
 
-20 supported · 10 partial · 3 read-only · 1 experimental · 59 unsupported · 2 planned as a separate provider, out of 99 evaluated Integration Suite features.
+21 supported · 10 partial · 3 read-only · 0 experimental · 59 unsupported · 2 planned as a separate provider, out of 99 evaluated Integration Suite features.
 
 <!-- END GENERATED FEATURE SUPPORT -->
 

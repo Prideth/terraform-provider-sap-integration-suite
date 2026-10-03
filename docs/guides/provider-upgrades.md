@@ -34,6 +34,18 @@ technology profile resources (technology domain, style and key characteristic ra
 read-only lookups for the whole ISA-M taxonomy. They are unofficial and optional, like the rest of
 Integration Assessment; see the [Integration Assessment guide](integration-assessment.md).
 
+## 0.5 to 0.6
+
+0.6 changes nothing for configurations without business data graphs.
+
+- `sapintegrationsuite_business_data_graph` (resource and data source) is supported and no longer
+  needs `enable_experimental = true`. Updating and destroying a graph still need
+  `enable_unofficial = true`, because SAP does not document those requests.
+- If a business data graph failed with HTTP 403 and code 2707, add the login of a user with the
+  role collection `Graph.KeyUser` to `api_composition`: `username`, `password`, and `origin` for an
+  identity provider other than the default. See "Logging in as a key user" in the
+  [API Composition guide](api-composition.md).
+
 ## 0.3 to 0.4
 
 0.4 adds the Integration Assessment resources and data sources, which are unofficial and

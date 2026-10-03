@@ -268,14 +268,15 @@ The following parts are still the provider's own inference:
   `DELETE` to the graph's URL.
 
   Because SAP documents neither the update body nor the delete request, both are unofficial
-  operations and need `enable_unofficial = true` in the provider block, in addition to
-  `enable_experimental`. Without it, a graph can be created and read, but a plan that updates
-  it in place, replaces it or destroys it fails with an error that names the operation.
+  operations and need `enable_unofficial = true` in the provider block. Without it, a graph can
+  be created and read, but a plan that updates it in place, replaces it or destroys it fails with
+  an error that names the operation.
 - **Log messages.** The `$metadata` types an entry of `logMessages` as `level`, `message` and
   `code`. The provider keeps each entry as the JSON text SAP returned.
 
-No graph has been created, changed or deleted through this resource on a tenant yet: that needs a
-destination that API Composition can reach.
+An acceptance test created a graph over a custom OData destination, changed it in place, imported
+it and deleted it on a tenant (October 2026), so the update body and the delete request work as
+described, although SAP does not document them.
 
 ## Limitations
 

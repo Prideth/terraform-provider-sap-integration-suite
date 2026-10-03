@@ -3,7 +3,6 @@ page_title: "sapintegrationsuite_business_data_graph Resource - sapintegrationsu
 subcategory: "API Management"
 description: |-
   An API Composition business data graph that exposes several business systems as one API.
-  Experimental; needs enable_experimental.
 ---
 
 # sapintegrationsuite_business_data_graph (Resource)
@@ -14,15 +13,14 @@ which system leads for which entity, and how keys translate between systems. Cli
 applications then query the graph; that query traffic is not configuration and is outside
 Terraform.
 
-**Status:** experimental. Needs `enable_experimental = true` in the provider block. SAP documents
-the create body, reading, the PATCH URL and the status model of API Composition's Configuration
-API. It shows no PATCH body and no delete request, so updating and deleting a graph are
-unofficial operations that also need `enable_unofficial = true`. The resource has not run
-against a live system yet, and its schema may change before it is promoted.
+**Status:** supported. SAP documents the create body, reading, the PATCH URL and the status model
+of API Composition's Configuration API. It shows no PATCH body and no delete request, so updating
+and deleting a graph are unofficial operations that need `enable_unofficial = true`. An acceptance
+test created, changed, imported and deleted a graph on a tenant (October 2026).
 
 ## Prerequisites
 
-- `enable_experimental = true`, and `enable_unofficial = true` to update or destroy graphs.
+- `enable_unofficial = true` to update or destroy graphs.
 - The `api_composition` block in the provider configuration, with a key of an API Composition
   service instance of plan `configuration`. The Cloud Integration and API portal credentials do
   not work for this API.

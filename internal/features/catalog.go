@@ -1960,10 +1960,9 @@ var Catalog = []Feature{
 		Description: "A business data graph combines the business systems of a landscape (S/4HANA, " +
 			"SAP Sales Cloud, custom OData services and others) into one connected API. Managed " +
 			"through API Composition's Configuration API.",
-		SupportStatus:          StatusExperimental,
+		SupportStatus:          StatusSupported,
 		ContractSource:         SourceSAPDocumentation,
 		UndocumentedOperations: []string{"delete (DELETE on the graph)", "update body (PATCH with the writable properties)"},
-		SupportReason:          ReasonPublicAPIIncomplete,
 		ResourceTypes:          []string{"sapintegrationsuite_business_data_graph"},
 		DataSourceTypes:        []string{"sapintegrationsuite_business_data_graph"},
 		PublicAPI:              true,
@@ -1980,10 +1979,10 @@ var Catalog = []Feature{
 			"SAP documents the Create body, GET and PATCH on GraphConfiguration/{id}, and the status " +
 				"model. It gives no PATCH body and no delete request. The provider sends the writable " +
 				"properties as the PATCH body and DELETE to the graph's URL. The tenant's $metadata " +
-				"confirms the property names; creating, changing and deleting a graph is not yet " +
-				"verified against a live system. Both need enable_unofficial in addition to " +
-				"enable_experimental, so without it a graph can be created and read, but not changed " +
-				"in place or destroyed.",
+				"confirms the property names, and TestAccBusinessDataGraph_basic created, changed, " +
+				"imported and deleted a graph on a tenant (2026-10-03). Update and delete still need " +
+				"enable_unofficial, so without it a graph can be created and read, but not changed in " +
+				"place or destroyed.",
 			"SAP processes graphs asynchronously. Create and Update wait until the status leaves " +
 				"PROCESSING (20 minutes by default, configurable with timeouts). A graph that ends in " +
 				"FAILED is kept in state and marked tainted.",

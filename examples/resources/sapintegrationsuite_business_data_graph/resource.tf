@@ -1,4 +1,4 @@
-# Experimental: needs enable_experimental = true in the provider block.
+# Updating or destroying a graph needs enable_unofficial = true in the provider block.
 # Updating a graph in place and destroying it also need
 # enable_unofficial = true, because SAP documents neither request.
 # A graph over an S/4HANA system and SAP Sales Cloud. Both destinations
