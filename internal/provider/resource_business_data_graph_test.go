@@ -41,6 +41,9 @@ func businessDataGraphPlan(t *testing.T, s schema.Schema, m businessDataGraphMod
 	m.EffectiveGraphModelVersion = types.StringUnknown()
 	m.Status = types.StringUnknown()
 	m.StatusDetails = types.StringUnknown()
+	// Terraform plans the computed lists as unknown on create.
+	m.Extensions = types.ListUnknown(types.StringType)
+	m.LogMessages = types.ListUnknown(types.StringType)
 	m.Timeouts = timeouts.Value{Object: types.ObjectNull(map[string]attr.Type{
 		"create": types.StringType,
 		"update": types.StringType,

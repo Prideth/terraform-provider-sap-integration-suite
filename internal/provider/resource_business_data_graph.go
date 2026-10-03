@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -52,10 +53,10 @@ type businessDataGraphModel struct {
 	Exclude                     []string                  `tfsdk:"exclude"`
 	DataSources                 []businessDataSourceModel `tfsdk:"data_sources"`
 	LocatingPolicy              *locatingPolicyModel      `tfsdk:"locating_policy"`
-	Extensions                  []string                  `tfsdk:"extensions"`
+	Extensions                  types.List                `tfsdk:"extensions"`
 	Status                      types.String              `tfsdk:"status"`
 	StatusDetails               types.String              `tfsdk:"status_details"`
-	LogMessages                 []string                  `tfsdk:"log_messages"`
+	LogMessages                 types.List                `tfsdk:"log_messages"`
 	Timeouts                    timeouts.Value            `tfsdk:"timeouts"`
 }
 
@@ -470,6 +471,22 @@ func businessDataGraphToClient(m businessDataGraphModel) apicomposition.GraphCon
 
 // listOrNull maps an empty list from SAP to null, the form an omitted
 // optional list has in the configuration.
+// stringListValue turns values into a list attribute. Computed lists must be
+// types.List in the model: Terraform plans them as unknown on create, which a
+// []string field cannot hold (the first tenant run failed with "Value
+// Conversion Error" on log_messages). nullIfEmpty keeps an empty list null,
+// as for extensions; log_messages stays an empty list.
+func stringListValue(values []string, nullIfEmpty bool) types.List {
+	if len(values) == 0 && nullIfEmpty {
+		return types.ListNull(types.StringType)
+	}
+	elems := make([]attr.Value, 0, len(values))
+	for _, v := range values {
+		elems = append(elems, types.StringValue(v))
+	}
+	return types.ListValueMust(types.StringType, elems)
+}
+
 func listOrNull[T any](v []T) []T {
 	if len(v) == 0 {
 		return nil
@@ -547,10 +564,10 @@ func businessDataGraphFromClient(cfg *apicomposition.GraphConfiguration) busines
 		Exclude:                     listOrNull(cfg.Exclude),
 		DataSources:                 dataSources,
 		LocatingPolicy:              policy,
-		Extensions:                  cfg.ExtensionNames(),
+		Extensions:                  stringListValue(cfg.ExtensionNames(), true),
 		Status:                      stringOrNull(cfg.Status),
 		StatusDetails:               stringOrNull(cfg.StatusDetails),
-		LogMessages:                 logMessages,
+		LogMessages:                 stringListValue(logMessages, false),
 	}
 }
 

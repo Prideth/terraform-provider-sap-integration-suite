@@ -30,10 +30,10 @@ type businessDataGraphDataSourceModel struct {
 	Exclude                     []string                  `tfsdk:"exclude"`
 	DataSources                 []businessDataSourceModel `tfsdk:"data_sources"`
 	LocatingPolicy              *locatingPolicyModel      `tfsdk:"locating_policy"`
-	Extensions                  []string                  `tfsdk:"extensions"`
+	Extensions                  types.List                `tfsdk:"extensions"`
 	Status                      types.String              `tfsdk:"status"`
 	StatusDetails               types.String              `tfsdk:"status_details"`
-	LogMessages                 []string                  `tfsdk:"log_messages"`
+	LogMessages                 types.List                `tfsdk:"log_messages"`
 }
 
 func businessDataGraphToDataSourceModel(cfg *apicomposition.GraphConfiguration) businessDataGraphDataSourceModel {
