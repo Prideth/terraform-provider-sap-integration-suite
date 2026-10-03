@@ -13,9 +13,8 @@ standard fault data (`ExchangeFaultData`) and, as additional detail, the data ty
 `data_type_id`. You do not upload a schema.
 
 **Status:** unofficial. Needs `enable_unofficial = true`. SAP documents no request for
-fault message types: the Integration Content API's `$metadata` declares them, and the create, update,
-`SaveAsVersion` and delete requests this resource sends were tested on a tenant, and its
-acceptance test passed on a tenant (October 2026). Because the API is undocumented, SAP may change it
+fault message types: the Integration Content API's `$metadata` declares them, and its acceptance test
+created, changed, imported and versioned one on a tenant (October 2026). Because the API is undocumented, SAP may change it
 without notice.
 
 ## Prerequisites
