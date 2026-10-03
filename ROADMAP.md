@@ -28,7 +28,7 @@ every release is a tag on it: 0.3.2 (access policy string limits) is prepared on
 | Version | Theme | State | Precondition |
 |---|---|---|---|
 | 0.5.0 | Integration Assessment technology profiles and the ISA-M taxonomy | prepared on `release/0.5.x` | releasing 0.4.0 first |
-| 0.6.0 | API Composition: business data graph hardening | in progress on `feature/api-composition-hardening`; the graph and three of its `$metadata` settings are tenant-verified | a second destination for the key mapping cue test (P1 item 2) |
+| 0.6.0 | API Composition: business data graph hardening | complete on `feature/api-composition-hardening`; every change is tenant-verified | releasing 0.5.0 first |
 | 0.7.0 | Cloud Integration data types, message types, fault message types, service interfaces | proposed | proof that content written through the API is kept (P1 item 4) |
 | 0.8.0 | Security Content completion | proposed | the upload formats in P2 item 5 |
 | 0.9.0 | Classic API Management infrastructure, above all virtual hosts; the API proxy only if the official Transport API request passes its acceptance test | proposed | P2 item 6 and the Transport API specification |
@@ -65,8 +65,8 @@ These need no further research, only a run of the prepared tests:
    `TestAccBusinessDataGraph_basic` passed on 2026-10-03, so the business data graph is
    supported; its update body and delete request work but stay behind `enable_unofficial`,
    because SAP does not document them. The settings the `$metadata` adds are settable behind
-   `enable_unofficial`; `description`, `odata_containment` and the locating policy description
-   passed a tenant test, key mapping cues need a second destination for theirs.
+   `enable_unofficial`, and all of them, cue-scoped key mappings included, passed tenant tests
+   on 2026-10-03. Nothing is open for 0.6.0.
 3. **Edge Integration Cell targeting.** `TestAccEdgeIntegrationCell_securityAndPartnerDirectory`
    needs a tenant with an Edge Integration Cell. Passing it makes `runtime_location_id`
    supported for the tested resources; the deployment resources follow with their own test.

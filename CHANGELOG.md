@@ -32,9 +32,8 @@ which that login made readable for the first time.
   the Configuration API's `$metadata` names: `description`,
   `odata_containment` (SAP enables OData containment by default),
   `locating_policy.description` and the `cues` of a key mapping. Setting
-  them needs `enable_unofficial = true`. The first three passed an
-  acceptance test on a tenant; SAP accepted key mapping cues, but their
-  round trip has not run yet. The data source shows all four.
+  them needs `enable_unofficial = true`. All four passed acceptance tests
+  on a tenant. The data source shows them as well.
 
 ### Changed
 

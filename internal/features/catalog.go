@@ -1991,9 +1991,8 @@ var Catalog = []Feature{
 				"extensions is read-only and left alone on update.",
 			"description, odata_containment, locating_policy.description and the cues of a key " +
 				"mapping are named only in the $metadata, so setting them needs enable_unofficial. The " +
-				"first three passed an acceptance test on a tenant (create, in-place change, import); " +
-				"SAP accepted key mapping cues, but their round trip needs a second destination and has " +
-				"not run yet.",
+				"first three passed an acceptance test on a tenant (create, in-place change, import), " +
+				"and so did a cue-scoped key mapping between two data sources (create, import).",
 			"SAP requires a description on every cue, and rules with the same cue for both sides of " +
 				"a cue-scoped key mapping. A destination serves only one data source.",
 			"A graph can only be read by its identifier; the collection is not readable (HTTP 405).",

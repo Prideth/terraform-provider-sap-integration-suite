@@ -197,10 +197,10 @@ descriptions are not on SAP's pages at all. Setting any of these needs `enable_u
 | `locating_policy.key_mapping[].cues` | Cues that select a key mapping. |
 
 `description` and `odata_containment` keep SAP's value when you leave them out, so removing them
-from the configuration changes nothing in SAP. An acceptance test created a graph with the first
-three, changed them in place and imported it on a tenant (October 2026). SAP accepted and
-evaluated the cues of a key mapping in the same test series; a complete round trip needs two
-destinations and has not run yet.
+from the configuration changes nothing in SAP. Acceptance tests on a tenant (October 2026)
+created a graph with the first three, changed them in place and imported it, and created and
+imported a graph with a cue-scoped key mapping between two data sources, each with its own
+destination.
 
 ```hcl
 locating_policy = {
