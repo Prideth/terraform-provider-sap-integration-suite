@@ -41,8 +41,30 @@ optional. To use them, set `enable_unofficial = true` and add the `integration_a
 with the service key of an *Integration Assessment APIs* service instance; see the
 [Integration Assessment guide](integration-assessment.md).
 
-0.4 also contains the access policy checks of 0.3.1 (description length, reference values).
-Coming from 0.3.0, read the next section; nothing else needs to change.
+0.4 also contains the access policy checks of 0.3.1 and 0.3.2 (string lengths, reference values).
+Coming from 0.3.0 or 0.3.1, read the next sections; nothing else needs to change.
+
+## 0.3.1 to 0.3.2
+
+0.3.2 only fixes defects; nothing is renamed and no state is migrated. Four more access policy
+strings that SAP shortens silently are now checked while planning:
+
+| Attribute | At most |
+|---|---|
+| `sapintegrationsuite_access_policy.role_name` | 200 characters |
+| `sapintegrationsuite_access_policy_reference.name` | 50 characters |
+| `sapintegrationsuite_access_policy_reference.description` | 200 characters |
+| `sapintegrationsuite_access_policy_reference.value` | 150 characters |
+
+Configurations within these limits need no change. A longer value fails `terraform plan` with an
+error that names the limit and the length found. Such configurations never applied cleanly: SAP
+stored only the first characters, and the apply ended with a value that differed from the plan.
+
+- Shorten the value. A reference whose `value` lists many exact names is better written as one
+  `regularExpression`, or split into several references.
+- A policy or reference that an earlier apply left in SAP with a shortened value: if it is in the
+  state, the next plan replaces it. If it is not, delete it in SAP, or import it and set the
+  value to the text SAP kept.
 
 ## 0.3.0 to 0.3.1
 

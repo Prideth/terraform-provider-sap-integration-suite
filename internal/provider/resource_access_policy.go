@@ -66,12 +66,15 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 				Description: "Role name the policy is associated with. Users only get access to the " +
 					"protected artifacts when a BTP custom role carries exactly this string in its " +
 					"Values attribute. Unique per tenant. Changing it replaces the policy, because " +
-					"SAP does not document renaming a policy in place.",
+					"SAP does not document renaming a policy in place. At most 200 characters: SAP " +
+					"stores only the first 200, so the provider rejects a longer name during planning.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
+					keptLengthValidator{max: accessPolicyRoleNameMaxLength, summary: "Access policy role name is too long",
+						what: "access policy role names", advice: "Choose a shorter role name; the BTP custom role must carry the same string."},
 				},
 			},
 			"description": schema.StringAttribute{
@@ -251,6 +254,51 @@ func (accessPolicyDescriptionValidator) ValidateString(_ context.Context, req va
 				"SAP would keep only the first %d, so shorten the description to a summary of the policy and describe "+
 				"the protected artifacts with sapintegrationsuite_access_policy_reference resources.",
 				accessPolicyDescriptionMaxLength, n, accessPolicyDescriptionMaxLength))
+	}
+}
+
+// Lengths SAP keeps of the other access policy strings. No source declares
+// them, but a tenant probe (2026-10-03) wrote values of 200 to 5000
+// characters: SAP answered 201 or 204 every time and stored only the first
+// characters, like the description. The provider would then see a different
+// value after apply, so each limit is checked in the configuration.
+const (
+	accessPolicyRoleNameMaxLength          = 200
+	accessPolicyReferenceNameMaxLength     = 50
+	accessPolicyReferenceDescriptionLength = 200
+	accessPolicyReferenceValueMaxLength    = 150
+)
+
+// keptLengthValidator rejects a value longer than SAP keeps of a property
+// that SAP shortens silently instead of rejecting. Length is counted in
+// UTF-16 code units, as for the description: the probe showed that SAP
+// counts characters, not bytes (200 umlauts were kept), and a character
+// outside the Basic Multilingual Plane counts as two to stay on the safe
+// side.
+type keptLengthValidator struct {
+	max     int
+	summary string // for example "Access policy role name is too long"
+	what    string // for example "access policy role names"
+	advice  string // what to do instead, one sentence
+}
+
+func (v keptLengthValidator) Description(context.Context) string {
+	return fmt.Sprintf("must contain at most %d characters", v.max)
+}
+
+func (v keptLengthValidator) MarkdownDescription(ctx context.Context) string {
+	return v.Description(ctx)
+}
+
+func (v keptLengthValidator) ValidateString(_ context.Context, req validator.StringRequest, resp *validator.StringResponse) {
+	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() {
+		return
+	}
+	if n := len(utf16.Encode([]rune(req.ConfigValue.ValueString()))); n > v.max {
+		resp.Diagnostics.AddAttributeError(req.Path, v.summary,
+			fmt.Sprintf("SAP Integration Suite keeps at most %d characters of %s; this one has %d. SAP would "+
+				"accept the value but store only its first %d characters, so the apply would end with a "+
+				"different value than planned. %s", v.max, v.what, n, v.max, v.advice))
 	}
 }
 

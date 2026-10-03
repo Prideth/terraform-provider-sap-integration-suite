@@ -74,23 +74,31 @@ func (r *accessPolicyReferenceResource) Schema(_ context.Context, _ resource.Sch
 				},
 			},
 			"name": schema.StringAttribute{
-				Required:    true,
-				Description: "Name of the reference as shown in the policy's References table. Mandatory in SAP.",
+				Required: true,
+				Description: "Name of the reference as shown in the policy's References table. Mandatory in SAP. " +
+					"At most 50 characters: SAP stores only the first 50, so the provider rejects a longer " +
+					"name during planning.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
+					keptLengthValidator{max: accessPolicyReferenceNameMaxLength, summary: "Access policy reference name is too long",
+						what: "access policy reference names", advice: "Use a short label and put details into description."},
 				},
 			},
 			"description": schema.StringAttribute{
-				Optional:    true,
-				Description: "Optional description, for example what a regular expression is meant to match.",
+				Optional: true,
+				Description: "Optional description, for example what a regular expression is meant to match. " +
+					"At most 200 characters: SAP stores only the first 200, so the provider rejects a longer " +
+					"description during planning.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
+					keptLengthValidator{max: accessPolicyReferenceDescriptionLength, summary: "Access policy reference description is too long",
+						what: "access policy reference descriptions", advice: "Shorten the description."},
 				},
 			},
 			"artifact_type": schema.StringAttribute{
@@ -133,12 +141,16 @@ func (r *accessPolicyReferenceResource) Schema(_ context.Context, _ resource.Sch
 				Required: true,
 				Description: "Stored in ConditionValue. With \"exactString\" the exact name or ID, taken " +
 					"literally. With \"regularExpression\" a Java regular expression, for example " +
-					"\"SALES_.*\" for every name that starts with SALES_ (not the glob \"SALES_*\").",
+					"\"SALES_.*\" for every name that starts with SALES_ (not the glob \"SALES_*\"). " +
+					"At most 150 characters: SAP stores only the first 150, so the provider rejects a " +
+					"longer value during planning.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
+					keptLengthValidator{max: accessPolicyReferenceValueMaxLength, summary: "Access policy reference value is too long",
+						what: "access policy reference values", advice: "Match several artifacts with a shorter regularExpression, or split the condition into several references."},
 				},
 			},
 		},

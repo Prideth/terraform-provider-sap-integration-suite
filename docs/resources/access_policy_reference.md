@@ -112,6 +112,11 @@ patterns that Java rejects as well: unbalanced parentheses or brackets, a leadin
 character range. The check uses Go's regular expression parser, which is not Java's, so it reports
 only these errors; a pattern that passes can still be rejected by SAP.
 
+`value` may contain at most 150 characters, `name` at most 50 and `description` at most 200.
+SAP accepts longer values but keeps only their first characters, so the provider rejects them
+while planning (since 0.3.2). A long list of exact names is better written as one
+`regularExpression` or split into several references.
+
 ## Example Usage
 
 ```terraform
@@ -149,13 +154,13 @@ resource "sapintegrationsuite_access_policy_reference" "core_its_flows" {
 - `access_policy_id` (String) Numeric ID of the access policy this reference belongs to.
 - `artifact_type` (String) Artifact type constant as SAP's API stores it in the Type property, for example "INTEGRATION_FLOW" or "INTEGRATION_PACKAGE", not the UI label. Only the types listed on this page are accepted; the plan fails for any other value.
 - `attribute` (String) Artifact attribute the condition is evaluated against, as stored in ConditionAttribute: "Name" or "ID". Message queues, global variables and global data stores can only be matched by "Name".
-- `name` (String) Name of the reference as shown in the policy's References table. Mandatory in SAP.
+- `name` (String) Name of the reference as shown in the policy's References table. Mandatory in SAP. At most 50 characters: SAP stores only the first 50, so the provider rejects a longer name during planning.
 - `operator` (String) Condition type as stored in ConditionType: "exactString" (Equals in the UI) or "regularExpression" (Matches in the UI). Integration packages only allow "exactString". UI labels such as EQUALS or MATCHES are rejected.
-- `value` (String) Stored in ConditionValue. With "exactString" the exact name or ID, taken literally. With "regularExpression" a Java regular expression, for example "SALES_.*" for every name that starts with SALES_ (not the glob "SALES_*").
+- `value` (String) Stored in ConditionValue. With "exactString" the exact name or ID, taken literally. With "regularExpression" a Java regular expression, for example "SALES_.*" for every name that starts with SALES_ (not the glob "SALES_*"). At most 150 characters: SAP stores only the first 150, so the provider rejects a longer value during planning.
 
 ### Optional
 
-- `description` (String) Optional description, for example what a regular expression is meant to match.
+- `description` (String) Optional description, for example what a regular expression is meant to match. At most 200 characters: SAP stores only the first 200, so the provider rejects a longer description during planning.
 
 ### Read-Only
 
