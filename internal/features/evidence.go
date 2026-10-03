@@ -98,9 +98,9 @@ var Evidence = map[string]EvidenceRecord{
 		"SaveAsVersion is documented for integration flows and in $metadata for every versioned design-time type; the provider uses it for flows, message mappings and script collections.",
 		"Value mappings need an in-place update first (see cloud_integration.value_mapping); the other types need their own resources.",
 		srcHelp, srcMetaCI, srcTenant),
-	"cloud_integration.data_type": evOn("2026-09-27",
-		"Reading works (collection and package navigation). A create without content works (201), and SaveAsVersion works (202). Every request that carries content failed with 500 (\"map is null\"): the create with the package export's data type, with or without Namespace, Description and IsSimpleType, and the update. SAP Help documents no request.",
-		"The next gap probe sends the content that the API's own $value returns for an existing data type. A data type without content has no use in Terraform, so a resource needs a create or update with content that works.",
+	"cloud_integration.data_type": evOn("2026-10-03",
+		"Create, update (PUT), SaveAsVersion and delete work on a tenant with the bundle SAP stores for a data type (XSD, additionalAttributes.json, metainfo.prop); elements added on create and update are kept. SAP Help documents no request, so the contract comes from the $metadata and the probes.",
+		"TestAccDataType_basic on a tenant; passing it makes the data type unofficial.",
 		srcHelp, srcMetaCI, srcExport, srcGapProbe),
 	"cloud_integration.message_type": ev(
 		"$metadata has MessageTypeDesigntimeArtifacts and FaultMessageTypeDesigntimeArtifacts with SaveAsVersion; SAP Help documents neither.",

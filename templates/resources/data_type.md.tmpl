@@ -1,0 +1,71 @@
+---
+page_title: "sapintegrationsuite_data_type Resource - sapintegrationsuite"
+subcategory: "Cloud Integration"
+description: |-
+  A complex data type in an integration package, built from an XML schema. Unofficial; needs enable_unofficial.
+---
+
+# sapintegrationsuite_data_type (Resource)
+
+Manages a data type: a complex XML type that message types and service interfaces of the same
+package build on. You provide the schema; the provider uploads it as a data type artifact.
+
+**Status:** experimental. Needs `enable_experimental = true`. SAP documents no request for data
+types: the Integration Content API's `$metadata` declares `DataTypeDesigntimeArtifacts`, and the
+create, update, `SaveAsVersion` and delete requests this resource sends were tested on a tenant
+with probes. Once its acceptance test has passed on a tenant, the resource becomes unofficial and
+needs `enable_unofficial = true` instead, because SAP may change an undocumented API without
+notice.
+
+## Prerequisites
+
+- An integration package, usually [`sapintegrationsuite_integration_package`](integration_package.md).
+- The schema of the data type: an `xsd:schema` with exactly one top-level `complexType`.
+- An OAuth client with `WorkspacePackagesEdit`.
+
+## Lifecycle
+
+| Operation | What happens |
+|---|---|
+| Create | Builds the artifact bundle from `xsd`, `namespace` and `description` and uploads it; with `save_as_version`, saves it under that version. |
+| Read | Reads name, namespace, description and version. `xsd` keeps the value of the last apply. |
+| Update | A change of `xsd`, `name` or `description` uploads a new bundle with `PUT`. A changed `save_as_version` saves a new version. |
+| Replacement | Changing `data_type_id`, `package_id` or `namespace` creates a new data type. |
+| Delete | Deletes the data type. |
+
+**The bundle.** SAP stores a data type as a bundle with the schema, a manifest and two attribute
+files. A package export from the UI lacks the attribute files, and SAP rejects such a bundle with
+`500` "map is null". The provider therefore builds the bundle itself, in the layout SAP returns
+for a data type.
+
+**The schema.** The plan checks that `xsd` is well-formed, has `xsd:schema` as root element,
+exactly one top-level `complexType`, and the `targetNamespace` given in `namespace`. SAP stores
+the complex type under the data type's `name`; if your schema uses another name, the plan warns,
+because references to the type must use the stored name.
+
+## Example Usage
+
+{{ tffile "examples/resources/sapintegrationsuite_data_type/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ codefile "shell" "examples/resources/sapintegrationsuite_data_type/import.sh" }}
+
+The ID is `<package_id>/<data_type_id>`. SAP's normalized schema is not imported: after an
+import, the first apply uploads the schema from the configuration.
+
+## Limitations
+
+- **SAP:** no documented request; the contract comes from the `$metadata` and tenant tests.
+- **Complex types only.** The bundle of a simple type (`IsSimpleType`) was not examined.
+- **No drift detection for the schema.** SAP renames the complex type and reformats the schema,
+  so the provider does not compare SAP's schema with `xsd`. A change made in the UI is not shown
+  as a diff.
+- Message types and service interfaces that use the data type are not managed yet.
+
+## Related
+
+- [`sapintegrationsuite_integration_package`](integration_package.md): the package the data type belongs to.
+- [Integration Content and Deployments](../guides/integration-content.md).

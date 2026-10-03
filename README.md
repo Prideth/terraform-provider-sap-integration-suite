@@ -88,7 +88,7 @@ Legend: ✅ Supported · 🟡 Partial · 👁️ Read-only · 🧪 Experimental 
 | Custom Tag Configuration | 🟡 | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
 | Data Store | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
 | Data Store Entry | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
-| Data Type | 🔬 | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
+| Data Type | 🧪 | Resource — see [feature-support.md](docs/feature-support.md#all-features) |
 | Design-Time Artifact Versioning | 🟡 | Resource — see [feature-support.md](docs/feature-support.md#all-features) |
 | Integration Adapter | 🟡 | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
 | Integration Adapter Deployment | 🟡 | Resource — see [feature-support.md](docs/feature-support.md#all-features) |
@@ -234,7 +234,7 @@ Legend: ✅ Supported · 🟡 Partial · 👁️ Read-only · 🧪 Experimental 
 | Trading Partner Management Partner Directory Generation | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
 | Trading Partner Management Partner Profile | ❌ | No suitable public API — see [feature-support.md](docs/feature-support.md#all-features) |
 
-21 supported · 10 partial · 3 read-only · 0 experimental · 4 unofficial · 10 research required · 49 unsupported · 2 separate provider, out of 99 evaluated Integration Suite features.
+21 supported · 10 partial · 3 read-only · 1 experimental · 4 unofficial · 9 research required · 49 unsupported · 2 separate provider, out of 99 evaluated Integration Suite features.
 
 <!-- END GENERATED FEATURE SUPPORT -->
 

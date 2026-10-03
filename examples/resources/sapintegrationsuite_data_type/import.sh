@@ -1,0 +1,1 @@
+terraform import sapintegrationsuite_data_type.order Sales/Order

@@ -217,7 +217,6 @@ const (
 var cloudIntegrationClassification = concat(
 	// Design-time content the provider does not manage yet.
 	[]rule{
-		candidate("DataTypeDesigntimeArtifacts", "cloud_integration.data_type", "Versioned design-time artifact with $value content, like message mappings."),
 		candidate("DataTypeDesigntimeArtifactSaveAsVersion", "cloud_integration.data_type", ""),
 		candidate("MessageTypeDesigntimeArtifacts", "cloud_integration.message_type", "Versioned design-time artifact with $value content."),
 		candidate("MessageTypeDesigntimeArtifactSaveAsVersion", "cloud_integration.message_type", ""),

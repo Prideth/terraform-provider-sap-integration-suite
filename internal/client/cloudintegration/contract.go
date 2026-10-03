@@ -21,6 +21,7 @@ var Contract = apimeta.Contract{
 		{EntitySet: integrationAdapterDesigntimeArtifactsEntitySet, Value: IntegrationAdapter{}},
 		{EntitySet: integrationDesigntimeArtifactsEntitySet, Value: IntegrationFlow{}},
 		{EntitySet: messageMappingDesigntimeArtifactsEntitySet, Value: MessageMapping{}},
+		{EntitySet: dataTypeDesigntimeArtifactsEntitySet, Value: DataType{}},
 		{EntitySet: numberRangesEntitySet, Value: numberRangeWireModel{}},
 		{EntitySet: numberRangesEntitySet, Value: NumberRangeState{}},
 		{EntitySet: integrationPackagesEntitySet, Value: Package{}},
@@ -40,6 +41,8 @@ var Contract = apimeta.Contract{
 		// Content update body, sent to each versioned design-time entity set.
 		{EntitySet: integrationDesigntimeArtifactsEntitySet, Value: designtimeUpdateRequest{}},
 		{EntitySet: messageMappingDesigntimeArtifactsEntitySet, Value: designtimeUpdateRequest{}},
+		{EntitySet: dataTypeDesigntimeArtifactsEntitySet, Value: dataTypeCreate{}},
+		{EntitySet: dataTypeDesigntimeArtifactsEntitySet, Value: designtimeUpdateRequest{}},
 		{EntitySet: scriptCollectionDesigntimeArtifactsEntitySet, Value: designtimeUpdateRequest{}},
 		// Create body that links the policy (deep link); never decoded.
 		{EntitySet: artifactReferencesEntitySet, Value: accessPolicyReferenceCreate{}},
@@ -51,6 +54,7 @@ var Contract = apimeta.Contract{
 		apimeta.Key(integrationPackagesEntitySet, "Id", "Edm.String"),
 		apimeta.Key(integrationDesigntimeArtifactsEntitySet, "Id", "Edm.String", "Version", "Edm.String"),
 		apimeta.Key(messageMappingDesigntimeArtifactsEntitySet, "Id", "Edm.String", "Version", "Edm.String"),
+		apimeta.Key(dataTypeDesigntimeArtifactsEntitySet, "Id", "Edm.String", "Version", "Edm.String"),
 		apimeta.Key(scriptCollectionDesigntimeArtifactsEntitySet, "Id", "Edm.String", "Version", "Edm.String"),
 		apimeta.Key(valueMappingDesigntimeArtifactsEntitySet, "Id", "Edm.String", "Version", "Edm.String"),
 		apimeta.Key(integrationAdapterDesigntimeArtifactsEntitySet, "Id", "Edm.String"),
@@ -73,6 +77,7 @@ var Contract = apimeta.Contract{
 		{Name: "DeployIntegrationAdapterDesigntimeArtifact", HTTPMethod: "POST", Parameters: []string{"Id"}},
 		{Name: "IntegrationDesigntimeArtifactSaveAsVersion", HTTPMethod: "POST", Parameters: []string{"Id", "SaveAsVersion"}},
 		{Name: "MessageMappingDesigntimeArtifactSaveAsVersion", HTTPMethod: "POST", Parameters: []string{"Id", "SaveAsVersion"}},
+		{Name: "DataTypeDesigntimeArtifactSaveAsVersion", HTTPMethod: "POST", Parameters: []string{"Id", "SaveAsVersion"}},
 		{Name: "ScriptCollectionDesigntimeArtifactSaveAsVersion", HTTPMethod: "POST", Parameters: []string{"Id", "SaveAsVersion"}},
 	},
 }

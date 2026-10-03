@@ -19,8 +19,9 @@ And the provider never uses browser endpoints of SAP's UIs.
 |---|---:|
 | 🟡 Partial (`partial`) | 10 |
 | 👁️ Read-only (`read_only`) | 3 |
+| 🧪 Experimental (`experimental`) | 1 |
 | 🧭 Unofficial (`unofficial`) | 4 |
-| 🔬 Research required (`research_required`) | 10 |
+| 🔬 Research required (`research_required`) | 9 |
 | ❌ Public API incomplete (`public_api_incomplete`) | 8 |
 | ❌ Unsafe Terraform lifecycle (`unsafe_terraform_lifecycle`) | 2 |
 | ❌ No public API (`no_public_api`) | 26 |
@@ -173,6 +174,22 @@ Available as a data source only; the provider never creates, changes or deletes 
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
   - tenant probes and acceptance runs on a development tenant (September 2026)
 
+## 🧪 Experimental
+
+Implementation exists, but its lifecycle has not yet been sufficiently validated against a real SAP tenant.
+
+### Data Type
+
+`cloud_integration.data_type` · checked 2026-10-03
+
+- **Finding:** Create, update (PUT), SaveAsVersion and delete work on a tenant with the bundle SAP stores for a data type (XSD, additionalAttributes.json, metainfo.prop); elements added on create and update are kept. SAP Help documents no request, so the contract comes from the $metadata and the probes.
+- **Next step:** TestAccDataType_basic on a tenant; passing it makes the data type unofficial.
+- **Sources:**
+  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
+  - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
+  - a package export of the development tenant (2026-09-26): API artifacts and data types travel as package content
+  - tenant-probe -GapTests on a development tenant (2026-09-27), synthetic tfAccProbe* objects only
+
 ## 🧭 Unofficial
 
 Implementation has been validated, but relies on an API contract that SAP does not fully publish or officially document.
@@ -268,18 +285,6 @@ The capability has been identified, but its public API coverage, lifecycle seman
   - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
   - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
   - tenant probes and acceptance runs on a development tenant (September 2026)
-
-### Data Type
-
-`cloud_integration.data_type` · checked 2026-09-27
-
-- **Finding:** Reading works (collection and package navigation). A create without content works (201), and SaveAsVersion works (202). Every request that carries content failed with 500 ("map is null"): the create with the package export's data type, with or without Namespace, Description and IsSimpleType, and the update. SAP Help documents no request.
-- **Next step:** The next gap probe sends the content that the API's own $value returns for an existing data type. A data type without content has no use in Terraform, so a resource needs a create or update with content that works.
-- **Sources:**
-  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
-  - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
-  - a package export of the development tenant (2026-09-26): API artifacts and data types travel as package content
-  - tenant-probe -GapTests on a development tenant (2026-09-27), synthetic tfAccProbe* objects only
 
 ### Message Type
 

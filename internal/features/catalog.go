@@ -269,23 +269,28 @@ var Catalog = []Feature{
 		Name:   "Data Type",
 		Description: "A reusable XSD data type artifact (simple or complex) used by message types " +
 			"and mappings.",
-		SupportStatus: StatusResearchRequired,
-		SupportReason: ReasonPublicAPIIncomplete,
-		PublicAPI:     true,
-		APIProtocol:   "OData V2",
+		SupportStatus:  StatusExperimental,
+		SupportReason:  ReasonPublicAPIIncomplete,
+		ContractSource: SourceMetadataOnly,
+		ResourceTypes:  []string{"sapintegrationsuite_data_type"},
+		PublicAPI:      true,
+		APIProtocol:    "OData V2",
 		Limitations: []string{
 			"The tenant $metadata defines DataTypeDesigntimeArtifacts (Id and Version as key, " +
 				"PackageId, Name, Namespace, Description, IsSimpleType, ArtifactContent) and a " +
 				"DataTypeDesigntimeArtifactSaveAsVersion function import. SAP Help documents only the " +
-				"UI and lists no API resource or example request for data types, so create, update " +
-				"and delete are unverified.",
-			"Tenant check of 2026-09-27: reading works (the collection and " +
-				"IntegrationPackages('<id>')/DataTypeDesigntimeArtifacts return the package's data " +
-				"type). A create with the message mapping's body (Id, Name, PackageId, ArtifactContent " +
-				"as the exported bundle) failed with 500 \"Cannot invoke java.util.Map.containsKey(Object) " +
-				"because map is null\". The next probe adds Namespace, Description and IsSimpleType; " +
-				"until a create succeeds, there is no resource.",
+				"UI and lists no API resource or example request for data types.",
+			"Gap probes on a tenant (September and October 2026): a create needs the bundle as SAP " +
+				"stores it, with additionalAttributes.json and metainfo.prop next to the XSD; a package " +
+				"export's bundle lacks both and fails with 500 \"map is null\". With them, create, " +
+				"update (PUT with Name and ArtifactContent), SaveAsVersion and delete work, and an " +
+				"element added on create or update is kept. The provider builds that bundle from xsd, " +
+				"namespace and description.",
+			"Complex data types only: the bundle of a simple type (IsSimpleType) was not examined.",
+			"SAP stores the complex type under the data type's name and normalizes the schema, so " +
+				"the schema is not read back for drift detection; xsd is taken from the configuration.",
 		},
+		Operations: Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
 	},
 	{
 		Key:           "cloud_integration.message_type",
