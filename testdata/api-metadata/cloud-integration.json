@@ -1,7 +1,7 @@
 {
   "id": "cloud-integration",
   "protocol": "odata-v2",
-  "capturedAt": "2026-09-27",
+  "capturedAt": "2026-10-03",
   "source": "live /$metadata",
   "namespaces": [
     "com.sap.hci.api"
@@ -3690,6 +3690,11 @@
         },
         {
           "name": "SapReceiver",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "SapRuntimeLocationId",
           "type": "Edm.String",
           "nullable": true
         },
