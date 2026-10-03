@@ -155,6 +155,8 @@ func featureSupportDoc() string {
 		"detailed per-operation matrix.")
 	fmt.Fprintln(&b)
 
+	writeStatusLegend(&b)
+
 	fmt.Fprintln(&b, "## Relationship to the other capability documents")
 	fmt.Fprintln(&b)
 	fmt.Fprintln(&b, "This document, `docs/api-capability-matrix.md`, `docs/provisioning-capability-matrix.md`, "+
@@ -211,8 +213,13 @@ func featureSupportDoc() string {
 		fmt.Fprintf(&b, "### %s\n\n", group.heading)
 		for _, f := range matches {
 			statusNote := ""
-			if f.SupportStatus == features.StatusPartial {
+			switch f.SupportStatus {
+			case features.StatusPartial:
 				statusNote = " (partial support already implemented — see Limitations below)"
+			case features.StatusUnsupported:
+			default:
+				info := f.SupportStatus.Info()
+				statusNote = " (" + info.Icon + " " + info.Label + ")"
 			}
 			fmt.Fprintf(&b, "- **`%s`** — %s%s\n", f.Key, f.Description, statusNote)
 			for _, l := range f.Limitations {
@@ -261,30 +268,44 @@ func terraformCell(f features.Feature) string {
 	}
 }
 
-// statusIcon maps a SupportStatus to the single emoji this provider uses
-// consistently for it everywhere a compact overview is needed (currently
-// only the README's generated table). Kept in exactly one place so the
-// mapping in CONTRIBUTING.md/README.md's legend can never drift from what
-// this generator actually emits.
+// statusIcon is the icon of a SupportStatus from features.StatusLegend,
+// the one place that defines icons, labels and definitions, so the legends
+// this generator writes can never drift from the icons in its tables.
 func statusIcon(status features.SupportStatus) string {
-	switch status {
-	case features.StatusSupported:
-		return "✅"
-	case features.StatusPartial:
-		return "⚠️"
-	case features.StatusReadOnly:
-		return "👁️"
-	case features.StatusExperimental:
-		return "🧪"
-	case features.StatusUnofficial:
-		return "🔸"
-	case features.StatusUnsupported:
-		return "❌"
-	case features.StatusSeparateProvider:
-		return "↗️"
-	default:
-		return "?"
+	return status.Info().Icon
+}
+
+// statusLegendLine is the one-line legend above the README's tables.
+func statusLegendLine() string {
+	parts := make([]string, 0, len(features.StatusLegend))
+	for _, info := range features.StatusLegend {
+		parts = append(parts, info.Icon+" "+info.Label)
 	}
+	return "Legend: " + strings.Join(parts, " · ")
+}
+
+// writeStatusLegend writes the status table with each status's icon, label,
+// machine-readable value and definition.
+func writeStatusLegend(b *strings.Builder) {
+	fmt.Fprintln(b, "## Status legend")
+	fmt.Fprintln(b)
+	fmt.Fprintln(b, "`support_status` in `sapintegrationsuite_provider_features` and "+
+		"`sapintegrationsuite_provider_feature` carries the value in the second column.")
+	fmt.Fprintln(b)
+	fmt.Fprintln(b, "| Status | Value | Meaning |")
+	fmt.Fprintln(b, "|---|---|---|")
+	for _, info := range features.StatusLegend {
+		fmt.Fprintf(b, "| %s %s | `%s` | %s |\n", info.Icon, info.Label, info.Status, info.Definition)
+	}
+	fmt.Fprintln(b)
+	fmt.Fprintln(b, "Three of them are easy to confuse. 🔬 Research required: the capability is known, but "+
+		"it has not been investigated far enough to decide whether and how to model it in Terraform, "+
+		"and there is no implementation. 🧪 Experimental: an implementation exists, but its lifecycle "+
+		"has not yet passed a test on a real SAP tenant; it needs `enable_experimental = true`. "+
+		"🧭 Unofficial: the implementation passed on a tenant, but the SAP API contract behind it is not "+
+		"fully public or officially documented, so SAP may change it without notice; it needs "+
+		"`enable_unofficial = true`.")
+	fmt.Fprintln(b)
 }
 
 // reasonNote gives a very short, human phrase for why a feature with no
@@ -352,10 +373,8 @@ func readmeFeatureOverview() string {
 		"automatically). See [`docs/feature-support.md`](docs/feature-support.md) for the full "+
 		"per-operation matrix and every feature's detailed limitations.")
 	fmt.Fprintln(&b)
-	fmt.Fprintln(&b, "Legend: ✅ Supported · ⚠️ Partial support / important limitations · "+
-		"👁️ Read-only / data source only · 🔸 Unofficial (works, known only from the service's $metadata) · "+
-		"🧪 Experimental · ❌ Unsupported / not implemented · "+
-		"↗️ Planned as a separate Terraform provider")
+	fmt.Fprintln(&b, statusLegendLine()+". "+
+		"The [status legend](docs/feature-support.md#status-legend) defines each one.")
 	fmt.Fprintln(&b)
 
 	sorted := sortedCatalog()
@@ -398,10 +417,11 @@ func readmeFeatureOverview() string {
 		fmt.Fprintln(&b)
 	}
 
-	fmt.Fprintf(&b, "%d supported · %d partial · %d read-only · %d experimental · %d unsupported · "+
-		"%d planned as a separate provider, out of %d evaluated Integration Suite features.\n",
-		counts[features.StatusSupported], counts[features.StatusPartial], counts[features.StatusReadOnly],
-		counts[features.StatusExperimental], counts[features.StatusUnsupported], counts[features.StatusSeparateProvider], len(sorted))
+	summary := make([]string, 0, len(features.StatusLegend))
+	for _, info := range features.StatusLegend {
+		summary = append(summary, fmt.Sprintf("%d %s", counts[info.Status], strings.ToLower(info.Label)))
+	}
+	fmt.Fprintf(&b, "%s, out of %d evaluated Integration Suite features.\n", strings.Join(summary, " · "), len(sorted))
 
 	return strings.TrimRight(b.String(), "\n") + "\n"
 }

@@ -78,20 +78,20 @@ evaluated, supported or not, grouped by area.
 
 Generated from `internal/features/catalog.go` by `go run ./cmd/gendocs -readme` — do not hand-edit the table below; regenerate it instead (`make docs` does this automatically). See [`docs/feature-support.md`](docs/feature-support.md) for the full per-operation matrix and every feature's detailed limitations.
 
-Legend: ✅ Supported · ⚠️ Partial support / important limitations · 👁️ Read-only / data source only · 🔸 Unofficial (works, known only from the service's $metadata) · 🧪 Experimental · ❌ Unsupported / not implemented · ↗️ Planned as a separate Terraform provider
+Legend: ✅ Supported · 🟡 Partial · 👁️ Read-only · 🧪 Experimental · 🧭 Unofficial · 🔬 Research required · ❌ Unsupported · ↗️ Separate provider. The [status legend](docs/feature-support.md#status-legend) defines each one.
 
 ### Cloud Integration
 
 | Feature | Status | Terraform Support |
 |---|:---:|---|
 | Archiving Configuration | ❌ | No safe Terraform lifecycle confirmed — see [feature-support.md](docs/feature-support.md#all-features) |
-| Custom Tag Configuration | ⚠️ | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
+| Custom Tag Configuration | 🟡 | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
 | Data Store | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
 | Data Store Entry | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
-| Data Type | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
-| Design-Time Artifact Versioning | ⚠️ | Resource — see [feature-support.md](docs/feature-support.md#all-features) |
-| Integration Adapter | ⚠️ | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
-| Integration Adapter Deployment | ⚠️ | Resource — see [feature-support.md](docs/feature-support.md#all-features) |
+| Data Type | 🔬 | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
+| Design-Time Artifact Versioning | 🟡 | Resource — see [feature-support.md](docs/feature-support.md#all-features) |
+| Integration Adapter | 🟡 | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
+| Integration Adapter Deployment | 🟡 | Resource — see [feature-support.md](docs/feature-support.md#all-features) |
 | Integration Flow | ✅ | Resource |
 | Integration Flow Configuration | ✅ | Resource |
 | Integration Flow Deployment | ✅ | Resource |
@@ -100,13 +100,13 @@ Legend: ✅ Supported · ⚠️ Partial support / important limitations · 👁�
 | Message Mapping Deployment | ✅ | Resource |
 | Message Processing Logs | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
 | Message Store Entries / JMS Resources | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
-| Message Type | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
+| Message Type | 🔬 | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
 | Number Range | ✅ | Resource |
 | Script Collection | ✅ | Resource + Data Source |
 | Script Collection Deployment | ✅ | Resource |
 | Service Endpoints | 👁️ | Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
-| Service Interface | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
-| Value Mapping | ⚠️ | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
+| Service Interface | 🔬 | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
+| Value Mapping | 🟡 | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
 | Value Mapping Deployment | ✅ | Resource |
 | Value Mapping Entry | ❌ | No safe Terraform lifecycle confirmed — see [feature-support.md](docs/feature-support.md#all-features) |
 | Variable | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
@@ -118,18 +118,18 @@ Legend: ✅ Supported · ⚠️ Partial support / important limitations · 👁�
 | Access Policy | ✅ | Resource + Data Source |
 | Access Policy Reference | ✅ | Resource + Data Source |
 | Certificate | ✅ | Resource |
-| Certificate Chain | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
+| Certificate Chain | 🔬 | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
 | Certificate-User Mapping | ❌ | No suitable public API — see [feature-support.md](docs/feature-support.md#all-features) |
-| Key Pair | ⚠️ | Resource — see [feature-support.md](docs/feature-support.md#all-features) |
+| Key Pair | 🟡 | Resource — see [feature-support.md](docs/feature-support.md#all-features) |
 | Keystore Entry | 👁️ | Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
 | Known Hosts (SSH) | ❌ | No suitable public API — see [feature-support.md](docs/feature-support.md#all-features) |
-| OAuth2 Client Credential | ⚠️ | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
+| OAuth2 Client Credential | 🟡 | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
 | OAuth2 Password Credentials | ❌ | No suitable public API — see [feature-support.md](docs/feature-support.md#all-features) |
 | OAuth2 SAML Bearer Assertion | ❌ | No suitable public API — see [feature-support.md](docs/feature-support.md#all-features) |
-| PGP Keyrings | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
-| Secure Parameter | 🔸 | Resource — see [feature-support.md](docs/feature-support.md#all-features) |
+| PGP Keyrings | 🔬 | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
+| Secure Parameter | 🧭 | Resource — see [feature-support.md](docs/feature-support.md#all-features) |
 | SSH Key | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
-| User Credential | ⚠️ | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
+| User Credential | 🟡 | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
 | Security Material Where-Used | ❌ | No suitable public API — see [feature-support.md](docs/feature-support.md#all-features) |
 
 ### Partner Directory
@@ -148,20 +148,20 @@ Legend: ✅ Supported · ⚠️ Partial support / important limitations · 👁�
 | Feature | Status | Terraform Support |
 |---|:---:|---|
 | API Product (classic API Management) | ✅ | Resource + Data Source |
-| API Provider (classic API Management) | ⚠️ | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
-| API Proxy (classic API Management) | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
+| API Provider (classic API Management) | 🟡 | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
+| API Proxy (classic API Management) | 🔬 | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
 | API Proxy Deployment (classic API Management) | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
 | API Management Application and Developer (Classic) | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
 | API Management Cache Resource (Classic) | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
 | API Management Certificate Store and Certificate (Classic) | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
 | Certificate Store Reference (classic API Management) | ✅ | Resource + Data Source |
-| API Management Key Value Map across API Proxies (Classic) | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
-| Key Value Map (classic API Management) | ⚠️ | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
+| API Management Key Value Map across API Proxies (Classic) | 🔬 | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
+| Key Value Map (classic API Management) | 🟡 | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
 | Policy (classic API Management) | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
 | API Management Policy Template (Classic) | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
 | API Management Product Access Control (Classic) | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
 | API Management Rate Plan (Classic) | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
-| API Management Virtual Host (Classic) | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
+| API Management Virtual Host (Classic) | 🔬 | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
 
 ### Current API Management / API Artifacts
 
@@ -191,8 +191,8 @@ Legend: ✅ Supported · ⚠️ Partial support / important limitations · 👁�
 
 | Feature | Status | Terraform Support |
 |---|:---:|---|
-| Edge Integration Cell Access Policy Replication | 🔸 | Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
-| Edge Integration Cell Runtime Targeting | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
+| Edge Integration Cell Access Policy Replication | 🧭 | Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
+| Edge Integration Cell Runtime Targeting | 🔬 | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
 | Edge Integration Cell Local API Access | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
 | Edge Integration Cell Registration | ❌ | No suitable public API — see [feature-support.md](docs/feature-support.md#all-features) |
 | Edge Integration Cell Runtime Operations | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
@@ -202,8 +202,8 @@ Legend: ✅ Supported · ⚠️ Partial support / important limitations · 👁�
 | Feature | Status | Terraform Support |
 |---|:---:|---|
 | Integration Assessment Requests and Assessment Workflow | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
-| Integration Assessment Landscape Configuration | 🔸 | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
-| Integration Assessment Master Data | 🔸 | Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
+| Integration Assessment Landscape Configuration | 🧭 | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
+| Integration Assessment Master Data | 🧭 | Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
 
 ### Capability Provisioning
 
@@ -219,7 +219,7 @@ Legend: ✅ Supported · ⚠️ Partial support / important limitations · 👁�
 
 | Feature | Status | Terraform Support |
 |---|:---:|---|
-| Data Space Integration | ❌ | Research required — see [feature-support.md](docs/feature-support.md#all-features) |
+| Data Space Integration | 🔬 | Research required — see [feature-support.md](docs/feature-support.md#all-features) |
 | Developer Hub | ↗️ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
 | Event Mesh | ↗️ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
 | Integration Advisor Design-Time Content | ❌ | No suitable public API — see [feature-support.md](docs/feature-support.md#all-features) |
@@ -234,7 +234,7 @@ Legend: ✅ Supported · ⚠️ Partial support / important limitations · 👁�
 | Trading Partner Management Partner Directory Generation | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
 | Trading Partner Management Partner Profile | ❌ | No suitable public API — see [feature-support.md](docs/feature-support.md#all-features) |
 
-21 supported · 10 partial · 3 read-only · 0 experimental · 59 unsupported · 2 planned as a separate provider, out of 99 evaluated Integration Suite features.
+21 supported · 10 partial · 3 read-only · 0 experimental · 4 unofficial · 10 research required · 49 unsupported · 2 separate provider, out of 99 evaluated Integration Suite features.
 
 <!-- END GENERATED FEATURE SUPPORT -->
 

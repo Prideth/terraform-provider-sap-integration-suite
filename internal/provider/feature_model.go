@@ -64,9 +64,11 @@ func featureAttributes() map[string]schema.Attribute {
 		},
 		"support_status": schema.StringAttribute{
 			Computed: true,
-			Description: "One of \"supported\", \"partial\", \"read_only\", \"unofficial\" (works, but " +
-				"the contract is known only from the service's $metadata), \"experimental\", " +
-				"\"unsupported\" or \"separate_provider\". See docs/feature-support.md for exact meanings.",
+			Description: "One of \"supported\", \"partial\", \"read_only\", \"experimental\" (implemented, " +
+				"but not yet validated on a real SAP tenant), \"unofficial\" (validated, but the SAP API " +
+				"contract is not fully published or officially documented), \"research_required\" (known, " +
+				"but not yet investigated far enough to decide how to model it), \"unsupported\" or " +
+				"\"separate_provider\". The status legend in docs/feature-support.md defines each value.",
 		},
 		"support_reason": schema.StringAttribute{
 			Computed: true,

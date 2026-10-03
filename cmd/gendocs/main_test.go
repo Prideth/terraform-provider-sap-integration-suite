@@ -112,3 +112,45 @@ func TestEvidenceDoc_ListsEveryIncompleteFeature(t *testing.T) {
 		t.Error("the evidence document starts with a byte-order mark")
 	}
 }
+
+// The generated documents show the statuses with the icons and labels of
+// features.StatusLegend, and the old unofficial icon is gone.
+func TestGeneratedDocs_UseTheStatusLegend(t *testing.T) {
+	readme, support, evidence := readmeFeatureOverview(), featureSupportDoc(), evidenceDoc()
+	for _, info := range features.StatusLegend {
+		if !strings.Contains(readme, info.Icon+" "+info.Label) {
+			t.Errorf("README legend lacks %s %s", info.Icon, info.Label)
+		}
+		row := "| " + info.Icon + " " + info.Label + " | `" + string(info.Status) + "` | " + info.Definition + " |"
+		if !strings.Contains(support, row) {
+			t.Errorf("feature-support.md status legend lacks the row %q", row)
+		}
+	}
+	for name, doc := range map[string]string{"README": readme, "feature-support.md": support, "capability evidence": evidence} {
+		if strings.Contains(doc, "🔸") {
+			t.Errorf("%s still uses the old unofficial icon 🔸", name)
+		}
+	}
+	for _, heading := range []string{"## 🔬 Research required", "## 🧭 Unofficial"} {
+		if !strings.Contains(evidence, heading) {
+			t.Errorf("capability evidence lacks the section %q", heading)
+		}
+	}
+}
+
+// Every classification of the evidence document is listed once, so no
+// feature is counted under two headings.
+func TestClassificationOrder_HasUniqueLabels(t *testing.T) {
+	seen := map[string]bool{}
+	for _, c := range classificationOrder {
+		if seen[c.label] {
+			t.Errorf("classification %q is listed twice", c.label)
+		}
+		seen[c.label] = true
+	}
+	for _, f := range features.Catalog {
+		if f.SupportStatus != features.StatusSupported && !seen[features.Classification(f)] {
+			t.Errorf("%s is classified %q, which the evidence document has no section for", f.Key, features.Classification(f))
+		}
+	}
+}

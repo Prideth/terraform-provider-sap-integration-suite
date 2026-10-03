@@ -134,17 +134,24 @@ environment variables are not stored anywhere.
 ## Support status and opt-in switches
 
 Every resource and data source has a support status, listed on its page and in Feature
-Support:
+Support, which also lists the capabilities the provider does not implement:
 
-- **supported**: the full lifecycle is backed by an official SAP contract and was run on a
+- ✅ **Supported**: the full lifecycle is backed by an official SAP contract and was run on a
   tenant.
-- **partial**: official, but some operations are missing because SAP does not offer them; the
+- 🟡 **Partial**: official, but some operations are missing because SAP does not offer them; the
   page says which.
-- **experimental**: implemented on a documented API, but the lifecycle has not passed an
-  acceptance test on a tenant. The schema may still change. Needs `enable_experimental = true`.
-- **unofficial**: works on a tenant, but SAP documents the API nowhere (it is known only from
-  the service's `$metadata`), so SAP can change it without notice. Needs
-  `enable_unofficial = true`.
+- 👁️ **Read-only**: a data source only.
+- 🧪 **Experimental**: an implementation exists, but its lifecycle has not yet been sufficiently
+  validated against a real SAP tenant. The schema may still change. Needs
+  `enable_experimental = true`.
+- 🧭 **Unofficial**: validated on a tenant, but the SAP API contract behind it is not fully
+  published or officially documented (it is known only from the service's `$metadata`), so SAP
+  can change it without notice. Needs `enable_unofficial = true`.
+- 🔬 **Research required**: a known capability whose public API coverage, lifecycle semantics or
+  suitability for Terraform still needs investigation. There is no resource for it yet.
+- ❌ **Unsupported**: investigated, and not implemented: SAP offers no usable public API or safe
+  lifecycle, or the capability is out of the provider's scope.
+- ↗️ **Separate provider**: belongs to another Terraform provider.
 
 A few documented resources use one operation that SAP does not document, for example the
 in-place content update of a message mapping. `enable_unofficial` allows those operations too;

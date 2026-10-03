@@ -98,37 +98,37 @@ The service document lists 25 of the 131 entity sets. The other 106 are declared
 | activateArchivingConfiguration | operation | `cloud_integration.archiving` | unsupported |  |
 | activateB2BArchivingConfiguration | operation | `cloud_integration.archiving` | unsupported |  |
 | CustomTags | entity set | `cloud_integration.custom_tag_configuration` | partial | Custom tag values of an integration package (IntegrationPackages/CustomTags). |
-| DataTypeDesigntimeArtifacts | entity set | `cloud_integration.data_type` | unsupported | Versioned design-time artifact with $value content, like message mappings. |
-| DataTypeDesigntimeArtifactSaveAsVersion | operation | `cloud_integration.data_type` | unsupported |  |
+| DataTypeDesigntimeArtifacts | entity set | `cloud_integration.data_type` | research_required | Versioned design-time artifact with $value content, like message mappings. |
+| DataTypeDesigntimeArtifactSaveAsVersion | operation | `cloud_integration.data_type` | research_required |  |
 | ValueMappingDesigntimeArtifactSaveAsVersion | operation | `cloud_integration.design_time_versioning` | partial | The value mapping resource does not save versions yet. |
-| FaultMessageTypeDesigntimeArtifacts | entity set | `cloud_integration.message_type` | unsupported | Fault message types; the catalog tracks them with message types. |
-| MessageTypeDesigntimeArtifacts | entity set | `cloud_integration.message_type` | unsupported | Versioned design-time artifact with $value content. |
-| FaultMessageTypeDesigntimeArtifactSaveAsVersion | operation | `cloud_integration.message_type` | unsupported |  |
-| MessageTypeDesigntimeArtifactSaveAsVersion | operation | `cloud_integration.message_type` | unsupported |  |
-| ServiceInterfaceDesigntimeArtifacts | entity set | `cloud_integration.service_interface` | unsupported | Versioned design-time artifact with $value content. |
-| ServiceInterfaceDesigntimeArtifactSaveAsVersion | operation | `cloud_integration.service_interface` | unsupported |  |
+| FaultMessageTypeDesigntimeArtifacts | entity set | `cloud_integration.message_type` | research_required | Fault message types; the catalog tracks them with message types. |
+| MessageTypeDesigntimeArtifacts | entity set | `cloud_integration.message_type` | research_required | Versioned design-time artifact with $value content. |
+| FaultMessageTypeDesigntimeArtifactSaveAsVersion | operation | `cloud_integration.message_type` | research_required |  |
+| MessageTypeDesigntimeArtifactSaveAsVersion | operation | `cloud_integration.message_type` | research_required |  |
+| ServiceInterfaceDesigntimeArtifacts | entity set | `cloud_integration.service_interface` | research_required | Versioned design-time artifact with $value content. |
+| ServiceInterfaceDesigntimeArtifactSaveAsVersion | operation | `cloud_integration.service_interface` | research_required |  |
 | DefaultValMaps | entity set | `cloud_integration.value_mapping_entry` | unsupported | Default value of one agency/identifier pair. |
 | ValMapSchema | entity set | `cloud_integration.value_mapping_entry` | unsupported | Agency/identifier pairs of a value mapping. |
 | ValMaps | entity set | `cloud_integration.value_mapping_entry` | unsupported | Value pairs of one agency/identifier pair. |
 | DeleteValMaps | operation | `cloud_integration.value_mapping_entry` | unsupported |  |
 | UpdateDefaultValMap | operation | `cloud_integration.value_mapping_entry` | unsupported |  |
 | UpsertValMaps | operation | `cloud_integration.value_mapping_entry` | unsupported |  |
-| CertificateChainResources | entity set | `security.certificate_chain` | unsupported | Media entity for uploading a chain to a key pair (KeystoreEntries/ChainResource). |
-| ChainCertificates | entity set | `security.certificate_chain` | unsupported | Certificates of a key pair's chain (KeystoreEntries/ChainCertificates). |
+| CertificateChainResources | entity set | `security.certificate_chain` | research_required | Media entity for uploading a chain to a key pair (KeystoreEntries/ChainResource). |
+| ChainCertificates | entity set | `security.certificate_chain` | research_required | Certificates of a key pair's chain (KeystoreEntries/ChainCertificates). |
 | KeyPairResources | entity set | `security.key_pair` | partial | Upload of an externally created key pair (PKCS#12 with password); private material would be write-only. |
 | RSAKeyGenerationRequests | entity set | `security.key_pair` | partial | Key pair generation from an RSA file. |
 | CustomParameters | entity set | `security.oauth2_client_credential` | partial | Custom token request parameters of an OAuth2 client credential. |
-| PgpKeyEntries | entity set | `security.pgp_keyring` | unsupported |  |
-| PgpKeyEntryImportResults | entity set | `security.pgp_keyring` | unsupported |  |
-| PgpKeyPublicResources | entity set | `security.pgp_keyring` | unsupported |  |
-| PgpKeySecretResources | entity set | `security.pgp_keyring` | unsupported |  |
-| PgpKeyringPublicResources | entity set | `security.pgp_keyring` | unsupported |  |
-| PgpKeyringSecretResources | entity set | `security.pgp_keyring` | unsupported |  |
-| PgpKeyrings | entity set | `security.pgp_keyring` | unsupported |  |
-| PgpPublicKeyrings | entity set | `security.pgp_keyring` | unsupported |  |
-| PgpSecretKeyrings | entity set | `security.pgp_keyring` | unsupported |  |
-| PgpSubKeys | entity set | `security.pgp_keyring` | unsupported |  |
-| PgpUserIds | entity set | `security.pgp_keyring` | unsupported |  |
+| PgpKeyEntries | entity set | `security.pgp_keyring` | research_required |  |
+| PgpKeyEntryImportResults | entity set | `security.pgp_keyring` | research_required |  |
+| PgpKeyPublicResources | entity set | `security.pgp_keyring` | research_required |  |
+| PgpKeySecretResources | entity set | `security.pgp_keyring` | research_required |  |
+| PgpKeyringPublicResources | entity set | `security.pgp_keyring` | research_required |  |
+| PgpKeyringSecretResources | entity set | `security.pgp_keyring` | research_required |  |
+| PgpKeyrings | entity set | `security.pgp_keyring` | research_required |  |
+| PgpPublicKeyrings | entity set | `security.pgp_keyring` | research_required |  |
+| PgpSecretKeyrings | entity set | `security.pgp_keyring` | research_required |  |
+| PgpSubKeys | entity set | `security.pgp_keyring` | research_required |  |
+| PgpUserIds | entity set | `security.pgp_keyring` | research_required |  |
 
 ### Excluded (92)
 
@@ -205,15 +205,15 @@ Classic API Management, API portal Management.svc.
 | CacheResources | entity set | `api_management.classic.cache_resource` | unsupported |  |
 | CertificateStores | entity set | `api_management.classic.certificate_store` | unsupported |  |
 | Certificates | entity set | `api_management.classic.certificate_store` | unsupported |  |
-| KeyMapEntries | entity set | `api_management.classic.environment_key_value_map` | unsupported |  |
-| KeyMapEntryValues | entity set | `api_management.classic.environment_key_value_map` | unsupported |  |
+| KeyMapEntries | entity set | `api_management.classic.environment_key_value_map` | research_required |  |
+| KeyMapEntryValues | entity set | `api_management.classic.environment_key_value_map` | research_required |  |
 | Policies | entity set | `api_management.classic.policy` | unsupported | Policies are also part of the proxy bundle. |
 | PolicyTemplateContainers | entity set | `api_management.classic.policy_template` | unsupported |  |
 | TemplateFileResources | entity set | `api_management.classic.policy_template` | unsupported |  |
 | TemplatePolicys | entity set | `api_management.classic.policy_template` | unsupported |  |
 | ACLProductLinkages | entity set | `api_management.classic.product_access_control` | unsupported |  |
 | RatePlans | entity set | `api_management.classic.rate_plan` | unsupported |  |
-| VirtualHosts | entity set | `api_management.classic.virtual_host` | unsupported |  |
+| VirtualHosts | entity set | `api_management.classic.virtual_host` | research_required |  |
 
 ### Excluded (36)
 

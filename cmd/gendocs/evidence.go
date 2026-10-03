@@ -10,22 +10,34 @@ import (
 
 const evidencePath = "docs/research/capability-evidence-2026.md"
 
-// classificationOrder fixes the section order of the evidence document and
-// explains each classification in one line.
-var classificationOrder = []struct {
+type classification struct {
 	label, heading, meaning string
-}{
-	{"unofficial", "Unofficial", "Works and verified on a tenant, but the contract is known only from the service's $metadata; no SAP documentation, specification or tooling describes it."},
-	{"experimental", "Experimental", "Implemented; the lifecycle still has to pass its acceptance test on a tenant."},
-	{"partial", "Partial", "Implemented with a deliberate gap in the lifecycle."},
-	{"read_only", "Read-only", "Data sources only, by design or because writes are undocumented."},
-	{string(features.ReasonNotImplemented), "Public API, not implemented", "A confirmed public API the provider has not implemented yet."},
-	{string(features.ReasonPublicAPIIncomplete), "Public API incomplete", "A public API exists, but part of its contract is unconfirmed."},
-	{string(features.ReasonUnsafeTerraformLifecycle), "Unsafe Terraform lifecycle", "A public API exists, but a Terraform resource could not implement its lifecycle safely."},
-	{string(features.ReasonResearchRequired), "Research required", "Not enough evidence yet to say whether a usable API exists."},
-	{string(features.ReasonNoPublicAPI), "No public API", "Only UI procedures or internal endpoints, which the provider does not use."},
-	{string(features.ReasonOutOfScope), "Out of scope", "Runtime data, workflows or imperative actions, not desired configuration."},
-	{"separate_provider", "Separate provider", "Belongs to a separate, independently versioned provider."},
+}
+
+// classificationOrder fixes the section order of the evidence document and
+// explains each classification in one line. Statuses come first, in the
+// order of features.StatusLegend and with its icons and definitions; an
+// unsupported feature is classified by its reason instead.
+var classificationOrder = buildClassificationOrder()
+
+func buildClassificationOrder() []classification {
+	status := func(s features.SupportStatus) classification {
+		info := s.Info()
+		return classification{string(s), info.Icon + " " + info.Label, info.Definition}
+	}
+	return []classification{
+		status(features.StatusPartial),
+		status(features.StatusReadOnly),
+		status(features.StatusExperimental),
+		status(features.StatusUnofficial),
+		status(features.StatusResearchRequired),
+		{string(features.ReasonNotImplemented), "❌ Public API, not implemented", "A confirmed public API the provider has not implemented yet."},
+		{string(features.ReasonPublicAPIIncomplete), "❌ Public API incomplete", "A public API exists, but SAP does not document enough of it, for example no update or delete, to manage it with Terraform."},
+		{string(features.ReasonUnsafeTerraformLifecycle), "❌ Unsafe Terraform lifecycle", "A public API exists, but a Terraform resource could not implement its lifecycle safely."},
+		{string(features.ReasonNoPublicAPI), "❌ No public API", "Only UI procedures or internal endpoints, which the provider does not use."},
+		{string(features.ReasonOutOfScope), "❌ Out of scope", "Runtime data, workflows or imperative actions, not desired configuration."},
+		status(features.StatusSeparateProvider),
+	}
 }
 
 // evidenceDoc renders every feature that is not fully supported with its

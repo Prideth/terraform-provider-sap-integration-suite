@@ -55,7 +55,7 @@ output "value_mapping_support" {
 - `public_api` (Boolean) Whether SAP publishes a public, supported API for this feature at all — independent of whether this provider implements it.
 - `resource_types` (List of String) Full Terraform resource type names this provider registers for this feature, if any.
 - `support_reason` (String) Why support_status is not "supported": one of "not_implemented", "public_api_incomplete", "no_public_api", "research_required", "out_of_scope", or "unsafe_terraform_lifecycle". Empty when support_status is "supported".
-- `support_status` (String) One of "supported", "partial", "read_only", "unofficial" (works, but the contract is known only from the service's $metadata), "experimental", "unsupported" or "separate_provider". See docs/feature-support.md for exact meanings.
+- `support_status` (String) One of "supported", "partial", "read_only", "experimental" (implemented, but not yet validated on a real SAP tenant), "unofficial" (validated, but the SAP API contract is not fully published or officially documented), "research_required" (known, but not yet investigated far enough to decide how to model it), "unsupported" or "separate_provider". The status legend in docs/feature-support.md defines each value.
 - `undocumented_operations` (List of String) Implemented operations that work but that SAP does not document, although the rest of the feature is documented.
 
 <a id="nestedatt--operations"></a>

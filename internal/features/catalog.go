@@ -269,7 +269,7 @@ var Catalog = []Feature{
 		Name:   "Data Type",
 		Description: "A reusable XSD data type artifact (simple or complex) used by message types " +
 			"and mappings.",
-		SupportStatus: StatusUnsupported,
+		SupportStatus: StatusResearchRequired,
 		SupportReason: ReasonPublicAPIIncomplete,
 		PublicAPI:     true,
 		APIProtocol:   "OData V2",
@@ -292,7 +292,7 @@ var Catalog = []Feature{
 		Domain:        "cloud_integration",
 		Name:          "Message Type",
 		Description:   "A message type artifact that wraps a data type as a message root element.",
-		SupportStatus: StatusUnsupported,
+		SupportStatus: StatusResearchRequired,
 		SupportReason: ReasonPublicAPIIncomplete,
 		PublicAPI:     true,
 		APIProtocol:   "OData V2",
@@ -309,7 +309,7 @@ var Catalog = []Feature{
 		Name:   "Service Interface",
 		Description: "A service interface artifact describing operations and their request, " +
 			"response and fault message types.",
-		SupportStatus: StatusUnsupported,
+		SupportStatus: StatusResearchRequired,
 		SupportReason: ReasonPublicAPIIncomplete,
 		PublicAPI:     true,
 		APIProtocol:   "OData V2",
@@ -962,7 +962,7 @@ var Catalog = []Feature{
 		Domain:        "security",
 		Name:          "Certificate Chain",
 		Description:   "A certificate chain associated with a key pair.",
-		SupportStatus: StatusUnsupported,
+		SupportStatus: StatusResearchRequired,
 		SupportReason: ReasonPublicAPIIncomplete,
 		PublicAPI:     true,
 		APIProtocol:   "OData V2",
@@ -1101,7 +1101,7 @@ var Catalog = []Feature{
 		Name:   "PGP Keyrings",
 		Description: "The tenant's PGP public and secret keyrings used by the PGP encryptor and " +
 			"decryptor steps.",
-		SupportStatus: StatusUnsupported,
+		SupportStatus: StatusResearchRequired,
 		SupportReason: ReasonPublicAPIIncomplete,
 		PublicAPI:     true,
 		APIProtocol:   "OData V2",
@@ -1296,7 +1296,7 @@ var Catalog = []Feature{
 		Name:   "API Proxy (classic API Management)",
 		Description: "A classic API Management API proxy definition: the ZIP-bundled design-time " +
 			"content (proxy endpoint, target endpoint, policies, resources) deployed as a callable API.",
-		SupportStatus:   StatusUnsupported,
+		SupportStatus:   StatusResearchRequired,
 		SupportReason:   ReasonPublicAPIIncomplete,
 		DataSourceTypes: []string{},
 		PublicAPI:       true,
@@ -1371,7 +1371,7 @@ var Catalog = []Feature{
 		Name:   "API Management Virtual Host (Classic)",
 		Description: "A virtual host of the Classic API Portal: the default-domain alias or custom " +
 			"domain (with one-way or mutual TLS) under which API proxies are exposed.",
-		SupportStatus: StatusUnsupported,
+		SupportStatus: StatusResearchRequired,
 		SupportReason: ReasonPublicAPIIncomplete,
 		PublicAPI:     true,
 		APIProtocol:   "OData V2 (Configuration.svc/VirtualHostRequests, Management.svc/VirtualHosts)",
@@ -1519,7 +1519,7 @@ var Catalog = []Feature{
 		Name:   "API Management Key Value Map across API Proxies (Classic)",
 		Description: "Key value maps shared across API proxies (KeyMapEntries), as opposed to the " +
 			"generic, scoped key value maps sapintegrationsuite_api_key_value_map manages.",
-		SupportStatus: StatusUnsupported,
+		SupportStatus: StatusResearchRequired,
 		SupportReason: ReasonPublicAPIIncomplete,
 		PublicAPI:     true,
 		APIProtocol:   "OData V2 (Management.svc/KeyMapEntries, KeyMapEntryValues)",
@@ -1853,7 +1853,7 @@ var Catalog = []Feature{
 		Name:   "Edge Integration Cell Runtime Targeting",
 		Description: "Addressing an Edge Integration Cell instead of the cloud runtime: deploying " +
 			"content to it and managing its security material, selected with runtime_location_id.",
-		SupportStatus: StatusUnsupported,
+		SupportStatus: StatusResearchRequired,
 		SupportReason: ReasonPublicAPIIncomplete,
 		PublicAPI:     true,
 		APIProtocol:   "OData V2",
@@ -2345,7 +2345,7 @@ var Catalog = []Feature{
 		Description: "SAP's Dataspace-Protocol-based data space connectivity capability " +
 			"(Connectors, Assets, Policies, Contract Definitions, Contract Negotiations/" +
 			"Agreements) within Integration Suite, initially scoped to the Catena-X data space.",
-		SupportStatus: StatusUnsupported,
+		SupportStatus: StatusResearchRequired,
 		SupportReason: ReasonResearchRequired,
 		PublicAPI:     true,
 		Limitations: []string{

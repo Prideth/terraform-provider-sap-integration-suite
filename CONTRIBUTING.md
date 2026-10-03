@@ -212,6 +212,15 @@ in one place upgrades it everywhere.
       an official source describes it. `TestCatalog_ContractSourceRules`
       enforces this.
 
+      Keep three statuses apart: `research_required` (🔬) is a known
+      capability without an implementation whose API or lifecycle still
+      needs investigation; `experimental` (🧪) has an implementation that
+      has not yet passed on a tenant; `unofficial` (🧭) passed on a tenant
+      but relies on an undocumented contract. A feature becomes
+      `unsupported` only when the investigation is finished.
+      `features.StatusLegend` holds every status's icon, label and
+      definition; the generated documents take them from there.
+
       Resources and data sources whose status is `experimental` or
       `unofficial` call `requireOptIn` in `Configure`, so they only run with
       the provider's `enable_experimental` or `enable_unofficial` switch.

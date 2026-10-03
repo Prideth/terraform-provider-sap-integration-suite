@@ -20,3 +20,11 @@ output "unsupported_features" {
     if f.support_status == "unsupported"
   ]
 }
+
+output "features_under_research" {
+  value = [
+    for f in data.sapintegrationsuite_provider_features.all.features :
+    f.key
+    if f.support_status == "research_required"
+  ]
+}

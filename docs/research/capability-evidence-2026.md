@@ -17,73 +17,19 @@ And the provider never uses browser endpoints of SAP's UIs.
 
 | Classification | Features |
 |---|---:|
-| Unofficial (`unofficial`) | 4 |
-| Partial (`partial`) | 10 |
-| Read-only (`read_only`) | 3 |
-| Public API incomplete (`public_api_incomplete`) | 17 |
-| Unsafe Terraform lifecycle (`unsafe_terraform_lifecycle`) | 2 |
-| Research required (`research_required`) | 1 |
-| No public API (`no_public_api`) | 26 |
-| Out of scope (`out_of_scope`) | 13 |
-| Separate provider (`separate_provider`) | 2 |
+| 🟡 Partial (`partial`) | 10 |
+| 👁️ Read-only (`read_only`) | 3 |
+| 🧭 Unofficial (`unofficial`) | 4 |
+| 🔬 Research required (`research_required`) | 10 |
+| ❌ Public API incomplete (`public_api_incomplete`) | 8 |
+| ❌ Unsafe Terraform lifecycle (`unsafe_terraform_lifecycle`) | 2 |
+| ❌ No public API (`no_public_api`) | 26 |
+| ❌ Out of scope (`out_of_scope`) | 13 |
+| ↗️ Separate provider (`separate_provider`) | 2 |
 
-## Unofficial
+## 🟡 Partial
 
-Works and verified on a tenant, but the contract is known only from the service's $metadata; no SAP documentation, specification or tooling describes it.
-
-### Edge Integration Cell Access Policy Replication
-
-`edge_integration_cell.access_policy_replication` · checked 2026-09-26
-
-- **Finding:** AccessPolicyRuntimeAssignments is readable through the access policy; no write is documented.
-- **Next step:** Documented creation of assignments.
-- **Sources:**
-  - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
-  - tenant probes and acceptance runs on a development tenant (September 2026)
-
-### Integration Assessment Landscape Configuration
-
-`integration_assessment.landscape_configuration` · checked 2026-09-28
-
-- **Finding:** A second landscape probe (2026-09-27 19:33) verified create (201 with a UUID Id), read, PATCH and PUT (204) and delete (204, then 404) for vendors, applications, application instances, technologies and technology instances, with links written as {"Id": ...}; setting, removing and resetting an application's vendor worked. The first probe had failed only on its own request format (charset parameter, __metadata links). TestAccIntegrationAssessment_landscape passed on 2026-09-27 21:30. A third probe (2026-09-28) changed an instance's application and deployment model, a technology's vendor and a technology instance's name and deployment model with PATCH, each confirmed by a read; TechnologyDomain, TechnologyStyle and TechnologyKeyCharacteristic were created, read and deleted, and a key characteristic's PATCH was refused (400 V101).
-- **Next step:** TestAccIntegrationAssessment_landscape with the in-place moves passed on 2026-09-29; TestAccIntegrationAssessment_technologyProfile confirms the technology profile resources and lookups. The Hub specification (EntitiesAPI) would make the contract official and allow the status supported.
-- **Sources:**
-  - Hub package SAPIntegrationAssessment (EntitiesAPI, ManagementAPI, OData; modified 2025-07-25)
-  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
-  - Integration Assessment Entities and Management $metadata, fetched live on 2026-09-27 (snapshots testdata/api-metadata/integration-assessment-*.json)
-  - ia-probe -LandscapeTests on the development tenant's Integration Assessment (2026-09-27 17:29), synthetic tfacc-probe objects only
-  - ia-probe -LandscapeTests on the development tenant (2026-09-27 19:33), synthetic tfacc-probe objects only
-  - ia-probe -LandscapeTests, extended, on the development tenant (2026-09-28 07:54): link changes with PATCH and the technology association sets, synthetic tfacc-probe objects only
-  - acceptance run of 2026-09-27 21:30 on the development tenant, including TestAccIntegrationAssessment_landscape
-  - acceptance run of 2026-09-29 14:35 on the development tenant, including TestAccIntegrationAssessment_landscape with the in-place moves
-
-### Integration Assessment Master Data
-
-`integration_assessment.master_data` · checked 2026-09-29
-
-- **Finding:** The live Entities $metadata (27 entity sets) confirms the ISA-M taxonomy entities field by field, and every set was read on a tenant (7 domains, 6 styles, 24 use case patterns, 12 integration patterns, 14 key characteristics in 5 groups with 29 values, 4 recommendation degrees, 9 domain determinations). SAP Help's entity list (last changed 2026-07-02) describes each entity; its text for Domain Determination repeats the recommendation degree's, so that entity's meaning comes from the $metadata (a domain between a source and a target deployment model). The Hub's EntitiesAPI specification still ends at a login page (2026-09-29).
-- **Next step:** Every taxonomy entity has a read-only data source; TestAccIntegrationAssessment_taxonomy and _technologyProfile passed on 2026-09-29. SAP publishing the Entities API specification without a login, or its download from the Hub into .specs/specs, would make the contract official.
-- **Sources:**
-  - Hub package SAPIntegrationAssessment (EntitiesAPI, ManagementAPI, OData; modified 2025-07-25)
-  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
-  - Integration Assessment Entities and Management $metadata, fetched live on 2026-09-27 (snapshots testdata/api-metadata/integration-assessment-*.json)
-  - ia-probe -LandscapeTests on the development tenant's Integration Assessment (2026-09-27 17:29), synthetic tfacc-probe objects only
-  - SAP Help, Integration Assessment APIs (docs/ISuite_Integration_Assessment/integration-assessment-apis-47847b5.md in SAP-docs/btp-integration-suite, last changed 2026-07-02), read 2026-09-29, and the Hub catalog of package SAPIntegrationAssessment (EntitiesAPI 1.0.0, specification behind a login)
-
-### Secure Parameter
-
-`security.secure_parameter` · checked 2026-09-27
-
-- **Finding:** SAP Help documents Secure Parameters only in the Monitor UI, and neither the Security Content resource table nor SAP Help's list of API resources names SecureParameters. The entity set comes from the $metadata; create, read, PUT update and delete were verified on a tenant, and the acceptance test passes.
-- **Next step:** Supported as soon as SAP documents SecureParameters (Security Content API reference or its example requests).
-- **Sources:**
-  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
-  - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
-  - tenant probes and acceptance runs on a development tenant (September 2026)
-
-## Partial
-
-Implemented with a deliberate gap in the lifecycle.
+Usable, but the provider deliberately leaves out part of the lifecycle; the limitations say which part and why.
 
 ### API Provider (classic API Management)
 
@@ -192,9 +138,9 @@ Implemented with a deliberate gap in the lifecycle.
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
   - tenant probes and acceptance runs on a development tenant (September 2026)
 
-## Read-only
+## 👁️ Read-only
 
-Data sources only, by design or because writes are undocumented.
+Available as a data source only; the provider never creates, changes or deletes it.
 
 ### Service Endpoints
 
@@ -227,9 +173,63 @@ Data sources only, by design or because writes are undocumented.
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
   - tenant probes and acceptance runs on a development tenant (September 2026)
 
-## Public API incomplete
+## 🧭 Unofficial
 
-A public API exists, but part of its contract is unconfirmed.
+Implementation has been validated, but relies on an API contract that SAP does not fully publish or officially document.
+
+### Edge Integration Cell Access Policy Replication
+
+`edge_integration_cell.access_policy_replication` · checked 2026-09-26
+
+- **Finding:** AccessPolicyRuntimeAssignments is readable through the access policy; no write is documented.
+- **Next step:** Documented creation of assignments.
+- **Sources:**
+  - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
+  - tenant probes and acceptance runs on a development tenant (September 2026)
+
+### Integration Assessment Landscape Configuration
+
+`integration_assessment.landscape_configuration` · checked 2026-09-28
+
+- **Finding:** A second landscape probe (2026-09-27 19:33) verified create (201 with a UUID Id), read, PATCH and PUT (204) and delete (204, then 404) for vendors, applications, application instances, technologies and technology instances, with links written as {"Id": ...}; setting, removing and resetting an application's vendor worked. The first probe had failed only on its own request format (charset parameter, __metadata links). TestAccIntegrationAssessment_landscape passed on 2026-09-27 21:30. A third probe (2026-09-28) changed an instance's application and deployment model, a technology's vendor and a technology instance's name and deployment model with PATCH, each confirmed by a read; TechnologyDomain, TechnologyStyle and TechnologyKeyCharacteristic were created, read and deleted, and a key characteristic's PATCH was refused (400 V101).
+- **Next step:** TestAccIntegrationAssessment_landscape with the in-place moves passed on 2026-09-29; TestAccIntegrationAssessment_technologyProfile confirms the technology profile resources and lookups. The Hub specification (EntitiesAPI) would make the contract official and allow the status supported.
+- **Sources:**
+  - Hub package SAPIntegrationAssessment (EntitiesAPI, ManagementAPI, OData; modified 2025-07-25)
+  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
+  - Integration Assessment Entities and Management $metadata, fetched live on 2026-09-27 (snapshots testdata/api-metadata/integration-assessment-*.json)
+  - ia-probe -LandscapeTests on the development tenant's Integration Assessment (2026-09-27 17:29), synthetic tfacc-probe objects only
+  - ia-probe -LandscapeTests on the development tenant (2026-09-27 19:33), synthetic tfacc-probe objects only
+  - ia-probe -LandscapeTests, extended, on the development tenant (2026-09-28 07:54): link changes with PATCH and the technology association sets, synthetic tfacc-probe objects only
+  - acceptance run of 2026-09-27 21:30 on the development tenant, including TestAccIntegrationAssessment_landscape
+  - acceptance run of 2026-09-29 14:35 on the development tenant, including TestAccIntegrationAssessment_landscape with the in-place moves
+
+### Integration Assessment Master Data
+
+`integration_assessment.master_data` · checked 2026-09-29
+
+- **Finding:** The live Entities $metadata (27 entity sets) confirms the ISA-M taxonomy entities field by field, and every set was read on a tenant (7 domains, 6 styles, 24 use case patterns, 12 integration patterns, 14 key characteristics in 5 groups with 29 values, 4 recommendation degrees, 9 domain determinations). SAP Help's entity list (last changed 2026-07-02) describes each entity; its text for Domain Determination repeats the recommendation degree's, so that entity's meaning comes from the $metadata (a domain between a source and a target deployment model). The Hub's EntitiesAPI specification still ends at a login page (2026-09-29).
+- **Next step:** Every taxonomy entity has a read-only data source; TestAccIntegrationAssessment_taxonomy and _technologyProfile passed on 2026-09-29. SAP publishing the Entities API specification without a login, or its download from the Hub into .specs/specs, would make the contract official.
+- **Sources:**
+  - Hub package SAPIntegrationAssessment (EntitiesAPI, ManagementAPI, OData; modified 2025-07-25)
+  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
+  - Integration Assessment Entities and Management $metadata, fetched live on 2026-09-27 (snapshots testdata/api-metadata/integration-assessment-*.json)
+  - ia-probe -LandscapeTests on the development tenant's Integration Assessment (2026-09-27 17:29), synthetic tfacc-probe objects only
+  - SAP Help, Integration Assessment APIs (docs/ISuite_Integration_Assessment/integration-assessment-apis-47847b5.md in SAP-docs/btp-integration-suite, last changed 2026-07-02), read 2026-09-29, and the Hub catalog of package SAPIntegrationAssessment (EntitiesAPI 1.0.0, specification behind a login)
+
+### Secure Parameter
+
+`security.secure_parameter` · checked 2026-09-27
+
+- **Finding:** SAP Help documents Secure Parameters only in the Monitor UI, and neither the Security Content resource table nor SAP Help's list of API resources names SecureParameters. The entity set comes from the $metadata; create, read, PUT update and delete were verified on a tenant, and the acceptance test passes.
+- **Next step:** Supported as soon as SAP documents SecureParameters (Security Content API reference or its example requests).
+- **Sources:**
+  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
+  - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
+  - tenant probes and acceptance runs on a development tenant (September 2026)
+
+## 🔬 Research required
+
+The capability has been identified, but its public API coverage, lifecycle semantics, or suitability for Terraform still requires further investigation.
 
 ### API Proxy (classic API Management)
 
@@ -247,95 +247,12 @@ A public API exists, but part of its contract is unconfirmed.
   - Business Accelerator Hub: the API artifacts of 173 Integration Suite, API Management, Edge, Graph and BTP packages (308 APIs) searched for API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API deployment, API policy, reusable API, proxy, transport and gateway (2026-09-27); the package list was unchanged since 2026-09-26
   - Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6
 
-### API Proxy Deployment (classic API Management)
-
-`api_management.classic.api_proxy_deployment` · checked 2026-09-27
-
-- **Finding:** Imported proxies are deployed by default; no public call deploys or undeploys an existing proxy.
-- **Next step:** A documented deploy or undeploy call.
-- **Sources:**
-  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
-  - SAP API Management Client SDK 3.0.6 (Maven Central, published 2026-09-24; classes StandardAPIProxyClient, StandardAPIProductClient, StandardAPIKeyValueMapClient)
-  - Business Accelerator Hub: the API artifacts of 173 Integration Suite, API Management, Edge, Graph and BTP packages (308 APIs) searched for API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API deployment, API policy, reusable API, proxy, transport and gateway (2026-09-27); the package list was unchanged since 2026-09-26
-  - Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6
-
-### API Management Application and Developer (Classic)
-
-`api_management.classic.application` · checked 2026-09-26
-
-- **Finding:** Schema confirmed; the Hub describes the Applications API as view only, creation only through the Developer API.
-- **Next step:** Documented create through the API portal; the app secret would need write-only handling.
-- **Sources:**
-  - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
-  - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
-
-### API Management Cache Resource (Classic)
-
-`api_management.classic.cache_resource` · checked 2026-09-26
-
-- **Finding:** Schema confirmed; the Hub lists a cache resource API only for Neo.
-- **Next step:** A Cloud Foundry cache resource API.
-- **Sources:**
-  - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
-  - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
-
-### API Management Certificate Store and Certificate (Classic)
-
-`api_management.classic.certificate_store` · checked 2026-09-26
-
-- **Finding:** Schema confirmed; the Hub describes the KeyStore and TrustStore APIs as create and view only.
-- **Next step:** Documented update and delete.
-- **Sources:**
-  - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
-  - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
-
 ### API Management Key Value Map across API Proxies (Classic)
 
 `api_management.classic.environment_key_value_map` · checked 2026-09-26
 
 - **Finding:** KeyMapEntries and KeyMapEntryValues confirmed by $metadata; how they relate to the generic key value maps is not documented.
 - **Next step:** SAP documentation of the difference, or a tenant test.
-- **Sources:**
-  - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
-  - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
-
-### Policy (classic API Management)
-
-`api_management.classic.policy` · checked 2026-09-26
-
-- **Finding:** Policies are XML inside the proxy bundle, not separate entities; the proxy resource manages them as content.
-- **Next step:** None; policies stay part of the proxy bundle.
-- **Sources:**
-  - SAP/apibusinesshub-api-recipes (commit 2668274, 2026-05-07)
-  - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
-
-### API Management Policy Template (Classic)
-
-`api_management.classic.policy_template` · checked 2026-09-26
-
-- **Finding:** Schema confirmed; no policy template API on the Hub, SAP Help describes only the UI.
-- **Next step:** A policy template API.
-- **Sources:**
-  - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
-  - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
-  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
-
-### API Management Product Access Control (Classic)
-
-`api_management.classic.product_access_control` · checked 2026-09-26
-
-- **Finding:** Schema confirmed; the Hub describes the Access Control Service as view and create rules.
-- **Next step:** Documented update and delete.
-- **Sources:**
-  - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
-  - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
-
-### API Management Rate Plan (Classic)
-
-`api_management.classic.rate_plan` · checked 2026-09-26
-
-- **Finding:** Schema confirmed; the Hub lists only billing and metering APIs for monetization.
-- **Next step:** A rate plan API.
 - **Sources:**
   - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
   - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
@@ -384,6 +301,16 @@ A public API exists, but part of its contract is unconfirmed.
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
 
+### Data Space Integration
+
+`data_space_integration` · checked 2026-09-26
+
+- **Finding:** DSIAPI 2.0.0 (REST) is on the Hub; SAP Help shows only consumer runtime requests. Assets, policies and contract definitions are documented only in the UI.
+- **Next step:** The DSIAPI OpenAPI document, parsed with cmd/apidiscovery -from, to confirm the configuration objects; then tenant tests.
+- **Sources:**
+  - Hub package dataspaceintegration (DSIAPI 2.0.0, REST; modified 2026-07-16)
+  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
+
 ### Edge Integration Cell Runtime Targeting
 
 `edge_integration_cell.deployment_target` · checked 2026-09-26
@@ -416,7 +343,94 @@ A public API exists, but part of its contract is unconfirmed.
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
   - tenant-probe -GapTests on a development tenant (2026-09-27), synthetic tfAccProbe* objects only
 
-## Unsafe Terraform lifecycle
+## ❌ Public API incomplete
+
+A public API exists, but SAP does not document enough of it, for example no update or delete, to manage it with Terraform.
+
+### API Proxy Deployment (classic API Management)
+
+`api_management.classic.api_proxy_deployment` · checked 2026-09-27
+
+- **Finding:** Imported proxies are deployed by default; no public call deploys or undeploys an existing proxy.
+- **Next step:** A documented deploy or undeploy call.
+- **Sources:**
+  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
+  - SAP API Management Client SDK 3.0.6 (Maven Central, published 2026-09-24; classes StandardAPIProxyClient, StandardAPIProductClient, StandardAPIKeyValueMapClient)
+  - Business Accelerator Hub: the API artifacts of 173 Integration Suite, API Management, Edge, Graph and BTP packages (308 APIs) searched for API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API deployment, API policy, reusable API, proxy, transport and gateway (2026-09-27); the package list was unchanged since 2026-09-26
+  - Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6
+
+### API Management Application and Developer (Classic)
+
+`api_management.classic.application` · checked 2026-09-26
+
+- **Finding:** Schema confirmed; the Hub describes the Applications API as view only, creation only through the Developer API.
+- **Next step:** Documented create through the API portal; the app secret would need write-only handling.
+- **Sources:**
+  - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
+  - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
+
+### API Management Cache Resource (Classic)
+
+`api_management.classic.cache_resource` · checked 2026-09-26
+
+- **Finding:** Schema confirmed; the Hub lists a cache resource API only for Neo.
+- **Next step:** A Cloud Foundry cache resource API.
+- **Sources:**
+  - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
+  - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
+
+### API Management Certificate Store and Certificate (Classic)
+
+`api_management.classic.certificate_store` · checked 2026-09-26
+
+- **Finding:** Schema confirmed; the Hub describes the KeyStore and TrustStore APIs as create and view only.
+- **Next step:** Documented update and delete.
+- **Sources:**
+  - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
+  - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
+
+### Policy (classic API Management)
+
+`api_management.classic.policy` · checked 2026-09-26
+
+- **Finding:** Policies are XML inside the proxy bundle, not separate entities; the proxy resource manages them as content.
+- **Next step:** None; policies stay part of the proxy bundle.
+- **Sources:**
+  - SAP/apibusinesshub-api-recipes (commit 2668274, 2026-05-07)
+  - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
+
+### API Management Policy Template (Classic)
+
+`api_management.classic.policy_template` · checked 2026-09-26
+
+- **Finding:** Schema confirmed; no policy template API on the Hub, SAP Help describes only the UI.
+- **Next step:** A policy template API.
+- **Sources:**
+  - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
+  - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
+  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
+
+### API Management Product Access Control (Classic)
+
+`api_management.classic.product_access_control` · checked 2026-09-26
+
+- **Finding:** Schema confirmed; the Hub describes the Access Control Service as view and create rules.
+- **Next step:** Documented update and delete.
+- **Sources:**
+  - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
+  - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
+
+### API Management Rate Plan (Classic)
+
+`api_management.classic.rate_plan` · checked 2026-09-26
+
+- **Finding:** Schema confirmed; the Hub lists only billing and metering APIs for monetization.
+- **Next step:** A rate plan API.
+- **Sources:**
+  - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
+  - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
+
+## ❌ Unsafe Terraform lifecycle
 
 A public API exists, but a Terraform resource could not implement its lifecycle safely.
 
@@ -441,21 +455,7 @@ A public API exists, but a Terraform resource could not implement its lifecycle 
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
   - tenant-probe -GapTests on a development tenant (2026-09-27), synthetic tfAccProbe* objects only
 
-## Research required
-
-Not enough evidence yet to say whether a usable API exists.
-
-### Data Space Integration
-
-`data_space_integration` · checked 2026-09-26
-
-- **Finding:** DSIAPI 2.0.0 (REST) is on the Hub; SAP Help shows only consumer runtime requests. Assets, policies and contract definitions are documented only in the UI.
-- **Next step:** The DSIAPI OpenAPI document, parsed with cmd/apidiscovery -from, to confirm the configuration objects; then tenant tests.
-- **Sources:**
-  - Hub package dataspaceintegration (DSIAPI 2.0.0, REST; modified 2026-07-16)
-  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
-
-## No public API
+## ❌ No public API
 
 Only UI procedures or internal endpoints, which the provider does not use.
 
@@ -749,7 +749,7 @@ Only UI procedures or internal endpoints, which the provider does not use.
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Business Accelerator Hub catalog.svc, full package list (1,971 packages, read 2026-09-26)
 
-## Out of scope
+## ❌ Out of scope
 
 Runtime data, workflows or imperative actions, not desired configuration.
 
@@ -879,9 +879,9 @@ Runtime data, workflows or imperative actions, not desired configuration.
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
 
-## Separate provider
+## ↗️ Separate provider
 
-Belongs to a separate, independently versioned provider.
+Belongs to a separate, independently versioned Terraform provider.
 
 ### Developer Hub
 

@@ -34,20 +34,27 @@ const (
 	// StatusReadOnly means this provider only reads the feature (for
 	// example as a data source), never creates, updates, or deletes it.
 	StatusReadOnly SupportStatus = "read_only"
-	// StatusExperimental means the feature is implemented but its
-	// contract might still change because the underlying SAP API
-	// behavior is not yet fully confirmed.
+	// StatusExperimental means an implementation exists, but its lifecycle
+	// has not yet been sufficiently validated against a real SAP tenant.
 	StatusExperimental SupportStatus = "experimental"
 	// StatusUnsupported means this provider does not implement the
 	// feature at all today. Feature.SupportReason explains why.
 	StatusUnsupported SupportStatus = "unsupported"
-	// StatusUnofficial means the feature works and was verified on a tenant,
-	// but its contract comes only from the service's published $metadata
-	// and those tests: neither SAP's documentation, an official API
-	// specification nor SAP's SDK or tooling describes it. SAP may change it
-	// without notice. As soon as an official source describes it, it moves
-	// to StatusSupported (or StatusPartial).
+	// StatusUnofficial means the implementation has been validated, but
+	// relies on an API contract that SAP does not fully publish or
+	// officially document: here, a contract known only from the service's
+	// $metadata and tenant tests, which neither SAP's documentation, an
+	// official API specification nor SAP's SDK or tooling describes. SAP may
+	// change it without notice. As soon as an official source describes it,
+	// it moves to StatusSupported (or StatusPartial).
 	StatusUnofficial SupportStatus = "unofficial"
+	// StatusResearchRequired means the capability has been identified, but
+	// its public API coverage, lifecycle semantics, or suitability for
+	// Terraform still requires further investigation. There is no
+	// implementation yet, unlike StatusExperimental; and the investigation
+	// is not finished, unlike StatusUnsupported, which records a completed
+	// decision. Feature.SupportReason says what is still unclear.
+	StatusResearchRequired SupportStatus = "research_required"
 	// StatusSeparateProvider means this feature is deliberately excluded
 	// from this provider not because of a missing API or an unsafe
 	// lifecycle, but because it belongs to a different, independently
@@ -61,10 +68,53 @@ const (
 // Valid reports whether s is one of the enumerated SupportStatus values.
 func (s SupportStatus) Valid() bool {
 	switch s {
-	case StatusSupported, StatusPartial, StatusReadOnly, StatusExperimental, StatusUnofficial, StatusUnsupported, StatusSeparateProvider:
+	case StatusSupported, StatusPartial, StatusReadOnly, StatusExperimental, StatusUnofficial,
+		StatusResearchRequired, StatusUnsupported, StatusSeparateProvider:
 		return true
 	}
 	return false
+}
+
+// StatusInfo is how a SupportStatus is shown to people: its icon, its label
+// and the one-sentence definition every document uses.
+type StatusInfo struct {
+	Status     SupportStatus
+	Icon       string
+	Label      string
+	Definition string
+}
+
+// StatusLegend lists every SupportStatus once, in the order legends and
+// summaries show them. Generated documentation takes icons, labels and
+// definitions from here, so they cannot drift apart.
+var StatusLegend = []StatusInfo{
+	{StatusSupported, "✅", "Supported",
+		"Every operation the provider claims is implemented and backed by SAP's documentation, an official API specification or SAP's tooling."},
+	{StatusPartial, "🟡", "Partial",
+		"Usable, but the provider deliberately leaves out part of the lifecycle; the limitations say which part and why."},
+	{StatusReadOnly, "👁️", "Read-only",
+		"Available as a data source only; the provider never creates, changes or deletes it."},
+	{StatusExperimental, "🧪", "Experimental",
+		"Implementation exists, but its lifecycle has not yet been sufficiently validated against a real SAP tenant."},
+	{StatusUnofficial, "🧭", "Unofficial",
+		"Implementation has been validated, but relies on an API contract that SAP does not fully publish or officially document."},
+	{StatusResearchRequired, "🔬", "Research required",
+		"The capability has been identified, but its public API coverage, lifecycle semantics, or suitability for Terraform still requires further investigation."},
+	{StatusUnsupported, "❌", "Unsupported",
+		"Not implemented, and investigated far enough to decide: there is no usable public API or safe Terraform lifecycle, or the feature is deliberately out of scope."},
+	{StatusSeparateProvider, "↗️", "Separate provider",
+		"Belongs to a separate, independently versioned Terraform provider."},
+}
+
+// Info returns the StatusInfo of s, or one with a question mark for a value
+// outside the enumeration.
+func (s SupportStatus) Info() StatusInfo {
+	for _, info := range StatusLegend {
+		if info.Status == s {
+			return info
+		}
+	}
+	return StatusInfo{Status: s, Icon: "?", Label: string(s)}
 }
 
 // ContractSource says where the contract a feature is built on comes from.
@@ -124,7 +174,8 @@ const (
 	ReasonNoPublicAPI SupportReason = "no_public_api"
 	// ReasonResearchRequired means this feature has not yet been
 	// investigated in enough depth to say whether a usable public API
-	// exists at all.
+	// exists at all. It goes with StatusResearchRequired only: an
+	// unsupported feature records a finished investigation.
 	ReasonResearchRequired SupportReason = "research_required"
 	// ReasonOutOfScope means the feature is deliberately excluded from
 	// this provider's boundaries — see docs/provider-scope.md — even

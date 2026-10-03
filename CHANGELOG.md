@@ -38,6 +38,18 @@ which that login made readable for the first time.
 
 ### Changed
 
+- **New support status `research_required`.** The feature catalog and the
+  `sapintegrationsuite_provider_feature(s)` data sources now distinguish a
+  capability that is known but still under investigation (🔬 Research
+  required) from one that is implemented but not yet validated on a tenant
+  (🧪 Experimental) and from one that is validated but relies on a contract
+  SAP does not fully document (🧭 Unofficial, previously shown with 🔸).
+  Ten capabilities with an open investigation step move from `unsupported`
+  to `research_required`: data types, message types, service interfaces,
+  classic API proxies, virtual hosts and environment key value maps, Edge
+  Integration Cell deployment targets, certificate chains, PGP keyrings and
+  Data Space Integration. Configurations that filter `support_status ==
+  "unsupported"` no longer list them. Partial support is now shown with 🟡.
 - **A locating policy cue needs a `description`.** SAP rejects a cue
   without one with HTTP 400 ("must have required property 'description'"),
   so the provider now requires it while planning. A configuration without
