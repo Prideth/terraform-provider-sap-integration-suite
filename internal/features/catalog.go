@@ -269,7 +269,7 @@ var Catalog = []Feature{
 		Name:   "Data Type",
 		Description: "A reusable XSD data type artifact (simple or complex) used by message types " +
 			"and mappings.",
-		SupportStatus:  StatusExperimental,
+		SupportStatus:  StatusUnofficial,
 		SupportReason:  ReasonPublicAPIIncomplete,
 		ContractSource: SourceMetadataOnly,
 		ResourceTypes:  []string{"sapintegrationsuite_data_type"},
@@ -285,7 +285,10 @@ var Catalog = []Feature{
 				"export's bundle lacks both and fails with 500 \"map is null\". With them, create, " +
 				"update (PUT with Name and ArtifactContent), SaveAsVersion and delete work, and an " +
 				"element added on create or update is kept. The provider builds that bundle from xsd, " +
-				"namespace and description.",
+				"namespace and description. SAP takes the description and the namespace from the " +
+				"entity, not from the bundle, so the provider sends them in the create and update " +
+				"bodies. TestAccDataType_basic passed on a tenant (2026-10-03): create, in-place change " +
+				"of schema and description, import, SaveAsVersion.",
 			"Complex data types only: the bundle of a simple type (IsSimpleType) was not examined.",
 			"SAP stores the complex type under the data type's name and normalizes the schema, so " +
 				"the schema is not read back for drift detection; xsd is taken from the configuration.",

@@ -144,13 +144,15 @@ func TestClient_DataTypeLifecycleRequests(t *testing.T) {
 
 	c := New(http.DefaultClient, server.URL)
 	ctx := context.Background()
-	if _, err := c.CreateDataType(ctx, "Sales", "Order", "Order", []byte("bundle")); err != nil {
+	b := DataTypeBundle{ID: "Order", Name: "Order", Namespace: "urn:example:orders", Description: "Sales order"}
+	if _, err := c.CreateDataType(ctx, "Sales", b, []byte("bundle")); err != nil {
 		t.Fatalf("CreateDataType: %v", err)
 	}
-	if created["Id"] != "Order" || created["PackageId"] != "Sales" || created["ArtifactContent"] != base64.StdEncoding.EncodeToString([]byte("bundle")) {
+	if created["Id"] != "Order" || created["PackageId"] != "Sales" || created["Description"] != "Sales order" ||
+		created["Namespace"] != "urn:example:orders" || created["ArtifactContent"] != base64.StdEncoding.EncodeToString([]byte("bundle")) {
 		t.Errorf("create body = %v", created)
 	}
-	if dt, err := c.UpdateDataType(ctx, "Order", "Order", []byte("bundle2")); err != nil || dt.Version != "1.0.1" {
+	if dt, err := c.UpdateDataType(ctx, b, []byte("bundle2")); err != nil || dt.Version != "1.0.1" {
 		t.Fatalf("UpdateDataType = %+v, %v", dt, err)
 	}
 	if _, err := c.SaveDataTypeAsVersion(ctx, "Order", "1.0.2"); err != nil {
@@ -162,6 +164,7 @@ func TestClient_DataTypeLifecycleRequests(t *testing.T) {
 
 	want := []string{
 		"POST /api/v1/DataTypeDesigntimeArtifacts?",
+		"GET /api/v1/DataTypeDesigntimeArtifacts(Id='Order',Version='active')?",
 		"PUT /api/v1/DataTypeDesigntimeArtifacts(Id='Order',Version='active')?",
 		"GET /api/v1/DataTypeDesigntimeArtifacts(Id='Order',Version='active')?",
 		"POST /api/v1/DataTypeDesigntimeArtifactSaveAsVersion?Id='Order'&SaveAsVersion='1.0.2'",

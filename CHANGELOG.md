@@ -9,6 +9,28 @@ contain breaking schema or lifecycle changes; each one is listed under
 "Breaking changes" together with the steps it needs. Patch releases (0.2.1)
 only fix defects in their minor release.
 
+## Unreleased (planned as 0.7.0)
+
+0.7.0 is planned to manage the ESR-style design-time types of Cloud
+Integration: data types, message types, fault message types and service
+interfaces.
+
+### New resources
+
+- `sapintegrationsuite_data_type` (unofficial): a complex data type in an
+  integration package, built from an XML schema. SAP documents no request
+  for data types. The provider builds the artifact bundle the way SAP stores
+  a data type, because SAP rejects a package export's bundle (500 "map is
+  null"), and checks the schema while planning. An acceptance test created
+  a data type, changed its schema and description in place, imported it and
+  saved a version on a tenant. Needs `enable_unofficial = true`.
+
+### Known limitations
+
+- Complex data types only; simple types were not examined.
+- The schema is not read back for drift detection: SAP stores the complex
+  type under the data type's name and reformats the schema.
+
 ## 0.6.0 — 2026-10-03
 
 0.6.0 makes the API Composition business data graph usable on a tenant. The

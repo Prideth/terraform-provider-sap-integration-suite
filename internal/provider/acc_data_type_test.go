@@ -42,10 +42,9 @@ resource "sapintegrationsuite_data_type" "test" {
 
 // The whole lifecycle of a data type: create, change the schema and the
 // description in place, import, save a version. SAP documents no request
-// for data types, so passing this makes the resource unofficial.
+// for data types; this test made the resource unofficial (passed 2026-10-03).
 func TestAccDataType_basic(t *testing.T) {
 	accgate.Require(t, accgate.CloudIntegration)
-	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL", "true")
 	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "true")
 	pkg, id := testAccName(), testAccName()
 	const name = "sapintegrationsuite_data_type.test"

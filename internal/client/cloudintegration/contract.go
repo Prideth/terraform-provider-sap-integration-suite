@@ -42,7 +42,7 @@ var Contract = apimeta.Contract{
 		{EntitySet: integrationDesigntimeArtifactsEntitySet, Value: designtimeUpdateRequest{}},
 		{EntitySet: messageMappingDesigntimeArtifactsEntitySet, Value: designtimeUpdateRequest{}},
 		{EntitySet: dataTypeDesigntimeArtifactsEntitySet, Value: dataTypeCreate{}},
-		{EntitySet: dataTypeDesigntimeArtifactsEntitySet, Value: designtimeUpdateRequest{}},
+		{EntitySet: dataTypeDesigntimeArtifactsEntitySet, Value: dataTypeUpdate{}},
 		{EntitySet: scriptCollectionDesigntimeArtifactsEntitySet, Value: designtimeUpdateRequest{}},
 		// Create body that links the policy (deep link); never decoded.
 		{EntitySet: artifactReferencesEntitySet, Value: accessPolicyReferenceCreate{}},

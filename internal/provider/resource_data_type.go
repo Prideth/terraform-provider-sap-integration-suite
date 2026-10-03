@@ -220,14 +220,16 @@ func (r *dataTypeResource) ValidateConfig(ctx context.Context, req resource.Vali
 	}
 }
 
-func dataTypeBundle(m dataTypeModel) ([]byte, error) {
-	return cloudintegration.DataTypeBundle{
+func dataTypeBundle(m dataTypeModel) (cloudintegration.DataTypeBundle, []byte, error) {
+	b := cloudintegration.DataTypeBundle{
 		ID:          m.DataTypeID.ValueString(),
 		Name:        m.Name.ValueString(),
 		Namespace:   m.Namespace.ValueString(),
 		Description: m.Description.ValueString(),
 		XSD:         m.XSD.ValueString(),
-	}.Build(time.Now())
+	}
+	content, err := b.Build(time.Now())
+	return b, content, err
 }
 
 func dataTypeToModel(dt *cloudintegration.DataType, packageID string, previous dataTypeModel) dataTypeModel {
@@ -250,12 +252,12 @@ func (r *dataTypeResource) Create(ctx context.Context, req resource.CreateReques
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	bundle, err := dataTypeBundle(plan)
+	b, bundle, err := dataTypeBundle(plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to build the data type bundle", err.Error())
 		return
 	}
-	dt, err := r.client.CreateDataType(ctx, plan.PackageID.ValueString(), plan.DataTypeID.ValueString(), plan.Name.ValueString(), bundle)
+	dt, err := r.client.CreateDataType(ctx, plan.PackageID.ValueString(), b, bundle)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to create SAP Integration Suite data type", diagnosticDetail(err))
 		return
@@ -304,12 +306,12 @@ func (r *dataTypeResource) Update(ctx context.Context, req resource.UpdateReques
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	bundle, err := dataTypeBundle(plan)
+	b, bundle, err := dataTypeBundle(plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to build the data type bundle", err.Error())
 		return
 	}
-	dt, err := r.client.UpdateDataType(ctx, plan.DataTypeID.ValueString(), plan.Name.ValueString(), bundle)
+	dt, err := r.client.UpdateDataType(ctx, b, bundle)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to update SAP Integration Suite data type", diagnosticDetail(err))
 		return

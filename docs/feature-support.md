@@ -86,7 +86,7 @@ Do not conflate these: a feature can be fully supported by this provider and sti
 | `cloud_integration.custom_tag_configuration` | cloud_integration | partial (unsafe_terraform_lifecycle) | sap_documentation | Yes | Yes | Yes | Yes | — | Yes | — | Resource + Data Source |
 | `cloud_integration.data_store` | cloud_integration | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
 | `cloud_integration.data_store_entry` | cloud_integration | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
-| `cloud_integration.data_type` | cloud_integration | experimental (public_api_incomplete) | metadata_only | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
+| `cloud_integration.data_type` | cloud_integration | unofficial (public_api_incomplete) | metadata_only | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
 | `cloud_integration.design_time_versioning` | cloud_integration | partial (not_implemented) | sap_documentation (some operations unofficial) | Yes | Yes | — | Yes | — | — | — | Resource |
 | `cloud_integration.integration_adapter` | cloud_integration | partial (public_api_incomplete) | sap_documentation | Yes | Yes | Yes | — | Yes | Yes | — | Resource + Data Source |
 | `cloud_integration.integration_adapter_deployment` | cloud_integration | partial (public_api_incomplete) | sap_documentation | Yes | Yes | Yes | — | Yes | — | Yes | Resource |
@@ -180,7 +180,7 @@ provider "sapintegrationsuite" {
 | Type | Status | Switch |
 |---|---|---|
 | `sapintegrationsuite_access_policy_runtime_assignments` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_data_type` | experimental | `enable_experimental` |
+| `sapintegrationsuite_data_type` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_application_instance` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_application` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_deployment_model` | unofficial | `enable_unofficial` |
@@ -258,9 +258,9 @@ Grouped by why, not just that. A feature can be `partial` and reachable via one 
   - Create, update and delete are documented in SAP Help (Configuring a Default Domain / Custom Domain / Mutual TLS for a Virtual Host): POST /apiportal/operations/1.0/Configuration.svc/VirtualHostRequests with operation CREATE, UPDATE or DELETE and the fields accountId, virtualHostUrl (max 63 characters for an alias), isDefaultVirtualHostRequest, isForCustomDomain, keyStoreName, keyStoreAlias, trustStore, isClientAuthEnabled and virtualHostId. The response carries virtualHostId and allocationStatus.
   - Reading is confirmed by an API Portal tenant's Management.svc $metadata (September 2026): VirtualHosts has the key id and the properties name, virtual_host, virtual_port, isDefault, isSSL, isForCustomDomain, isClientAuthEnabled, keyStoreName, keyStoreAlias, trustStore and projectPath, which covers every field the write request sets. A GET with an APIPortal.Administrator key returned 200. Whether allocationStatus can be anything other than COMPLETE is still not documented, and the write path has not been exercised.
   - Needs a service key with the APIManagement.SelfService.Administrator role, separate from APIPortal.Administrator. Deletion is refused while proxies (deployed, draft or in a revision) reference the host or while it is the default.
-- **`cloud_integration.data_type`** — A reusable XSD data type artifact (simple or complex) used by message types and mappings. (🧪 Experimental)
+- **`cloud_integration.data_type`** — A reusable XSD data type artifact (simple or complex) used by message types and mappings. (🧭 Unofficial)
   - The tenant $metadata defines DataTypeDesigntimeArtifacts (Id and Version as key, PackageId, Name, Namespace, Description, IsSimpleType, ArtifactContent) and a DataTypeDesigntimeArtifactSaveAsVersion function import. SAP Help documents only the UI and lists no API resource or example request for data types.
-  - Gap probes on a tenant (September and October 2026): a create needs the bundle as SAP stores it, with additionalAttributes.json and metainfo.prop next to the XSD; a package export's bundle lacks both and fails with 500 "map is null". With them, create, update (PUT with Name and ArtifactContent), SaveAsVersion and delete work, and an element added on create or update is kept. The provider builds that bundle from xsd, namespace and description.
+  - Gap probes on a tenant (September and October 2026): a create needs the bundle as SAP stores it, with additionalAttributes.json and metainfo.prop next to the XSD; a package export's bundle lacks both and fails with 500 "map is null". With them, create, update (PUT with Name and ArtifactContent), SaveAsVersion and delete work, and an element added on create or update is kept. The provider builds that bundle from xsd, namespace and description. SAP takes the description and the namespace from the entity, not from the bundle, so the provider sends them in the create and update bodies. TestAccDataType_basic passed on a tenant (2026-10-03): create, in-place change of schema and description, import, SaveAsVersion.
   - Complex data types only: the bundle of a simple type (IsSimpleType) was not examined.
   - SAP stores the complex type under the data type's name and normalizes the schema, so the schema is not read back for drift detection; xsd is taken from the configuration.
 - **`cloud_integration.integration_adapter`** — A custom Integration Adapter design-time artifact (a *.esa archive built with the SAP Adapter SDK), imported into a Cloud Integration package. Cloud Foundry environment only. (partial support already implemented — see Limitations below)

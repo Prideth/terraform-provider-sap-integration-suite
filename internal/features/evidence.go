@@ -99,8 +99,8 @@ var Evidence = map[string]EvidenceRecord{
 		"Value mappings need an in-place update first (see cloud_integration.value_mapping); the other types need their own resources.",
 		srcHelp, srcMetaCI, srcTenant),
 	"cloud_integration.data_type": evOn("2026-10-03",
-		"Create, update (PUT), SaveAsVersion and delete work on a tenant with the bundle SAP stores for a data type (XSD, additionalAttributes.json, metainfo.prop); elements added on create and update are kept. SAP Help documents no request, so the contract comes from the $metadata and the probes.",
-		"TestAccDataType_basic on a tenant; passing it makes the data type unofficial.",
+		"TestAccDataType_basic passed on a tenant: create, in-place change of schema and description, import and SaveAsVersion. Create, update (PUT), SaveAsVersion and delete work on a tenant with the bundle SAP stores for a data type (XSD, additionalAttributes.json, metainfo.prop); elements added on create and update are kept. SAP Help documents no request, so the contract comes from the $metadata and the probes.",
+		"None within the provider; it becomes supported if SAP documents the Data Types API (the Hub and SAP Help list none today).",
 		srcHelp, srcMetaCI, srcExport, srcGapProbe),
 	"cloud_integration.message_type": ev(
 		"$metadata has MessageTypeDesigntimeArtifacts and FaultMessageTypeDesigntimeArtifacts with SaveAsVersion; SAP Help documents neither.",

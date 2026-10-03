@@ -10,12 +10,11 @@ description: |-
 Manages a data type: a complex XML type that message types and service interfaces of the same
 package build on. You provide the schema; the provider uploads it as a data type artifact.
 
-**Status:** experimental. Needs `enable_experimental = true`. SAP documents no request for data
-types: the Integration Content API's `$metadata` declares `DataTypeDesigntimeArtifacts`, and the
-create, update, `SaveAsVersion` and delete requests this resource sends were tested on a tenant
-with probes. Once its acceptance test has passed on a tenant, the resource becomes unofficial and
-needs `enable_unofficial = true` instead, because SAP may change an undocumented API without
-notice.
+**Status:** unofficial. Needs `enable_unofficial = true`. SAP documents no request for data
+types: the Integration Content API's `$metadata` declares `DataTypeDesigntimeArtifacts`, and an
+acceptance test created a data type, changed its schema and description in place, imported it and
+saved a version on a tenant (October 2026). Because the API is undocumented, SAP may change it
+without notice.
 
 ## Prerequisites
 
@@ -36,7 +35,8 @@ notice.
 **The bundle.** SAP stores a data type as a bundle with the schema, a manifest and two attribute
 files. A package export from the UI lacks the attribute files, and SAP rejects such a bundle with
 `500` "map is null". The provider therefore builds the bundle itself, in the layout SAP returns
-for a data type.
+for a data type. SAP takes the description and the namespace from the request, not from the
+bundle, so the provider sends them with every create and update.
 
 **The schema.** The plan checks that `xsd` is well-formed, has `xsd:schema` as root element,
 exactly one top-level `complexType`, and the `targetNamespace` given in `namespace`. SAP stores

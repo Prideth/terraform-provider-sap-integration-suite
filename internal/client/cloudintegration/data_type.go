@@ -31,13 +31,27 @@ type DataType struct {
 	IsSimpleType bool   `json:"IsSimpleType,omitempty"`
 }
 
-// dataTypeCreate is the create body. The bundle carries name, namespace
-// and description as well; SAP reads them from there.
+// dataTypeCreate is the create body. SAP takes the description and the
+// namespace from the entity, not from the bundle's attribute files: a
+// create that sent them only in the bundle read back without a description
+// (acceptance run, 2026-10-03), while the probe's create with Description
+// and Namespace in the body stored both.
 type dataTypeCreate struct {
-	ID        string `json:"Id"`
-	Name      string `json:"Name"`
-	PackageID string `json:"PackageId"`
-	Content   string `json:"ArtifactContent"`
+	ID          string `json:"Id"`
+	Name        string `json:"Name"`
+	PackageID   string `json:"PackageId"`
+	Description string `json:"Description,omitempty"`
+	Namespace   string `json:"Namespace,omitempty"`
+	Content     string `json:"ArtifactContent"`
+}
+
+// dataTypeUpdate is the update body: the name, the description and the
+// content. Id and PackageId are left out, as for the other design-time
+// artifacts, whose updates SAP rejects when they carry them.
+type dataTypeUpdate struct {
+	Name        string `json:"Name"`
+	Description string `json:"Description,omitempty"`
+	Content     string `json:"ArtifactContent"`
 }
 
 // DataTypeBundle describes the content of a complex data type. The provider
@@ -196,35 +210,41 @@ func (c *Client) GetDataType(ctx context.Context, id string) (*DataType, error) 
 }
 
 // CreateDataType creates a data type in a package from a bundle built with
-// DataTypeBundle.Build. The tenant answered with 201 and the entity; without
-// a body the data type is read back.
-func (c *Client) CreateDataType(ctx context.Context, packageID, id, name string, bundle []byte) (*DataType, error) {
+// DataTypeBundle.Build, then reads it back: the create answer is not
+// trusted to carry every stored property.
+func (c *Client) CreateDataType(ctx context.Context, packageID string, b DataTypeBundle, bundle []byte) (*DataType, error) {
 	payload, err := json.Marshal(dataTypeCreate{
-		ID: id, Name: name, PackageID: packageID, Content: base64.StdEncoding.EncodeToString(bundle),
+		ID: b.ID, Name: b.Name, PackageID: packageID, Description: b.Description, Namespace: b.Namespace,
+		Content: base64.StdEncoding.EncodeToString(bundle),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("cloudintegration: encoding data type: %w", err)
 	}
-	body, err := c.odata.Post(ctx, dataTypeDesigntimeArtifactsEntitySet, payload)
+	if _, err := c.odata.Post(ctx, dataTypeDesigntimeArtifactsEntitySet, payload); err != nil {
+		return nil, err
+	}
+	return c.GetDataType(ctx, b.ID)
+}
+
+// UpdateDataType uploads a new bundle with PUT on the active version, with
+// the name and the description, and reads the data type back. A tenant
+// answered a content update with 200, and the read-back content had the new
+// element (2026-10-03).
+func (c *Client) UpdateDataType(ctx context.Context, b DataTypeBundle, bundle []byte) (*DataType, error) {
+	payload, err := json.Marshal(dataTypeUpdate{
+		Name: b.Name, Description: b.Description, Content: base64.StdEncoding.EncodeToString(bundle),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("cloudintegration: encoding data type update: %w", err)
+	}
+	key, err := designtimeArtifactKey(b.ID, activeVersion)
 	if err != nil {
 		return nil, err
 	}
-	if v2.EmptyBody(body) {
-		return c.GetDataType(ctx, id)
-	}
-	var dt DataType
-	if err := v2.DecodeEntity(body, &dt); err != nil {
+	if _, err := c.odata.Put(ctx, v2.BuildPath(dataTypeDesigntimeArtifactsEntitySet, key, ""), payload); err != nil {
 		return nil, err
 	}
-	return &dt, nil
-}
-
-// UpdateDataType uploads a new bundle with PUT on the active version. A
-// tenant answered with 200, and the read-back content had the new element
-// (2026-10-03).
-func (c *Client) UpdateDataType(ctx context.Context, id, name string, bundle []byte) (*DataType, error) {
-	return updateDesigntimeArtifact(ctx, c, dataTypeDesigntimeArtifactsEntitySet, id, name, bundle,
-		func() (*DataType, error) { return c.GetDataType(ctx, id) })
+	return c.GetDataType(ctx, b.ID)
 }
 
 // SaveDataTypeAsVersion saves the current content under an explicit version.

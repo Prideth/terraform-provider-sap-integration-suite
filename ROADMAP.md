@@ -29,7 +29,7 @@ prepared on `release/0.5.x`, 0.6.0 on `release/0.6.x`.
 |---|---|---|---|
 | 0.5.0 | Integration Assessment technology profiles and the ISA-M taxonomy | prepared on `release/0.5.x` | — |
 | 0.6.0 | API Composition: business data graph hardening | prepared on `release/0.6.x`; every change is tenant-verified | releasing 0.5.0 first |
-| 0.7.0 | Cloud Integration data types, message types, fault message types, service interfaces | proposed | proof that content written through the API is kept (P1 item 4) |
+| 0.7.0 | Cloud Integration data types, message types, fault message types, service interfaces | in progress on `feature/design-time-types`; data types done (unofficial) | the bundle format of message types (P1 item 4) |
 | 0.8.0 | Security Content completion | proposed | the upload formats in P2 item 5 |
 | 0.9.0 | Classic API Management infrastructure, above all virtual hosts; the API proxy only if the official Transport API request passes its acceptance test | proposed | P2 item 6 and the Transport API specification |
 | 0.10.0 | Edge Integration Cell targeting | proposed | a tenant with an Edge Integration Cell (P1 item 3) |
@@ -74,9 +74,11 @@ These need no further research, only a run of the prepared tests:
    defines all four with `SaveAsVersion`. For data types (September 2026): reading, deleting and
    `SaveAsVersion` work, and so does a create with content once the bundle carries
    `additionalAttributes.json` and `metainfo.prop` as SAP's own `$value` does. A media `PUT`
-   on `$value` answers 501. SAP rewrites the XSD's type name to the artifact's name; whether it
-   keeps the structure of a type with elements, and whether an update with content takes effect,
-   is still open. If both hold, the four resources reuse the shared design-time client.
+   on `$value` answers 501. SAP rewrites the XSD's type name to the artifact's name, keeps the
+   elements of a type on create and update (probe, 2026-10-03), and takes description and
+   namespace from the request body. `sapintegrationsuite_data_type` is implemented and passed its
+   acceptance test, so it is unofficial. Next: the bundle of a message type, which references a
+   data type, then fault message types and service interfaces.
 
 ## P2 — partly confirmed, more evidence first
 
