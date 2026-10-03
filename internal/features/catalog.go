@@ -319,7 +319,10 @@ var Catalog = []Feature{
 				"TestAccMessageType_basic passed on a tenant for both (2026-10-03): create, in-place " +
 				"switch of the data type and the description, import, SaveAsVersion.",
 			"A read returns DataTypeUsed empty even when it took effect; the provider reads the data " +
-				"type from the generated bundle (dtUsedinMT in additionalAttributes.json).",
+				"type from the generated bundle: dtUniqueIdinMT in additionalAttributes.json (the artifact " +
+				"ID), dtUsedinMT (the name) only when the ID is missing. They differ for SAP's standard " +
+				"data types such as ExchangeFaultData, whose IDs carry a hash suffix (package export, " +
+				"2026-10-03). Whether a create accepts a standard data type by ID or by name is not probed.",
 			"SAP does not check references: a data type that a message type uses can be deleted.",
 		},
 		Operations: Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},

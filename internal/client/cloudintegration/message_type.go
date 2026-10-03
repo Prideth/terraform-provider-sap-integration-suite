@@ -102,9 +102,12 @@ func (c *Client) GetMessageType(ctx context.Context, kind MessageTypeKind, id st
 	return &mt, nil
 }
 
-// dataTypeUsedInBundle returns the data type a generated message type
-// bundle refers to (dtUsedinMT in additionalAttributes.json), or "" for
-// none.
+// dataTypeUsedInBundle returns the ID of the data type a generated message
+// type bundle refers to, or "" for none. additionalAttributes.json names it
+// twice: dtUniqueIdinMT holds the artifact ID, dtUsedinMT the data type's
+// name. They differ for SAP's standard data types, whose IDs carry a hash
+// suffix (ExchangeFaultData_<hash>, package export of 2026-10-03), so the ID
+// is preferred and the name is only a fallback for bundles without it.
 func dataTypeUsedInBundle(content []byte) (string, error) {
 	r, err := zip.NewReader(bytes.NewReader(content), int64(len(content)))
 	if err != nil {
@@ -124,12 +127,16 @@ func dataTypeUsedInBundle(content []byte) (string, error) {
 			return "", err
 		}
 		var attrs struct {
-			DataTypeUsed string `json:"dtUsedinMT"`
+			DataTypeID   string `json:"dtUniqueIdinMT"`
+			DataTypeName string `json:"dtUsedinMT"`
 		}
 		if err := json.Unmarshal(data, &attrs); err != nil {
 			return "", fmt.Errorf("additionalAttributes.json: %w", err)
 		}
-		return attrs.DataTypeUsed, nil
+		if attrs.DataTypeID != "" {
+			return attrs.DataTypeID, nil
+		}
+		return attrs.DataTypeName, nil
 	}
 	return "", nil
 }
