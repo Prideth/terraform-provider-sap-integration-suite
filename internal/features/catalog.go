@@ -301,7 +301,7 @@ var Catalog = []Feature{
 		Name:   "Message Type",
 		Description: "A message type artifact that wraps a data type as a message root element, " +
 			"and the fault message type, which adds SAP's standard fault data.",
-		SupportStatus:  StatusExperimental,
+		SupportStatus:  StatusUnofficial,
 		SupportReason:  ReasonPublicAPIIncomplete,
 		ContractSource: SourceMetadataOnly,
 		ResourceTypes:  []string{"sapintegrationsuite_message_type", "sapintegrationsuite_fault_message_type"},
@@ -315,7 +315,9 @@ var Catalog = []Feature{
 			"ESR probes on a tenant (2026-10-03): a create without content works, and SAP generates " +
 				"the schema from DataTypeUsed (an element of that data type; a fault message type adds " +
 				"ExchangeFaultData). An update changes Description and DataTypeUsed and regenerates the " +
-				"content, but SAP refuses to update Name, so changing the name replaces the artifact.",
+				"content, but SAP refuses to update Name, so changing the name replaces the artifact. " +
+				"TestAccMessageType_basic passed on a tenant for both (2026-10-03): create, in-place " +
+				"switch of the data type and the description, import, SaveAsVersion.",
 			"A read returns DataTypeUsed empty even when it took effect; the provider reads the data " +
 				"type from the generated bundle (dtUsedinMT in additionalAttributes.json).",
 			"SAP does not check references: a data type that a message type uses can be deleted.",

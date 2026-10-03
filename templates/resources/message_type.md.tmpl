@@ -2,7 +2,7 @@
 page_title: "sapintegrationsuite_message_type Resource - sapintegrationsuite"
 subcategory: "Cloud Integration"
 description: |-
-  A message type in an integration package, built on a data type. Experimental; needs enable_experimental.
+  A message type in an integration package, built on a data type. Unofficial; needs enable_unofficial.
 ---
 
 # sapintegrationsuite_message_type (Resource)
@@ -11,10 +11,11 @@ Manages a message type: the message structure that service interfaces and mappin
 SAP generates the message type's schema itself: a root element named `name` of the data type
 given in `data_type_id`. You do not upload a schema.
 
-**Status:** experimental. Needs `enable_experimental = true`. SAP documents no request for
+**Status:** unofficial. Needs `enable_unofficial = true`. SAP documents no request for
 message types: the Integration Content API's `$metadata` declares them, and the create, update,
-`SaveAsVersion` and delete requests this resource sends were tested on a tenant with probes. Its
-acceptance test decides whether it becomes unofficial.
+`SaveAsVersion` and delete requests this resource sends were tested on a tenant, and its
+acceptance test passed on a tenant (October 2026). Because the API is undocumented, SAP may change it
+without notice.
 
 ## Prerequisites
 

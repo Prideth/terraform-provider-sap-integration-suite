@@ -24,12 +24,25 @@ interfaces.
   null"), and checks the schema while planning. An acceptance test created
   a data type, changed its schema and description in place, imported it and
   saved a version on a tenant. Needs `enable_unofficial = true`.
+- `sapintegrationsuite_message_type` and
+  `sapintegrationsuite_fault_message_type` (unofficial): a message type or
+  fault message type built on a data type. SAP documents no request for
+  either. SAP generates the schema from the data type given in
+  `data_type_id` (a fault message type adds SAP's standard fault data), so
+  no schema is uploaded. The data type and the description change in place;
+  SAP refuses to update the name, so a new name replaces the artifact. An
+  acceptance test created both, switched their data type and description
+  in place, imported them and saved a version on a tenant. Needs
+  `enable_unofficial = true`.
 
 ### Known limitations
 
 - Complex data types only; simple types were not examined.
 - The schema is not read back for drift detection: SAP stores the complex
   type under the data type's name and reformats the schema.
+- SAP does not check references between design-time types: it lets a data
+  type that a message type uses be deleted. Refer to the data type resource
+  so that Terraform orders the deletion.
 
 ## 0.6.0 — 2026-10-03
 

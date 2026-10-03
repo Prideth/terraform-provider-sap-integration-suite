@@ -2,7 +2,7 @@
 page_title: "sapintegrationsuite_fault_message_type Resource - sapintegrationsuite"
 subcategory: "Cloud Integration"
 description: |-
-  A fault message type in an integration package, built on a data type. Experimental; needs enable_experimental.
+  A fault message type in an integration package, built on a data type. Unofficial; needs enable_unofficial.
 ---
 
 # sapintegrationsuite_fault_message_type (Resource)
@@ -12,10 +12,11 @@ SAP generates the fault message type's schema itself: a root element named `name
 standard fault data (`ExchangeFaultData`) and, as additional detail, the data type given in
 `data_type_id`. You do not upload a schema.
 
-**Status:** experimental. Needs `enable_experimental = true`. SAP documents no request for
+**Status:** unofficial. Needs `enable_unofficial = true`. SAP documents no request for
 fault message types: the Integration Content API's `$metadata` declares them, and the create, update,
-`SaveAsVersion` and delete requests this resource sends were tested on a tenant with probes. Its
-acceptance test decides whether it becomes unofficial.
+`SaveAsVersion` and delete requests this resource sends were tested on a tenant, and its
+acceptance test passed on a tenant (October 2026). Because the API is undocumented, SAP may change it
+without notice.
 
 ## Prerequisites
 
@@ -41,8 +42,8 @@ example, so that Terraform deletes the fault message type first.
 ## Example Usage
 
 ```terraform
-# Fault message types are experimental: SAP documents no request for them.
-# Needs enable_experimental = true in the provider block.
+# Fault message types are unofficial: SAP documents no request for them.
+# Needs enable_unofficial = true in the provider block.
 resource "sapintegrationsuite_fault_message_type" "order_rejected" {
   package_id            = sapintegrationsuite_integration_package.sales.id
   fault_message_type_id = "OrderRejected"

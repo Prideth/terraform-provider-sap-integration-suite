@@ -1,5 +1,5 @@
-# Message types are experimental: SAP documents no request for them. Needs
-# enable_experimental = true in the provider block.
+# Message types are unofficial: SAP documents no request for them. Needs
+# enable_unofficial = true in the provider block.
 resource "sapintegrationsuite_message_type" "order" {
   package_id      = sapintegrationsuite_integration_package.sales.id
   message_type_id = "OrderMessage"

@@ -103,8 +103,8 @@ var Evidence = map[string]EvidenceRecord{
 		"None within the provider; it becomes supported if SAP documents the Data Types API (the Hub and SAP Help list none today).",
 		srcHelp, srcMetaCI, srcExport, srcGapProbe),
 	"cloud_integration.message_type": evOn("2026-10-03",
-		"Create without content, update of Description and DataTypeUsed (PUT without Name, which SAP refuses), SaveAsVersion and delete work on a tenant; SAP generates the schema from DataTypeUsed. SAP Help documents neither message types nor fault message types.",
-		"TestAccMessageType_basic on a tenant; passing it makes both resources unofficial.",
+		"TestAccMessageType_basic passed on a tenant for message types and fault message types. Create without content, update of Description and DataTypeUsed (PUT without Name, which SAP refuses), SaveAsVersion and delete work on a tenant; SAP generates the schema from DataTypeUsed. SAP Help documents neither message types nor fault message types.",
+		"None within the provider; both become supported if SAP documents the message type APIs.",
 		srcHelp, srcMetaCI, srcTenant),
 	"cloud_integration.service_interface": ev(
 		"$metadata has ServiceInterfaceDesigntimeArtifacts with SaveAsVersion and a Resources navigation; SAP Help documents only the UI and ESR import.",

@@ -98,7 +98,7 @@ Do not conflate these: a feature can be fully supported by this provider and sti
 | `cloud_integration.message_mapping_deployment` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Resource |
 | `cloud_integration.message_processing_logs` | cloud_integration | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
 | `cloud_integration.message_stores` | cloud_integration | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
-| `cloud_integration.message_type` | cloud_integration | experimental (public_api_incomplete) | metadata_only | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
+| `cloud_integration.message_type` | cloud_integration | unofficial (public_api_incomplete) | metadata_only | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
 | `cloud_integration.number_range` | cloud_integration | supported | sap_documentation (some operations unofficial) | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
 | `cloud_integration.script_collection` | cloud_integration | supported | sap_documentation (some operations unofficial) | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
 | `cloud_integration.script_collection_deployment` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Resource |
@@ -181,7 +181,7 @@ provider "sapintegrationsuite" {
 |---|---|---|
 | `sapintegrationsuite_access_policy_runtime_assignments` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_data_type` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_fault_message_type` | experimental | `enable_experimental` |
+| `sapintegrationsuite_fault_message_type` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_application_instance` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_application` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_deployment_model` | unofficial | `enable_unofficial` |
@@ -199,7 +199,7 @@ provider "sapintegrationsuite" {
 | `sapintegrationsuite_integration_assessment_technology` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_use_case_pattern` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_vendor` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_message_type` | experimental | `enable_experimental` |
+| `sapintegrationsuite_message_type` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_secure_parameter` | unofficial | `enable_unofficial` |
 
 Individual operations of an otherwise documented feature can be unofficial too. They are switched off by `enable_unofficial` as well, but only the operation: the resource itself stays usable with its documented operations. A plan that needs one of them fails with an error that names the operation, for example an in-place update of a message mapping's content. Number ranges without the switch work with what SAP documents: a refresh keeps the state instead of reading the number range, an update has to change `current_value_wo_version` so that it can send the counter, and delete and import are refused.
@@ -275,9 +275,9 @@ Grouped by why, not just that. A feature can be `partial` and reachable via one 
   - Deploy is confirmed directly from SAP's own example request: POST DeployIntegrationAdapterDesigntimeArtifact?Id='...', singular "Artifact" (matching every sibling deploy action in this API), with no Version query parameter (unlike every sibling deploy action, consistent with Id being this entity's only confirmed key).
   - Runtime status polling and undeploy reuse the same shared IntegrationRuntimeArtifacts entity every other *_deployment resource in this provider polls/undeploys through, by analogy — this project could not independently confirm that a deployed custom adapter surfaces through that same shared entity as opposed to an adapter-specific status/undeploy mechanism (for example BuildAndDeployStatus). See docs/guides/integration-adapters.md.
   - Whether a fresh deployment's runtime status becomes visible immediately or after a build/deploy delay specific to adapters (as opposed to ordinary content deployment) was not confirmed.
-- **`cloud_integration.message_type`** — A message type artifact that wraps a data type as a message root element, and the fault message type, which adds SAP's standard fault data. (🧪 Experimental)
+- **`cloud_integration.message_type`** — A message type artifact that wraps a data type as a message root element, and the fault message type, which adds SAP's standard fault data. (🧭 Unofficial)
   - The tenant $metadata defines MessageTypeDesigntimeArtifacts (Id and Version as key, PackageId, Name, Namespace, Description, DataTypeUsed, ArtifactContent) and a SaveAsVersion function import; FaultMessageTypeDesigntimeArtifacts has the same shape for fault messages. SAP Help documents only the UI for both.
-  - ESR probes on a tenant (2026-10-03): a create without content works, and SAP generates the schema from DataTypeUsed (an element of that data type; a fault message type adds ExchangeFaultData). An update changes Description and DataTypeUsed and regenerates the content, but SAP refuses to update Name, so changing the name replaces the artifact.
+  - ESR probes on a tenant (2026-10-03): a create without content works, and SAP generates the schema from DataTypeUsed (an element of that data type; a fault message type adds ExchangeFaultData). An update changes Description and DataTypeUsed and regenerates the content, but SAP refuses to update Name, so changing the name replaces the artifact. TestAccMessageType_basic passed on a tenant for both (2026-10-03): create, in-place switch of the data type and the description, import, SaveAsVersion.
   - A read returns DataTypeUsed empty even when it took effect; the provider reads the data type from the generated bundle (dtUsedinMT in additionalAttributes.json).
   - SAP does not check references: a data type that a message type uses can be deleted.
 - **`cloud_integration.service_interface`** — A service interface artifact describing operations and their request, response and fault message types. (🔬 Research required)
