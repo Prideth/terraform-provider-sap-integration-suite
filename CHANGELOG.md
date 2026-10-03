@@ -9,6 +9,53 @@ contain breaking schema or lifecycle changes; each one is listed under
 "Breaking changes" together with the steps it needs. Patch releases (0.2.1)
 only fix defects in their minor release.
 
+## 0.3.2 — 2026-10-03
+
+0.3.2 is a patch release of 0.3.1. It extends the plan-time length check of
+the access policy description to the four other access policy strings that
+SAP shortens without an error. Nothing else changes.
+
+### Fixed
+
+- **Access policy strings that SAP would shorten are rejected at plan
+  time.** A tenant probe wrote values of 200 to 5000 characters to every
+  string of an access policy and its references. SAP answered each request
+  with success and stored only the first characters:
+
+  | Attribute | SAP keeps |
+  |---|---|
+  | `sapintegrationsuite_access_policy.role_name` | 200 characters |
+  | `sapintegrationsuite_access_policy_reference.name` | 50 characters |
+  | `sapintegrationsuite_access_policy_reference.description` | 200 characters |
+  | `sapintegrationsuite_access_policy_reference.value` | 150 characters |
+
+  The provider then read back a different value than it had planned, so the
+  apply failed after the object existed in SAP, or every later plan showed a
+  change. `sapintegrationsuite_access_policy` and
+  `sapintegrationsuite_access_policy_reference` now check these lengths while
+  Terraform validates the configuration, as 0.3.1 does for the policy
+  description. The error names the limit and the length found; the provider
+  never shortens a value itself.
+
+  SAP counts characters, not bytes: 200 umlauts were kept. Characters outside
+  the Basic Multilingual Plane, such as emoji, count as two, because how SAP
+  counts them was not tested. No SAP source states these limits; they were
+  observed on a tenant, and an acceptance test round-trips every string at
+  its limit.
+
+- **The GitHub release shows the hand-written release notes.** GoReleaser's
+  `changelog.disable` setting skipped the release notes file, so the
+  releases of 0.2.0, 0.3.0 and 0.3.1 first showed only the tag message. This
+  fix was already part of the 0.4.0 line.
+
+### Upgrade notes
+
+Configurations within the limits need no change. A longer value now fails
+the plan; shorten it. Such configurations never applied cleanly. A policy or
+reference that an earlier apply left in SAP with a shortened value is
+replaced if it is in the state; otherwise delete it in SAP or import it. The
+Provider Upgrades guide describes the cases.
+
 ## 0.3.1 — 2026-10-01
 
 0.3.1 is a patch release of 0.3.0. It moves two kinds of access policy
