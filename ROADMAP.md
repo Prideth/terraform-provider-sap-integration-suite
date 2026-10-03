@@ -21,7 +21,7 @@ Priorities:
 
 Each 0.x minor release has one theme. Released so far: 0.1.0 (the broad first provider), 0.2.0
 (the tenant-verified rework), 0.3.0 (contract sources, opt-in switches, Registry documentation)
-with the patches 0.3.1 and 0.3.2. Each minor line has one release branch, `release/<minor>.x`, and
+with the patch 0.3.1. Each minor line has one release branch, `release/<minor>.x`, and
 every release is a tag on it: 0.3.2 (access policy string limits) is prepared on `release/0.3.x`,
 0.4.0 (the Integration Assessment landscape) on `release/0.4.x`, 0.5.0 on `release/0.5.x`.
 
