@@ -333,7 +333,7 @@ var Catalog = []Feature{
 		Name:   "Service Interface",
 		Description: "A service interface artifact describing operations and their request, " +
 			"response and fault message types.",
-		SupportStatus:  StatusExperimental,
+		SupportStatus:  StatusUnofficial,
 		SupportReason:  ReasonPublicAPIIncomplete,
 		ContractSource: SourceMetadataOnly,
 		ResourceTypes:  []string{"sapintegrationsuite_service_interface"},
@@ -353,8 +353,9 @@ var Catalog = []Feature{
 				"without messages). An update needs Name next to ArtifactContent (without it, 500 \"name " +
 				"is null\") and the nested bundle as $value returns it (the interface's own bundle alone " +
 				"answers 400 \"The bundle is not of type ServiceInterface\"); SAP stores the uploaded " +
-				"asynchronous operation and drops messageDetails. A synchronous operation written through " +
-				"the API has not been tested yet.",
+				"asynchronous operation and drops messageDetails. TestAccServiceInterface_basic passed on " +
+				"a tenant (2026-10-04): create with an asynchronous operation, an in-place switch to a " +
+				"synchronous operation with a response plus a second operation, import, SaveAsVersion.",
 		},
 		Operations: Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
 	},

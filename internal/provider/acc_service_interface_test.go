@@ -95,12 +95,12 @@ const (
 
 // Service interfaces: create with an asynchronous operation, switch it to
 // synchronous and add a second operation in place, import, save a version.
-// SAP documents no request; the synchronous step is also the first tenant
-// test of a synchronous operation written through the API (PENDING #59).
+// SAP documents no request; this test made service interfaces unofficial
+// (passed 2026-10-04), including a synchronous operation written through
+// the API.
 func TestAccServiceInterface_basic(t *testing.T) {
 	accgate.Require(t, accgate.CloudIntegration)
 	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "true")
-	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL", "true")
 	pkg, dtReq, dtResp, mtReq, mtResp, fault, si := testAccName(), testAccName(), testAccName(), testAccName(), testAccName(), testAccName(), testAccName()
 	const name = "sapintegrationsuite_service_interface.test"
 	resource.Test(t, resource.TestCase{

@@ -105,7 +105,7 @@ Legend: ✅ Supported · 🟡 Partial · 👁️ Read-only · 🧪 Experimental 
 | Script Collection | ✅ | Resource + Data Source |
 | Script Collection Deployment | ✅ | Resource |
 | Service Endpoints | 👁️ | Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
-| Service Interface | 🧪 | Resource — see [feature-support.md](docs/feature-support.md#all-features) |
+| Service Interface | 🧭 | Resource — see [feature-support.md](docs/feature-support.md#all-features) |
 | Value Mapping | 🟡 | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
 | Value Mapping Deployment | ✅ | Resource |
 | Value Mapping Entry | ❌ | No safe Terraform lifecycle confirmed — see [feature-support.md](docs/feature-support.md#all-features) |
@@ -234,7 +234,7 @@ Legend: ✅ Supported · 🟡 Partial · 👁️ Read-only · 🧪 Experimental 
 | Trading Partner Management Partner Directory Generation | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
 | Trading Partner Management Partner Profile | ❌ | No suitable public API — see [feature-support.md](docs/feature-support.md#all-features) |
 
-21 supported · 10 partial · 3 read-only · 1 experimental · 6 unofficial · 7 research required · 49 unsupported · 2 separate provider, out of 99 evaluated Integration Suite features.
+21 supported · 10 partial · 3 read-only · 0 experimental · 7 unofficial · 7 research required · 49 unsupported · 2 separate provider, out of 99 evaluated Integration Suite features.
 
 <!-- END GENERATED FEATURE SUPPORT -->
 

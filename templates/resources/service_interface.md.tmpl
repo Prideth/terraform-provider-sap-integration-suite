@@ -2,7 +2,7 @@
 page_title: "sapintegrationsuite_service_interface Resource - sapintegrationsuite"
 subcategory: "Cloud Integration"
 description: |-
-  A service interface in an integration package: operations with request, response and fault message types. Experimental; needs enable_experimental.
+  A service interface in an integration package: operations with request, response and fault message types. Unofficial; needs enable_unofficial.
 ---
 
 # sapintegrationsuite_service_interface (Resource)
@@ -12,13 +12,12 @@ exchange. Each operation names a request message type, a response message type i
 synchronous, and the fault message types it can raise. An operation with a response message type
 is synchronous; one without is asynchronous.
 
-**Status:** experimental. Needs `enable_experimental = true`. SAP documents no request for service
+**Status:** unofficial. Needs `enable_unofficial = true`. SAP documents no request for service
 interfaces: the Integration Content API's `$metadata` declares `ServiceInterfaceDesigntimeArtifacts`,
 and the operation model this resource writes follows the bundles SAP's own editor wrote for an
-asynchronous and a synchronous service interface. Tenant probes confirmed the create, the upload of
-an asynchronous operation, `SaveAsVersion` and the delete. Once its acceptance test has passed on a
-tenant, the resource becomes unofficial and needs `enable_unofficial = true` instead, because SAP
-may change an undocumented API without notice.
+asynchronous and a synchronous service interface. Its acceptance test created, changed (from an
+asynchronous to a synchronous operation, with a second operation added), imported and versioned one
+on a tenant (October 2026). Because the API is undocumented, SAP may change it without notice.
 
 ## Prerequisites
 
@@ -66,8 +65,6 @@ The ID is `<package_id>/<service_interface_id>`.
 
 - **SAP:** no documented request; the contract comes from the `$metadata`, SAP's own bundles and
   tenant probes.
-- A synchronous operation written through the API has not been tested on a tenant yet; its form
-  follows a synchronous service interface SAP's editor created.
 - The provider writes outbound, stateless interfaces (`category` and `interface_pattern` show what
   SAP records); other categories and patterns were not examined.
 
