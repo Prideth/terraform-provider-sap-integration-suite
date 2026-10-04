@@ -63,8 +63,8 @@ taxonomy readable.
 
 - Still unofficial: SAP documents the Entities API and its entities, but the
   field-level specification on the Business Accelerator Hub needs an SAP
-  login (checked again on 2026-09-29). The acceptance tests of the technology
-  profile and of the taxonomy lookups passed on a tenant on 2026-09-29.
+  login (checked again on 2026-10-04). The acceptance tests of the technology
+  profile and of the taxonomy lookups passed on a tenant on 2026-10-04.
 - The ISA-M taxonomy is read, never written. Assessment requests, their line
   items and decisions, the integration and message flows they describe and
   the interface request report stay out of scope: they are the state of an
