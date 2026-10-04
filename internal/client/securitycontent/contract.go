@@ -10,7 +10,6 @@ var Contract = apimeta.Contract{
 	Package: "securitycontent",
 	Reads: []apimeta.StructUse{
 		{EntitySet: oauth2ClientCredentialsEntitySet, Value: OAuth2ClientCredential{}},
-		{EntitySet: oauth2ClientCredentialsEntitySet, Value: oauth2ClientCredentialWriteRequest{}},
 		{EntitySet: oauth2ClientCredentialsEntitySet, Value: oauth2CustomParameters{}},
 		{EntitySet: "CustomParameters", Value: CustomParameter{}},
 		{EntitySet: userCredentialsEntitySet, Value: UserCredential{}},
@@ -22,6 +21,11 @@ var Contract = apimeta.Contract{
 		{EntitySet: keystoreResourcesEntitySet, Value: deleteKeystoreEntriesRequest{}},
 		{EntitySet: pgpKeyEntriesEntitySet, Value: PGPKeyEntry{}},
 		{EntitySet: "PgpKeyEntryImportResults", Value: PGPImportResult{}},
+	},
+	// The write request sends CustomParameters as a deep insert, a list in
+	// the POST body, which a read struct could not decode.
+	Writes: []apimeta.StructUse{
+		{EntitySet: oauth2ClientCredentialsEntitySet, Value: oauth2ClientCredentialWriteRequest{}},
 	},
 	Navigations: []apimeta.NavigationUse{
 		{EntitySet: oauth2ClientCredentialsEntitySet, Property: "CustomParameters"},
