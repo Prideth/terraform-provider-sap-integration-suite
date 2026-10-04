@@ -27,7 +27,7 @@ prepared on `release/0.5.x`, 0.6.0 on `release/0.6.x`.
 
 | Version | Theme | State | Precondition |
 |---|---|---|---|
-| 0.5.0 | Integration Assessment technology profiles and the ISA-M taxonomy | prepared on `release/0.5.x` | — |
+| 0.5.0 | Integration Assessment technology profiles and the ISA-M taxonomy | prepared on `release/0.5.x`; tenant gate passed on 2026-10-04 | — |
 | 0.6.0 | API Composition: business data graph hardening | prepared on `release/0.6.x`; every change is tenant-verified | releasing 0.5.0 first |
 | 0.7.0 | Cloud Integration data types, message types, fault message types, service interfaces | in progress on `feature/design-time-types`; data types, message types, fault message types and service interfaces done (unofficial) | release preparation |
 | 0.8.0 | Security Content completion | proposed | the upload formats in P2 item 5 |
@@ -55,7 +55,7 @@ These need no further research, only a run of the prepared tests:
 
 1. **Integration Assessment.** The landscape (0.4), the technology profiles and the complete
    ISA-M taxonomy (0.5) exist, all unofficial. `TestAccIntegrationAssessment_technologyProfile`
-   and `TestAccIntegrationAssessment_taxonomy` passed on 2026-09-29. The Hub specification of
+   and `TestAccIntegrationAssessment_taxonomy` passed on 2026-10-04. The Hub specification of
    the Entities API would make them supported; it still needs an SAP login. Requests and
    assessment results stay out of scope as workflow.
 2. **API Composition hardening.** A key user's token (password grant through the
