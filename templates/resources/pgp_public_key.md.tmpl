@@ -1,0 +1,64 @@
+---
+page_title: "sapintegrationsuite_pgp_public_key Resource - sapintegrationsuite"
+subcategory: "Security"
+description: |-
+  A PGP public key in the tenant's public keyring. Unofficial; needs enable_unofficial.
+---
+
+# sapintegrationsuite_pgp_public_key (Resource)
+
+Adds one PGP public key to the tenant's public keyring. The PGP encryptor of an integration flow
+encrypts for it, and the PGP decryptor verifies signatures with it. Flows name the key by its key
+ID or user ID. Typically it is a partner's key.
+
+**Status:** unofficial. Needs `enable_unofficial = true`. SAP documents PGP keys only in the
+Monitor UI (*Manage Security > PGP Keys*). This resource uses what the tenant `$metadata`
+declares. A tenant probe verified every request, and the acceptance test added, read, imported
+and deleted a key (October 2026). Because the API is undocumented, SAP may change it without
+notice.
+
+## Prerequisites
+
+- An OAuth client with `SecurityMaterialEdit`.
+- The key as an ASCII-armored block, for example from `gpg --armor --export <key ID>`.
+
+## Lifecycle
+
+| Operation | What happens |
+|---|---|
+| Create | Adds the key to the keyring `pubring` (`PUT PgpKeyringPublicResources('pubring')/$value`). SAP answers per key; when a key with the same key ID exists already, SAP does not add it, and the create fails. Import that key instead. |
+| Read | Reads the key by its key ID (`PgpKeyEntries('<key ID>')`): type, algorithm, length, user ID, expiry and validity state. |
+| Update | Only records another formatting of the same key, or the text of an imported key; nothing is sent. |
+| Replacement | A different key, compared by fingerprint, not by text. |
+| Delete | Deletes the key (`DELETE PgpKeyEntries('<key ID>')`). If SAP also holds the secret key, it would delete both, so the key stays and Terraform shows a warning. |
+
+The plan shows `key_id` and `fingerprint` of a new key: the provider computes them from
+`public_key` (RFC 4880). `public_key` must hold exactly one primary key, with its sub keys.
+
+## Example Usage
+
+{{ tffile "examples/resources/sapintegrationsuite_pgp_public_key/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ codefile "shell" "examples/resources/sapintegrationsuite_pgp_public_key/import.sh" }}
+
+The ID is the key ID. SAP does not return the key itself, so `public_key` stays empty until the
+next apply. With the same key in the configuration, the provider recognizes it by its
+fingerprint and only records the text: nothing is replaced.
+
+## Limitations
+
+- **SAP:** the tenant has one public keyring. Keys of other owners in it are not touched.
+- **Provider:** version 4 keys only, the kind gpg and most tools create. Version 5 and 6 keys
+  compute their fingerprints differently and are refused in the plan.
+- **Provider:** Cloud runtime only. The keyrings of an Edge Integration Cell were not tested.
+- **Provider:** `validity_state` changes over time (*Valid*, *Critical* within 14 days of the
+  expiry, *Expired*); a refresh reports the change.
+
+## Related
+
+- [`sapintegrationsuite_pgp_secret_key`](pgp_secret_key.md): the tenant's own secret keys.
+- [Security Content guide](../guides/security-content.md).

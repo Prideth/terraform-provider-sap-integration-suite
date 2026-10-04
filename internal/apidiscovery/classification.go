@@ -259,8 +259,7 @@ var cloudIntegrationClassification = concat(
 	// PGP keyrings, keys, sub keys and user IDs; secret keyrings carry
 	// private material, which would be write-only.
 	each([]string{
-		"PgpKeyrings", "PgpPublicKeyrings", "PgpSecretKeyrings", "PgpKeyringPublicResources",
-		"PgpKeyringSecretResources", "PgpKeyEntries", "PgpKeyEntryImportResults", "PgpKeyPublicResources",
+		"PgpKeyrings", "PgpPublicKeyrings", "PgpSecretKeyrings", "PgpKeyPublicResources",
 		"PgpKeySecretResources", "PgpSubKeys", "PgpUserIds",
 	}, func(n string) rule { return candidate(n, "security.pgp_keyring", "") }),
 	// Tenant settings.

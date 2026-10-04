@@ -615,6 +615,8 @@ func (p *sapIntegrationSuiteProvider) Resources(_ context.Context) []func() reso
 		NewCertificateResource,
 		NewKeyPairResource,
 		NewKeyPairCertificateChainResource,
+		NewPGPPublicKeyResource,
+		NewPGPSecretKeyResource,
 		NewAPIProviderResource,
 		NewAPIProductResource,
 		NewAPIManagementCertificateStoreReferenceResource,

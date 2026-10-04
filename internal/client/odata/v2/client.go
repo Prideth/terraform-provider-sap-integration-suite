@@ -70,6 +70,15 @@ func (c *Client) PostRaw(ctx context.Context, path, contentType string, body []b
 	return c.doRaw(ctx, http.MethodPost, path, contentType, body)
 }
 
+// PutRawJSON issues a PUT with a raw body and an explicit Content-Type, like
+// PutRaw, but asks for a JSON answer and sends the given extra headers, for
+// upload endpoints that report what they did, such as the PGP keyring
+// imports. Header values may be secrets (a passphrase); they are never
+// logged or put into errors.
+func (c *Client) PutRawJSON(ctx context.Context, path, contentType string, headers map[string]string, body []byte) ([]byte, error) {
+	return c.send(ctx, http.MethodPut, path, contentType, true, headers, body)
+}
+
 // Patch issues a PATCH request with a JSON body. SAP's OData V2 services on
 // Cloud Foundry/BTP accept PATCH as the modern equivalent of the legacy
 // OData MERGE verb: only the fields present in body are changed, and every
@@ -88,7 +97,7 @@ func (c *Client) Delete(ctx context.Context, path string) error {
 }
 
 func (c *Client) do(ctx context.Context, method, path string, body []byte) ([]byte, error) {
-	return c.send(ctx, method, path, "application/json", true, body)
+	return c.send(ctx, method, path, "application/json", true, nil, body)
 }
 
 // doRaw is do's counterpart for a non-JSON request body: it sends
@@ -96,10 +105,10 @@ func (c *Client) do(ctx context.Context, method, path string, body []byte) ([]by
 // "Accept: application/json" header (the response is expected to be a raw
 // byte stream too, not a JSON-wrapped entity).
 func (c *Client) doRaw(ctx context.Context, method, path, contentType string, body []byte) ([]byte, error) {
-	return c.send(ctx, method, path, contentType, false, body)
+	return c.send(ctx, method, path, contentType, false, nil, body)
 }
 
-func (c *Client) send(ctx context.Context, method, path, contentType string, acceptJSON bool, body []byte) ([]byte, error) {
+func (c *Client) send(ctx context.Context, method, path, contentType string, acceptJSON bool, headers map[string]string, body []byte) ([]byte, error) {
 	// path is normally relative to baseURL, but a server-driven paging
 	// "__next" link (see GetAllPages) is already a complete absolute URL
 	// that must be followed exactly as SAP returned it, not rejoined with
@@ -126,6 +135,9 @@ func (c *Client) send(ctx context.Context, method, path, contentType string, acc
 	}
 	if acceptJSON {
 		req.Header.Set("Accept", "application/json")
+	}
+	for k, v := range headers {
+		req.Header.Set(k, v)
 	}
 
 	resp, err := c.http.Do(req) //nolint:bodyclose // resp.Body is always closed inside sapthttp.ReadLimited below

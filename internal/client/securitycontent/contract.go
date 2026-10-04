@@ -18,6 +18,8 @@ var Contract = apimeta.Contract{
 		{EntitySet: keystoreEntriesEntitySet, Value: KeystoreEntry{}},
 		{EntitySet: keyPairGenerationRequestsEntitySet, Value: keyPairGenerationWireRequest{}},
 		{EntitySet: keystoreResourcesEntitySet, Value: deleteKeystoreEntriesRequest{}},
+		{EntitySet: pgpKeyEntriesEntitySet, Value: PGPKeyEntry{}},
+		{EntitySet: "PgpKeyEntryImportResults", Value: PGPImportResult{}},
 	},
 	Navigations: []apimeta.NavigationUse{
 		{EntitySet: keystoreEntriesEntitySet, Property: chainResourceNavigation},
@@ -31,6 +33,9 @@ var Contract = apimeta.Contract{
 		apimeta.Key(userCredentialsEntitySet, "Name", "Edm.String"),
 		apimeta.Key(secureParametersEntitySet, "Name", "Edm.String"),
 		apimeta.Key(keystoreResourcesEntitySet, "Name", "Edm.String"),
+		apimeta.Key(pgpKeyEntriesEntitySet, "Id", "Edm.String"),
+		apimeta.Key(pgpKeyringPublicResourcesEntitySet, "Name", "Edm.String"),
+		apimeta.Key(pgpKeyringSecretResourcesEntitySet, "Name", "Edm.String"),
 	},
 	MaxLengths: []apimeta.MaxLengthUse{
 		{EntitySet: secureParametersEntitySet, Property: "Name", Value: MaxSecureParameterNameLength},

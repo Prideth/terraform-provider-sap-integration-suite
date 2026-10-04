@@ -19,8 +19,8 @@ And the provider never uses browser endpoints of SAP's UIs.
 |---|---:|
 | 🟡 Partial (`partial`) | 10 |
 | 👁️ Read-only (`read_only`) | 3 |
-| 🧭 Unofficial (`unofficial`) | 8 |
-| 🔬 Research required (`research_required`) | 6 |
+| 🧭 Unofficial (`unofficial`) | 9 |
+| 🔬 Research required (`research_required`) | 5 |
 | ❌ Public API incomplete (`public_api_incomplete`) | 8 |
 | ❌ Unsafe Terraform lifecycle (`unsafe_terraform_lifecycle`) | 2 |
 | ❌ No public API (`no_public_api`) | 26 |
@@ -262,6 +262,17 @@ Implementation has been validated, but relies on an API contract that SAP does n
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
   - tenant-probe -SecurityContentTests on the development tenant (2026-10-04, five runs), synthetic tf-acc-probe objects and throw-away test keys only
 
+### PGP Keys
+
+`security.pgp_keyring` · checked 2026-10-04
+
+- **Finding:** Key-by-key import into pubring and secring (armored, Accept JSON, secret keys with the Passphrase header), read and delete through PgpKeyEntries('<KeyId>') verified on a tenant; known only from $metadata. Own keyring names do not exist on the Cloud runtime.
+- **Next step:** Documentation of the PGP key requests by SAP; an Edge Integration Cell to test its keyrings.
+- **Sources:**
+  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
+  - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
+  - tenant-probe -SecurityContentTests on the development tenant (2026-10-04, five runs), synthetic tf-acc-probe objects and throw-away test keys only
+
 ### Secure Parameter
 
 `security.secure_parameter` · checked 2026-09-27
@@ -334,17 +345,6 @@ The capability has been identified, but its public API coverage, lifecycle seman
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Hub package sap-int-eic-eic-operations (Jobs, Components, Partner Directory, Message Stores, MPL; created 2026-04-30, modified 2026-09-21)
-
-### PGP Keyrings
-
-`security.pgp_keyring` · checked 2026-09-27
-
-- **Finding:** $metadata declares keyrings, keys, sub keys, user IDs and upload media entities; SAP Help documents no request. On the tenant PgpPublicKeyrings answers 200 but PgpKeyrings 404: not every declared set is addressable.
-- **Next step:** A documented upload format; the secret keyring would be write-only.
-- **Sources:**
-  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
-  - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
-  - tenant-probe -GapTests on a development tenant (2026-09-27), synthetic tfAccProbe* objects only
 
 ## ❌ Public API incomplete
 

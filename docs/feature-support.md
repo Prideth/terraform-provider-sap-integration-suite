@@ -144,7 +144,7 @@ Do not conflate these: a feature can be fully supported by this provider and sti
 | `security.oauth2_client_credential` | security | partial (public_api_incomplete) | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
 | `security.oauth2_password_credential` | security | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
 | `security.oauth2_saml_bearer` | security | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
-| `security.pgp_keyring` | security | research_required (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
+| `security.pgp_keyring` | security | unofficial (public_api_incomplete) | metadata_only | Yes | Yes | Yes | — | Yes | Yes | — | Resource |
 | `security.secure_parameter` | security | unofficial (public_api_incomplete) | metadata_only | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
 | `security.ssh_key` | security | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
 | `security.user_credential` | security | partial (public_api_incomplete) | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
@@ -201,6 +201,8 @@ provider "sapintegrationsuite" {
 | `sapintegrationsuite_integration_assessment_vendor` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_key_pair_certificate_chain` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_message_type` | unofficial | `enable_unofficial` |
+| `sapintegrationsuite_pgp_public_key` | unofficial | `enable_unofficial` |
+| `sapintegrationsuite_pgp_secret_key` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_secure_parameter` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_service_interface` | unofficial | `enable_unofficial` |
 
@@ -316,9 +318,13 @@ Grouped by why, not just that. A feature can be `partial` and reachable via one 
   - Custom parameters are not managed: $metadata shows them as a CustomParameters navigation (Key, Value, SendAsPartOf, all three forming the key), but not whether they are written by deep insert or separately. The UI's grant-type placement (URL or body) has no API property at all. Because a PUT replaces the entity, custom parameters set in the UI may not survive an update through Terraform; this has not been verified.
   - Update is implemented as a full PUT redeploy and resends client_secret_wo on every apply that touches this resource, matching SAP's documented requirement to re-enter the client secret on every edit.
   - OAuth2 Authorization Code and OAuth2 SAML Bearer Assertion are separate SAP artifact types this provider does not implement: Authorization Code requires interactive human authorization (see security.oauth2_authorization_code note in docs/guides/security-content.md). OAuth2 SAML Bearer Assertion and the 2026 OAuth2 Password Credentials artifact have no entity set in the tenant $metadata of /api/v1, so there is no public API to manage them.
-- **`security.pgp_keyring`** — The tenant's PGP public and secret keyrings used by the PGP encryptor and decryptor steps. (🔬 Research required)
-  - The tenant $metadata defines PgpKeyrings, PgpPublicKeyrings, PgpSecretKeyrings, PgpKeyEntries, PgpSubKeys, PgpUserIds and keyring upload resources, but SAP Help documents no request for any of them. Keyrings are whole-file objects, and the secret keyring holds private keys, so a Terraform design would need a confirmed upload format and write-only handling of the secret keyring before anything is implemented.
-  - Tenant check of 2026-09-27: PgpPublicKeyrings answers 200, but PgpKeyrings answers 404 "Could not find an entity set or function import" although $metadata declares it. Neither $metadata nor the service document decides whether a set can be addressed (the provider uses several sets the service document does not list); only a tenant check does.
+- **`security.pgp_keyring`** — The tenant's PGP public and secret keys used by the PGP encryptor, decryptor, signer and verifier steps. (🧭 Unofficial)
+  - SAP Help documents PGP keys only in the Monitor UI (Manage Security > PGP Keys: add public or secret keys, download, delete). The resources use what the tenant $metadata declares and a tenant probe verified on 2026-10-04: PUT PgpKeyringPublicResources('pubring')/$value and PgpKeyringSecretResources('secring')/$value with an armored keyring add its key and answer with PgpKeyEntryImportResults, the secret keyring needs the key's passphrase in the request header Passphrase, and PgpKeyEntries('<KeyId>') reads and deletes one key.
+  - One resource per key, not per keyring: an upload adds keys, a keyring holds the keys of other owners, and replacing a whole keyring would remove them. A keyring with more than one primary key is refused; a key ID that exists already fails the create (SAP answers "not imported" with HTTP 200), so import it instead.
+  - SAP deletes a key's public and secret part together. sapintegrationsuite_pgp_public_key therefore leaves a key that also has a secret part in place on destroy, with a warning.
+  - Cloud runtime only: on the Cloud runtime only the keyrings pubring and secring exist (other names answered 404 "PUBLIC_KEYRING ... does not exist"). The keyrings of an Edge Integration Cell (pubring-<name>/secring-<name>) were not tested.
+  - Version 4 keys only: the plan derives key ID and fingerprint locally (RFC 4880), which is defined differently for version 5 and 6 keys.
+  - TestAccPGPKeys_publicAndSecret passed on a tenant (2026-10-04): a public and a secret key generated by gpg added, read, imported and deleted; CheckDestroy confirmed both key IDs gone.
 - **`security.secure_parameter`** — A "Secure Parameter" security material artifact: an opaque confidential value (for example for a custom adapter) deployed without an associated username. (🧭 Unofficial)
   - SAP Help documents the artifact only in the Monitor UI. The entity set comes from the tenant $metadata (key Name; Description, SecureParam, DeployedBy, DeployedOn, Status), and a tenant test in September 2026 verified create (POST), read by name, update (PUT) and delete, each write answering 202 without a body.
   - The value is write-only (secure_param_wo / secure_param_wo_version) and sent on create and every update; SAP returns SecureParam as null. Import recovers the name and description only, so the first apply after an import sends the configured value.

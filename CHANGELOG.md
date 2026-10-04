@@ -99,6 +99,17 @@ become the 0.8.0 section once 0.7.0 is released.
   then reports the signed certificate's validity, and a configuration that
   set these attributes would otherwise have planned a replacement of the key
   pair, which deletes the chain with the key.
+- `sapintegrationsuite_pgp_public_key` and `sapintegrationsuite_pgp_secret_key`
+  (unofficial): one PGP key each in the tenant's public or secret keyring,
+  for the PGP encryptor, decryptor, signer and verifier steps. A key is
+  added from an ASCII-armored block; the plan shows its key ID and
+  fingerprint, computed locally. The secret key and its passphrase are
+  write-only, and `secret_key_wo_version` replaces the key. A key ID that
+  exists already fails the create, because SAP answers "not imported" with
+  HTTP 200; import it instead. SAP deletes a key's public and secret part
+  together, so the public key resource leaves a key with a secret part in
+  place on destroy. Cloud runtime only; the acceptance test added, imported
+  and deleted keys that gpg generated.
 
 ## 0.6.0 — 2026-10-03
 

@@ -369,6 +369,26 @@ is why Certificate and Key Pair only ever call it with exactly the one alias the
 open-ended list. If you need whole-keystore import/export/backup, use the SAP Integration Suite
 UI.
 
+## Certificate chains and PGP keys (unofficial)
+
+These resources need `enable_unofficial = true`. SAP documents the features in SAP Help (chains
+as a capability of the Key Pair API, PGP keys in the Monitor UI) but not the requests; the
+provider uses what the tenant `$metadata` declares, verified by tenant probes and acceptance
+tests in October 2026.
+
+- [`sapintegrationsuite_key_pair_certificate_chain`](../resources/key_pair_certificate_chain.md):
+  a CA-signed certificate for a key pair. Read the CSR from
+  [`sapintegrationsuite_key_pair`](../resources/key_pair.md)`.certificate_signing_request`, have
+  it signed, and upload the signed certificate with its issuers. The chain is public data; a
+  private key pasted into it fails the plan. SAP cannot remove a chain, only replace it.
+- [`sapintegrationsuite_pgp_public_key`](../resources/pgp_public_key.md) and
+  [`sapintegrationsuite_pgp_secret_key`](../resources/pgp_secret_key.md): one key each in the
+  tenant's public or secret keyring. They manage keys, not keyrings: a keyring also holds the
+  keys of other owners, and SAP adds uploaded keys instead of replacing the keyring. A secret key
+  and its passphrase are write-only and follow the same model as the credentials above, with
+  `secret_key_wo_version` as the rotation marker. SAP decrypts the uploaded key with the
+  passphrase and re-encrypts it with one of its own, so the passphrase is not kept anywhere.
+
 ## Deliberately not implemented
 
 SAP documents more Security Content artifact types than this provider manages. The reasons
@@ -379,19 +399,14 @@ differ, and the difference matters when you plan around them. Each item is recor
 the entities, but SAP documents neither the requests nor which operations are allowed, and
 each one involves secret or key material where a wrong guess is costly:
 
-- **Certificate Chain** (`security.certificate_chain`). `CertificateChainResources` is a media
-  entity per key pair alias, and `ChainCertificates` lists the chain's certificates. The media
-  type and request for uploading a chain are undocumented. The intended shape is a resource
-  scoped to one key pair.
-- **PGP keyrings** (`security.pgp_keyring`). Public and secret keyrings, keys, subkeys and user
-  IDs all have entity sets, with no documented requests. A secret keyring is private key
-  material, so this needs a confirmed upload format and write-only handling first.
 - **OAuth2 custom parameters**. See [OAuth2 token request settings](#oauth2-token-request-settings).
 
 **SAP offers no API.** The tenant `$metadata` of `/api/v1` has no entity for these; they
 exist only in the Security Material UI:
 
-- **OAuth2 Password Credentials** (`security.oauth2_password_credential`), new in 2026.
+- **OAuth2 Password Credentials** (`security.oauth2_password_credential`), new in 2026. A
+  tenant check (October 2026) showed they are not a kind of User Credentials either: SAP accepts
+  only the kinds `default`, `successfactors` and `openconnectors`.
 - **OAuth2 SAML Bearer Assertion** (`security.oauth2_saml_bearer`).
 - **Known Hosts (SSH)** (`security.known_hosts`).
 - **Where-used** for security material (`security.where_used`). If an API appears, this would

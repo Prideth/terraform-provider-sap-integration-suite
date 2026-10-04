@@ -202,10 +202,10 @@ var Evidence = map[string]EvidenceRecord{
 		"SAP Help documents Secure Parameters only in the Monitor UI, and neither the Security Content resource table nor SAP Help's list of API resources names SecureParameters. The entity set comes from the $metadata; create, read, PUT update and delete were verified on a tenant, and the acceptance test passes.",
 		"Supported as soon as SAP documents SecureParameters (Security Content API reference or its example requests).",
 		srcHelp, srcMetaCI, srcTenant),
-	"security.pgp_keyring": evOn("2026-09-27",
-		"$metadata declares keyrings, keys, sub keys, user IDs and upload media entities; SAP Help documents no request. On the tenant PgpPublicKeyrings answers 200 but PgpKeyrings 404: not every declared set is addressable.",
-		"A documented upload format; the secret keyring would be write-only.",
-		srcHelp, srcMetaCI, srcGapProbe),
+	"security.pgp_keyring": evOn("2026-10-04",
+		"Key-by-key import into pubring and secring (armored, Accept JSON, secret keys with the Passphrase header), read and delete through PgpKeyEntries('<KeyId>') verified on a tenant; known only from $metadata. Own keyring names do not exist on the Cloud runtime.",
+		"Documentation of the PGP key requests by SAP; an Edge Integration Cell to test its keyrings.",
+		srcHelp, srcMetaCI, srcSecProbe),
 
 	// --- Partner Directory ---
 	"partner_directory.partner": ev(
