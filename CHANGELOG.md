@@ -9,7 +9,7 @@ contain breaking schema or lifecycle changes; each one is listed under
 "Breaking changes" together with the steps it needs. Patch releases (0.2.1)
 only fix defects in their minor release.
 
-## 0.5.0 — 2026-09-29
+## 0.5.0 — 2026-10-04
 
 0.5.0 extends Integration Assessment from the landscape inventory to the
 technology profiles that ISA-M technology recommendations are based on.
