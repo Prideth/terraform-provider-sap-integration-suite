@@ -68,7 +68,9 @@ labels.
 Only these conversions are proven. The UI's labels *API*, *OData API*, *REST API* and *SOAP API*
 stand for constants with other names and are not converted; use `API_ARTIFACT`, `ODATA_SERVICE`,
 `REST_API_PROVIDER` and `SOAP_API_PROVIDER`. Without both switches every label fails the plan with
-the constant to use. The switch is experimental: its acceptance test has not run on a tenant yet.
+the constant to use. The switch passed its acceptance test on a tenant (October 2026): a reference
+created from the labels was stored with the constants, kept the labels in the state, and imported
+without a difference. It stays behind `enable_experimental` on purpose.
 
 ### Supported combinations
 

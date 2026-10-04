@@ -59,7 +59,9 @@ interfaces.
   imported reference does not differ from a configuration with labels.
   Labels whose constant has another name (*API*, *OData API*, *REST API*,
   *SOAP API*) are not converted. Without both switches a label still fails
-  the plan with the constant to use.
+  the plan with the constant to use. An acceptance test created a reference
+  from labels on a tenant, found the constants stored and imported it without
+  a difference.
 
 ### Known limitations
 
