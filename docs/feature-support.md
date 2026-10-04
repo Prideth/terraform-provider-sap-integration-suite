@@ -141,7 +141,7 @@ Do not conflate these: a feature can be fully supported by this provider and sti
 | `security.key_pair` | security | partial (unsafe_terraform_lifecycle) | sap_documentation (some operations unofficial) | Yes | Yes | Yes | — | Yes | Yes | — | Resource |
 | `security.keystore_entry` | security | read_only (unsafe_terraform_lifecycle) | sap_documentation | Yes | — | — | — | — | — | — | Data Source |
 | `security.known_hosts` | security | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
-| `security.oauth2_client_credential` | security | partial (public_api_incomplete) | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
+| `security.oauth2_client_credential` | security | partial (public_api_incomplete) | sap_documentation (some operations unofficial) | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
 | `security.oauth2_password_credential` | security | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
 | `security.oauth2_saml_bearer` | security | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
 | `security.pgp_keyring` | security | unofficial (public_api_incomplete) | metadata_only | Yes | Yes | Yes | — | Yes | Yes | — | Resource |
@@ -222,6 +222,7 @@ Individual operations of an otherwise documented feature can be unofficial too. 
 | `security.access_policy` | description update (PATCH, verified on a tenant) |
 | `security.access_policy_reference` | create a reference to an artifact type SAP does not document for access policies (eight types SAP's API lists, verified on a tenant) |
 | `security.key_pair` | read of the certificate signing request (KeystoreEntries('<hexalias>')/SigningRequest/$value is only in $metadata) |
+| `security.oauth2_client_credential` | custom_parameters, created by a deep insert and read through the CustomParameters navigation (only in $metadata) |
 
 ## Unsupported and partially supported features
 
@@ -315,7 +316,7 @@ Grouped by why, not just that. A feature can be `partial` and reachable via one 
 - **`security.oauth2_client_credential`** — An "OAuth2 Client Credentials" security material artifact: the client ID, client secret, and token service URL an integration flow adapter uses for the OAuth2 client credentials grant (RFC 6749) on outbound requests. (partial support already implemented — see Limitations below)
   - The client secret is never returned by SAP's read API; client_secret_wo/client_secret_wo_version are write-only attributes (Terraform CLI 1.11+ required) and drift on the secret value itself cannot be detected.
   - client_authentication, scope_content_type, resource and audience map to the ClientAuthentication, ScopeContentType, Resource and Audience properties confirmed by a tenant $metadata. Their accepted constants are undocumented, so they are passed through; they are Optional+Computed so every PUT resends values set in the UI.
-  - Custom parameters are not managed: $metadata shows them as a CustomParameters navigation (Key, Value, SendAsPartOf, all three forming the key), but not whether they are written by deep insert or separately. The UI's grant-type placement (URL or body) has no API property at all. Because a PUT replaces the entity, custom parameters set in the UI may not survive an update through Terraform; this has not been verified.
+  - custom_parameters (unofficial, enable_unofficial): a tenant check of 2026-10-04 showed that SAP takes custom parameters only in the POST that creates the credential (deep insert), accepts SendAsPartOf body, header or url, deletes all parameters with every PUT that does not send them, and refuses a PUT that does (400), MERGE (405) and PATCH (501). With custom_parameters set, every change therefore replaces the credential. Without it, an update or replacement warns when SAP holds parameters set in the UI, because it deletes them. The UI's grant-type placement (URL or body) has no API property at all. TestAccOAuth2ClientCredential_customParameters passed on a tenant (2026-10-04): created with two parameters, replaced on a description change with the parameters intact, imported without a difference, and replaced without them.
   - Update is implemented as a full PUT redeploy and resends client_secret_wo on every apply that touches this resource, matching SAP's documented requirement to re-enter the client secret on every edit.
   - OAuth2 Authorization Code and OAuth2 SAML Bearer Assertion are separate SAP artifact types this provider does not implement: Authorization Code requires interactive human authorization (see security.oauth2_authorization_code note in docs/guides/security-content.md). OAuth2 SAML Bearer Assertion and the 2026 OAuth2 Password Credentials artifact have no entity set in the tenant $metadata of /api/v1, so there is no public API to manage them.
 - **`security.pgp_keyring`** — The tenant's PGP public and secret keys used by the PGP encryptor, decryptor, signer and verifier steps. (🧭 Unofficial)

@@ -120,8 +120,8 @@ Usable, but the provider deliberately leaves out part of the lifecycle; the limi
 
 `security.oauth2_client_credential` · checked 2026-09-26
 
-- **Finding:** Lifecycle verified on a tenant; CustomParameters is a navigation without a documented write path.
-- **Next step:** A UI-created custom parameter read back through the API (pending tenant check), then a deep-insert test.
+- **Finding:** Lifecycle verified on a tenant. CustomParameters (2026-10-04): created only by a deep insert, deleted by every PUT, refused in a PUT, no MERGE or PATCH; custom_parameters replaces the credential on every change.
+- **Next step:** SAP documentation of custom parameters would make them supported.
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)

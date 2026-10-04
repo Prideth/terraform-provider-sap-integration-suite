@@ -241,7 +241,6 @@ var cloudIntegrationClassification = concat(
 		candidate("ChainCertificates", "security.certificate_chain", "Certificate details of a key pair's chain; the chain resource parses the exported chain itself."),
 		candidate("KeyPairResources", "security.key_pair", "Upload of an externally created key pair (PKCS#12 with password); private material would be write-only."),
 		candidate("RSAKeyGenerationRequests", "security.key_pair", "Key pair generation from an RSA file."),
-		candidate("CustomParameters", "security.oauth2_client_credential", "Custom token request parameters of an OAuth2 client credential."),
 		excludedFor("SSHKeyGenerationRequests", "security.ssh_key", "Generates an SSH key; the catalog records SSH keys as out of scope."),
 		excludedFor("SSHKeyResources", "security.ssh_key", "Upload of an SSH key; the catalog records SSH keys as out of scope."),
 		excluded("CertificateSigningRequests", reasonCSR),

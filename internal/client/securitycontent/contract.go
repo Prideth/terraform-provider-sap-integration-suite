@@ -11,6 +11,8 @@ var Contract = apimeta.Contract{
 	Reads: []apimeta.StructUse{
 		{EntitySet: oauth2ClientCredentialsEntitySet, Value: OAuth2ClientCredential{}},
 		{EntitySet: oauth2ClientCredentialsEntitySet, Value: oauth2ClientCredentialWriteRequest{}},
+		{EntitySet: oauth2ClientCredentialsEntitySet, Value: oauth2CustomParameters{}},
+		{EntitySet: "CustomParameters", Value: CustomParameter{}},
 		{EntitySet: userCredentialsEntitySet, Value: UserCredential{}},
 		{EntitySet: userCredentialsEntitySet, Value: userCredentialWriteRequest{}},
 		{EntitySet: secureParametersEntitySet, Value: SecureParameter{}},
@@ -22,6 +24,7 @@ var Contract = apimeta.Contract{
 		{EntitySet: "PgpKeyEntryImportResults", Value: PGPImportResult{}},
 	},
 	Navigations: []apimeta.NavigationUse{
+		{EntitySet: oauth2ClientCredentialsEntitySet, Property: "CustomParameters"},
 		{EntitySet: keystoreEntriesEntitySet, Property: chainResourceNavigation},
 		{EntitySet: keystoreEntriesEntitySet, Property: signingRequestNavigation},
 	},

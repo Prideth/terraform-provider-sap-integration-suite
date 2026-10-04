@@ -110,6 +110,14 @@ become the 0.8.0 section once 0.7.0 is released.
   together, so the public key resource leaves a key with a secret part in
   place on destroy. Cloud runtime only; the acceptance test added, imported
   and deleted keys that gpg generated.
+- `sapintegrationsuite_oauth2_client_credential` manages `custom_parameters`
+  (unofficial, needs `enable_unofficial`): key, value and whether SAP sends
+  the parameter in the body, as a header or in the URL. A tenant check showed
+  that SAP takes custom parameters only when the credential is created and
+  deletes them with every update, so with `custom_parameters` set every
+  change replaces the credential, a secret rotation included. Without the
+  attribute, the plan of an update warns when SAP holds parameters set in its
+  UI. An import reads the parameters SAP holds.
 
 ## 0.6.0 — 2026-10-03
 

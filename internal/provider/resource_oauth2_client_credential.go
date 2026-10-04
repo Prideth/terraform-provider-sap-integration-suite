@@ -3,14 +3,21 @@ package provider
 import (
 	"context"
 	"errors"
+	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/apierror"
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/securitycontent"
@@ -24,6 +31,9 @@ func NewOAuth2ClientCredentialResource() resource.Resource {
 
 type oauth2ClientCredentialResource struct {
 	client *securitycontent.Client
+	// allowUnofficial allows custom_parameters, which only the tenant
+	// $metadata describes (enable_unofficial).
+	allowUnofficial bool
 }
 
 // oauth2ClientCredentialModel follows the same write-only pattern as
@@ -42,6 +52,13 @@ type oauth2ClientCredentialModel struct {
 	ClientSecretWO        types.String `tfsdk:"client_secret_wo"`
 	ClientSecretWOVersion types.String `tfsdk:"client_secret_wo_version"`
 	RuntimeLocationID     types.String `tfsdk:"runtime_location_id"`
+	CustomParameters      types.Set    `tfsdk:"custom_parameters"`
+}
+
+var customParameterAttrTypes = map[string]attr.Type{
+	"key":             types.StringType,
+	"value":           types.StringType,
+	"send_as_part_of": types.StringType,
 }
 
 func (r *oauth2ClientCredentialResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -56,8 +73,8 @@ func (r *oauth2ClientCredentialResource) Schema(_ context.Context, _ resource.Sc
 			"the public Security Content OData V2 API (OAuth2ClientCredentials). This provider manages " +
 			"the artifact's scalar fields (name, description, token " +
 			"service URL, client ID, client secret, scope, client authentication, content type, " +
-			"resource, audience); custom parameters are not managed and the grant-type placement has no " +
-			"API property — see docs/guides/security-content.md. The client secret is a write-only " +
+			"resource, audience) and, with enable_unofficial, its custom parameters; the grant-type " +
+			"placement has no API property — see docs/guides/security-content.md. The client secret is a write-only " +
 			"attribute: Terraform never stores it in plan or state, and SAP documents that it must be " +
 			"re-entered on every edit, so this provider resends it on every apply that touches the " +
 			"resource. Requires Terraform CLI 1.11 or later for write-only attribute support.",
@@ -102,6 +119,32 @@ func (r *oauth2ClientCredentialResource) Schema(_ context.Context, _ resource.Sc
 					"an OAuth2 Client Credentials artifact requires re-entering the client secret " +
 					"every time.",
 			},
+			"custom_parameters": schema.SetNestedAttribute{
+				Optional: true,
+				Description: "Custom parameters of the token request, each sent in the body, as a header " +
+					"or in the URL. Unofficial: needs enable_unofficial = true, because the parameters " +
+					"are known only from the tenant $metadata. SAP takes them only when the credential is " +
+					"created and deletes them with every update, so with custom_parameters set, every " +
+					"change of this resource, a secret rotation included, replaces the credential: it is " +
+					"deleted and created again, and flows that use it fail in between. Leave the attribute " +
+					"out to leave parameters set in SAP's UI alone; the plan of an update then warns that " +
+					"SAP deletes them. Values are stored in plan and state; do not put secrets into them.",
+				Validators: []validator.Set{setvalidator.SizeAtLeast(1)},
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.RequiresReplace(),
+				},
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"key":   schema.StringAttribute{Required: true, Description: "The parameter name.", Validators: []validator.String{stringvalidator.LengthBetween(1, 1024)}},
+						"value": schema.StringAttribute{Required: true, Description: "The parameter value.", Validators: []validator.String{stringvalidator.LengthBetween(1, 1024)}},
+						"send_as_part_of": schema.StringAttribute{
+							Required:    true,
+							Description: "Where the parameter goes: \"body\", \"header\" or \"url\", the values SAP accepts.",
+							Validators:  []validator.String{stringvalidator.OneOf("body", "header", "url")},
+						},
+					},
+				},
+			},
 			"client_secret_wo_version": schema.StringAttribute{
 				Required: true,
 				Description: "An arbitrary value (for example a counter or timestamp) that a " +
@@ -127,6 +170,72 @@ func (r *oauth2ClientCredentialResource) Configure(_ context.Context, req resour
 		return
 	}
 	r.client = securitycontent.New(data.HTTPClient, data.Host)
+	r.allowUnofficial = data.EnableUnofficial
+}
+
+// ModifyPlan handles custom parameters, which SAP takes only on create and
+// deletes with every update (tenant check of 2026-10-04):
+//
+//   - With custom_parameters configured, any change replaces the credential
+//     instead of updating it, so the parameters are sent again.
+//   - Creating with custom_parameters needs enable_unofficial.
+//   - Without custom_parameters, an update or replacement warns when SAP
+//     holds parameters set outside Terraform, because it deletes them.
+func (r *oauth2ClientCredentialResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() {
+		return
+	}
+	var plan oauth2ClientCredentialModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	managed := !plan.CustomParameters.IsNull()
+	changed := !req.State.Raw.IsNull() && !req.Plan.Raw.Equal(req.State.Raw)
+	if managed && changed {
+		resp.RequiresReplace = append(resp.RequiresReplace, changedRootAttributes(req.State.Raw, req.Plan.Raw)...)
+	}
+	if managed && (req.State.Raw.IsNull() || len(resp.RequiresReplace) > 0) && r.client != nil &&
+		!requireUnofficialOperation(r.allowUnofficial, "sapintegrationsuite_oauth2_client_credential", "custom_parameters", &resp.Diagnostics) {
+		return
+	}
+	if managed || !changed || r.client == nil {
+		return
+	}
+	var state oauth2ClientCredentialModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if !state.CustomParameters.IsNull() {
+		return // removed from the configuration on purpose
+	}
+	client, err := r.client.AtLocation(state.RuntimeLocationID.ValueString())
+	if err != nil {
+		return
+	}
+	params, err := client.ListOAuth2ClientCredentialCustomParameters(ctx, state.ID.ValueString())
+	if err != nil || len(params) == 0 {
+		return
+	}
+	resp.Diagnostics.AddWarning("Custom parameters will be deleted",
+		fmt.Sprintf("The OAuth2 client credential %q has %d custom parameter(s) that Terraform does not manage. "+
+			"SAP deletes all custom parameters of a credential when it is updated or recreated through the API. "+
+			"Cancel the apply and add them to custom_parameters (needs enable_unofficial), or set them again "+
+			"in SAP's UI (Monitor > Integrations > Security Material) afterwards.", state.ID.ValueString(), len(params)))
+}
+
+// changedRootAttributes lists the top-level attributes whose planned value
+// differs from the prior state.
+func changedRootAttributes(state, plan tftypes.Value) path.Paths {
+	var before, after map[string]tftypes.Value
+	if state.As(&before) != nil || plan.As(&after) != nil {
+		return path.Paths{path.Root("custom_parameters")}
+	}
+	var out path.Paths
+	for name, v := range after {
+		if !v.Equal(before[name]) {
+			out = append(out, path.Root(name))
+		}
+	}
+	return out
 }
 
 func (r *oauth2ClientCredentialResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -156,6 +265,7 @@ func (r *oauth2ClientCredentialResource) Create(ctx context.Context, req resourc
 		ScopeContentType:     plan.ScopeContentType.ValueString(),
 		Resource:             plan.Resource.ValueString(),
 		Audience:             plan.Audience.ValueString(),
+		CustomParameters:     customParametersFromSet(ctx, plan.CustomParameters, &resp.Diagnostics),
 	}, clientSecret.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to create SAP Integration Suite OAuth2 client credential", diagnosticDetail(err))
@@ -164,6 +274,7 @@ func (r *oauth2ClientCredentialResource) Create(ctx context.Context, req resourc
 
 	m := oauth2ClientCredentialToModel(created, plan.ClientSecretWOVersion)
 	m.RuntimeLocationID = plan.RuntimeLocationID
+	m.CustomParameters = plan.CustomParameters
 	resp.Diagnostics.Append(resp.State.Set(ctx, m)...)
 }
 
@@ -191,7 +302,52 @@ func (r *oauth2ClientCredentialResource) Read(ctx context.Context, req resource.
 
 	m := oauth2ClientCredentialToModel(cred, state.ClientSecretWOVersion)
 	m.RuntimeLocationID = state.RuntimeLocationID
+	m.CustomParameters = types.SetNull(types.ObjectType{AttrTypes: customParameterAttrTypes})
+	// Managed parameters, or after an import (marked by an empty set), are
+	// read back; an empty result stays null, like a configuration without
+	// the attribute.
+	if !state.CustomParameters.IsNull() {
+		params, err := client.ListOAuth2ClientCredentialCustomParameters(ctx, state.ID.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to read the custom parameters of SAP Integration Suite OAuth2 client credential", diagnosticDetail(err))
+			return
+		}
+		if len(params) > 0 {
+			m.CustomParameters = customParametersToSet(params, &resp.Diagnostics)
+		}
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, m)...)
+}
+
+func customParametersFromSet(ctx context.Context, set types.Set, diags *diag.Diagnostics) []securitycontent.CustomParameter {
+	if set.IsNull() || set.IsUnknown() {
+		return nil
+	}
+	var items []struct {
+		Key          types.String `tfsdk:"key"`
+		Value        types.String `tfsdk:"value"`
+		SendAsPartOf types.String `tfsdk:"send_as_part_of"`
+	}
+	diags.Append(set.ElementsAs(ctx, &items, false)...)
+	out := make([]securitycontent.CustomParameter, 0, len(items))
+	for _, i := range items {
+		out = append(out, securitycontent.CustomParameter{Key: i.Key.ValueString(), Value: i.Value.ValueString(), SendAsPartOf: i.SendAsPartOf.ValueString()})
+	}
+	return out
+}
+
+func customParametersToSet(params []securitycontent.CustomParameter, diags *diag.Diagnostics) types.Set {
+	elems := make([]attr.Value, 0, len(params))
+	for _, p := range params {
+		elems = append(elems, types.ObjectValueMust(customParameterAttrTypes, map[string]attr.Value{
+			"key":             types.StringValue(p.Key),
+			"value":           types.StringValue(p.Value),
+			"send_as_part_of": types.StringValue(p.SendAsPartOf),
+		}))
+	}
+	set, d := types.SetValue(types.ObjectType{AttrTypes: customParameterAttrTypes}, elems)
+	diags.Append(d...)
+	return set
 }
 
 func (r *oauth2ClientCredentialResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -235,6 +391,7 @@ func (r *oauth2ClientCredentialResource) Update(ctx context.Context, req resourc
 
 	m := oauth2ClientCredentialToModel(cred, plan.ClientSecretWOVersion)
 	m.RuntimeLocationID = plan.RuntimeLocationID
+	m.CustomParameters = plan.CustomParameters
 	resp.Diagnostics.Append(resp.State.Set(ctx, m)...)
 }
 
@@ -271,6 +428,9 @@ func (r *oauth2ClientCredentialResource) ImportState(ctx context.Context, req re
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, pathRootID(), parts[0])...)
 	setImportedRuntimeLocation(ctx, loc, resp.State.SetAttribute, &resp.Diagnostics)
+	// An empty set makes the next read fetch the custom parameters.
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, pathRoot("custom_parameters"),
+		types.SetValueMust(types.ObjectType{AttrTypes: customParameterAttrTypes}, nil))...)
 }
 
 func oauth2ClientCredentialToModel(cred *securitycontent.OAuth2ClientCredential, clientSecretWOVersion types.String) oauth2ClientCredentialModel {
@@ -286,6 +446,7 @@ func oauth2ClientCredentialToModel(cred *securitycontent.OAuth2ClientCredential,
 		Audience:              stringOrNull(cred.Audience),
 		ClientSecretWO:        types.StringNull(),
 		ClientSecretWOVersion: clientSecretWOVersion,
+		CustomParameters:      types.SetNull(types.ObjectType{AttrTypes: customParameterAttrTypes}),
 	}
 }
 

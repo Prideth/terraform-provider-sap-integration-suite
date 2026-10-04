@@ -96,6 +96,63 @@ resource "sapintegrationsuite_oauth2_client_credential" "test" {
 	})
 }
 
+// Custom parameters exist only from the create on (tenant check of
+// 2026-10-04): a change of a credential with custom parameters replaces it,
+// and the parameters are there again afterwards; an import reads them.
+func TestAccOAuth2ClientCredential_customParameters(t *testing.T) {
+	accgate.Require(t, accgate.SecurityContent)
+	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "true")
+	name := testAccName()
+	config := func(description, params string) string {
+		return fmt.Sprintf(`
+resource "sapintegrationsuite_oauth2_client_credential" "test" {
+  id                       = %[1]q
+  description              = %[2]q
+  token_service_url        = "https://tfacc.invalid/oauth/token"
+  client_id                = "tfacc-client"
+  client_secret_wo         = "tfacc-not-a-real-secret"
+  client_secret_wo_version = "1"
+  %[3]s
+}
+`, name, description, params)
+	}
+	params := `custom_parameters = [
+    { key = "resource", value = "https://tfacc.invalid", send_as_part_of = "body" },
+    { key = "x-tfacc", value = "1", send_as_part_of = "header" },
+  ]`
+	addr := "sapintegrationsuite_oauth2_client_credential.test"
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{Config: config("created", params), Check: resource.TestCheckResourceAttr(addr, "custom_parameters.#", "2")},
+			{
+				Config: config("changed", params),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction(addr, plancheck.ResourceActionReplace),
+				}},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(addr, "description", "changed"),
+					resource.TestCheckResourceAttr(addr, "custom_parameters.#", "2"),
+					resource.TestCheckTypeSetElemNestedAttrs(addr, "custom_parameters.*", map[string]string{"key": "x-tfacc", "send_as_part_of": "header"}),
+				),
+			},
+			{
+				ResourceName:            addr,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"client_secret_wo_version"},
+			},
+			{
+				Config: config("changed", ""),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction(addr, plancheck.ResourceActionReplace),
+				}},
+				Check: resource.TestCheckNoResourceAttr(addr, "custom_parameters.#"),
+			},
+		},
+	})
+}
+
 func TestAccSecureParameter_basic(t *testing.T) {
 	accgate.Require(t, accgate.SecurityContent)
 	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "true")

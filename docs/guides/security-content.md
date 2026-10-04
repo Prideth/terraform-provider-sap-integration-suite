@@ -114,13 +114,16 @@ Two details shape how they behave:
   side is that you cannot clear a value from Terraform by deleting the attribute. Clear it in
   the UI instead.
 
-Two parts of the UI dialog are not covered. The grant-type placement (URL or body) has no
-property in the API at all. The **custom parameters** table (up to 20 key/value pairs sent in
-the body, header or URL) is modeled in `$metadata` as a `CustomParameters` navigation property,
-but SAP does not document how it is written. Because updates replace the entity, custom
-parameters maintained in the UI may not survive a rotation through Terraform. Until that is
-verified, do not combine custom parameters with Terraform-managed rotation for the same
-credential.
+The grant-type placement (URL or body) of the UI dialog has no property in the API at all.
+
+The **custom parameters** table (up to 20 key/value pairs sent in the body, header or URL) is
+the `CustomParameters` navigation property in `$metadata`, which SAP does not document. A
+tenant check of 2026-10-04 settled how SAP treats it: the parameters can only be created
+together with the credential, every `PUT` that does not send them deletes them, and a `PUT`
+that does is refused. `custom_parameters` (unofficial, needs `enable_unofficial`) therefore
+replaces the credential on every change, a rotation included, and flows that use it fail for the
+moment in between. A credential whose parameters are maintained in the UI loses them on every
+update through Terraform; the plan warns before that happens.
 
 ## Drift detection is limited for secrets
 
@@ -399,7 +402,6 @@ differ, and the difference matters when you plan around them. Each item is recor
 the entities, but SAP documents neither the requests nor which operations are allowed, and
 each one involves secret or key material where a wrong guess is costly:
 
-- **OAuth2 custom parameters**. See [OAuth2 token request settings](#oauth2-token-request-settings).
 
 **SAP offers no API.** The tenant `$metadata` of `/api/v1` has no entity for these; they
 exist only in the Security Material UI:

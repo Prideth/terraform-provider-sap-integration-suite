@@ -863,11 +863,16 @@ var Catalog = []Feature{
 				"ClientAuthentication, ScopeContentType, Resource and Audience properties confirmed by " +
 				"a tenant $metadata. Their accepted constants are undocumented, so they are passed " +
 				"through; they are Optional+Computed so every PUT resends values set in the UI.",
-			"Custom parameters are not managed: $metadata shows them as a CustomParameters " +
-				"navigation (Key, Value, SendAsPartOf, all three forming the key), but not whether they " +
-				"are written by deep insert or separately. The UI's grant-type placement (URL or body) " +
-				"has no API property at all. Because a PUT replaces the entity, custom parameters set " +
-				"in the UI may not survive an update through Terraform; this has not been verified.",
+			"custom_parameters (unofficial, enable_unofficial): a tenant check of 2026-10-04 showed that " +
+				"SAP takes custom parameters only in the POST that creates the credential (deep insert), " +
+				"accepts SendAsPartOf body, header or url, deletes all parameters with every PUT that does " +
+				"not send them, and refuses a PUT that does (400), MERGE (405) and PATCH (501). With " +
+				"custom_parameters set, every change therefore replaces the credential. Without it, an " +
+				"update or replacement warns when SAP holds parameters set in the UI, because it deletes " +
+				"them. The UI's grant-type placement (URL or body) has no API property at all. " +
+				"TestAccOAuth2ClientCredential_customParameters passed on a tenant (2026-10-04): created " +
+				"with two parameters, replaced on a description change with the parameters intact, " +
+				"imported without a difference, and replaced without them.",
 			"Update is implemented as a full PUT redeploy and resends client_secret_wo on every apply " +
 				"that touches this resource, matching SAP's documented requirement to re-enter the " +
 				"client secret on every edit.",
@@ -878,7 +883,8 @@ var Catalog = []Feature{
 				"Password Credentials artifact have no entity set in the tenant $metadata of /api/v1, " +
 				"so there is no public API to manage them.",
 		},
-		Operations: Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
+		UndocumentedOperations: []string{"custom_parameters, created by a deep insert and read through the CustomParameters navigation (only in $metadata)"},
+		Operations:             Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
 	},
 	{
 		Key:    "security.keystore_entry",

@@ -18,8 +18,8 @@ const oauth2ClientCredentialsEntitySet = "OAuth2ClientCredentials" // #nosec G10
 // Property names follow the OAuth2ClientCredential entity type of the tenant
 // $metadata. ClientAuthentication, ScopeContentType, Resource and Audience are
 // plain Edm.String values whose accepted constants SAP does not document; they
-// are passed through unchanged. The CustomParameters navigation property is
-// not modeled because its write semantics are undocumented.
+// are passed through unchanged. Custom parameters are sent only on create
+// (see CustomParameter) and read separately.
 type OAuth2ClientCredential struct {
 	Name                 string `json:"Name"`
 	Description          string `json:"Description,omitempty"`
@@ -30,6 +30,22 @@ type OAuth2ClientCredential struct {
 	ScopeContentType     string `json:"ScopeContentType,omitempty"`
 	Resource             string `json:"Resource,omitempty"`
 	Audience             string `json:"Audience,omitempty"`
+	// CustomParameters are sent by CreateOAuth2ClientCredential only.
+	CustomParameters []CustomParameter `json:"-"`
+}
+
+// CustomParameter is one custom parameter of the token request. A tenant
+// check of 2026-10-04 showed: SendAsPartOf takes only body, header or url
+// (any letter case, stored as sent); the parameters can only be created
+// together with the credential, by a deep insert in its POST; every PUT
+// that does not send them deletes them, a PUT that sends them answers 400
+// "CustomParameters cannot be updated using this operation", MERGE 405,
+// PATCH 501, and the navigation takes no POST or DELETE. A credential with
+// custom parameters can therefore only be replaced, never updated.
+type CustomParameter struct {
+	Key          string `json:"Key"`
+	Value        string `json:"Value"`
+	SendAsPartOf string `json:"SendAsPartOf"`
 }
 
 // oauth2ClientCredentialWriteRequest is the request body shape for creating
@@ -38,16 +54,17 @@ type OAuth2ClientCredential struct {
 // there is no code path that could accidentally decode a client secret out
 // of an API response into it.
 type oauth2ClientCredentialWriteRequest struct {
-	Name                 string `json:"Name"`
-	Description          string `json:"Description,omitempty"`
-	TokenServiceURL      string `json:"TokenServiceUrl"`
-	ClientID             string `json:"ClientId"`
-	ClientSecret         string `json:"ClientSecret"`
-	Scope                string `json:"Scope,omitempty"`
-	ClientAuthentication string `json:"ClientAuthentication,omitempty"`
-	ScopeContentType     string `json:"ScopeContentType,omitempty"`
-	Resource             string `json:"Resource,omitempty"`
-	Audience             string `json:"Audience,omitempty"`
+	Name                 string            `json:"Name"`
+	Description          string            `json:"Description,omitempty"`
+	TokenServiceURL      string            `json:"TokenServiceUrl"`
+	ClientID             string            `json:"ClientId"`
+	ClientSecret         string            `json:"ClientSecret"`
+	Scope                string            `json:"Scope,omitempty"`
+	ClientAuthentication string            `json:"ClientAuthentication,omitempty"`
+	ScopeContentType     string            `json:"ScopeContentType,omitempty"`
+	Resource             string            `json:"Resource,omitempty"`
+	Audience             string            `json:"Audience,omitempty"`
+	CustomParameters     []CustomParameter `json:"CustomParameters,omitempty"`
 }
 
 func oauth2ClientCredentialPath(name string) string {
@@ -87,6 +104,7 @@ func (c *Client) CreateOAuth2ClientCredential(ctx context.Context, cred OAuth2Cl
 		ScopeContentType:     cred.ScopeContentType,
 		Resource:             cred.Resource,
 		Audience:             cred.Audience,
+		CustomParameters:     cred.CustomParameters,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("securitycontent: encoding oauth2 client credential: %w", err)
@@ -135,6 +153,26 @@ func (c *Client) UpdateOAuth2ClientCredential(ctx context.Context, cred OAuth2Cl
 
 	_, err = c.odata.Put(ctx, oauth2ClientCredentialPath(cred.Name), payload)
 	return err
+}
+
+// oauth2CustomParameters reads only the CustomParameters navigation of a
+// credential, expanded.
+type oauth2CustomParameters struct {
+	CustomParameters v2.ExpandedCollection[CustomParameter] `json:"CustomParameters"`
+}
+
+// ListOAuth2ClientCredentialCustomParameters returns the custom parameters
+// of a credential.
+func (c *Client) ListOAuth2ClientCredentialCustomParameters(ctx context.Context, name string) ([]CustomParameter, error) {
+	body, err := c.odata.Get(ctx, v2.BuildPath(oauth2ClientCredentialsEntitySet, v2.KeyPredicate(name), "$expand=CustomParameters"))
+	if err != nil {
+		return nil, err
+	}
+	var cred oauth2CustomParameters
+	if err := v2.DecodeEntity(body, &cred); err != nil {
+		return nil, err
+	}
+	return cred.CustomParameters.Results, nil
 }
 
 // DeleteOAuth2ClientCredential deletes an OAuth2 client credential artifact

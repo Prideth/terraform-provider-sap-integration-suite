@@ -2,12 +2,19 @@ package provider
 
 import (
 	"context"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
+
+	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/securitycontent"
 )
 
 func oauth2ClientCredentialSchema(t *testing.T) resource.SchemaResponse {
@@ -138,6 +145,84 @@ func TestOAuth2ClientCredentialResource_TokenRequestSettingsKeepPriorState(t *te
 		}
 		if !keepsState {
 			t.Errorf("%s must use UseStateForUnknown so an omitted value is resent, not cleared, on PUT", name)
+		}
+	}
+}
+
+// customParametersValue builds the tftypes value of custom_parameters.
+func customParametersValue(params ...[3]string) tftypes.Value {
+	obj := tftypes.Object{AttributeTypes: map[string]tftypes.Type{"key": tftypes.String, "value": tftypes.String, "send_as_part_of": tftypes.String}}
+	var elems []tftypes.Value
+	for _, p := range params {
+		elems = append(elems, tftypes.NewValue(obj, map[string]tftypes.Value{"key": str(p[0]), "value": str(p[1]), "send_as_part_of": str(p[2])}))
+	}
+	return tftypes.NewValue(tftypes.Set{ElementType: obj}, elems)
+}
+
+// SAP takes custom parameters only on create and deletes them with every
+// update (tenant check of 2026-10-04).
+func TestOAuth2ClientCredentialResource_CustomParametersPlan(t *testing.T) {
+	ci := securitycontent.New(http.DefaultClient, "https://tenant.example")
+	params := customParametersValue([3]string{"resource", "https://graph.example", "body"})
+	base := func(description string) map[string]tftypes.Value {
+		return map[string]tftypes.Value{"id": str("OA"), "client_id": str("c"), "description": str(description), "custom_parameters": params}
+	}
+
+	// Creating with custom parameters needs enable_unofficial.
+	off := modifyPlan(t, &oauth2ClientCredentialResource{client: ci}, nil, base("new"), false)
+	if !unofficialOperationError(off) {
+		t.Errorf("create without enable_unofficial: %v, want a refusal", off)
+	}
+	if on := modifyPlan(t, &oauth2ClientCredentialResource{client: ci, allowUnofficial: true}, nil, base("new"), false); on.HasError() {
+		t.Errorf("create with enable_unofficial: %v", on)
+	}
+	if early := modifyPlan(t, &oauth2ClientCredentialResource{}, nil, base("new"), false); early.HasError() {
+		t.Errorf("before the provider is configured: %v", early)
+	}
+
+	// Any change of a credential with custom parameters replaces it.
+	r := &oauth2ClientCredentialResource{client: ci, allowUnofficial: true}
+	_, empty := resourceObject(t, r, nil)
+	stateRaw, _ := resourceObject(t, r, base("old"))
+	planRaw, _ := resourceObject(t, r, base("new"))
+	req := resource.ModifyPlanRequest{
+		State: tfsdk.State{Schema: empty.Schema, Raw: stateRaw},
+		Plan:  tfsdk.Plan{Schema: empty.Schema, Raw: planRaw},
+	}
+	resp := &resource.ModifyPlanResponse{Plan: req.Plan}
+	r.ModifyPlan(context.Background(), req, resp)
+	if resp.Diagnostics.HasError() || len(resp.RequiresReplace) != 1 || !resp.RequiresReplace[0].Equal(path.Root("description")) {
+		t.Errorf("update: requires replace %v, diagnostics %v; want description", resp.RequiresReplace, resp.Diagnostics)
+	}
+
+	// No change, no replacement.
+	resp = &resource.ModifyPlanResponse{Plan: tfsdk.Plan{Schema: empty.Schema, Raw: stateRaw}}
+	r.ModifyPlan(context.Background(), resource.ModifyPlanRequest{State: req.State, Plan: tfsdk.Plan{Schema: empty.Schema, Raw: stateRaw}}, resp)
+	if len(resp.RequiresReplace) != 0 || resp.Diagnostics.HasError() {
+		t.Errorf("no change: %v, %v", resp.RequiresReplace, resp.Diagnostics)
+	}
+}
+
+// Without custom_parameters, an update warns about parameters SAP holds.
+func TestOAuth2ClientCredentialResource_WarnsAboutUnmanagedParameters(t *testing.T) {
+	for _, c := range []struct {
+		name     string
+		response string
+		warnings int
+	}{
+		{"parameters set in the UI", `{"d":{"Name":"OA","CustomParameters":{"results":[{"Key":"k","Value":"v","SendAsPartOf":"header"}]}}}`, 1},
+		{"no parameters", `{"d":{"Name":"OA","CustomParameters":{"results":[]}}}`, 0},
+	} {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			_, _ = w.Write([]byte(c.response))
+		}))
+		r := &oauth2ClientCredentialResource{client: securitycontent.New(http.DefaultClient, server.URL)}
+		diags := modifyPlan(t, r,
+			map[string]tftypes.Value{"id": str("OA"), "client_id": str("one")},
+			map[string]tftypes.Value{"id": str("OA"), "client_id": str("two")}, false)
+		server.Close()
+		if diags.HasError() || diags.WarningsCount() != c.warnings {
+			t.Errorf("%s: %v, want %d warning(s)", c.name, diags, c.warnings)
 		}
 	}
 }

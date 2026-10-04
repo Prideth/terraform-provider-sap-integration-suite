@@ -30,7 +30,7 @@ prepared on `release/0.5.x`, 0.6.0 on `release/0.6.x`.
 | 0.5.0 | Integration Assessment technology profiles and the ISA-M taxonomy | prepared on `release/0.5.x`; tenant gate passed on 2026-10-04 | — |
 | 0.6.0 | API Composition: business data graph hardening | prepared on `release/0.6.x`; every change is tenant-verified | releasing 0.5.0 first |
 | 0.7.0 | Cloud Integration data types, message types, fault message types, service interfaces | in progress on `feature/design-time-types`; data types, message types, fault message types and service interfaces done (unofficial) | release preparation |
-| 0.8.0 | Security Content completion | proposed | the upload formats in P2 item 5 |
+| 0.8.0 | Security Content completion | in progress on `feature/security-content`: certificate chains, PGP keys and OAuth2 custom parameters done (unofficial, acceptance tests passed) | releasing 0.7.0 first |
 | 0.9.0 | Classic API Management infrastructure, above all virtual hosts; the API proxy only if the official Transport API request passes its acceptance test | proposed | P2 item 6 and the Transport API specification |
 | 0.10.0 | Edge Integration Cell targeting | proposed | a tenant with an Edge Integration Cell (P1 item 3) |
 | 0.11.0 | Data Space Integration desired-state configuration | proposed | the DSIAPI specification (P2 item 7) |
@@ -83,10 +83,12 @@ These need no further research, only a run of the prepared tests:
 
 ## P2 — partly confirmed, more evidence first
 
-5. **Security Content.** Certificate chains (upload media type), PGP keyrings (upload format;
-   secret keyrings write-only) and OAuth2 client credential custom parameters (write path). The
-   OAuth2 password and SAML bearer artifacts become user credential kinds if a probe finds them
-   among `UserCredentials`. Access policy string limits are settled: a probe found that SAP
+5. **Security Content.** Settled by tenant probes on 2026-10-04 and implemented for 0.8.0:
+   certificate chains (PEM upload with the fingerprint confirmation, CSR on the key pair), PGP
+   keys (one resource per key, secret keys write-only with the passphrase header) and OAuth2
+   custom parameters (create-only, so a change replaces the credential), all unofficial. The
+   OAuth2 password and SAML bearer artifacts are no user credential kinds (SAP accepts only
+   `default`, `successfactors` and `openconnectors`) and stay without an API. Access policy string limits are settled: a probe found that SAP
    shortens the role name and descriptions to 200, a reference name to 50 and a reference value
    to 150 characters, and 0.3.2 checks all of them at plan time.
 6. **Classic virtual hosts.** The write API (`Configuration.svc/VirtualHostRequests`) is
