@@ -58,10 +58,11 @@ resource "sapintegrationsuite_user_credential" "backend" {
   password_wo_version = "1"
 }
 
-# SuccessFactors credentials additionally require company_id and kind.
+# SuccessFactors credentials additionally require company_id and kind. SAP
+# accepts the kinds only in lower case: default, successfactors, openconnectors.
 resource "sapintegrationsuite_user_credential" "success_factors" {
   id         = "SFSF_BASIC"
-  kind       = "SuccessFactors"
+  kind       = "successfactors"
   user       = "sfsf-integration-user"
   company_id = "SFPART000123"
 
@@ -84,9 +85,9 @@ resource "sapintegrationsuite_user_credential" "success_factors" {
 
 ### Optional
 
-- `company_id` (String) The SuccessFactors company ID (client instance) this credential connects to. Only meaningful when kind is "SuccessFactors"; SAP's UI hides this field for every other kind.
+- `company_id` (String) The SuccessFactors company ID (client instance) this credential connects to. Required when kind is "successfactors"; SAP's UI hides this field for every other kind.
 - `description` (String) A free-text description of the credential artifact.
-- `kind` (String) The credential's system-specific type, as selected by SAP's "Type" UI field: "default" (the default) for a generic Basic/username-token credential, "SuccessFactors", or "OpenConnectors". SAP rejects a credential without a kind and reports a generic one as "default". Immutable: SAP's UI does not document changing an artifact's kind via Edit, only via delete and recreate, and this provider is conservative about a field that changes which other fields (for example company_id) are meaningful.
+- `kind` (String) The credential's system-specific type, as selected by SAP's "Type" UI field: "default" (the default) for a generic Basic/username-token credential, "successfactors" (needs company_id), or "openconnectors". SAP accepts only these values, in lower case. Immutable: SAP's UI does not document changing an artifact's kind via Edit, only via delete and recreate, and this provider is conservative about a field that changes which other fields (for example company_id) are meaningful.
 - `runtime_location_id` (String) NOT SUPPORTED YET. Edge Integration Cell targeting has not passed its acceptance test on a tenant with an Edge Integration Cell; leave this unset until it has. If set, requests go to /location/<id>/api/v1 on the same tenant host, the service root SAP Help documents for Edge Integration Cells, and the value is the runtime location ID SAP shows in the monitoring URL after selecting the Edge Integration Cell as runtime ({"edge":{"runtimeLocationId":"myedge"}}). Use it only at your own risk. Changing it replaces the resource.
 
 ## Import
@@ -102,9 +103,13 @@ password; have the correct password in place before you apply.
 ## Limitations
 
 - **SAP:** passwords are never returned; drift of the password cannot be detected.
-- **Provider:** `kind = "SuccessFactors"` and `"OpenConnectors"` follow the property names from
-  the tenant `$metadata` but were not tested against those systems. The deployment status SAP
-  shows in the UI is not exposed.
+- **SAP:** `kind` takes only `default`, `successfactors` and `openconnectors`, in lower case.
+  SAP refuses every other value, including `SuccessFactors` and `OpenConnectors`, which
+  releases before 0.5.1 documented; the provider checks the value while planning. A
+  `successfactors` credential needs `company_id`. An `openconnectors` credential needs a
+  password in the Open Connectors credential format, which SAP does not document; a tenant
+  refused a random password with "Password does not match Open Connectors Credentials pattern".
+- **Provider:** the deployment status SAP shows in the UI is not exposed.
 
 ## Related
 

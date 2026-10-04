@@ -116,11 +116,13 @@ Two details shape how they behave:
 
 Two parts of the UI dialog are not covered. The grant-type placement (URL or body) has no
 property in the API at all. The **custom parameters** table (up to 20 key/value pairs sent in
-the body, header or URL) is modeled in `$metadata` as a `CustomParameters` navigation property,
-but SAP does not document how it is written. Because updates replace the entity, custom
-parameters maintained in the UI may not survive a rotation through Terraform. Until that is
-verified, do not combine custom parameters with Terraform-managed rotation for the same
-credential.
+the body, header or URL) is modeled in `$metadata` as a `CustomParameters` navigation property.
+A tenant check of 2026-10-04 settled how SAP treats it: the parameters can only be created
+together with the credential, every `PUT` that does not send them deletes them, and a `PUT` that
+does is refused. Every rotation through Terraform therefore removes custom parameters maintained
+in the UI. Since 0.5.1 the plan warns when a credential that is about to be updated or replaced
+has custom parameters. Do not combine custom parameters with Terraform-managed rotation for the
+same credential, or set them again in the UI after every apply.
 
 ## Drift detection is limited for secrets
 

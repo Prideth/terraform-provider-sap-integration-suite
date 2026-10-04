@@ -184,3 +184,25 @@ func TestClient_UpdateOAuth2ClientCredential_ResendsTokenRequestSettings(t *test
 		t.Errorf("an empty Resource must be omitted, got %v", body["Resource"])
 	}
 }
+
+// The count reads the expanded navigation; SAP deletes custom parameters
+// with every PUT, so the resource warns when there are any.
+func TestClient_CountOAuth2ClientCredentialCustomParameters(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api/v1/OAuth2ClientCredentials('BACKEND_OAUTH')" || r.URL.Query().Get("$expand") != "CustomParameters" {
+			t.Errorf("request = %s?%s, want the credential with $expand=CustomParameters", r.URL.Path, r.URL.RawQuery)
+		}
+		_, _ = w.Write([]byte(`{"d": {"Name": "BACKEND_OAUTH", "CustomParameters": {"results": [
+			{"Key": "resource", "Value": "x", "SendAsPartOf": "body"},
+			{"Key": "tenant", "Value": "y", "SendAsPartOf": "header"}]}}}`))
+	}))
+	defer server.Close()
+
+	n, err := New(http.DefaultClient, server.URL).CountOAuth2ClientCredentialCustomParameters(context.Background(), "BACKEND_OAUTH")
+	if err != nil {
+		t.Fatalf("CountOAuth2ClientCredentialCustomParameters() error: %v", err)
+	}
+	if n != 2 {
+		t.Errorf("count = %d, want 2", n)
+	}
+}

@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -127,6 +128,36 @@ func (r *oauth2ClientCredentialResource) Configure(_ context.Context, req resour
 		return
 	}
 	r.client = securitycontent.New(data.HTTPClient, data.Host)
+}
+
+// ModifyPlan warns before an update or replacement that deletes custom
+// parameters set outside Terraform. SAP removes all of them with every PUT,
+// cannot take them in a PUT, and has no other write path for them (tenant
+// check of 2026-10-04); this provider version does not manage them. When the
+// count cannot be read, the plan goes on without the warning.
+func (r *oauth2ClientCredentialResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if r.client == nil || req.State.Raw.IsNull() || req.Plan.Raw.IsNull() || req.Plan.Raw.Equal(req.State.Raw) {
+		return
+	}
+	var state oauth2ClientCredentialModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	client, err := r.client.AtLocation(state.RuntimeLocationID.ValueString())
+	if err != nil {
+		return
+	}
+	n, err := client.CountOAuth2ClientCredentialCustomParameters(ctx, state.ID.ValueString())
+	if err != nil || n == 0 {
+		return
+	}
+	resp.Diagnostics.AddWarning("Custom parameters will be deleted",
+		fmt.Sprintf("The OAuth2 client credential %q has %d custom parameter(s) that were set outside "+
+			"Terraform. SAP deletes all custom parameters of a credential when it is updated or recreated "+
+			"through the API, and this provider version cannot send them again. Cancel the apply, or set "+
+			"the parameters again in SAP's UI (Monitor > Integrations > Security Material) afterwards.",
+			state.ID.ValueString(), n))
 }
 
 func (r *oauth2ClientCredentialResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
