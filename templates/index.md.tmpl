@@ -106,6 +106,7 @@ block wins; an attribute that is unset or an empty string falls back to its vari
 | `integration_assessment.*` | `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_ENTITIES_URL`, `_TOKEN_URL`, `_CLIENT_ID`, `_CLIENT_SECRET` |
 | `enable_experimental` | `SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL` |
 | `enable_unofficial` | `SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL` |
+| `convert_ui_labels` | `SAP_INTEGRATION_SUITE_CONVERT_UI_LABELS` |
 
 Missing Cloud Integration credentials do not fail the provider configuration; a resource or
 data source that needs them fails with an error that says what is missing. The `api_management`
@@ -157,6 +158,11 @@ A few documented resources use one operation that SAP does not document, for exa
 in-place content update of a message mapping. `enable_unofficial` allows those operations too;
 without it, a plan that needs one fails with an error that names it, and the resource stays
 usable with its documented operations. The resource pages list these operations.
+
+`convert_ui_labels` lets `sapintegrationsuite_access_policy_reference` accept the labels SAP's UI
+shows (*Matches*, *Integration Flow*) and convert them to SAP's constants. It is experimental and
+takes effect only together with `enable_experimental = true`; see the resource page for the
+conversions it makes.
 
 ## Runtimes
 

@@ -1,12 +1,16 @@
 package provider
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
@@ -117,13 +121,12 @@ func TestAccessPolicyReference_RejectsCombinationsSAPRejects(t *testing.T) {
 
 func TestAccessPolicyReference_RejectsUnknownArtifactTypes(t *testing.T) {
 	cases := []struct{ value, hint string }{
-		{"IntegrationFlow", `Use "INTEGRATION_FLOW"`},
-		{"IntegrationPackage", `Use "INTEGRATION_PACKAGE"`},
-		{"Integration Package", `Use "INTEGRATION_PACKAGE"`},
+		// Labels that spell their constant pass validation and are decided
+		// in the plan (TestAccessPolicyReference_UILabels*); these are not
+		// proven labels.
 		{"OData API", `Use "ODATA_SERVICE"`},
-		{"integration_flow", `Use "INTEGRATION_FLOW"`},
+		{"API", ""},
 		{"foobar", ""},
-		{"user credential", `Use "USER_CREDENTIAL"`},
 	}
 	for _, c := range cases {
 		t.Run(c.value, func(t *testing.T) {
@@ -143,10 +146,8 @@ func TestAccessPolicyReference_RejectsUnknownArtifactTypes(t *testing.T) {
 
 func TestAccessPolicyReference_RejectsUnknownAttributes(t *testing.T) {
 	cases := []struct{ value, hint string }{
-		{"NAME", `Use "Name"`},
-		{"name", `Use "Name"`},
-		{"Id", `Use "ID"`},
 		{"foobar", ""},
+		{"Identifier", ""},
 	}
 	for _, c := range cases {
 		t.Run(c.value, func(t *testing.T) {
@@ -158,11 +159,8 @@ func TestAccessPolicyReference_RejectsUnknownAttributes(t *testing.T) {
 
 func TestAccessPolicyReference_RejectsUILabelsAsOperators(t *testing.T) {
 	cases := []struct{ value, hint string }{
-		{"EQUALS", `Use "exactString"`},
-		{"Equals", `Use "exactString"`},
-		{"equals", `Use "exactString"`},
-		{"MATCHES", `Use "regularExpression"`},
-		{"matches", `Use "regularExpression"`},
+		// Equals and Matches are proven UI labels: they pass validation and
+		// are decided in the plan. Abbreviations are never converted.
 		{"regex", `Use "regularExpression"`},
 		{"regexp", `Use "regularExpression"`},
 		{"regular_expression", `Use "regularExpression"`},
@@ -352,5 +350,110 @@ func TestAccessPolicyReference_UnofficialArtifactTypes(t *testing.T) {
 				t.Errorf("unofficial error = %v, want %v (%v)", got, c.wantErr, diags)
 			}
 		})
+	}
+}
+
+func TestAccessPolicyReference_UILabelsPassValidation(t *testing.T) {
+	for _, c := range [][3]string{
+		{"Integration Flow", "Name", "Matches"},
+		{"IntegrationPackage", "name", "EQUALS"},
+		{"integration_flow", "Id", "equals"},
+		{"user credential", "NAME", "matches"},
+	} {
+		t.Run(strings.Join(c[:], "/"), func(t *testing.T) {
+			value := "X"
+			if canonicalUILabel(uiLabelOperator, c[2]) == referenceOperatorRegex {
+				value = "X.*"
+			}
+			requireNoErrors(t, validateReference(t, c[0], c[1], c[2], value))
+		})
+	}
+	// The combination rules apply to what the labels stand for.
+	requireOneError(t, validateReference(t, "Integration Package", "Name", "Matches", "PKG_.*"),
+		"operator", "Operator not supported for this artifact type", "INTEGRATION_PACKAGE")
+}
+
+func TestConvertUILabel(t *testing.T) {
+	cases := []struct {
+		kind      uiLabelKind
+		value     string
+		want      string
+		converted bool
+	}{
+		{uiLabelOperator, "Matches", referenceOperatorRegex, true},
+		{uiLabelOperator, "EQUALS", referenceOperatorExact, true},
+		{uiLabelOperator, "regularExpression", "", false},
+		{uiLabelOperator, "regex", "", false},
+		{uiLabelAttribute, "name", "Name", true},
+		{uiLabelAttribute, "Id", "ID", true},
+		{uiLabelAttribute, "Name", "", false},
+		{uiLabelArtifactType, "Integration Flow", "INTEGRATION_FLOW", true},
+		{uiLabelArtifactType, "Service Interface", "SERVICE_INTERFACE", true},
+		{uiLabelArtifactType, "INTEGRATION_FLOW", "", false},
+		// The UI's names for these constants are not proven.
+		{uiLabelArtifactType, "API", "", false},
+		{uiLabelArtifactType, "OData API", "", false},
+		{uiLabelArtifactType, "REST API", "", false},
+		{uiLabelArtifactType, "SOAP API", "", false},
+	}
+	for _, c := range cases {
+		got, ok := convertUILabel(c.kind, c.value)
+		if got != c.want || ok != c.converted {
+			t.Errorf("convertUILabel(%v, %q) = %q, %v; want %q, %v", c.kind, c.value, got, ok, c.want, c.converted)
+		}
+	}
+}
+
+func TestUILabelConversion_Switches(t *testing.T) {
+	labels := map[uiLabelKind]string{uiLabelArtifactType: "Integration Flow", uiLabelOperator: "Matches", uiLabelAttribute: "Name"}
+	for _, c := range []struct {
+		convert, experimental bool
+		errors, warnings      int
+		missing               []string
+	}{
+		{false, false, 2, 0, []string{"convert_ui_labels = true and enable_experimental = true"}},
+		{true, false, 2, 0, []string{"set enable_experimental = true"}},
+		{false, true, 2, 0, []string{"set convert_ui_labels = true"}},
+		{true, true, 0, 2, nil},
+	} {
+		var diags diag.Diagnostics
+		ok := uiLabelConversion(c.convert, c.experimental, labels, &diags)
+		if ok != (c.errors == 0) || diags.ErrorsCount() != c.errors || diags.WarningsCount() != c.warnings {
+			t.Fatalf("convert=%v experimental=%v: ok %v, %d errors, %d warnings", c.convert, c.experimental, ok, diags.ErrorsCount(), diags.WarningsCount())
+		}
+		for _, d := range diags {
+			for _, m := range c.missing {
+				if !strings.Contains(d.Detail(), m) {
+					t.Errorf("detail %q does not name %q", d.Detail(), m)
+				}
+			}
+			if !strings.Contains(d.Detail(), "INTEGRATION_FLOW") && !strings.Contains(d.Detail(), "regularExpression") {
+				t.Errorf("detail %q does not name the constant", d.Detail())
+			}
+		}
+	}
+}
+
+func TestUILabelEquivalentAndSpelling(t *testing.T) {
+	m := uiLabelEquivalent{kind: uiLabelOperator}
+	for _, c := range []struct {
+		state, plan, want string
+	}{
+		{"regularExpression", "Matches", "regularExpression"}, // after an import: no diff
+		{"Matches", "regularExpression", "Matches"},
+		{"exactString", "Matches", "Matches"}, // a real change stays a change
+	} {
+		req := planmodifier.StringRequest{StateValue: types.StringValue(c.state), PlanValue: types.StringValue(c.plan)}
+		resp := &planmodifier.StringResponse{PlanValue: req.PlanValue}
+		m.PlanModifyString(context.Background(), req, resp)
+		if resp.PlanValue.ValueString() != c.want {
+			t.Errorf("state %q, plan %q: planned %q, want %q", c.state, c.plan, resp.PlanValue.ValueString(), c.want)
+		}
+	}
+	if got := keepSpelling(uiLabelArtifactType, types.StringValue("Integration Flow"), "INTEGRATION_FLOW"); got.ValueString() != "Integration Flow" {
+		t.Errorf("keepSpelling kept %q", got.ValueString())
+	}
+	if got := keepSpelling(uiLabelArtifactType, types.StringValue("Integration Flow"), "VALUE_MAPPING"); got.ValueString() != "VALUE_MAPPING" {
+		t.Errorf("keepSpelling must show a different stored value, got %q", got.ValueString())
 	}
 }

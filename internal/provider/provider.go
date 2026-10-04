@@ -41,6 +41,7 @@ type providerModel struct {
 	Host                  types.String                `tfsdk:"host"`
 	EnableExperimental    types.Bool                  `tfsdk:"enable_experimental"`
 	EnableUnofficial      types.Bool                  `tfsdk:"enable_unofficial"`
+	ConvertUILabels       types.Bool                  `tfsdk:"convert_ui_labels"`
 	OAuth                 *oauthModel                 `tfsdk:"oauth"`
 	APIManagement         *apiManagementModel         `tfsdk:"api_management"`
 	APIComposition        *apiCompositionModel        `tfsdk:"api_composition"`
@@ -130,6 +131,10 @@ type Data struct {
 	// or unofficial; see requireOptIn.
 	EnableExperimental bool
 	EnableUnofficial   bool
+
+	// ConvertUILabels is the provider's convert_ui_labels. It takes effect
+	// only together with EnableExperimental; see uiLabelConversion.
+	ConvertUILabels bool
 }
 
 func (p *sapIntegrationSuiteProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -163,6 +168,18 @@ func (p *sapIntegrationSuiteProvider) Schema(_ context.Context, _ provider.Schem
 					"in place or deleting a number range. Off by default; a configuration or plan that " +
 					"needs one fails until this is true. Can also be set via the " +
 					"SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL environment variable.",
+			},
+			"convert_ui_labels": schema.BoolAttribute{
+				Optional: true,
+				Description: "Lets sapintegrationsuite_access_policy_reference accept the labels SAP's UI " +
+					"shows where SAP's API stores constants: \"Matches\" and \"Equals\" as operator, " +
+					"\"name\" or \"Id\" as attribute, and an artifact type label that spells exactly its " +
+					"constant, such as \"Integration Flow\" for INTEGRATION_FLOW. The provider sends the " +
+					"constant and shows each conversion as a plan warning; the state keeps your spelling. " +
+					"Only these proven conversions are made; other labels are still rejected with the " +
+					"value to use. Experimental: takes effect only together with enable_experimental = " +
+					"true. Off by default. Can also be set via the SAP_INTEGRATION_SUITE_CONVERT_UI_LABELS " +
+					"environment variable.",
 			},
 			"host": schema.StringAttribute{
 				Optional: true,
@@ -359,6 +376,7 @@ func (p *sapIntegrationSuiteProvider) Configure(ctx context.Context, req provide
 		Version:            p.version,
 		EnableExperimental: boolOrEnv(config.EnableExperimental, "SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL"),
 		EnableUnofficial:   boolOrEnv(config.EnableUnofficial, "SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL"),
+		ConvertUILabels:    boolOrEnv(config.ConvertUILabels, "SAP_INTEGRATION_SUITE_CONVERT_UI_LABELS"),
 	}
 
 	if host != "" && oauthCfg.TokenURL != "" && oauthCfg.ClientID != "" && oauthCfg.ClientSecret != "" {

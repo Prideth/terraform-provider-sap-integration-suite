@@ -32,6 +32,10 @@ type accessPolicyReferenceResource struct {
 	// allowUnofficial is the provider's enable_unofficial: references to
 	// artifact types SAP does not document for access policies need it.
 	allowUnofficial bool
+	// convertLabels and experimental are the provider's convert_ui_labels
+	// and enable_experimental; UI labels are converted only with both.
+	convertLabels bool
+	experimental  bool
 }
 
 type accessPolicyReferenceModel struct {
@@ -105,8 +109,11 @@ func (r *accessPolicyReferenceResource) Schema(_ context.Context, _ resource.Sch
 				Required: true,
 				Description: "Artifact type constant as SAP's API stores it in the Type property, for " +
 					"example \"INTEGRATION_FLOW\" or \"INTEGRATION_PACKAGE\", not the UI label. Only the " +
-					"types listed on this page are accepted; the plan fails for any other value.",
+					"types listed on this page are accepted; the plan fails for any other value. With the " +
+					"provider's convert_ui_labels (and enable_experimental), a label that spells its " +
+					"constant, such as \"Integration Flow\", is accepted and converted.",
 				PlanModifiers: []planmodifier.String{
+					uiLabelEquivalent{kind: uiLabelArtifactType},
 					stringplanmodifier.RequiresReplace(),
 				},
 				Validators: []validator.String{
@@ -117,8 +124,10 @@ func (r *accessPolicyReferenceResource) Schema(_ context.Context, _ resource.Sch
 				Required: true,
 				Description: "Artifact attribute the condition is evaluated against, as stored in " +
 					"ConditionAttribute: \"Name\" or \"ID\". Message queues, global variables and global " +
-					"data stores can only be matched by \"Name\".",
+					"data stores can only be matched by \"Name\". With the provider's convert_ui_labels " +
+					"(and enable_experimental), any letter case is accepted and converted.",
 				PlanModifiers: []planmodifier.String{
+					uiLabelEquivalent{kind: uiLabelAttribute},
 					stringplanmodifier.RequiresReplace(),
 				},
 				Validators: []validator.String{
@@ -129,8 +138,10 @@ func (r *accessPolicyReferenceResource) Schema(_ context.Context, _ resource.Sch
 				Required: true,
 				Description: "Condition type as stored in ConditionType: \"exactString\" (Equals in the " +
 					"UI) or \"regularExpression\" (Matches in the UI). Integration packages only allow " +
-					"\"exactString\". UI labels such as EQUALS or MATCHES are rejected.",
+					"\"exactString\". The UI labels Equals and Matches are rejected, unless the provider's " +
+					"convert_ui_labels and enable_experimental are set: then they are converted.",
 				PlanModifiers: []planmodifier.String{
+					uiLabelEquivalent{kind: uiLabelOperator},
 					stringplanmodifier.RequiresReplace(),
 				},
 				Validators: []validator.String{
@@ -169,13 +180,14 @@ func (r *accessPolicyReferenceResource) ValidateConfig(ctx context.Context, req 
 	}
 
 	if known(config.ArtifactType, config.Attribute, config.Operator) {
-		validateReferenceCombination(config.ArtifactType.ValueString(), config.Attribute.ValueString(),
-			config.Operator.ValueString(), func(attr path.Path, summary, detail string) {
+		validateReferenceCombination(canonicalUILabel(uiLabelArtifactType, config.ArtifactType.ValueString()),
+			canonicalUILabel(uiLabelAttribute, config.Attribute.ValueString()),
+			canonicalUILabel(uiLabelOperator, config.Operator.ValueString()), func(attr path.Path, summary, detail string) {
 				resp.Diagnostics.AddAttributeError(attr, summary, detail)
 			})
 	}
 
-	if !known(config.Operator, config.Value) || config.Operator.ValueString() != referenceOperatorRegex {
+	if !known(config.Operator, config.Value) || canonicalUILabel(uiLabelOperator, config.Operator.ValueString()) != referenceOperatorRegex {
 		return
 	}
 	value := config.Value.ValueString()
@@ -197,7 +209,9 @@ func (r *accessPolicyReferenceResource) ValidateConfig(ctx context.Context, req 
 }
 
 // ModifyPlan stops a plan that creates a reference to an artifact type SAP
-// does not document for access policies, unless enable_unofficial is set.
+// does not document for access policies, unless enable_unofficial is set,
+// and decides about UI labels: converted with a warning when
+// convert_ui_labels and enable_experimental are set, refused otherwise.
 // Every attribute forces replacement, so creating is the only write.
 func (r *accessPolicyReferenceResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if r.client == nil || req.Plan.Raw.IsNull() {
@@ -206,12 +220,38 @@ func (r *accessPolicyReferenceResource) ModifyPlan(ctx context.Context, req reso
 	if !req.State.Raw.IsNull() && len(resp.RequiresReplace) == 0 {
 		return // nothing is created
 	}
-	var artifactType types.String
-	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("artifact_type"), &artifactType)...)
-	if resp.Diagnostics.HasError() || artifactType.IsUnknown() {
+	var plan accessPolicyReferenceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
-	r.allowArtifactType(artifactType.ValueString(), &resp.Diagnostics)
+	if !uiLabelConversion(r.convertLabels, r.experimental, plannedLabels(plan), &resp.Diagnostics) {
+		return
+	}
+	if plan.ArtifactType.IsUnknown() {
+		return
+	}
+	r.allowArtifactType(canonicalUILabel(uiLabelArtifactType, plan.ArtifactType.ValueString()), &resp.Diagnostics)
+}
+
+// plannedLabels are the known values of the three fields that may hold UI labels.
+func plannedLabels(m accessPolicyReferenceModel) map[uiLabelKind]string {
+	values := map[uiLabelKind]string{}
+	for kind, v := range map[uiLabelKind]types.String{uiLabelArtifactType: m.ArtifactType, uiLabelAttribute: m.Attribute, uiLabelOperator: m.Operator} {
+		if known(v) {
+			values[kind] = v.ValueString()
+		}
+	}
+	return values
+}
+
+// keepSpelling returns the configured spelling when it stands for the value
+// SAP stored, so the state keeps a UI label the configuration uses.
+func keepSpelling(kind uiLabelKind, configured types.String, stored string) types.String {
+	if known(configured) && configured.ValueString() != stored && canonicalUILabel(kind, configured.ValueString()) == stored {
+		return configured
+	}
+	return types.StringValue(stored)
 }
 
 // allowArtifactType reports whether a reference to the artifact type may be
@@ -253,6 +293,8 @@ func (r *accessPolicyReferenceResource) Configure(_ context.Context, req resourc
 	}
 	r.client = cloudintegration.New(data.HTTPClient, data.Host)
 	r.allowUnofficial = data.EnableUnofficial
+	r.convertLabels = data.ConvertUILabels
+	r.experimental = data.EnableExperimental
 }
 
 func (r *accessPolicyReferenceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -261,16 +303,23 @@ func (r *accessPolicyReferenceResource) Create(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if !r.allowArtifactType(plan.ArtifactType.ValueString(), &resp.Diagnostics) {
+	// The plan already showed the conversions; here only a refusal counts.
+	var labelDiags diag.Diagnostics
+	if !uiLabelConversion(r.convertLabels, r.experimental, plannedLabels(plan), &labelDiags) {
+		resp.Diagnostics.Append(labelDiags.Errors()...)
+		return
+	}
+	artifactType := canonicalUILabel(uiLabelArtifactType, plan.ArtifactType.ValueString())
+	if !r.allowArtifactType(artifactType, &resp.Diagnostics) {
 		return
 	}
 
 	created, err := r.client.CreateAccessPolicyReference(ctx, plan.AccessPolicyID.ValueString(), cloudintegration.AccessPolicyReference{
 		Name:               plan.Name.ValueString(),
 		Description:        plan.Description.ValueString(),
-		Type:               plan.ArtifactType.ValueString(),
-		ConditionAttribute: plan.Attribute.ValueString(),
-		ConditionType:      plan.Operator.ValueString(),
+		Type:               artifactType,
+		ConditionAttribute: canonicalUILabel(uiLabelAttribute, plan.Attribute.ValueString()),
+		ConditionType:      canonicalUILabel(uiLabelOperator, plan.Operator.ValueString()),
 		ConditionValue:     plan.Value.ValueString(),
 	})
 	if err != nil {
@@ -278,7 +327,17 @@ func (r *accessPolicyReferenceResource) Create(ctx context.Context, req resource
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, referenceToModel(plan.AccessPolicyID.ValueString(), created))...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, referenceToModelKeeping(plan.AccessPolicyID.ValueString(), created, plan))...)
+}
+
+// referenceToModelKeeping converts a reference and keeps the UI labels of
+// the previous model where they stand for the stored constants.
+func referenceToModelKeeping(policyID string, ref *cloudintegration.AccessPolicyReference, previous accessPolicyReferenceModel) accessPolicyReferenceModel {
+	m := referenceToModel(policyID, ref)
+	m.ArtifactType = keepSpelling(uiLabelArtifactType, previous.ArtifactType, ref.Type)
+	m.Attribute = keepSpelling(uiLabelAttribute, previous.Attribute, ref.ConditionAttribute)
+	m.Operator = keepSpelling(uiLabelOperator, previous.Operator, ref.ConditionType)
+	return m
 }
 
 func (r *accessPolicyReferenceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -303,7 +362,7 @@ func (r *accessPolicyReferenceResource) Read(ctx context.Context, req resource.R
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, referenceToModel(state.AccessPolicyID.ValueString(), ref))...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, referenceToModelKeeping(state.AccessPolicyID.ValueString(), ref, state))...)
 }
 
 // Update is unreachable: every attribute forces replacement, because SAP's

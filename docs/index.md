@@ -106,6 +106,7 @@ block wins; an attribute that is unset or an empty string falls back to its vari
 | `integration_assessment.*` | `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_ENTITIES_URL`, `_TOKEN_URL`, `_CLIENT_ID`, `_CLIENT_SECRET` |
 | `enable_experimental` | `SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL` |
 | `enable_unofficial` | `SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL` |
+| `convert_ui_labels` | `SAP_INTEGRATION_SUITE_CONVERT_UI_LABELS` |
 
 Missing Cloud Integration credentials do not fail the provider configuration; a resource or
 data source that needs them fails with an error that says what is missing. The `api_management`
@@ -245,6 +246,11 @@ in-place content update of a message mapping. `enable_unofficial` allows those o
 without it, a plan that needs one fails with an error that names it, and the resource stays
 usable with its documented operations. The resource pages list these operations.
 
+`convert_ui_labels` lets `sapintegrationsuite_access_policy_reference` accept the labels SAP's UI
+shows (*Matches*, *Integration Flow*) and convert them to SAP's constants. It is experimental and
+takes effect only together with `enable_experimental = true`; see the resource page for the
+conversions it makes.
+
 ## Runtimes
 
 SAP Integration Suite can run content in three places: the Cloud Integration runtime, the
@@ -304,6 +310,7 @@ The [Troubleshooting guide](guides/troubleshooting.md) covers more cases, and
 
 - `api_composition` (Block, Optional) Credentials for API Composition's Configuration API, used only by sapintegrationsuite_business_data_graph. The API has its own region-specific host and OAuth client, from a service key of an API Composition service instance with plan "configuration"; the oauth and api_management credentials do not work there. Set host, token_url, client_id and client_secret together, or none. username and password add a key user's login through that client, which the Configuration API needed on a tenant. Each value can also come from a SAP_INTEGRATION_SUITE_API_COMPOSITION_* environment variable. (see [below for nested schema](#nestedblock--api_composition))
 - `api_management` (Block, Optional) Optional, and independent of the oauth block above. Classic API Management (API Providers, API Products, Key Value Maps, Certificate Store References) authenticates against its own API Portal application URL and its own OAuth 2.0 client, generated from the apiportal-apiaccess service plan — never the Cloud Integration credentials configured above. Leave this entire block out if you do not use any sapintegrationsuite_api_provider, sapintegrationsuite_api_product, sapintegrationsuite_api_key_value_map, or sapintegrationsuite_api_management_certificate_store_reference resource or data source. All four values (or their SAP_INTEGRATION_SUITE_API_MANAGEMENT_* environment variable equivalents) must be supplied together, or all left unset. (see [below for nested schema](#nestedblock--api_management))
+- `convert_ui_labels` (Boolean) Lets sapintegrationsuite_access_policy_reference accept the labels SAP's UI shows where SAP's API stores constants: "Matches" and "Equals" as operator, "name" or "Id" as attribute, and an artifact type label that spells exactly its constant, such as "Integration Flow" for INTEGRATION_FLOW. The provider sends the constant and shows each conversion as a plan warning; the state keeps your spelling. Only these proven conversions are made; other labels are still rejected with the value to use. Experimental: takes effect only together with enable_experimental = true. Off by default. Can also be set via the SAP_INTEGRATION_SUITE_CONVERT_UI_LABELS environment variable.
 - `enable_experimental` (Boolean) Allows resources and data sources whose support status is "experimental": implemented on a documented API, but their lifecycle has not yet passed an acceptance test on a tenant, so behavior or schema may still change. Off by default; a configuration that uses one fails until this is true. Can also be set via the SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL environment variable. See docs/feature-support.md for which ones they are.
 - `enable_unofficial` (Boolean) Allows resources and data sources whose support status is "unofficial": they work and were verified on a tenant, but SAP does not document the API behind them (it is known only from the service's $metadata), so SAP may change it without notice. It also allows the unofficial operations of otherwise documented resources, for example updating a message mapping's content in place or deleting a number range. Off by default; a configuration or plan that needs one fails until this is true. Can also be set via the SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL environment variable.
 - `host` (String) Base URL of the SAP Integration Suite tenant used for Cloud Integration APIs, for example https://<tenant>.it-cpi<...>.cfapps.<region>.hana.ondemand.com. Can also be set via the SAP_INTEGRATION_SUITE_HOST environment variable.

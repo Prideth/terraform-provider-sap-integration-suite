@@ -47,6 +47,20 @@ interfaces.
   added a second operation, imported it and saved a version on a tenant.
   Needs `enable_unofficial = true`.
 
+### New
+
+- `convert_ui_labels` (experimental) in the provider block, also as
+  `SAP_INTEGRATION_SUITE_CONVERT_UI_LABELS`: together with
+  `enable_experimental = true`, `sapintegrationsuite_access_policy_reference`
+  accepts the labels SAP's UI shows and sends SAP's constants: *Equals* and
+  *Matches* as operator, *Name* and *ID* in any letter case, and artifact
+  type labels that spell their constant, such as *Integration Flow*. Each
+  conversion is a warning in the plan; the state keeps the label, and an
+  imported reference does not differ from a configuration with labels.
+  Labels whose constant has another name (*API*, *OData API*, *REST API*,
+  *SOAP API*) are not converted. Without both switches a label still fails
+  the plan with the constant to use.
+
 ### Known limitations
 
 - Complex data types only; simple types were not examined.

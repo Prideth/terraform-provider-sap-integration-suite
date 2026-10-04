@@ -87,7 +87,9 @@ of SAP's `ArtifactReferences` entity:
 | `value` | `ConditionValue` | Value / Expression | exact name or ID, or a Java regular expression |
 
 The values are SAP's wire values, not the UI labels: the operator *Matches* is stored as
-`regularExpression`, not `MATCHES`. The provider accepts only values that SAP is known to
+`regularExpression`, not `MATCHES`. (With the provider's `convert_ui_labels` and
+`enable_experimental`, the proven labels such as *Matches* and *Integration Flow* are converted;
+see the resource page.) The provider accepts only values that SAP is known to
 store and combinations SAP allows, and fails the plan for anything else, so a wrong value can
 no longer leave a policy without its references halfway through an apply. The complete table
 of artifact types, with the evidence for each, is on the

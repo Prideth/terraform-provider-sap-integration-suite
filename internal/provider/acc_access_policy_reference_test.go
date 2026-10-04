@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/auth"
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/cloudintegration"
@@ -162,4 +164,80 @@ func testAccCloudIntegrationClient(t *testing.T) *cloudintegration.Client {
 	}
 	return cloudintegration.New(sapthttp.New(sapthttp.Config{Transport: httpClient, InvalidateToken: invalidate}),
 		os.Getenv("SAP_INTEGRATION_SUITE_HOST"))
+}
+
+// UI labels (convert_ui_labels, 0.7.0): without the switches a reference
+// written with the UI's labels fails in the plan and nothing is created;
+// with convert_ui_labels and enable_experimental the provider sends SAP's
+// constants, the state keeps the labels, and an import reads the constants
+// back without a plan difference.
+func TestAccAccessPolicyReference_uiLabels(t *testing.T) {
+	accgate.Require(t, accgate.SecurityContent)
+	t.Setenv("SAP_INTEGRATION_SUITE_CONVERT_UI_LABELS", "")
+	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL", "")
+	role := testAccName()
+	pattern := "^IFL_TFACC_" + strings.ToUpper(strings.TrimPrefix(role, "tfacc")) + "_.*$"
+	resources := fmt.Sprintf(`
+resource "sapintegrationsuite_access_policy" "test" {
+  role_name   = %[1]q
+  description = "tfacc reference UI labels"
+}
+
+resource "sapintegrationsuite_access_policy_reference" "label" {
+  access_policy_id = sapintegrationsuite_access_policy.test.id
+  name             = "tfacc label"
+  artifact_type    = "Integration Flow"
+  attribute        = "name"
+  operator         = "Matches"
+  value            = %[2]q
+}
+`, role, pattern)
+	const switches = `
+provider "sapintegrationsuite" {
+  convert_ui_labels   = true
+  enable_experimental = true
+}
+`
+	const address = "sapintegrationsuite_access_policy_reference.label"
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      resources,
+				ExpectError: regexp.MustCompile(`UI label instead of SAP's constant`),
+			},
+			{
+				Config: switches + resources,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(address, "artifact_type", "Integration Flow"),
+					resource.TestCheckResourceAttr(address, "attribute", "name"),
+					resource.TestCheckResourceAttr(address, "operator", "Matches"),
+					resource.TestCheckResourceAttr(address, "value", pattern),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+			},
+			{
+				Config:       switches + resources,
+				ResourceName: address,
+				ImportState:  true,
+				// SAP stored the constants.
+				ImportStateCheck: func(states []*terraform.InstanceState) error {
+					for _, s := range states {
+						if s.Attributes["value"] != pattern {
+							continue
+						}
+						for attr, want := range map[string]string{"artifact_type": "INTEGRATION_FLOW", "attribute": "Name", "operator": "regularExpression"} {
+							if got := s.Attributes[attr]; got != want {
+								return fmt.Errorf("imported %s = %q, want %q", attr, got, want)
+							}
+						}
+						return nil
+					}
+					return fmt.Errorf("the imported reference was not found")
+				},
+			},
+		},
+	})
 }

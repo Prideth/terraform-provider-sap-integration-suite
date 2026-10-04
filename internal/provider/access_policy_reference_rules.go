@@ -109,8 +109,9 @@ func referenceArtifactTypeWireValues(unofficial bool) []string {
 
 // Suggestions for values that are not SAP wire values but whose meaning is
 // clear: UI labels, spellings of earlier provider releases and common
-// abbreviations. They only point to the right value in the diagnostic; the
-// provider never converts a value.
+// abbreviations. They only point to the right value in the diagnostic. The
+// provider converts a value only with convert_ui_labels, and only the proven
+// labels of ui_labels.go.
 var (
 	referenceOperatorHints = map[string]string{
 		"equals": referenceOperatorExact, "eq": referenceOperatorExact, "exact": referenceOperatorExact,
@@ -144,6 +145,10 @@ type wireValueValidator struct {
 	allowed    []string
 	unofficial []string          // also accepted; the plan then needs enable_unofficial
 	hints      map[string]string // hintKey(input) -> wire value
+	// labels lets the proven UI labels of this kind pass: whether they may be
+	// used depends on the provider's convert_ui_labels, which a validator
+	// cannot see, so the plan decides (uiLabelConversion).
+	labels *uiLabelKind
 }
 
 func (v wireValueValidator) Description(context.Context) string {
@@ -180,6 +185,11 @@ func (v wireValueValidator) ValidateString(_ context.Context, req validator.Stri
 	if contains(v.allowed, value) || contains(v.unofficial, value) {
 		return
 	}
+	if v.labels != nil {
+		if _, ok := convertUILabel(*v.labels, value); ok {
+			return
+		}
+	}
 	detail := fmt.Sprintf("%q is not an access policy %s value SAP's API accepts. The provider expects SAP's "+
 		"wire values, not UI labels, and does not convert them. ", value, v.what)
 	if s := v.suggestion(value); s != "" {
@@ -195,10 +205,12 @@ func (v wireValueValidator) ValidateString(_ context.Context, req validator.Stri
 }
 
 var (
+	labelArtifactType, labelAttribute, labelOperator = uiLabelArtifactType, uiLabelAttribute, uiLabelOperator
+
 	referenceArtifactTypeValidator = wireValueValidator{what: "artifact type", allowed: referenceArtifactTypeWireValues(false),
-		unofficial: referenceArtifactTypeWireValues(true), hints: referenceArtifactTypeHints}
-	referenceAttributeValidator = wireValueValidator{what: "attribute", allowed: referenceAttributes}
-	referenceOperatorValidator  = wireValueValidator{what: "operator", allowed: referenceOperators, hints: referenceOperatorHints}
+		unofficial: referenceArtifactTypeWireValues(true), hints: referenceArtifactTypeHints, labels: &labelArtifactType}
+	referenceAttributeValidator = wireValueValidator{what: "attribute", allowed: referenceAttributes, labels: &labelAttribute}
+	referenceOperatorValidator  = wireValueValidator{what: "operator", allowed: referenceOperators, hints: referenceOperatorHints, labels: &labelOperator}
 )
 
 // validateReferenceCombination checks attribute and operator against what

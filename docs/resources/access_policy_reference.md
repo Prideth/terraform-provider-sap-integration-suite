@@ -35,8 +35,8 @@ below with their evidence.
 ## Values: SAP wire values, not UI labels
 
 `artifact_type`, `attribute` and `operator` take the values SAP's API stores, which differ from
-the labels in the UI. The provider checks them while Terraform plans and sends them unchanged; it
-never converts a label into a wire value.
+the labels in the UI. The provider checks them while Terraform plans and sends them unchanged. It
+converts a label only with `convert_ui_labels` (see [UI labels](#ui-labels-convert_ui_labels)).
 
 | UI | Attribute | Wire value |
 |---|---|---|
@@ -49,6 +49,26 @@ Do not use `EQUALS`, `MATCHES`, `IntegrationFlow` or other spellings. The plan f
 outside the lists below and names the right value where it is clear, for example
 `regularExpression` for `MATCHES`. Earlier releases accepted any non-empty string, so a wrong value
 only failed when SAP rejected it during apply, after the policy had been created.
+
+### UI labels (`convert_ui_labels`)
+
+With `convert_ui_labels = true` and `enable_experimental = true` in the provider block, the
+provider also accepts the labels SAP's UI shows, converts them to SAP's constants before it creates
+the reference, and shows each conversion as a warning in the plan. The state keeps your spelling,
+and a reference imported with SAP's constants does not differ from a configuration that uses the
+labels.
+
+| Label in the configuration | Sent to SAP |
+|---|---|
+| `Equals` (any letter case) | `exactString` |
+| `Matches` (any letter case) | `regularExpression` |
+| `name`, `NAME`, `id`, `Id`, ... | `Name`, `ID` |
+| an artifact type label that spells its constant, ignoring letter case, spaces and underscores: `Integration Flow`, `Message Mapping`, `Value Mapping`, `Integration Package`, ... | `INTEGRATION_FLOW`, `MESSAGE_MAPPING`, `VALUE_MAPPING`, `INTEGRATION_PACKAGE`, ... |
+
+Only these conversions are proven. The UI's labels *API*, *OData API*, *REST API* and *SOAP API*
+stand for constants with other names and are not converted; use `API_ARTIFACT`, `ODATA_SERVICE`,
+`REST_API_PROVIDER` and `SOAP_API_PROVIDER`. Without both switches every label fails the plan with
+the constant to use. The switch is experimental: its acceptance test has not run on a tenant yet.
 
 ### Supported combinations
 
@@ -152,10 +172,10 @@ resource "sapintegrationsuite_access_policy_reference" "core_its_flows" {
 ### Required
 
 - `access_policy_id` (String) Numeric ID of the access policy this reference belongs to.
-- `artifact_type` (String) Artifact type constant as SAP's API stores it in the Type property, for example "INTEGRATION_FLOW" or "INTEGRATION_PACKAGE", not the UI label. Only the types listed on this page are accepted; the plan fails for any other value.
-- `attribute` (String) Artifact attribute the condition is evaluated against, as stored in ConditionAttribute: "Name" or "ID". Message queues, global variables and global data stores can only be matched by "Name".
+- `artifact_type` (String) Artifact type constant as SAP's API stores it in the Type property, for example "INTEGRATION_FLOW" or "INTEGRATION_PACKAGE", not the UI label. Only the types listed on this page are accepted; the plan fails for any other value. With the provider's convert_ui_labels (and enable_experimental), a label that spells its constant, such as "Integration Flow", is accepted and converted.
+- `attribute` (String) Artifact attribute the condition is evaluated against, as stored in ConditionAttribute: "Name" or "ID". Message queues, global variables and global data stores can only be matched by "Name". With the provider's convert_ui_labels (and enable_experimental), any letter case is accepted and converted.
 - `name` (String) Name of the reference as shown in the policy's References table. Mandatory in SAP. At most 50 characters: SAP stores only the first 50, so the provider rejects a longer name during planning.
-- `operator` (String) Condition type as stored in ConditionType: "exactString" (Equals in the UI) or "regularExpression" (Matches in the UI). Integration packages only allow "exactString". UI labels such as EQUALS or MATCHES are rejected.
+- `operator` (String) Condition type as stored in ConditionType: "exactString" (Equals in the UI) or "regularExpression" (Matches in the UI). Integration packages only allow "exactString". The UI labels Equals and Matches are rejected, unless the provider's convert_ui_labels and enable_experimental are set: then they are converted.
 - `value` (String) Stored in ConditionValue. With "exactString" the exact name or ID, taken literally. With "regularExpression" a Java regular expression, for example "SALES_.*" for every name that starts with SALES_ (not the glob "SALES_*"). At most 150 characters: SAP stores only the first 150, so the provider rejects a longer value during planning.
 
 ### Optional
