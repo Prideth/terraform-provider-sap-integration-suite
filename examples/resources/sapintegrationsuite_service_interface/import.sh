@@ -1,0 +1,1 @@
+terraform import sapintegrationsuite_service_interface.orders Sales/OrderService

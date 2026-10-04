@@ -34,12 +34,24 @@ interfaces.
   acceptance test created both, switched their data type and description
   in place, imported them and saved a version on a tenant. Needs
   `enable_unofficial = true`.
+- `sapintegrationsuite_service_interface` (experimental): a service
+  interface with its operations, each naming a request message type, a
+  response message type for a synchronous operation, and fault message
+  types. SAP documents no request for service interfaces. The provider
+  creates the interface without content and then writes the operations into
+  its bundle in the form SAP's own editor uses, which it learned from an
+  asynchronous and a synchronous service interface created in the UI;
+  tenant probes confirmed that SAP stores an asynchronous operation written
+  this way. Needs `enable_experimental = true` until its acceptance test has
+  passed on a tenant.
 
 ### Known limitations
 
 - Complex data types only; simple types were not examined.
 - The schema is not read back for drift detection: SAP stores the complex
   type under the data type's name and reformats the schema.
+- Service interfaces are written as outbound and stateless; a synchronous
+  operation written through the API is first tested by the acceptance test.
 - SAP does not check references between design-time types: it lets a data
   type that a message type uses be deleted. Refer to the data type resource
   so that Terraform orders the deletion.

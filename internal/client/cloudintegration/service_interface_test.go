@@ -3,7 +3,12 @@ package cloudintegration
 import (
 	"archive/zip"
 	"bytes"
+	"context"
+	"encoding/base64"
 	"encoding/json"
+	"io"
+	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 )
@@ -142,25 +147,7 @@ func TestServiceInterfaceRequireCapability(t *testing.T) {
 	}
 }
 
-func TestManifestHeaderWrapping(t *testing.T) {
-	header := ServiceInterfaceRequireCapability([]ServiceInterfaceOperationSpec{{Request: &ServiceInterfaceMessageRef{ID: "OrderMessage"}, Faults: []ServiceInterfaceMessageRef{{ID: "OrderFault"}}}})
-	lines := manifestLines(header)
-	for i, l := range lines {
-		if len(l) > 72 {
-			t.Errorf("line %d has %d bytes", i, len(l))
-		}
-		if i > 0 && !strings.HasPrefix(l, " ") {
-			t.Errorf("continuation line %d does not start with a space", i)
-		}
-	}
-	joined := lines[0]
-	for _, l := range lines[1:] {
-		joined += l[1:]
-	}
-	if joined != header {
-		t.Error("unwrapping does not give the header back")
-	}
-
+func TestSetManifestHeader(t *testing.T) {
 	manifest := "Manifest-Version: 1.0\r\nRequire-Capability: old;x\r\n more\r\nSAP-BundleType: ServiceInterface\r\n\r\n"
 	replaced := setManifestHeader(manifest, "Require-Capability", "Require-Capability: new")
 	if strings.Contains(replaced, "old") || strings.Contains(replaced, " more") || !strings.Contains(replaced, "Require-Capability: new\r\n") {
@@ -235,5 +222,87 @@ func TestWithServiceInterfaceOperations_synchronous(t *testing.T) {
 	if got := ServiceInterfaceRequireCapability(ops); !strings.Contains(got, "faultmessagetype.OrderFault;") ||
 		strings.Index(got, "messagetype.OrderMessage;") > strings.Index(got, "messagetype.OrderReply;") {
 		t.Errorf("require capability = %s", got)
+	}
+}
+
+func TestWithServiceInterfaceBundleOperations(t *testing.T) {
+	value := testServiceInterfaceValue(t, testServiceInterfaceModel)
+	ops := []ServiceInterfaceOperationSpec{{
+		Name:     "ProcessOrder",
+		Request:  &ServiceInterfaceMessageRef{ID: "OrderMessage", Name: "OrderMessage"},
+		Response: &ServiceInterfaceMessageRef{ID: "OrderReply", Name: "OrderReply", Namespace: "urn:example:reply"},
+	}}
+	out, err := WithServiceInterfaceBundleOperations(value, ops)
+	if err != nil {
+		t.Fatal(err)
+	}
+	model, err := ParseServiceInterfaceBundle(out)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if op := model.Operations[0]; op.Name != "ProcessOrder" || op.Response == nil || op.Response.BundleSymbolicName != "OrderReply" {
+		t.Errorf("operation = %+v", op)
+	}
+	outer, err := zip.NewReader(bytes.NewReader(out), int64(len(out)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range outer.File {
+		data, err := readZipFile(f)
+		if err != nil {
+			t.Fatal(err)
+		}
+		inner, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, g := range inner.File {
+			if g.Name != "META-INF/MANIFEST.MF" {
+				continue
+			}
+			manifest, _ := readZipFile(g)
+			has := strings.Contains(strings.ReplaceAll(string(manifest), "\r\n ", ""), "messagetype.OrderReply;")
+			if strings.HasSuffix(f.Name, "_SI_RESOLVED_CHILD") == has {
+				t.Errorf("%s: Require-Capability present = %v", f.Name, has)
+			}
+		}
+	}
+	if _, err := WithServiceInterfaceBundleOperations(zipOf(t, map[string][]byte{"a.txt": []byte("x")}), ops); err == nil {
+		t.Error("want an error for content without a service interface bundle")
+	}
+}
+
+func TestClient_ServiceInterfaceUpdateRequest(t *testing.T) {
+	value := testServiceInterfaceValue(t, testServiceInterfaceModel)
+	var put map[string]string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch {
+		case r.Method == http.MethodPut:
+			body, _ := io.ReadAll(r.Body)
+			_ = json.Unmarshal(body, &put)
+			w.WriteHeader(http.StatusOK)
+		case strings.HasSuffix(r.URL.Path, "/$value"):
+			_, _ = w.Write(value)
+		default:
+			_, _ = w.Write([]byte(`{"d":{"Id":"OrderService","Name":"OrderService","PackageId":"Orders","Version":"1.0.0"}}`))
+		}
+	}))
+	defer server.Close()
+	c := New(http.DefaultClient, server.URL)
+	ops := []ServiceInterfaceOperationSpec{{Name: "CreateOrder", Request: &ServiceInterfaceMessageRef{ID: "OrderMessage", Name: "OrderMessage"}}}
+	if _, err := c.UpdateServiceInterface(context.Background(), "OrderService", "OrderService", "Orders in", ops); err != nil {
+		t.Fatal(err)
+	}
+	if put["Name"] != "OrderService" || put["Description"] != "Orders in" {
+		t.Errorf("PUT body = %v", put)
+	}
+	content, err := base64.StdEncoding.DecodeString(put["ArtifactContent"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	model, err := ParseServiceInterfaceBundle(content)
+	if err != nil || model.Operations[0].Name != "CreateOrder" {
+		t.Errorf("uploaded model = %+v, %v", model, err)
 	}
 }

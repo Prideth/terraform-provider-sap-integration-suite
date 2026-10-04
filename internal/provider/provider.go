@@ -577,6 +577,7 @@ func (p *sapIntegrationSuiteProvider) Resources(_ context.Context) []func() reso
 		NewMessageMappingResource,
 		NewDataTypeResource,
 		NewMessageTypeResource,
+		NewServiceInterfaceResource,
 		NewFaultMessageTypeResource,
 		NewMessageMappingDeploymentResource,
 		NewScriptCollectionResource,

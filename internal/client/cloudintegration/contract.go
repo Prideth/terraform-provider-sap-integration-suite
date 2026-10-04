@@ -51,6 +51,7 @@ var Contract = apimeta.Contract{
 		{EntitySet: faultMessageTypeDesigntimeArtifactsEntitySet, Value: messageTypeCreate{}},
 		{EntitySet: faultMessageTypeDesigntimeArtifactsEntitySet, Value: messageTypeUpdate{}},
 		{EntitySet: serviceInterfaceDesigntimeArtifactsEntitySet, Value: serviceInterfaceCreate{}},
+		{EntitySet: serviceInterfaceDesigntimeArtifactsEntitySet, Value: serviceInterfaceUpdate{}},
 		{EntitySet: scriptCollectionDesigntimeArtifactsEntitySet, Value: designtimeUpdateRequest{}},
 		// Create body that links the policy (deep link); never decoded.
 		{EntitySet: artifactReferencesEntitySet, Value: accessPolicyReferenceCreate{}},

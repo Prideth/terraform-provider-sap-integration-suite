@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -369,30 +370,6 @@ func sortedKeys(m map[string]bool) []string {
 	return keys
 }
 
-// manifestLines wraps a manifest header the way Java manifests are wrapped:
-// lines of at most 72 bytes, continuation lines starting with a space.
-func manifestLines(header string) []string {
-	var lines []string
-	rest := header
-	first := true
-	for len(rest) > 0 {
-		limit := 72
-		prefix := ""
-		if !first {
-			limit = 71
-			prefix = " "
-		}
-		n := limit
-		if n > len(rest) {
-			n = len(rest)
-		}
-		lines = append(lines, prefix+rest[:n])
-		rest = rest[n:]
-		first = false
-	}
-	return lines
-}
-
 // setManifestHeader replaces a header (with its continuation lines) in a
 // MANIFEST.MF, or adds it before the trailing blank line; an empty header
 // removes it.
@@ -410,7 +387,126 @@ func setManifestHeader(manifest, name, header string) string {
 		}
 	}
 	if header != "" {
-		kept = append(kept, manifestLines(header)...)
+		kept = append(kept, strings.Split(strings.TrimSuffix(wrapManifestLine(header), "\n"), "\n")...)
 	}
 	return strings.Join(kept, "\r\n") + "\r\n\r\n"
+}
+
+// serviceInterfaceUpdate is the update body. Name is required: a PUT without
+// it answered 500 "name is null"; with it, 200 and the uploaded operation
+// model stored (tenant, 2026-10-04). The content is the nested bundle as
+// $value returns it: the interface's own bundle alone answered 400 "The
+// bundle is not of type ServiceInterface".
+type serviceInterfaceUpdate struct {
+	Name            string `json:"Name"`
+	Description     string `json:"Description,omitempty"`
+	ArtifactContent string `json:"ArtifactContent"`
+}
+
+// UpdateServiceInterface writes the operations into the service interface's
+// current bundle and uploads it with the name and description, then reads
+// the service interface back.
+func (c *Client) UpdateServiceInterface(ctx context.Context, id, name, description string, ops []ServiceInterfaceOperationSpec) (*ServiceInterface, error) {
+	path, err := serviceInterfacePath(id)
+	if err != nil {
+		return nil, err
+	}
+	current, err := c.GetServiceInterfaceContent(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	bundle, err := WithServiceInterfaceBundleOperations(current, ops)
+	if err != nil {
+		return nil, fmt.Errorf("cloudintegration: building the service interface bundle: %w", err)
+	}
+	payload, err := json.Marshal(serviceInterfaceUpdate{
+		Name: name, Description: description, ArtifactContent: base64.StdEncoding.EncodeToString(bundle),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("cloudintegration: encoding service interface update: %w", err)
+	}
+	if _, err := c.odata.Put(ctx, path, payload); err != nil {
+		return nil, err
+	}
+	return c.GetServiceInterface(ctx, id)
+}
+
+// ServiceInterfaceMessage resolves a message type or fault message type to
+// the reference an operation records: its name, namespace and version, and
+// its package's name and ID.
+func (c *Client) ServiceInterfaceMessage(ctx context.Context, kind MessageTypeKind, id string) (ServiceInterfaceMessageRef, error) {
+	mt, err := c.GetMessageType(ctx, kind, id)
+	if err != nil {
+		return ServiceInterfaceMessageRef{}, fmt.Errorf("cloudintegration: reading %s %q for a service interface: %w", kind.DisplayName, id, err)
+	}
+	ref := ServiceInterfaceMessageRef{
+		ID: mt.ID, Name: mt.Name, Namespace: mt.Namespace, Version: mt.Version,
+		PackageName: mt.PackageID, PackageTechnicalName: mt.PackageID,
+	}
+	if pkg, err := c.GetPackage(ctx, mt.PackageID); err == nil && pkg.Name != "" {
+		ref.PackageName = pkg.Name
+	}
+	return ref, nil
+}
+
+const serviceInterfaceResolvedChildSuffix = "_SI_RESOLVED_CHILD"
+
+// WithServiceInterfaceBundleOperations rewrites a service interface's $value:
+// in the interface's own bundle (the nested archive that is not the
+// resolved child) it replaces the operations of the model and the manifest's
+// Require-Capability header. Every other entry stays as it is.
+func WithServiceInterfaceBundleOperations(outer []byte, ops []ServiceInterfaceOperationSpec) ([]byte, error) {
+	found := false
+	out, err := rewriteZip(outer, func(name string, data []byte) ([]byte, error) {
+		if found || strings.HasSuffix(name, serviceInterfaceResolvedChildSuffix) || !bytes.HasPrefix(data, []byte("PK\x03\x04")) {
+			return data, nil
+		}
+		found = true
+		return rewriteZip(data, func(inner string, content []byte) ([]byte, error) {
+			switch {
+			case serviceInterfaceModelEntry.MatchString(inner):
+				return WithServiceInterfaceOperations(content, ops)
+			case inner == "META-INF/MANIFEST.MF":
+				return []byte(setManifestHeader(string(content), "Require-Capability", ServiceInterfaceRequireCapability(ops))), nil
+			}
+			return content, nil
+		})
+	})
+	if err != nil {
+		return nil, err
+	}
+	if !found {
+		return nil, fmt.Errorf("no service interface bundle inside the content")
+	}
+	return out, nil
+}
+
+// rewriteZip copies an archive, passing every file through change.
+func rewriteZip(data []byte, change func(name string, content []byte) ([]byte, error)) ([]byte, error) {
+	r, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
+	if err != nil {
+		return nil, fmt.Errorf("not a ZIP archive: %w", err)
+	}
+	var buf bytes.Buffer
+	w := zip.NewWriter(&buf)
+	for _, f := range r.File {
+		content, err := readZipFile(f)
+		if err != nil {
+			return nil, err
+		}
+		if content, err = change(f.Name, content); err != nil {
+			return nil, fmt.Errorf("%s: %w", f.Name, err)
+		}
+		fw, err := w.CreateHeader(&zip.FileHeader{Name: f.Name, Method: zip.Deflate, Modified: f.Modified})
+		if err != nil {
+			return nil, err
+		}
+		if _, err := fw.Write(content); err != nil {
+			return nil, err
+		}
+	}
+	if err := w.Close(); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }

@@ -333,16 +333,30 @@ var Catalog = []Feature{
 		Name:   "Service Interface",
 		Description: "A service interface artifact describing operations and their request, " +
 			"response and fault message types.",
-		SupportStatus: StatusResearchRequired,
-		SupportReason: ReasonPublicAPIIncomplete,
-		PublicAPI:     true,
-		APIProtocol:   "OData V2",
+		SupportStatus:  StatusExperimental,
+		SupportReason:  ReasonPublicAPIIncomplete,
+		ContractSource: SourceMetadataOnly,
+		ResourceTypes:  []string{"sapintegrationsuite_service_interface"},
+		PublicAPI:      true,
+		APIProtocol:    "OData V2",
 		Limitations: []string{
 			"The tenant $metadata defines ServiceInterfaceDesigntimeArtifacts (Id and Version as " +
 				"key, PackageId, Name, Namespace, Description, ArtifactContent, Resources navigation) " +
 				"and a SaveAsVersion function import. SAP Help documents creating, editing and " +
 				"importing service interfaces from the Enterprise Services Repository only in the UI.",
+			"The operation model (src/main/resources/json/<name>.json in a bundle nested in the " +
+				"$value) follows two service interfaces SAP's editor created (package exports, " +
+				"2026-10-03 and 2026-10-04): an asynchronous operation with request and fault message, " +
+				"and a synchronous one with request, response and fault message, each message named by " +
+				"ID, name, namespace, version and package; the manifest names them in Require-Capability.",
+			"Tenant probe (2026-10-04): a create without content works (SAP generates one operation " +
+				"without messages). An update needs Name next to ArtifactContent (without it, 500 \"name " +
+				"is null\") and the nested bundle as $value returns it (the interface's own bundle alone " +
+				"answers 400 \"The bundle is not of type ServiceInterface\"); SAP stores the uploaded " +
+				"asynchronous operation and drops messageDetails. A synchronous operation written through " +
+				"the API has not been tested yet.",
 		},
+		Operations: Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
 	},
 	{
 		Key:                    "cloud_integration.script_collection",
