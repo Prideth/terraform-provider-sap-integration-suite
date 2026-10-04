@@ -19,9 +19,14 @@ var Contract = apimeta.Contract{
 		{EntitySet: keyPairGenerationRequestsEntitySet, Value: keyPairGenerationWireRequest{}},
 		{EntitySet: keystoreResourcesEntitySet, Value: deleteKeystoreEntriesRequest{}},
 	},
+	Navigations: []apimeta.NavigationUse{
+		{EntitySet: keystoreEntriesEntitySet, Property: chainResourceNavigation},
+		{EntitySet: keystoreEntriesEntitySet, Property: signingRequestNavigation},
+	},
 	Keys: []apimeta.KeyUse{
 		apimeta.Key(keystoreEntriesEntitySet, "Hexalias", "Edm.String"),
 		apimeta.Key(certificateResourcesEntitySet, "Hexalias", "Edm.String"),
+		apimeta.Key(certificateChainResourcesEntitySet, "Hexalias", "Edm.String"),
 		apimeta.Key(oauth2ClientCredentialsEntitySet, "Name", "Edm.String"),
 		apimeta.Key(userCredentialsEntitySet, "Name", "Edm.String"),
 		apimeta.Key(secureParametersEntitySet, "Name", "Edm.String"),

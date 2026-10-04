@@ -10,10 +10,13 @@ import (
 	"math/big"
 	"os"
 	"path/filepath"
+	"regexp"
 	"testing"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/testutil/accgate"
 )
@@ -205,6 +208,100 @@ resource "sapintegrationsuite_key_pair" "test" {
 				ResourceName:      "sapintegrationsuite_key_pair.test",
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+// testAccKeyPairChainConfig is a key pair whose CSR a throw-away CA from
+// the hashicorp/tls provider signs, and the chain uploaded to it.
+func testAccKeyPairChainConfig(alias, commonName string) string {
+	return fmt.Sprintf(`
+resource "tls_private_key" "ca" {
+  algorithm = "RSA"
+  rsa_bits  = 2048
+}
+
+resource "tls_self_signed_cert" "ca" {
+  private_key_pem       = tls_private_key.ca.private_key_pem
+  is_ca_certificate     = true
+  validity_period_hours = 48
+  allowed_uses          = ["cert_signing", "crl_signing"]
+  subject {
+    common_name = "tfacc-ca"
+  }
+}
+
+resource "sapintegrationsuite_key_pair" "test" {
+  alias       = %[1]q
+  common_name = %[2]q
+  country     = "DE"
+  key_size    = 2048
+}
+
+resource "tls_locally_signed_cert" "test" {
+  cert_request_pem      = sapintegrationsuite_key_pair.test.certificate_signing_request
+  ca_private_key_pem    = tls_private_key.ca.private_key_pem
+  ca_cert_pem           = tls_self_signed_cert.ca.cert_pem
+  validity_period_hours = 24
+  allowed_uses          = ["digital_signature", "key_encipherment", "client_auth"]
+
+  # tls updates a changed cert_request_pem in place without signing again.
+  lifecycle {
+    replace_triggered_by = [sapintegrationsuite_key_pair.test]
+  }
+}
+
+resource "sapintegrationsuite_key_pair_certificate_chain" "test" {
+  key_pair_alias    = sapintegrationsuite_key_pair.test.alias
+  certificate_chain = join("", [tls_locally_signed_cert.test.cert_pem, tls_self_signed_cert.ca.cert_pem])
+}
+`, alias, commonName)
+}
+
+// The whole CA flow: the key pair's CSR is signed and the chain uploaded,
+// read back and imported; regenerating the key pair signs its new CSR and
+// uploads the new chain in the same apply.
+func TestAccKeyPairCertificateChain_signedByCA(t *testing.T) {
+	accgate.Require(t, accgate.SecurityContent)
+	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "true")
+	alias := testAccName()
+	chain := "sapintegrationsuite_key_pair_certificate_chain.test"
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ExternalProviders:        map[string]resource.ExternalProvider{"tls": {Source: "hashicorp/tls", VersionConstraint: "~> 4.0"}},
+		Steps: []resource.TestStep{
+			{
+				Config: testAccKeyPairChainConfig(alias, "tfacc-chain"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("sapintegrationsuite_key_pair.test", "certificate_signing_request"),
+					resource.TestCheckResourceAttr(chain, "certificates.#", "2"),
+					resource.TestCheckResourceAttr(chain, "certificates.0.issuer_dn", "CN=tfacc-ca"),
+					resource.TestCheckResourceAttr(chain, "certificates.1.subject_dn", "CN=tfacc-ca"),
+				),
+			},
+			{
+				ResourceName:            chain,
+				ImportState:             true,
+				ImportStateId:           alias,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"certificate_chain"},
+			},
+			{
+				// A new subject regenerates the key pair; its new CSR is signed
+				// and the chain uploaded again.
+				Config: testAccKeyPairChainConfig(alias, "tfacc-chain-renewed"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("sapintegrationsuite_key_pair.test", plancheck.ResourceActionDestroyBeforeCreate),
+					plancheck.ExpectUnknownValue("sapintegrationsuite_key_pair.test", tfjsonpath.New("certificate_signing_request")),
+					plancheck.ExpectResourceAction("tls_locally_signed_cert.test", plancheck.ResourceActionReplace),
+					plancheck.ExpectResourceAction("sapintegrationsuite_key_pair_certificate_chain.test", plancheck.ResourceActionUpdate),
+				}},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sapintegrationsuite_key_pair.test", "common_name", "tfacc-chain-renewed"),
+					resource.TestMatchResourceAttr(chain, "certificates.0.subject_dn", regexp.MustCompile(`CN=tfacc-chain-renewed`)),
+					resource.TestCheckResourceAttr(chain, "certificates.0.issuer_dn", "CN=tfacc-ca"),
+				),
 			},
 		},
 	})

@@ -136,9 +136,9 @@ Do not conflate these: a feature can be fully supported by this provider and sti
 | `security.access_policy` | security | supported | sap_tooling (some operations unofficial) | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
 | `security.access_policy_reference` | security | supported | sap_tooling (some operations unofficial) | Yes | Yes | Yes | — | Yes | Yes | — | Resource + Data Source |
 | `security.certificate` | security | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
-| `security.certificate_chain` | security | research_required (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
+| `security.certificate_chain` | security | unofficial (public_api_incomplete) | metadata_only | Yes | Yes | Yes | Yes | — | Yes | — | Resource |
 | `security.certificate_user_mapping` | security | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
-| `security.key_pair` | security | partial (unsafe_terraform_lifecycle) | sap_documentation | Yes | Yes | Yes | — | Yes | Yes | — | Resource |
+| `security.key_pair` | security | partial (unsafe_terraform_lifecycle) | sap_documentation (some operations unofficial) | Yes | Yes | Yes | — | Yes | Yes | — | Resource |
 | `security.keystore_entry` | security | read_only (unsafe_terraform_lifecycle) | sap_documentation | Yes | — | — | — | — | — | — | Data Source |
 | `security.known_hosts` | security | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
 | `security.oauth2_client_credential` | security | partial (public_api_incomplete) | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
@@ -199,6 +199,7 @@ provider "sapintegrationsuite" {
 | `sapintegrationsuite_integration_assessment_technology` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_use_case_pattern` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_vendor` | unofficial | `enable_unofficial` |
+| `sapintegrationsuite_key_pair_certificate_chain` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_message_type` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_secure_parameter` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_service_interface` | unofficial | `enable_unofficial` |
@@ -218,6 +219,7 @@ Individual operations of an otherwise documented feature can be unofficial too. 
 | `cloud_integration.script_collection` | update of the content (PUT; SAP documents create, upload of resources and deploy) |
 | `security.access_policy` | description update (PATCH, verified on a tenant) |
 | `security.access_policy_reference` | create a reference to an artifact type SAP does not document for access policies (eight types SAP's API lists, verified on a tenant) |
+| `security.key_pair` | read of the certificate signing request (KeystoreEntries('<hexalias>')/SigningRequest/$value is only in $metadata) |
 
 ## Unsupported and partially supported features
 
@@ -302,10 +304,12 @@ Grouped by why, not just that. A feature can be `partial` and reachable via one 
   - SAP Help's description of Domain Determination repeats the recommendation degree's text; its meaning (the domain that applies between two deployment models) comes from the  only.
   - The taxonomy is SAP's reference content, adjusted in the UI if at all, so there are no resources for it.
   - Needs provider.integration_assessment: the service key of an "Integration Assessment APIs" service instance; the other credential sets do not work there.
-- **`security.certificate_chain`** — A certificate chain associated with a key pair. (🔬 Research required)
-  - The tenant $metadata defines CertificateChainResources, a media entity keyed by the key pair's Hexalias with a KeystoreEntry navigation, and a read-only ChainCertificates set (Hexalias, Index and certificate details). SAP Help describes chain import and export only as a capability of the Key Pair resource and documents neither the media type nor the request that uploads a chain, so nothing is implemented yet.
-  - Once the upload contract is confirmed, the intended shape is a resource scoped to one key pair alias (for example sapintegrationsuite_key_pair_certificate_chain), not a standalone global resource.
-  - Tenant check of 2026-09-27: KeystoreEntries('<hexalias>')/ChainCertificates returns the chain of an SAP key pair (Hexalias, Index, subject, issuer, validity, fingerprints), so reading is confirmed and a read-only chain attribute or data source is possible; uploading a chain still has no documented media type.
+- **`security.certificate_chain`** — A certificate chain associated with a key pair. (🧭 Unofficial)
+  - SAP Help names importing and exporting a key pair's certificate chain and creating a certificate signing request as capabilities of the Key Pair API; the requests are documented only in the API specification on the Business Accelerator Hub, which needs a login. The provider uses what the tenant $metadata declares and a tenant probe verified on 2026-10-04: the CSR through KeystoreEntries('<hexalias>')/SigningRequest/$value (sapintegrationsuite_key_pair.certificate_signing_request), the upload as PUT CertificateChainResources('<hexalias>')/$value with fingerprintVerified=true, and the export through KeystoreEntries('<hexalias>')/ChainResource/$value, a PKCS#7 bundle.
+  - SAP accepted PEM in any order, without the root and the leaf alone; it refuses a certificate issued for another key (400 "The public key of the CA Reply is different"). After the upload the key pair reports the signed certificate's issuer and validity; sapintegrationsuite_key_pair keeps the validity it was generated with.
+  - SAP has no request that removes a chain: destroying the resource leaves the chain on the key pair, and only regenerating the key pair returns to a self-signed certificate.
+  - TestAccKeyPairCertificateChain_signedByCA passed on a tenant (2026-10-04): a key pair's CSR signed by a hashicorp/tls CA, the chain uploaded, read back and imported, and after regenerating the key pair the new CSR signed and the chain uploaded in the same apply. SAP signs the CSR with another algorithm after a chain upload, so the key pair keeps the stored CSR while subject and public key stay the same.
+  - Earlier research (kept for the record): key pair's Hexalias with a KeystoreEntry navigation, and a read-only ChainCertificates set (Hexalias, Index and certificate details); KeystoreEntries('<hexalias>')/ChainCertificates returned a key pair's chain on 2026-09-27.
 - **`security.oauth2_client_credential`** — An "OAuth2 Client Credentials" security material artifact: the client ID, client secret, and token service URL an integration flow adapter uses for the OAuth2 client credentials grant (RFC 6749) on outbound requests. (partial support already implemented — see Limitations below)
   - The client secret is never returned by SAP's read API; client_secret_wo/client_secret_wo_version are write-only attributes (Terraform CLI 1.11+ required) and drift on the secret value itself cannot be detected.
   - client_authentication, scope_content_type, resource and audience map to the ClientAuthentication, ScopeContentType, Resource and Audience properties confirmed by a tenant $metadata. Their accepted constants are undocumented, so they are passed through; they are Optional+Computed so every PUT resends values set in the UI.
@@ -366,6 +370,7 @@ Grouped by why, not just that. A feature can be `partial` and reachable via one 
   - No update operation is documented for a generated key pair: every attribute that defines the generated key material is RequiresReplace.
   - Only the subset SAP confirms KeystoreEntries returns (key_type, key_size, valid_not_before, valid_not_after) is read back and refreshed on every plan; generation-only parameters SAP does not confirm returning (signature_algorithm, key_algorithm_parameter, the subject DN fields) are trusted from the last successful write, not re-verified — the same reason this is `partial`, not `supported`.
   - Delete uses the same documented keystore mass-deletion operation as sapintegrationsuite_certificate, with exactly the one alias this resource owns.
+  - certificate_signing_request is read only with enable_unofficial (see Certificate Chain). After a certificate chain was uploaded, valid_not_before and valid_not_after keep the values the key pair was generated with; SAP then reports the signed certificate's validity, which sapintegrationsuite_key_pair_certificate_chain shows.
 - **`security.keystore_entry`** — Any entry (certificate, SAP-generated key pair, or other RSA/DSA/EC-keyed entry) in the tenant's keystore, read-only. (👁️ Read-only)
   - Fields follow the tenant $metadata: besides alias, key type and size and validity, the data sources expose entry type, owner, status, subject and issuer DN, serial number, signature algorithm, elliptic curve, certificate version, SHA-1/256/512 fingerprints and creation/modification details. Dates are converted from OData V2 literals to RFC 3339.
   - owner shows who owns an entry, but its values are not documented. The certificate and key pair resources therefore still rely on SAP's own server-side protection when an Update or Delete targets an SAP-owned entry, rather than trying to detect it in advance — see docs/guides/security-content.md.

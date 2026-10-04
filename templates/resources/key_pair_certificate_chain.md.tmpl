@@ -1,0 +1,83 @@
+---
+page_title: "sapintegrationsuite_key_pair_certificate_chain Resource - sapintegrationsuite"
+subcategory: "Security"
+description: |-
+  The CA-signed certificate chain of a key pair in the tenant keystore. Unofficial; needs enable_unofficial.
+---
+
+# sapintegrationsuite_key_pair_certificate_chain (Resource)
+
+Gives a key pair a certificate signed by a certificate authority. SAP generates every key pair
+with a self-signed certificate. Many receivers only trust client certificates that a known
+authority issued, and they expect the tenant to present the whole chain of intermediate
+certificates in the TLS handshake. The flow has three steps:
+
+1. Read the certificate signing request (CSR) from
+   [`sapintegrationsuite_key_pair`](key_pair.md)`.certificate_signing_request`.
+2. Have it signed by your certificate authority: a PKI, a partner's CA, or for tests the
+   `hashicorp/tls` provider.
+3. Put the signed certificate and the certificates that issued it into `certificate_chain`.
+
+SAP then presents the signed certificate and its chain wherever the key pair is used.
+
+**Status:** unofficial. Needs `enable_unofficial = true`. SAP Help names importing a chain and
+creating a CSR as capabilities of the Key Pair API, but the requests are documented only in the
+API specification on the Business Accelerator Hub. This resource uses what the tenant `$metadata`
+declares. A tenant probe verified every request, and the acceptance test signed a key pair's CSR,
+uploaded, read back and imported the chain, and signed and uploaded again after the key pair was
+regenerated (October 2026). Because the API is undocumented, SAP may change it without notice.
+
+## Prerequisites
+
+- A key pair, usually [`sapintegrationsuite_key_pair`](key_pair.md).
+- An OAuth client with `SecurityMaterialEdit`.
+
+## Lifecycle
+
+| Operation | What happens |
+|---|---|
+| Create | Uploads the chain to the key pair (`PUT CertificateChainResources('<hexalias>')/$value`, confirming the fingerprint as the UI does). SAP refuses a certificate that was not issued for the key pair's public key. |
+| Read | Exports the chain SAP holds (`KeystoreEntries('<hexalias>')/ChainResource/$value`). The configured text is kept while SAP holds the same certificates; any other chain, for example the self-signed certificate of a regenerated key pair, replaces it, and the next plan uploads the configured chain again. |
+| Update | Uploads the changed chain; SAP replaces the one it held. |
+| Replacement | Changing `key_pair_alias`. |
+| Delete | Nothing is sent: SAP has no request that removes a chain. The key pair keeps the signed certificate until it is regenerated. Terraform shows a warning. |
+
+`certificate_chain` takes PEM `CERTIFICATE` blocks in any order. The root may be left out, and a
+signed certificate alone is accepted too. Any other block, above all a private key pasted by
+mistake, fails the plan before anything is sent. `certificates` lists the chain leaf first, with
+subject, issuer, serial number, validity and fingerprint, parsed locally.
+
+## Example Usage
+
+{{ tffile "examples/resources/sapintegrationsuite_key_pair_certificate_chain/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ codefile "shell" "examples/resources/sapintegrationsuite_key_pair_certificate_chain/import.sh" }}
+
+The ID is the key pair's alias. The chain SAP holds is read back, leaf first; when the
+configuration holds the same certificates, the first plan after the import shows no change.
+
+## Limitations
+
+- **SAP:** a chain cannot be removed, only replaced or dropped together with the key pair.
+- **SAP:** after the upload, SAP reports the signed certificate's issuer, serial number and
+  validity for the key pair. [`sapintegrationsuite_key_pair`](key_pair.md) keeps the validity
+  it was generated with, so the upload does not plan a replacement of the key pair.
+- **Provider:** when the key pair is regenerated, the old chain no longer fits its new key. In a
+  configuration that signs `certificate_signing_request` itself, the new CSR is signed and the
+  chain uploaded in the same apply, provided the signing resource is replaced with the key pair.
+  `tls_locally_signed_cert` of the `hashicorp/tls` provider updates a changed
+  `cert_request_pem` in place without signing again; give it
+  `lifecycle { replace_triggered_by = [sapintegrationsuite_key_pair.<name>] }` as in the example.
+  A chain kept as a fixed text fails with SAP's error "The public key of the CA Reply is
+  different" until it is signed again.
+- **Provider:** `runtime_location_id` (Edge Integration Cell) was not tested with chains.
+
+## Related
+
+- [`sapintegrationsuite_key_pair`](key_pair.md): the key pair and its CSR.
+- [`sapintegrationsuite_certificate`](certificate.md): trusted certificates of partners.
+- [Security Content guide](../guides/security-content.md).

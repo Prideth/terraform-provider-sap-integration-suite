@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -75,23 +76,24 @@ func TestKeyPairResource_SchemaRequiredComputed(t *testing.T) {
 
 func keyPairConfigValue(objType tftypes.Object, overrides map[string]tftypes.Value) tftypes.Value {
 	base := map[string]tftypes.Value{
-		"id":                      tftypes.NewValue(tftypes.String, nil),
-		"alias":                   tftypes.NewValue(tftypes.String, "my-keypair"),
-		"runtime_location_id":     tftypes.NewValue(tftypes.String, nil),
-		"key_type":                tftypes.NewValue(tftypes.String, "RSA"),
-		"signature_algorithm":     tftypes.NewValue(tftypes.String, nil),
-		"key_size":                tftypes.NewValue(tftypes.Number, 2048),
-		"key_algorithm_parameter": tftypes.NewValue(tftypes.String, nil),
-		"common_name":             tftypes.NewValue(tftypes.String, "cn.example.invalid"),
-		"organization_unit":       tftypes.NewValue(tftypes.String, nil),
-		"organization":            tftypes.NewValue(tftypes.String, nil),
-		"locality":                tftypes.NewValue(tftypes.String, nil),
-		"state":                   tftypes.NewValue(tftypes.String, nil),
-		"country":                 tftypes.NewValue(tftypes.String, "DE"),
-		"email":                   tftypes.NewValue(tftypes.String, nil),
-		"valid_not_before":        tftypes.NewValue(tftypes.String, nil),
-		"valid_not_after":         tftypes.NewValue(tftypes.String, nil),
-		"public_key_openssh":      tftypes.NewValue(tftypes.String, nil),
+		"id":                          tftypes.NewValue(tftypes.String, nil),
+		"alias":                       tftypes.NewValue(tftypes.String, "my-keypair"),
+		"runtime_location_id":         tftypes.NewValue(tftypes.String, nil),
+		"key_type":                    tftypes.NewValue(tftypes.String, "RSA"),
+		"signature_algorithm":         tftypes.NewValue(tftypes.String, nil),
+		"key_size":                    tftypes.NewValue(tftypes.Number, 2048),
+		"key_algorithm_parameter":     tftypes.NewValue(tftypes.String, nil),
+		"common_name":                 tftypes.NewValue(tftypes.String, "cn.example.invalid"),
+		"organization_unit":           tftypes.NewValue(tftypes.String, nil),
+		"organization":                tftypes.NewValue(tftypes.String, nil),
+		"locality":                    tftypes.NewValue(tftypes.String, nil),
+		"state":                       tftypes.NewValue(tftypes.String, nil),
+		"country":                     tftypes.NewValue(tftypes.String, "DE"),
+		"email":                       tftypes.NewValue(tftypes.String, nil),
+		"valid_not_before":            tftypes.NewValue(tftypes.String, nil),
+		"valid_not_after":             tftypes.NewValue(tftypes.String, nil),
+		"public_key_openssh":          tftypes.NewValue(tftypes.String, nil),
+		"certificate_signing_request": tftypes.NewValue(tftypes.String, nil),
 	}
 	for k, v := range overrides {
 		base[k] = v
@@ -356,5 +358,58 @@ func TestKeyPair_GenerationParameterReplaceOnlyWhenKnown(t *testing.T) {
 	}
 	if !check(types.StringValue("SHA-512/RSA"), "SHA-256/RSA") {
 		t.Error("changing a known signature_algorithm must generate a new key pair")
+	}
+}
+
+// keyPairServer answers like a tenant for a key pair whose certificate a CA
+// signed: the issuer differs from the subject, and the validity is the
+// signed certificate's.
+func keyPairServer(t *testing.T, requests *[]string) *httptest.Server {
+	t.Helper()
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		*requests = append(*requests, r.URL.Path)
+		switch {
+		case strings.HasSuffix(r.URL.Path, "/SigningRequest/$value"):
+			_, _ = w.Write([]byte("-----BEGIN CERTIFICATE REQUEST-----\nMIIB\n-----END CERTIFICATE REQUEST-----\n"))
+		case strings.HasSuffix(r.URL.Path, "/Sshkey/$value"):
+			_, _ = w.Write([]byte("ssh-rsa AAAA"))
+		default:
+			_, _ = w.Write([]byte(`{"d": {"Hexalias": "6d792d6b657970616972", "Alias": "my-keypair", "KeyType": "RSA", "KeySize": 2048,
+				"ValidNotBefore": "signed-before", "ValidNotAfter": "signed-after",
+				"SubjectDN": "CN=cn.example.invalid,C=DE", "IssuerDN": "CN=Example CA"}}`))
+		}
+	}))
+}
+
+func TestKeyPairResource_ReadAfterAChainUpload(t *testing.T) {
+	for _, allow := range []bool{false, true} {
+		var requests []string
+		server := keyPairServer(t, &requests)
+		r := &keyPairResource{client: securitycontent.New(http.DefaultClient, server.URL), allowUnofficial: allow}
+		s := keyPairSchema(t).Schema
+		objType := s.Type().TerraformType(context.Background()).(tftypes.Object)
+		prior := tfsdk.State{Schema: s, Raw: keyPairConfigValue(objType, map[string]tftypes.Value{
+			"id":               tftypes.NewValue(tftypes.String, "my-keypair"),
+			"valid_not_before": tftypes.NewValue(tftypes.String, "generated-before"),
+			"valid_not_after":  tftypes.NewValue(tftypes.String, "generated-after"),
+		})}
+		resp := &resource.ReadResponse{State: prior}
+		r.Read(context.Background(), resource.ReadRequest{State: prior}, resp)
+		server.Close()
+		if resp.Diagnostics.HasError() {
+			t.Fatal(resp.Diagnostics)
+		}
+		var m keyPairModel
+		resp.State.Get(context.Background(), &m)
+		if m.ValidNotBefore.ValueString() != "generated-before" || m.ValidNotAfter.ValueString() != "generated-after" {
+			t.Errorf("validity = %s/%s, want the generated values kept", m.ValidNotBefore.ValueString(), m.ValidNotAfter.ValueString())
+		}
+		if got := !m.CertificateSigningRequest.IsNull(); got != allow {
+			t.Errorf("enable_unofficial %v: CSR read = %v", allow, got)
+		}
+		read := strings.Contains(strings.Join(requests, " "), "SigningRequest")
+		if read != allow {
+			t.Errorf("enable_unofficial %v: CSR requested = %v", allow, read)
+		}
 	}
 }

@@ -46,8 +46,12 @@ func ParseCertificatePEM(pemContent []byte) (*CertificateMetadata, error) {
 		return nil, fmt.Errorf("securitycontent: parsing X.509 certificate: %w", err)
 	}
 
-	sum := sha256.Sum256(cert.Raw)
+	return certificateMetadata(cert), nil
+}
 
+// certificateMetadata derives CertificateMetadata from a parsed certificate.
+func certificateMetadata(cert *x509.Certificate) *CertificateMetadata {
+	sum := sha256.Sum256(cert.Raw)
 	return &CertificateMetadata{
 		SHA256Fingerprint: hex.EncodeToString(sum[:]),
 		SubjectDN:         cert.Subject.String(),
@@ -55,5 +59,5 @@ func ParseCertificatePEM(pemContent []byte) (*CertificateMetadata, error) {
 		SerialNumber:      cert.SerialNumber.String(),
 		NotBefore:         cert.NotBefore,
 		NotAfter:          cert.NotAfter,
-	}, nil
+	}
 }

@@ -27,3 +27,9 @@ resource "sapintegrationsuite_key_pair" "ec_signing" {
   common_name             = "signing.example.com"
   country                 = "DE"
 }
+
+# With enable_unofficial = true the key pair also offers a certificate
+# signing request; see sapintegrationsuite_key_pair_certificate_chain.
+output "client_auth_csr" {
+  value = sapintegrationsuite_key_pair.client_auth.certificate_signing_request
+}

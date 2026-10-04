@@ -22,7 +22,7 @@ SAP documentation, official SAP tooling, or a safe verification on a tenant
 
 | Service | Protocol | Snapshot | Entity sets | Operations | REST operations | Used | Candidates | Excluded |
 |---|---|---|---:|---:|---:|---:|---:|---:|
-| [cloud-integration](#cloud-integration) | OData V2 | 2026-10-03 | 131 | 35 | 0 | 46 | 28 | 92 |
+| [cloud-integration](#cloud-integration) | OData V2 | 2026-10-03 | 131 | 35 | 0 | 47 | 27 | 92 |
 | [classic-api-management](#classic-api-management) | OData V2 | 2026-09-27 | 61 | 1 | 0 | 7 | 19 | 36 |
 | [classic-api-management-transport](#classic-api-management-transport) | OpenAPI | none yet | | | | | | |
 | [classic-api-management-content-archive](#classic-api-management-content-archive) | OpenAPI | none yet | | | | | | |
@@ -46,7 +46,7 @@ Cloud Integration (Integration Content, Security Content, Partner Directory, mes
 
 The service document lists 25 of the 131 entity sets. The other 106 are declared in `$metadata` only. The list does not decide whether a set can be addressed: the provider reads and writes several of them on a tenant (for example UserCredentials and StringParameters), while others answered 404 (PgpKeyrings). Only a tenant check settles it: APIDefinitions, AlternativePartners, AuthorizedUsers, B2BArchivingConfigurations, B2BArchivingKeyPerformanceIndicators, BinaryParameters, BuildAndDeployStatus, BusinessDocumentExtFields, BusinessDocumentNotes, BusinessDocumentPayloads, BusinessDocumentProcessingEvents, BusinessDocumentProtocolHeaders, BusinessDocumentRelations, BusinessDocuments, CertificateChainResources, CertificateResources, CertificateSigningRequests, ChainCertificates, CommunicationProtocolHeaders, Configurations, CustomObjects, CustomParameters, CustomTagConfigurations, CustomTags, DataStoreEntries, DataStores, DataTypeDesigntimeArtifacts, DefaultValMaps, DesignGuidelineExecutionResults, DesignGuidelines, EntryPoints, ErrorDetails, ExtendedFieldsConfigs, FaultMessageTypeDesigntimeArtifacts, FunctionalAcknowledgements, GenericIdempotentRepositoryEntries, HistoryKeystoreEntries, IdMapFromId2s, IdMapFromIds, IdMapToIds, IdempotentRepositoryEntries, IntegrationAdapterDesigntimeArtifacts, IntegrationConnections, IntegrationDesigntimeArtifacts, IntegrationDesigntimeLocks, IntegrationFlows, IntegrationPackages, IntegrationRuntimeArtifacts, JmsArtifacts, JmsBrokers, JmsMessages, JmsQueues, KeyPairGenerationRequests, KeyPairResources, KeyringRuntimeAssignment, KeystoreEntries, KeystoreResources, Keystores, Locks, MDIDeltaToken, MessageMappingDesigntimeArtifacts, MessageTypeDesigntimeArtifacts, MessagingMessages, MessagingQueues, NodeProfiles, NumberRanges, OAuth2AuthorizationCodes, OAuth2ClientCredentials, OrphanedInterchanges, Partners, PgpKeyEntries, PgpKeyEntryImportResults, PgpKeyPublicResources, PgpKeySecretResources, PgpKeyringPublicResources, PgpKeyringSecretResources, PgpKeyrings, PgpPublicKeyrings, PgpSecretKeyrings, PgpSubKeys, PgpUserIds, QueueStates, Queues, RSAKeyGenerationRequests, Resources, Roles, RuntimeArtifactErrorInformations, RuntimeSyncInfos, SSHKeyGenerationRequests, SSHKeyResources, ScriptCollectionDesigntimeArtifacts, SecureParameters, SecurityArtifacts, ServiceEndpoints, ServiceInterfaceDesigntimeArtifacts, StringParameters, TechnicalAcknowledgements, UserCredentialParameters, UserCredentials, ValMapSchema, ValMaps, ValueMappingDesigntimeArtifacts, Variables, WNNodes, XiDataStoreArtifacts, XiDataStores.
 
-### Used by the provider (46)
+### Used by the provider (47)
 
 | Name | Kind | Type or method | Client packages |
 |---|---|---|---|
@@ -58,6 +58,7 @@ The service document lists 25 of the 131 entity sets. The other 106 are declared
 | AuthorizedUsers | entity set | AuthorizedUser | `partnerdirectory` |
 | BinaryParameters | entity set | BinaryParameter | `partnerdirectory` |
 | BuildAndDeployStatus | entity set | BuildAndDeployStatus | `cloudintegration` |
+| CertificateChainResources | entity set | CertificateChainResource | `securitycontent` |
 | CertificateResources | entity set | CertificateResource | `securitycontent` |
 | Configurations | entity set | Configuration | `cloudintegration` |
 | CustomTagConfigurations | entity set | CustomTagConfiguration | `cloudintegration` |
@@ -97,7 +98,7 @@ The service document lists 25 of the 131 entity sets. The other 106 are declared
 | ScriptCollectionDesigntimeArtifactSaveAsVersion | operation | POST | `cloudintegration` |
 | ServiceInterfaceDesigntimeArtifactSaveAsVersion | operation | POST | `cloudintegration` |
 
-### Candidates (28)
+### Candidates (27)
 
 | Name | Kind | Catalog entry | Catalog status | Note |
 |---|---|---|---|---|
@@ -113,8 +114,7 @@ The service document lists 25 of the 131 entity sets. The other 106 are declared
 | DeleteValMaps | operation | `cloud_integration.value_mapping_entry` | unsupported |  |
 | UpdateDefaultValMap | operation | `cloud_integration.value_mapping_entry` | unsupported |  |
 | UpsertValMaps | operation | `cloud_integration.value_mapping_entry` | unsupported |  |
-| CertificateChainResources | entity set | `security.certificate_chain` | research_required | Media entity for uploading a chain to a key pair (KeystoreEntries/ChainResource). |
-| ChainCertificates | entity set | `security.certificate_chain` | research_required | Certificates of a key pair's chain (KeystoreEntries/ChainCertificates). |
+| ChainCertificates | entity set | `security.certificate_chain` | unofficial | Certificate details of a key pair's chain; the chain resource parses the exported chain itself. |
 | KeyPairResources | entity set | `security.key_pair` | partial | Upload of an externally created key pair (PKCS#12 with password); private material would be write-only. |
 | RSAKeyGenerationRequests | entity set | `security.key_pair` | partial | Key pair generation from an RSA file. |
 | CustomParameters | entity set | `security.oauth2_client_credential` | partial | Custom token request parameters of an OAuth2 client credential. |
@@ -137,7 +137,7 @@ The service document lists 25 of the 131 entity sets. The other 106 are declared
 | ArchivingKeyPerformanceIndicators, B2BArchivingKeyPerformanceIndicators | Statistics of the archiving runs; monitoring. |  |
 | AuditLogs, ExternalLoggingEvents, LogFileArchives, LogFiles | Tenant log files and audit logs; read-only diagnostics. |  |
 | BusinessDocumentExtFields, BusinessDocumentNotes, BusinessDocumentPayloads, BusinessDocumentProcessingEvents, BusinessDocumentProtocolHeaders, BusinessDocumentRelations, BusinessDocuments, CommunicationProtocolHeaders, ErrorDetails, FunctionalAcknowledgements, OrphanedInterchanges, TechnicalAcknowledgements, massInterchangeProcess, singleInterchangeProcess | Trading Partner Management interchange monitoring and reprocessing; runtime data and support actions. |  |
-| CertificateSigningRequests | Certificate signing requests and signed-response uploads for key pairs; a certificate-authority workflow, not desired state. |  |
+| CertificateSigningRequests | The provider reads a key pair's CSR through KeystoreEntries/SigningRequest; this set answered 404 on a tenant (2026-10-04). |  |
 | CustomObjects | Search field values of business document monitoring; runtime data. |  |
 | DataStoreEntries | Runtime messages written by flows; runtime data. | `cloud_integration.data_store_entry` |
 | DataStores | Created implicitly by a flow's Data Store Write step; runtime data. | `cloud_integration.data_store` |

@@ -969,8 +969,13 @@ var Catalog = []Feature{
 				"write, not re-verified — the same reason this is `partial`, not `supported`.",
 			"Delete uses the same documented keystore mass-deletion operation as " +
 				"sapintegrationsuite_certificate, with exactly the one alias this resource owns.",
+			"certificate_signing_request is read only with enable_unofficial (see Certificate " +
+				"Chain). After a certificate chain was uploaded, valid_not_before and valid_not_after " +
+				"keep the values the key pair was generated with; SAP then reports the signed " +
+				"certificate's validity, which sapintegrationsuite_key_pair_certificate_chain shows.",
 		},
-		Operations: Operations{Create: true, Read: true, Delete: true, Import: true},
+		UndocumentedOperations: []string{"read of the certificate signing request (KeystoreEntries('<hexalias>')/SigningRequest/$value is only in $metadata)"},
+		Operations:             Operations{Create: true, Read: true, Delete: true, Import: true},
 	},
 	{
 		Key:           "security.ssh_key",
@@ -997,29 +1002,42 @@ var Catalog = []Feature{
 		},
 	},
 	{
-		Key:           "security.certificate_chain",
-		Domain:        "security",
-		Name:          "Certificate Chain",
-		Description:   "A certificate chain associated with a key pair.",
-		SupportStatus: StatusResearchRequired,
-		SupportReason: ReasonPublicAPIIncomplete,
-		PublicAPI:     true,
-		APIProtocol:   "OData V2",
-		Planned:       true,
+		Key:            "security.certificate_chain",
+		Domain:         "security",
+		Name:           "Certificate Chain",
+		Description:    "A certificate chain associated with a key pair.",
+		SupportStatus:  StatusUnofficial,
+		SupportReason:  ReasonPublicAPIIncomplete,
+		ContractSource: SourceMetadataOnly,
+		ResourceTypes:  []string{"sapintegrationsuite_key_pair_certificate_chain"},
+		PublicAPI:      true,
+		APIProtocol:    "OData V2",
 		Limitations: []string{
-			"The tenant $metadata defines CertificateChainResources, a media entity keyed by the " +
+			"SAP Help names importing and exporting a key pair's certificate chain and creating a " +
+				"certificate signing request as capabilities of the Key Pair API; the requests are " +
+				"documented only in the API specification on the Business Accelerator Hub, which needs a " +
+				"login. The provider uses what the tenant $metadata declares and a tenant probe " +
+				"verified on 2026-10-04: the CSR through KeystoreEntries('<hexalias>')/SigningRequest/$value " +
+				"(sapintegrationsuite_key_pair.certificate_signing_request), the upload as PUT " +
+				"CertificateChainResources('<hexalias>')/$value with fingerprintVerified=true, and the " +
+				"export through KeystoreEntries('<hexalias>')/ChainResource/$value, a PKCS#7 bundle.",
+			"SAP accepted PEM in any order, without the root and the leaf alone; it refuses a " +
+				"certificate issued for another key (400 \"The public key of the CA Reply is different\"). " +
+				"After the upload the key pair reports the signed certificate's issuer and validity; " +
+				"sapintegrationsuite_key_pair keeps the validity it was generated with.",
+			"SAP has no request that removes a chain: destroying the resource leaves the chain on " +
+				"the key pair, and only regenerating the key pair returns to a self-signed certificate.",
+			"TestAccKeyPairCertificateChain_signedByCA passed on a tenant (2026-10-04): a key pair's " +
+				"CSR signed by a hashicorp/tls CA, the chain uploaded, read back and imported, and after " +
+				"regenerating the key pair the new CSR signed and the chain uploaded in the same apply. " +
+				"SAP signs the CSR with another algorithm after a chain upload, so the key pair keeps the " +
+				"stored CSR while subject and public key stay the same.",
+			"Earlier research (kept for the record): " +
 				"key pair's Hexalias with a KeystoreEntry navigation, and a read-only ChainCertificates " +
-				"set (Hexalias, Index and certificate details). SAP Help describes chain import and " +
-				"export only as a capability of the Key Pair resource and documents neither the media " +
-				"type nor the request that uploads a chain, so nothing is implemented yet.",
-			"Once the upload contract is confirmed, the intended shape is a resource scoped to one " +
-				"key pair alias (for example sapintegrationsuite_key_pair_certificate_chain), not a " +
-				"standalone global resource.",
-			"Tenant check of 2026-09-27: KeystoreEntries('<hexalias>')/ChainCertificates returns the " +
-				"chain of an SAP key pair (Hexalias, Index, subject, issuer, validity, fingerprints), so " +
-				"reading is confirmed and a read-only chain attribute or data source is possible; " +
-				"uploading a chain still has no documented media type.",
+				"set (Hexalias, Index and certificate details); KeystoreEntries('<hexalias>')/ChainCertificates " +
+				"returned a key pair's chain on 2026-09-27.",
 		},
+		Operations: Operations{Create: true, Read: true, Update: true, Import: true},
 	},
 	{
 		Key:    "security.certificate_user_mapping",

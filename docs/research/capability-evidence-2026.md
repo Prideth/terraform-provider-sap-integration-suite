@@ -19,8 +19,8 @@ And the provider never uses browser endpoints of SAP's UIs.
 |---|---:|
 | 🟡 Partial (`partial`) | 10 |
 | 👁️ Read-only (`read_only`) | 3 |
-| 🧭 Unofficial (`unofficial`) | 7 |
-| 🔬 Research required (`research_required`) | 7 |
+| 🧭 Unofficial (`unofficial`) | 8 |
+| 🔬 Research required (`research_required`) | 6 |
 | ❌ Public API incomplete (`public_api_incomplete`) | 8 |
 | ❌ Unsafe Terraform lifecycle (`unsafe_terraform_lifecycle`) | 2 |
 | ❌ No public API (`no_public_api`) | 26 |
@@ -251,6 +251,17 @@ Implementation has been validated, but relies on an API contract that SAP does n
   - SAP Help, Integration Assessment APIs (docs/ISuite_Integration_Assessment/integration-assessment-apis-47847b5.md in SAP-docs/btp-integration-suite, last changed 2026-07-02), read 2026-09-29, and the Hub catalog of package SAPIntegrationAssessment (EntitiesAPI 1.0.0, specification behind a login)
   - 0.5.0 tenant gate of 2026-10-04 17:21 on release/0.5.x: TestAccIntegrationAssessment_landscape, _technologyProfile and _taxonomy passed
 
+### Certificate Chain
+
+`security.certificate_chain` · checked 2026-10-04
+
+- **Finding:** Upload (PUT CertificateChainResources('<hexalias>')/$value with fingerprintVerified), export (KeystoreEntries/ChainResource/$value, PKCS#7) and the CSR (KeystoreEntries/SigningRequest/$value) verified on a tenant; known only from $metadata. SAP has no request that removes a chain.
+- **Next step:** The Key Pair API specification on the Business Accelerator Hub (needs a login) would make it supported.
+- **Sources:**
+  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
+  - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
+  - tenant-probe -SecurityContentTests on the development tenant (2026-10-04, five runs), synthetic tf-acc-probe objects and throw-away test keys only
+
 ### Secure Parameter
 
 `security.secure_parameter` · checked 2026-09-27
@@ -323,17 +334,6 @@ The capability has been identified, but its public API coverage, lifecycle seman
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Hub package sap-int-eic-eic-operations (Jobs, Components, Partner Directory, Message Stores, MPL; created 2026-04-30, modified 2026-09-21)
-
-### Certificate Chain
-
-`security.certificate_chain` · checked 2026-09-27
-
-- **Finding:** $metadata has the CertificateChainResources media entity and ChainCertificates; SAP Help documents chain import only in the UI. The tenant returns a key pair's chain through KeystoreEntries('<hexalias>')/ChainCertificates.
-- **Next step:** A read-only chain attribute on key pairs or a data source; an upload needs a documented media type.
-- **Sources:**
-  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
-  - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
-  - tenant-probe -GapTests on a development tenant (2026-09-27), synthetic tfAccProbe* objects only
 
 ### PGP Keyrings
 

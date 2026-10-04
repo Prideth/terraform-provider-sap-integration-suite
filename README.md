@@ -118,7 +118,7 @@ Legend: ✅ Supported · 🟡 Partial · 👁️ Read-only · 🧪 Experimental 
 | Access Policy | ✅ | Resource + Data Source |
 | Access Policy Reference | ✅ | Resource + Data Source |
 | Certificate | ✅ | Resource |
-| Certificate Chain | 🔬 | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
+| Certificate Chain | 🧭 | Resource — see [feature-support.md](docs/feature-support.md#all-features) |
 | Certificate-User Mapping | ❌ | No suitable public API — see [feature-support.md](docs/feature-support.md#all-features) |
 | Key Pair | 🟡 | Resource — see [feature-support.md](docs/feature-support.md#all-features) |
 | Keystore Entry | 👁️ | Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
@@ -234,7 +234,7 @@ Legend: ✅ Supported · 🟡 Partial · 👁️ Read-only · 🧪 Experimental 
 | Trading Partner Management Partner Directory Generation | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
 | Trading Partner Management Partner Profile | ❌ | No suitable public API — see [feature-support.md](docs/feature-support.md#all-features) |
 
-21 supported · 10 partial · 3 read-only · 0 experimental · 7 unofficial · 7 research required · 49 unsupported · 2 separate provider, out of 99 evaluated Integration Suite features.
+21 supported · 10 partial · 3 read-only · 0 experimental · 8 unofficial · 6 research required · 49 unsupported · 2 separate provider, out of 99 evaluated Integration Suite features.
 
 <!-- END GENERATED FEATURE SUPPORT -->
 

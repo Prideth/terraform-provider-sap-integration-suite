@@ -50,6 +50,7 @@ const (
 	srcMetaIA      = "Integration Assessment Entities and Management $metadata, fetched live on 2026-09-27 (snapshots testdata/api-metadata/integration-assessment-*.json)"
 	srcHubSearch   = "Business Accelerator Hub: the API artifacts of 173 Integration Suite, API Management, Edge, Graph and BTP packages (308 APIs) searched for API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API deployment, API policy, reusable API, proxy, transport and gateway (2026-09-27); the package list was unchanged since 2026-09-26"
 	srcSDKCheck    = "Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6"
+	srcSecProbe    = "tenant-probe -SecurityContentTests on the development tenant (2026-10-04, five runs), synthetic tf-acc-probe objects and throw-away test keys only"
 	srcGapProbe    = "tenant-probe -GapTests on a development tenant (2026-09-27), synthetic tfAccProbe* objects only"
 	srcIAProbe     = "ia-probe -LandscapeTests on the development tenant's Integration Assessment (2026-09-27 17:29), synthetic tfacc-probe objects only"
 	srcNavProbe    = "tenant-probe -GapTests on the development tenant (2026-09-29 07:51): IntegrationPackages('<id>')/IntegrationDesigntimeArtifacts for a package with an integration flow, an API artifact and an MCP server returned only the integration flow"
@@ -173,10 +174,10 @@ var Evidence = map[string]EvidenceRecord{
 		"SSHKeyGenerationRequests and SSHKeyResources exist in $metadata without documented requests; key pairs cover SSH through the OpenSSH export.",
 		"None needed; revisit only if SAP documents SSH keys as a separate artifact.",
 		srcHelp, srcMetaCI),
-	"security.certificate_chain": evOn("2026-09-27",
-		"$metadata has the CertificateChainResources media entity and ChainCertificates; SAP Help documents chain import only in the UI. The tenant returns a key pair's chain through KeystoreEntries('<hexalias>')/ChainCertificates.",
-		"A read-only chain attribute on key pairs or a data source; an upload needs a documented media type.",
-		srcHelp, srcMetaCI, srcGapProbe),
+	"security.certificate_chain": evOn("2026-10-04",
+		"Upload (PUT CertificateChainResources('<hexalias>')/$value with fingerprintVerified), export (KeystoreEntries/ChainResource/$value, PKCS#7) and the CSR (KeystoreEntries/SigningRequest/$value) verified on a tenant; known only from $metadata. SAP has no request that removes a chain.",
+		"The Key Pair API specification on the Business Accelerator Hub (needs a login) would make it supported.",
+		srcHelp, srcMetaCI, srcSecProbe),
 	"security.certificate_user_mapping": ev(
 		"Documented only for the Neo environment.",
 		"A Cloud Foundry API from SAP.",

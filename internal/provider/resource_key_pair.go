@@ -54,26 +54,30 @@ func NewKeyPairResource() resource.Resource {
 
 type keyPairResource struct {
 	client *securitycontent.Client
+	// allowUnofficial lets Read fetch the certificate signing request,
+	// which only the tenant $metadata describes (enable_unofficial).
+	allowUnofficial bool
 }
 
 type keyPairModel struct {
-	ID                    types.String `tfsdk:"id"`
-	Alias                 types.String `tfsdk:"alias"`
-	KeyType               types.String `tfsdk:"key_type"`
-	SignatureAlgorithm    types.String `tfsdk:"signature_algorithm"`
-	KeySize               types.Int64  `tfsdk:"key_size"`
-	KeyAlgorithmParameter types.String `tfsdk:"key_algorithm_parameter"`
-	CommonName            types.String `tfsdk:"common_name"`
-	OrganizationUnit      types.String `tfsdk:"organization_unit"`
-	Organization          types.String `tfsdk:"organization"`
-	Locality              types.String `tfsdk:"locality"`
-	State                 types.String `tfsdk:"state"`
-	Country               types.String `tfsdk:"country"`
-	Email                 types.String `tfsdk:"email"`
-	ValidNotBefore        types.String `tfsdk:"valid_not_before"`
-	ValidNotAfter         types.String `tfsdk:"valid_not_after"`
-	PublicKeyOpenSSH      types.String `tfsdk:"public_key_openssh"`
-	RuntimeLocationID     types.String `tfsdk:"runtime_location_id"`
+	ID                        types.String `tfsdk:"id"`
+	Alias                     types.String `tfsdk:"alias"`
+	KeyType                   types.String `tfsdk:"key_type"`
+	SignatureAlgorithm        types.String `tfsdk:"signature_algorithm"`
+	KeySize                   types.Int64  `tfsdk:"key_size"`
+	KeyAlgorithmParameter     types.String `tfsdk:"key_algorithm_parameter"`
+	CommonName                types.String `tfsdk:"common_name"`
+	OrganizationUnit          types.String `tfsdk:"organization_unit"`
+	Organization              types.String `tfsdk:"organization"`
+	Locality                  types.String `tfsdk:"locality"`
+	State                     types.String `tfsdk:"state"`
+	Country                   types.String `tfsdk:"country"`
+	Email                     types.String `tfsdk:"email"`
+	ValidNotBefore            types.String `tfsdk:"valid_not_before"`
+	ValidNotAfter             types.String `tfsdk:"valid_not_after"`
+	PublicKeyOpenSSH          types.String `tfsdk:"public_key_openssh"`
+	CertificateSigningRequest types.String `tfsdk:"certificate_signing_request"`
+	RuntimeLocationID         types.String `tfsdk:"runtime_location_id"`
 }
 
 func (r *keyPairResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -235,8 +239,29 @@ func (r *keyPairResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"certificate_signing_request": schema.StringAttribute{
+				Computed: true,
+				Description: "A PEM certificate signing request (PKCS#10) for this key pair, to have its " +
+					"certificate signed by a certificate authority; the signed chain goes into " +
+					"sapintegrationsuite_key_pair_certificate_chain. Read only with enable_unofficial = " +
+					"true, otherwise null: SAP documents the CSR as a capability of the Key Pair API, but " +
+					"the request (KeystoreEntries('<hexalias>')/SigningRequest/$value) is known only from " +
+					"the tenant $metadata. SAP may sign the request anew, for example after a chain " +
+					"upload; the stored text is kept while subject and public key stay the same, so it " +
+					"changes only when the key pair is replaced, and is unknown in a plan that replaces it.",
+			},
 		},
 	}
+}
+
+// ModifyPlan plans certificate_signing_request as null for a new key pair
+// when enable_unofficial is off, so a configuration that uses it sees null
+// already in the plan instead of a value that never arrives.
+func (r *keyPairResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if r.allowUnofficial || r.client == nil || req.Plan.Raw.IsNull() || !req.State.Raw.IsNull() {
+		return
+	}
+	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, pathRoot("certificate_signing_request"), types.StringNull())...)
 }
 
 // ValidateConfig enforces SAP's documented conditional rules that a plain
@@ -321,6 +346,7 @@ func (r *keyPairResource) Configure(_ context.Context, req resource.ConfigureReq
 		return
 	}
 	r.client = securitycontent.New(data.HTTPClient, data.Host)
+	r.allowUnofficial = data.EnableUnofficial
 }
 
 func (r *keyPairResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -384,8 +410,18 @@ func (r *keyPairResource) readAfterWrite(ctx context.Context, alias string, base
 	base.ID = types.StringValue(alias)
 	base.KeyType = stringOrNull(entry.KeyType)
 	base.KeySize = int64OrNull(entry.KeySize)
-	base.ValidNotBefore = stringOrNull(entry.ValidNotBefore)
-	base.ValidNotAfter = stringOrNull(entry.ValidNotAfter)
+	// After a certificate chain was uploaded, SAP reports the validity of
+	// the CA-signed certificate. valid_not_before and valid_not_after keep
+	// the values the key pair was generated with, so that the upload does
+	// not plan a replacement of the key pair; the signed certificate's
+	// validity is on sapintegrationsuite_key_pair_certificate_chain.
+	signed := entry.IssuerDN != "" && entry.IssuerDN != entry.SubjectDN
+	if !signed || base.ValidNotBefore.IsNull() || base.ValidNotBefore.IsUnknown() {
+		base.ValidNotBefore = stringOrNull(entry.ValidNotBefore)
+	}
+	if !signed || base.ValidNotAfter.IsNull() || base.ValidNotAfter.IsUnknown() {
+		base.ValidNotAfter = stringOrNull(entry.ValidNotAfter)
+	}
 	fillSubjectFromDN(&base, entry.SubjectDN)
 
 	if entry.KeyType == "RSA" || entry.KeyType == "DSA" {
@@ -396,6 +432,20 @@ func (r *keyPairResource) readAfterWrite(ctx context.Context, alias string, base
 		}
 	} else {
 		base.PublicKeyOpenSSH = types.StringNull()
+	}
+
+	// The CSR text changes between reads (see SameCertificateRequest); the
+	// stored one is kept while it asks for the same subject and public key,
+	// so that a CA signing it does not sign again on every apply.
+	previousCSR := base.CertificateSigningRequest
+	base.CertificateSigningRequest = types.StringNull()
+	if r.allowUnofficial {
+		if csr, csrErr := client.GetCertificateSigningRequest(ctx, alias); csrErr == nil {
+			base.CertificateSigningRequest = types.StringValue(string(csr))
+			if !previousCSR.IsNull() && !previousCSR.IsUnknown() && securitycontent.SameCertificateRequest([]byte(previousCSR.ValueString()), csr) {
+				base.CertificateSigningRequest = previousCSR
+			}
+		}
 	}
 
 	diags.Append(state.Set(ctx, &base)...)

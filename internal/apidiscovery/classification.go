@@ -207,7 +207,7 @@ const (
 	reasonRuntimeNodes      = "Runtime node and profile information of the tenant; read-only system information."
 	reasonTopology          = "Connection topology derived from deployed content; read-only."
 	reasonRuntimeSync       = "Distribution status of keystores and keyrings to runtimes; monitoring, not configuration."
-	reasonCSR               = "Certificate signing requests and signed-response uploads for key pairs; a certificate-authority workflow, not desired state."
+	reasonCSR               = "The provider reads a key pair's CSR through KeystoreEntries/SigningRequest; this set answered 404 on a tenant (2026-10-04)."
 	reasonOAuthCode         = "Authorization-code credentials get their refresh token from an interactive browser consent, which Terraform cannot complete; " +
 		"the operations belong to that consent flow."
 	reasonArchivingKPIs = "Statistics of the archiving runs; monitoring."
@@ -238,8 +238,7 @@ var cloudIntegrationClassification = concat(
 	},
 	// Security material.
 	[]rule{
-		candidate("CertificateChainResources", "security.certificate_chain", "Media entity for uploading a chain to a key pair (KeystoreEntries/ChainResource)."),
-		candidate("ChainCertificates", "security.certificate_chain", "Certificates of a key pair's chain (KeystoreEntries/ChainCertificates)."),
+		candidate("ChainCertificates", "security.certificate_chain", "Certificate details of a key pair's chain; the chain resource parses the exported chain itself."),
 		candidate("KeyPairResources", "security.key_pair", "Upload of an externally created key pair (PKCS#12 with password); private material would be write-only."),
 		candidate("RSAKeyGenerationRequests", "security.key_pair", "Key pair generation from an RSA file."),
 		candidate("CustomParameters", "security.oauth2_client_credential", "Custom token request parameters of an OAuth2 client credential."),

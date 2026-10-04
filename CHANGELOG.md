@@ -74,6 +74,32 @@ interfaces.
   type that a message type uses be deleted. Refer to the data type resource
   so that Terraform orders the deletion.
 
+### Planned for 0.8.0: Security Content
+
+These entries are on `feature/security-content`, which builds on 0.7.0; they
+become the 0.8.0 section once 0.7.0 is released.
+
+- `sapintegrationsuite_key_pair_certificate_chain` (unofficial): gives a key
+  pair a certificate signed by a certificate authority, with the chain of
+  certificates that issued it. The resource uploads the PEM bundle (any
+  order, the root may be left out), reads the chain back, derives the
+  fingerprint and every certificate locally, refuses a private key pasted
+  into the chain, and imports by the key pair's alias. SAP has no request
+  that removes a chain, so destroying the resource leaves it on the key pair.
+  The acceptance test signed a key pair's CSR with a `hashicorp/tls` CA,
+  uploaded and imported the chain, and signed and uploaded again after the
+  key pair was regenerated.
+- `sapintegrationsuite_key_pair` has `certificate_signing_request`, the
+  PEM CSR to have signed. It is read only with `enable_unofficial = true`,
+  because the request is known only from the tenant `$metadata`. SAP signs
+  the CSR anew after a chain upload; the stored text is kept while subject
+  and public key stay the same.
+- `sapintegrationsuite_key_pair` keeps `valid_not_before` and
+  `valid_not_after` as generated once a CA-signed chain was uploaded. SAP
+  then reports the signed certificate's validity, and a configuration that
+  set these attributes would otherwise have planned a replacement of the key
+  pair, which deletes the chain with the key.
+
 ## 0.6.0 — 2026-10-03
 
 0.6.0 makes the API Composition business data graph usable on a tenant. The
