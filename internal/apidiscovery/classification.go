@@ -217,8 +217,6 @@ const (
 var cloudIntegrationClassification = concat(
 	// Design-time content the provider does not manage yet.
 	[]rule{
-		candidate("ServiceInterfaceDesigntimeArtifacts", "cloud_integration.service_interface", "Versioned design-time artifact with $value content."),
-		candidate("ServiceInterfaceDesigntimeArtifactSaveAsVersion", "cloud_integration.service_interface", ""),
 		candidate("ValueMappingDesigntimeArtifactSaveAsVersion", "cloud_integration.design_time_versioning", "The value mapping resource does not save versions yet."),
 		candidate("ValMapSchema", "cloud_integration.value_mapping_entry", "Agency/identifier pairs of a value mapping."),
 		candidate("ValMaps", "cloud_integration.value_mapping_entry", "Value pairs of one agency/identifier pair."),

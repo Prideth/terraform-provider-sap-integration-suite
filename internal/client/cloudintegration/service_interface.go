@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+	"sort"
 	"strings"
 
 	v2 "github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/odata/v2"
@@ -46,11 +47,10 @@ type serviceInterfaceCreate struct {
 
 // ServiceInterfaceModel is the operation model of a service interface, the
 // JSON file src/main/resources/json/<name>.json in its bundle. The field
-// names follow the bundle of a service interface SAP's editor created
-// (package export, 2026-10-03): an outbound, stateless interface with one
-// asynchronous operation that names a request message type and a fault
-// message type. How a synchronous operation names its response is not
-// known yet (PENDING #54).
+// names follow the bundles of two service interfaces SAP's editor created
+// (package exports, 2026-10-03 and 2026-10-04): outbound and stateless, one
+// with an asynchronous operation (request and fault message), one with a
+// synchronous operation (request, response and fault message).
 type ServiceInterfaceModel struct {
 	Name             string                      `json:"name"`
 	Namespace        string                      `json:"namespace"`
@@ -65,6 +65,7 @@ type ServiceInterfaceOperation struct {
 	OperationMode string                    `json:"operationMode"`
 	IsSynchronous bool                      `json:"isSynchronous"`
 	Request       *ServiceInterfaceMessage  `json:"request,omitempty"`
+	Response      *ServiceInterfaceMessage  `json:"response,omitempty"`
 	Faults        []ServiceInterfaceMessage `json:"faults,omitempty"`
 }
 
@@ -78,6 +79,8 @@ type ServiceInterfaceMessage struct {
 	PackageTechnicalName string `json:"packageTechnicalName"`
 	BundleSymbolicName   string `json:"bundleSymbolicName"`
 	Namespace            string `json:"namespace"`
+	Version              string `json:"version,omitempty"`
+	XMLNS                string `json:"xmlns,omitempty"`
 }
 
 // The typeId values of the messages an operation names.
@@ -222,12 +225,14 @@ func readZipFile(f *zip.File) ([]byte, error) {
 }
 
 // ServiceInterfaceOperationSpec is an operation as the provider writes it:
-// asynchronous, with an optional request message type and fault message
-// types, each named by ID with the name and package SAP's editor records.
+// a request message type, a response message type for a synchronous
+// operation (none: asynchronous), and fault message types, each named by
+// ID with the name, namespace, version and package SAP's editor records.
 type ServiceInterfaceOperationSpec struct {
-	Name    string
-	Request *ServiceInterfaceMessageRef
-	Faults  []ServiceInterfaceMessageRef
+	Name     string
+	Request  *ServiceInterfaceMessageRef
+	Response *ServiceInterfaceMessageRef
+	Faults   []ServiceInterfaceMessageRef
 }
 
 // ServiceInterfaceMessageRef names a message type or fault message type the
@@ -236,30 +241,39 @@ type ServiceInterfaceMessageRef struct {
 	ID                   string
 	Name                 string
 	Namespace            string
+	Version              string
 	PackageName          string
 	PackageTechnicalName string
 }
 
-func (r ServiceInterfaceMessageRef) wire(typeID, role string, withXMLNS bool) map[string]any {
+// wire writes a message the way the 2026-10-04 export does: xmlns repeats
+// the namespace, version is the referenced artifact's version, and a fault
+// has no role.
+func (r ServiceInterfaceMessageRef) wire(typeID, role string) map[string]any {
 	m := map[string]any{
 		"typeId":               typeID,
-		"role":                 role,
 		"name":                 r.Name,
+		"namespace":            r.Namespace,
 		"packageName":          r.PackageName,
 		"packageTechnicalName": r.PackageTechnicalName,
 		"bundleSymbolicName":   r.ID,
-		"namespace":            r.Namespace,
+		"xmlns":                r.Namespace,
 	}
-	if withXMLNS {
-		m["xmlns"] = ""
+	if r.Version != "" {
+		m["version"] = r.Version
+	}
+	if role != "" {
+		m["role"] = role
 	}
 	return m
 }
 
 // WithServiceInterfaceOperations returns the operation model JSON with its
 // operations replaced, keeping every other field SAP wrote. Operations are
-// written as SAP's editor writes an asynchronous one: request and faults,
-// repeated in messageDetails, messageDetailsCount counting the request.
+// written as SAP's editor writes them: request, response and faults,
+// repeated in messageDetails. messageDetailsCount follows the two exports
+// (asynchronous request and fault: 1; synchronous request, response and
+// fault: 3); what SAP uses it for is not known.
 func WithServiceInterfaceOperations(model []byte, ops []ServiceInterfaceOperationSpec) ([]byte, error) {
 	var doc map[string]any
 	if err := json.Unmarshal(model, &doc); err != nil {
@@ -268,25 +282,36 @@ func WithServiceInterfaceOperations(model []byte, ops []ServiceInterfaceOperatio
 	out := make([]any, 0, len(ops))
 	for _, op := range ops {
 		details := []any{}
+		sync := op.Response != nil
+		mode := "ASYNCHRONOUS"
+		if sync {
+			mode = "SYNCHRONOUS"
+		}
 		o := map[string]any{
 			"name":                op.Name,
 			"isUnreliable":        false,
-			"isSynchronous":       false,
+			"isSynchronous":       sync,
 			"operationIdempotent": false,
 			"objectState":         "NOT_RELEASED",
 			"operationPattern":    "NORMAL_OPERATION",
-			"operationMode":       "ASYNCHRONOUS",
+			"operationMode":       mode,
 		}
-		count := 0
+		messages := 0
 		if op.Request != nil {
-			req := op.Request.wire(serviceInterfaceRequestTypeID, "Request", false)
+			req := op.Request.wire(serviceInterfaceRequestTypeID, "Request")
 			o["request"] = req
 			details = append(details, req)
-			count++
+			messages++
+		}
+		if sync {
+			resp := op.Response.wire(serviceInterfaceRequestTypeID, "Response")
+			o["response"] = resp
+			details = append(details, resp)
+			messages++
 		}
 		faults := []any{}
 		for _, f := range op.Faults {
-			w := f.wire(serviceInterfaceFaultTypeID, "", true)
+			w := f.wire(serviceInterfaceFaultTypeID, "")
 			faults = append(faults, w)
 			details = append(details, w)
 		}
@@ -294,7 +319,11 @@ func WithServiceInterfaceOperations(model []byte, ops []ServiceInterfaceOperatio
 			o["faults"] = faults
 		}
 		o["messageDetails"] = details
-		o["messageDetailsCount"] = count
+		if sync {
+			o["messageDetailsCount"] = len(details)
+		} else {
+			o["messageDetailsCount"] = messages
+		}
 		out = append(out, o)
 	}
 	doc["operations"] = out
@@ -303,27 +332,41 @@ func WithServiceInterfaceOperations(model []byte, ops []ServiceInterfaceOperatio
 
 // ServiceInterfaceRequireCapability is the manifest header that names the
 // message types and fault message types the operations refer to, in the
-// form of SAP's editor: fault message types first, then message types.
+// form of SAP's editor: fault message types first, then message types, each
+// sorted by ID.
 func ServiceInterfaceRequireCapability(ops []ServiceInterfaceOperationSpec) string {
-	var faults, messages []string
-	seen := map[string]bool{}
+	faultIDs := map[string]bool{}
+	messageIDs := map[string]bool{}
 	for _, op := range ops {
 		for _, f := range op.Faults {
-			if !seen["f:"+f.ID] {
-				seen["f:"+f.ID] = true
-				faults = append(faults, fmt.Sprintf(`faultmessagetype.%s;resolution:=optional;bundleType:String="FaultMessageType";source:String="reference"`, f.ID))
+			faultIDs[f.ID] = true
+		}
+		for _, m := range []*ServiceInterfaceMessageRef{op.Request, op.Response} {
+			if m != nil {
+				messageIDs[m.ID] = true
 			}
 		}
-		if op.Request != nil && !seen["m:"+op.Request.ID] {
-			seen["m:"+op.Request.ID] = true
-			messages = append(messages, fmt.Sprintf(`messagetype.%s;resolution:=optional;bundleType:String="MessageType";source:String="reference"`, op.Request.ID))
-		}
 	}
-	all := append(faults, messages...)
+	var all []string
+	for _, id := range sortedKeys(faultIDs) {
+		all = append(all, fmt.Sprintf(`faultmessagetype.%s;resolution:=optional;bundleType:String="FaultMessageType";source:String="reference"`, id))
+	}
+	for _, id := range sortedKeys(messageIDs) {
+		all = append(all, fmt.Sprintf(`messagetype.%s;resolution:=optional;bundleType:String="MessageType";source:String="reference"`, id))
+	}
 	if len(all) == 0 {
 		return ""
 	}
 	return "Require-Capability: " + strings.Join(all, ",")
+}
+
+func sortedKeys(m map[string]bool) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
 }
 
 // manifestLines wraps a manifest header the way Java manifests are wrapped:
