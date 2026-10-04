@@ -59,6 +59,7 @@ const (
 	srcIAProbe3    = "ia-probe -LandscapeTests, extended, on the development tenant (2026-09-28 07:54): link changes with PATCH and the technology association sets, synthetic tfacc-probe objects only"
 	srcHelpIA2     = "SAP Help, Integration Assessment APIs (docs/ISuite_Integration_Assessment/integration-assessment-apis-47847b5.md in SAP-docs/btp-integration-suite, last changed 2026-07-02), read 2026-09-29, and the Hub catalog of package SAPIntegrationAssessment (EntitiesAPI 1.0.0, specification behind a login)"
 	srcAccRun3     = "acceptance run of 2026-09-29 14:35 on the development tenant, including TestAccIntegrationAssessment_landscape with the in-place moves"
+	srcAccRun05    = "0.5.0 tenant gate of 2026-10-04 17:21 on release/0.5.x: TestAccIntegrationAssessment_landscape, _technologyProfile and _taxonomy passed"
 	srcAccRun2     = "acceptance run of 2026-09-27 21:30 on the development tenant, including TestAccIntegrationAssessment_landscape"
 )
 
@@ -384,14 +385,14 @@ var Evidence = map[string]EvidenceRecord{
 		"A general BTP messaging service with its own management APIs (Hub package modified 2026-09-18); a separate provider by design.",
 		"None for this provider.",
 		srcHubPackages, srcHelp),
-	"integration_assessment.master_data": evOn("2026-09-29",
-		"The live Entities $metadata (27 entity sets) confirms the ISA-M taxonomy entities field by field, and every set was read on a tenant (7 domains, 6 styles, 24 use case patterns, 12 integration patterns, 14 key characteristics in 5 groups with 29 values, 4 recommendation degrees, 9 domain determinations). SAP Help's entity list (last changed 2026-07-02) describes each entity; its text for Domain Determination repeats the recommendation degree's, so that entity's meaning comes from the $metadata (a domain between a source and a target deployment model). The Hub's EntitiesAPI specification still ends at a login page (2026-09-29).",
-		"Every taxonomy entity has a read-only data source; TestAccIntegrationAssessment_taxonomy and _technologyProfile passed on 2026-09-29. SAP publishing the Entities API specification without a login, or its download from the Hub into .specs/specs, would make the contract official.",
-		srcHubIA, srcHelp, srcMetaIA, srcIAProbe, srcHelpIA2),
+	"integration_assessment.master_data": evOn("2026-10-04",
+		"The live Entities $metadata (27 entity sets) confirms the ISA-M taxonomy entities field by field, and every set was read on a tenant (7 domains, 6 styles, 24 use case patterns, 12 integration patterns, 14 key characteristics in 5 groups with 29 values, 4 recommendation degrees, 9 domain determinations). SAP Help's entity list (last changed 2026-07-02) describes each entity; its text for Domain Determination repeats the recommendation degree's, so that entity's meaning comes from the $metadata (a domain between a source and a target deployment model). The Hub's EntitiesAPI specification still ends at a login page (2026-10-04).",
+		"Every taxonomy entity has a read-only data source; TestAccIntegrationAssessment_taxonomy and _technologyProfile passed on 2026-10-04. SAP publishing the Entities API specification without a login, or its download from the Hub into .specs/specs, would make the contract official.",
+		srcHubIA, srcHelp, srcMetaIA, srcIAProbe, srcHelpIA2, srcAccRun05),
 	"integration_assessment.landscape_configuration": evOn("2026-09-28",
 		"A second landscape probe (2026-09-27 19:33) verified create (201 with a UUID Id), read, PATCH and PUT (204) and delete (204, then 404) for vendors, applications, application instances, technologies and technology instances, with links written as {\"Id\": ...}; setting, removing and resetting an application's vendor worked. The first probe had failed only on its own request format (charset parameter, __metadata links). TestAccIntegrationAssessment_landscape passed on 2026-09-27 21:30. A third probe (2026-09-28) changed an instance's application and deployment model, a technology's vendor and a technology instance's name and deployment model with PATCH, each confirmed by a read; TechnologyDomain, TechnologyStyle and TechnologyKeyCharacteristic were created, read and deleted, and a key characteristic's PATCH was refused (400 V101).",
-		"TestAccIntegrationAssessment_landscape with the in-place moves passed on 2026-09-29; TestAccIntegrationAssessment_technologyProfile confirms the technology profile resources and lookups. The Hub specification (EntitiesAPI) would make the contract official and allow the status supported.",
-		srcHubIA, srcHelp, srcMetaIA, srcIAProbe, srcIAProbe2, srcIAProbe3, srcAccRun2, srcAccRun3),
+		"TestAccIntegrationAssessment_landscape with the in-place moves passed on 2026-09-29 and again on 2026-10-04; TestAccIntegrationAssessment_technologyProfile confirms the technology profile resources and lookups. The Hub specification (EntitiesAPI) would make the contract official and allow the status supported.",
+		srcHubIA, srcHelp, srcMetaIA, srcIAProbe, srcIAProbe2, srcIAProbe3, srcAccRun2, srcAccRun3, srcAccRun05),
 	"integration_assessment.assessment_workflow": ev(
 		"A request status machine; workflow state.",
 		"None; out of scope.",
