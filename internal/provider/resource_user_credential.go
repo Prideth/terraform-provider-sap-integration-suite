@@ -3,12 +3,15 @@ package provider
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/apierror"
@@ -82,11 +85,12 @@ func (r *userCredentialResource) Schema(_ context.Context, _ resource.SchemaRequ
 				Default:  stringdefault.StaticString(securitycontent.DefaultUserCredentialKind),
 				Description: "The credential's system-specific type, as selected by SAP's \"Type\" " +
 					"UI field: \"default\" (the default) for a generic Basic/username-token " +
-					"credential, \"SuccessFactors\", or \"OpenConnectors\". SAP rejects a credential " +
-					"without a kind and reports a generic one as \"default\". Immutable: SAP's UI " +
+					"credential, \"successfactors\" (needs company_id), or \"openconnectors\". SAP " +
+					"accepts only these values, in lower case. Immutable: SAP's UI " +
 					"does not document changing an artifact's kind via Edit, only via delete and " +
 					"recreate, and this provider is conservative about a field that changes which " +
 					"other fields (for example company_id) are meaningful.",
+				Validators: []validator.String{userCredentialKindValidator{}},
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -102,8 +106,8 @@ func (r *userCredentialResource) Schema(_ context.Context, _ resource.SchemaRequ
 			"company_id": schema.StringAttribute{
 				Optional: true,
 				Description: "The SuccessFactors company ID (client instance) this credential " +
-					"connects to. Only meaningful when kind is \"SuccessFactors\"; SAP's UI hides " +
-					"this field for every other kind.",
+					"connects to. Required when kind is \"successfactors\"; SAP's UI hides this " +
+					"field for every other kind.",
 			},
 			"password_wo": schema.StringAttribute{
 				Required:  true,
@@ -126,6 +130,52 @@ func (r *userCredentialResource) Schema(_ context.Context, _ resource.SchemaRequ
 			},
 		},
 	}
+}
+
+// ValidateConfig requires company_id for a SuccessFactors credential, which
+// SAP otherwise refuses at apply (500 "Property 'CompanyId' must not be empty
+// or null", tenant check of 2026-10-04).
+func (r *userCredentialResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var kind, companyID types.String
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, pathRoot("kind"), &kind)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, pathRoot("company_id"), &companyID)...)
+	if resp.Diagnostics.HasError() || kind.ValueString() != "successfactors" || companyID.IsUnknown() {
+		return
+	}
+	if companyID.ValueString() == "" {
+		resp.Diagnostics.AddAttributeError(pathRoot("company_id"), "Missing company_id",
+			"A credential with kind = \"successfactors\" needs the SuccessFactors company ID; SAP refuses it without one.")
+	}
+}
+
+// userCredentialKindValidator accepts only the kinds SAP takes and names the
+// right spelling for a value that differs only in letter case, such as
+// "SuccessFactors", which earlier releases documented.
+type userCredentialKindValidator struct{}
+
+func (userCredentialKindValidator) Description(context.Context) string {
+	return "must be one of " + strings.Join(securitycontent.UserCredentialKinds, ", ")
+}
+
+func (v userCredentialKindValidator) MarkdownDescription(ctx context.Context) string {
+	return v.Description(ctx)
+}
+
+func (userCredentialKindValidator) ValidateString(_ context.Context, req validator.StringRequest, resp *validator.StringResponse) {
+	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() {
+		return
+	}
+	value := req.ConfigValue.ValueString()
+	if containsString(securitycontent.UserCredentialKinds, value) {
+		return
+	}
+	detail := fmt.Sprintf("SAP accepts only %s as kind, in lower case.", strings.Join(securitycontent.UserCredentialKinds, ", "))
+	for _, k := range securitycontent.UserCredentialKinds {
+		if strings.EqualFold(k, value) {
+			detail = fmt.Sprintf("Use %q. ", k) + detail
+		}
+	}
+	resp.Diagnostics.AddAttributeError(req.Path, "Unsupported user credential kind", fmt.Sprintf("%q is not a kind SAP accepts. ", value)+detail)
 }
 
 func (r *userCredentialResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

@@ -826,10 +826,11 @@ var Catalog = []Feature{
 				"resource (SAP documents re-entering the secret on every edit for the sibling OAuth2 " +
 				"Client Credentials artifact; this provider assumes the same requirement here since it " +
 				"could not find a documented exception for User Credentials).",
-			"Kind and CompanyId are properties of UserCredential in the tenant $metadata, and a tenant " +
-				"rejected a create without Kind. SAP does not document the accepted Kind values beyond " +
-				"the UI's types; kind=\"SuccessFactors\" and \"OpenConnectors\" were not tested against those " +
-				"systems. See docs/guides/security-content.md.",
+			"Kind takes only default, successfactors and openconnectors, in lower case: a tenant " +
+				"(2026-10-04) refused every other value, including the SuccessFactors and OpenConnectors " +
+				"that releases before 0.5.1 documented. successfactors needs CompanyId; openconnectors " +
+				"needs a password in the undocumented Open Connectors credential format. kind is " +
+				"checked while planning.",
 			"Deployment status (SAP's UI shows Stored/Deployed/Error) is not exposed: this project could " +
 				"not confirm the OData property name for it, and would rather omit a computed attribute " +
 				"than expose one that is silently always empty.",

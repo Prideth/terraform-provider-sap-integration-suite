@@ -131,8 +131,8 @@ Usable, but the provider deliberately leaves out part of the lifecycle; the limi
 
 `security.user_credential` · checked 2026-09-26
 
-- **Finding:** Create, read, update and delete verified on a tenant; the password is write-only, and kinds other than default are corroborated only by example payloads.
-- **Next step:** tenant-probe -GapTests lists the kinds that exist on the tenant; the deployment status property is still unknown.
+- **Finding:** Create, read, update and delete verified on a tenant; the password is write-only. The kinds default, successfactors and openconnectors (lower case only) were confirmed by SAP's error text on 2026-10-04.
+- **Next step:** The deployment status property is still unknown; the Open Connectors password format is undocumented.
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)

@@ -14,10 +14,11 @@ resource "sapintegrationsuite_user_credential" "backend" {
   password_wo_version = "1"
 }
 
-# SuccessFactors credentials additionally require company_id and kind.
+# SuccessFactors credentials additionally require company_id and kind. SAP
+# accepts the kinds only in lower case: default, successfactors, openconnectors.
 resource "sapintegrationsuite_user_credential" "success_factors" {
   id         = "SFSF_BASIC"
-  kind       = "SuccessFactors"
+  kind       = "successfactors"
   user       = "sfsf-integration-user"
   company_id = "SFPART000123"
 

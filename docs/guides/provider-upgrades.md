@@ -27,6 +27,19 @@ read the plan before applying: every change below that forces a replacement is m
 complete list of changes is in the
 [CHANGELOG](https://github.com/Prideth/terraform-provider-sap-integration-suite/blob/master/CHANGELOG.md).
 
+## 0.5.0 to 0.5.1
+
+0.5.1 only fixes defects; nothing is renamed and no state is migrated.
+
+- `sapintegrationsuite_user_credential`: `kind` must be `default`, `successfactors` or
+  `openconnectors`, in lower case. Earlier releases documented `SuccessFactors` and
+  `OpenConnectors`; SAP refuses those spellings, so such configurations never applied. They now
+  fail `terraform plan` with the right spelling. `successfactors` also requires `company_id`.
+  Credentials that exist already are reported in lower case and need no change.
+- `sapintegrationsuite_oauth2_client_credential`: an update or replacement deletes the custom
+  parameters SAP holds for the credential, as it did before. The plan now shows a warning when
+  there are any. Cancel the apply, or set them again in SAP's UI afterwards.
+
 ## 0.4 to 0.5
 
 Nothing to change, and no state migration. 0.5 only adds Integration Assessment types: the

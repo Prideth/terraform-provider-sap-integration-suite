@@ -863,11 +863,12 @@ policies.
   Corroborated by a documented third-party example payload (`POST .../UserCredentials` with a
   JSON body of `Name`, `Kind`, `Description`, `User`, `Password`, `CompanyId`) rather than this
   project's own inspection of a live tenant's `$metadata`.
-- **`UserCredentials` fields — confirmed existence, unconfirmed casing**: `Kind` (SAP's UI calls
-  this "Type": empty/unset for a generic Basic/username-token credential, `SuccessFactors`, or
-  `OpenConnectors`) and `CompanyId` (only meaningful when `Kind` is `SuccessFactors`; SAP's UI
-  hides this field for every other kind). Both are corroborated by the same third-party example
-  payload as above, not `$metadata`.
+- **`UserCredentials` fields — confirmed on a tenant**: `Kind` (SAP's UI calls this "Type")
+  takes only `default`, `successfactors` and `openconnectors`, in lower case; a tenant answered
+  every other value, including `SuccessFactors` and `OpenConnectors`, with 500 "Property 'Kind'
+  must one of [successfactors, default, openconnectors]" (2026-10-04). `CompanyId` is required
+  when `Kind` is `successfactors` (500 "Property 'CompanyId' must not be empty or null") and
+  hidden by SAP's UI for every other kind.
 - **`UserCredentials` fields — not exposed**: a deployment status (SAP's UI shows
   Stored/Deployed/Error for security material generally). This project could not confirm the
   OData property name for it and would rather omit a `Computed` attribute than expose one that

@@ -36,9 +36,9 @@ data "sapintegrationsuite_user_credential" "backend" {
 
 ### Read-Only
 
-- `company_id` (String) The SuccessFactors company ID, when kind is "SuccessFactors".
+- `company_id` (String) The SuccessFactors company ID, when kind is "successfactors".
 - `description` (String) The credential artifact's free-text description.
-- `kind` (String) The credential's system-specific type as SAP reports it: "default" for a generic credential, "SuccessFactors" or "OpenConnectors".
+- `kind` (String) The credential's system-specific type as SAP reports it: "default" for a generic credential, "successfactors" or "openconnectors".
 - `user` (String) The username that authenticates to the receiver system.
 
 ## Limitations

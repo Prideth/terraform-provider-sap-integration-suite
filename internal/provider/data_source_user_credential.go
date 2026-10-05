@@ -46,7 +46,7 @@ func (d *userCredentialDataSource) Schema(_ context.Context, _ datasource.Schema
 			},
 			"kind": schema.StringAttribute{
 				Computed:    true,
-				Description: "The credential's system-specific type as SAP reports it: \"default\" for a generic credential, \"SuccessFactors\" or \"OpenConnectors\".",
+				Description: "The credential's system-specific type as SAP reports it: \"default\" for a generic credential, \"successfactors\" or \"openconnectors\".",
 			},
 			"description": schema.StringAttribute{
 				Computed:    true,
@@ -58,7 +58,7 @@ func (d *userCredentialDataSource) Schema(_ context.Context, _ datasource.Schema
 			},
 			"company_id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The SuccessFactors company ID, when kind is \"SuccessFactors\".",
+				Description: "The SuccessFactors company ID, when kind is \"successfactors\".",
 			},
 		},
 	}
