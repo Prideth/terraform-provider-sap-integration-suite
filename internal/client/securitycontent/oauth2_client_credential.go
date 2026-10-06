@@ -19,7 +19,7 @@ const oauth2ClientCredentialsEntitySet = "OAuth2ClientCredentials" // #nosec G10
 // $metadata. ClientAuthentication, ScopeContentType, Resource and Audience are
 // plain Edm.String values whose accepted constants SAP does not document; they
 // are passed through unchanged. The CustomParameters navigation property is
-// not modeled because its write semantics are undocumented.
+// not modeled; see CountOAuth2ClientCredentialCustomParameters.
 type OAuth2ClientCredential struct {
 	Name                 string `json:"Name"`
 	Description          string `json:"Description,omitempty"`
@@ -135,6 +135,31 @@ func (c *Client) UpdateOAuth2ClientCredential(ctx context.Context, cred OAuth2Cl
 
 	_, err = c.odata.Put(ctx, oauth2ClientCredentialPath(cred.Name), payload)
 	return err
+}
+
+// oauth2CustomParameters reads only the CustomParameters navigation of a
+// credential, expanded, to count them. Key, Value and SendAsPartOf are not
+// decoded: the provider never keeps them.
+type oauth2CustomParameters struct {
+	CustomParameters v2.ExpandedCollection[json.RawMessage] `json:"CustomParameters"`
+}
+
+// CountOAuth2ClientCredentialCustomParameters returns how many custom
+// parameters a credential has. A tenant check (2026-10-04) showed that SAP
+// deletes all of them with every PUT that does not send them, and answers
+// 400 "CustomParameters cannot be updated using this operation" to a PUT
+// that does; MERGE answered 405 and PATCH 501. An update through this
+// client therefore always deletes them, and the resource warns first.
+func (c *Client) CountOAuth2ClientCredentialCustomParameters(ctx context.Context, name string) (int, error) {
+	body, err := c.odata.Get(ctx, v2.BuildPath(oauth2ClientCredentialsEntitySet, v2.KeyPredicate(name), "$expand=CustomParameters"))
+	if err != nil {
+		return 0, err
+	}
+	var cred oauth2CustomParameters
+	if err := v2.DecodeEntity(body, &cred); err != nil {
+		return 0, err
+	}
+	return len(cred.CustomParameters.Results), nil
 }
 
 // DeleteOAuth2ClientCredential deletes an OAuth2 client credential artifact

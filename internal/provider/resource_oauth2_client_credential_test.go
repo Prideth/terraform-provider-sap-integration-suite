@@ -2,12 +2,18 @@ package provider
 
 import (
 	"context"
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
+
+	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/securitycontent"
 )
 
 func oauth2ClientCredentialSchema(t *testing.T) resource.SchemaResponse {
@@ -139,5 +145,40 @@ func TestOAuth2ClientCredentialResource_TokenRequestSettingsKeepPriorState(t *te
 		if !keepsState {
 			t.Errorf("%s must use UseStateForUnknown so an omitted value is resent, not cleared, on PUT", name)
 		}
+	}
+}
+
+// An update deletes custom parameters set in SAP's UI (tenant check of
+// 2026-10-04); the plan must say so, and stay quiet when there are none.
+func TestOAuth2ClientCredentialResource_ModifyPlanWarnsAboutCustomParameters(t *testing.T) {
+	for _, c := range []struct {
+		name     string
+		response string
+		changed  bool
+		warnings int
+	}{
+		{"update with parameters", `{"d": {"Name": "BACKEND_OAUTH", "CustomParameters": {"results": [{"Key": "resource", "Value": "x", "SendAsPartOf": "body"}]}}}`, true, 1},
+		{"update without parameters", `{"d": {"Name": "BACKEND_OAUTH", "CustomParameters": {"results": []}}}`, true, 0},
+		{"no change", `{"d": {"Name": "BACKEND_OAUTH", "CustomParameters": {"results": [{"Key": "resource", "Value": "x", "SendAsPartOf": "body"}]}}}`, false, 0},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				_, _ = w.Write([]byte(c.response))
+			}))
+			defer server.Close()
+			r := &oauth2ClientCredentialResource{client: securitycontent.New(http.DefaultClient, server.URL)}
+			state := map[string]tftypes.Value{"id": str("BACKEND_OAUTH"), "client_id": str("one")}
+			plan := map[string]tftypes.Value{"id": str("BACKEND_OAUTH"), "client_id": str("one")}
+			if c.changed {
+				plan["client_id"] = str("two")
+			}
+			diags := modifyPlan(t, r, state, plan, false)
+			if diags.HasError() || diags.WarningsCount() != c.warnings {
+				t.Fatalf("diagnostics = %v, want %d warning(s) and no error", diags, c.warnings)
+			}
+			if c.warnings > 0 && !strings.Contains(diags[0].Detail(), "1 custom parameter") {
+				t.Errorf("detail %q does not name the count", diags[0].Detail())
+			}
+		})
 	}
 }

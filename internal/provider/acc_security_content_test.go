@@ -10,6 +10,7 @@ import (
 	"math/big"
 	"os"
 	"path/filepath"
+	"regexp"
 	"testing"
 	"time"
 
@@ -52,6 +53,44 @@ resource "sapintegrationsuite_user_credential" "test" {
 				// in-place update.
 				Config: config("rotated", "2"),
 				Check:  resource.TestCheckResourceAttr("sapintegrationsuite_user_credential.test", "description", "rotated"),
+			},
+			{
+				ResourceName:            "sapintegrationsuite_user_credential.test",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"password_wo_version"},
+			},
+		},
+	})
+}
+
+// SAP accepts the kinds only in lower case (tenant check of 2026-10-04);
+// releases before 0.5.1 documented "SuccessFactors", which failed at apply.
+func TestAccUserCredential_successFactorsKind(t *testing.T) {
+	accgate.Require(t, accgate.SecurityContent)
+	name := testAccName()
+	config := func(kind string) string {
+		return fmt.Sprintf(`
+resource "sapintegrationsuite_user_credential" "test" {
+  id                  = %[1]q
+  kind                = %[2]q
+  user                = "tfacc-user"
+  company_id          = "TFACCCOMPANY"
+  password_wo         = "tfacc-not-a-real-password"
+  password_wo_version = "1"
+}
+`, name, kind)
+	}
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{Config: config("SuccessFactors"), PlanOnly: true, ExpectError: regexp.MustCompile(`Use "successfactors"`)},
+			{
+				Config: config("successfactors"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sapintegrationsuite_user_credential.test", "kind", "successfactors"),
+					resource.TestCheckResourceAttr("sapintegrationsuite_user_credential.test", "company_id", "TFACCCOMPANY"),
+				),
 			},
 			{
 				ResourceName:            "sapintegrationsuite_user_credential.test",

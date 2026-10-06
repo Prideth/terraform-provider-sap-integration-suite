@@ -181,6 +181,52 @@ destroy graphs, add a `description` to every cue, and, if your graphs
 failed with HTTP 403, add `username` and `password` of a user with the
 role collection `Graph.KeyUser` to `api_composition`.
 
+## 0.5.1 — 2026-10-06
+
+0.5.1 is a patch release of 0.5.0. It fixes two defects in the security
+content resources that a tenant probe of 2026-10-04 uncovered. Nothing else
+changes.
+
+### Fixed
+
+- **`sapintegrationsuite_user_credential` accepts only the kinds SAP
+  takes.** SAP accepts `default`, `successfactors` and `openconnectors`, in
+  lower case only, and answers every other value with 500 "Property 'Kind'
+  must one of [successfactors, default, openconnectors]". Earlier releases
+  documented `SuccessFactors` and `OpenConnectors`, and the example used
+  `kind = "SuccessFactors"`: such a configuration passed the plan and failed
+  at apply. The provider now checks `kind` while Terraform validates the
+  configuration and names the right spelling. `kind = "successfactors"`
+  also requires `company_id`, which SAP otherwise refuses with 500
+  "Property 'CompanyId' must not be empty or null". The documentation and
+  the example use the lower-case values.
+
+- **`sapintegrationsuite_oauth2_client_credential` warns before an update
+  deletes custom parameters.** The tenant probe confirmed what the
+  documentation called unverified: SAP deletes all custom parameters of an
+  OAuth2 client credential with every `PUT` that does not send them,
+  refuses a `PUT` that does (400 "CustomParameters cannot be updated using
+  this operation"), and offers no other write path (`MERGE` 405, `PATCH`
+  501). Every update or replacement through the provider therefore deletes
+  custom parameters maintained in SAP's UI. The provider cannot keep them,
+  but the plan now shows the warning *Custom parameters will be deleted*
+  with their number when a credential that has any is about to be updated
+  or replaced. Cancel the apply, or set the parameters again in the UI
+  afterwards.
+
+### Upgrade notes
+
+- No resource is renamed and no state is migrated.
+- A `kind` of `SuccessFactors`, `OpenConnectors` or `Default` now fails
+  `terraform plan`; write it in lower case. Such configurations never
+  applied, because SAP refused them. Credentials that exist already report
+  their kind in lower case and need no change.
+- For the warning, the provider reads the credential with
+  `$expand=CustomParameters` while planning. SAP declares the
+  `CustomParameters` navigation in the tenant `$metadata` but does not
+  document it; the read was verified on a tenant. When it fails, the plan
+  goes on without the warning.
+
 ## 0.5.0 — 2026-10-04
 
 0.5.0 extends Integration Assessment from the landscape inventory to the

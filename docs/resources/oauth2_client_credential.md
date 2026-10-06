@@ -14,8 +14,8 @@ its name (`id`). The client secret is write-only: Terraform sends it but never s
 SAP never returns it.
 
 **Status:** partial. Name, description, token URL, client ID, secret, scope, client
-authentication, content type, resource and audience are managed. Custom parameters are not,
-because it is not documented how they are written.
+authentication, content type, resource and audience are managed. Custom parameters are not:
+SAP deletes them with every update through the API (see [Limitations](#limitations)).
 
 ## Prerequisites
 
@@ -97,9 +97,15 @@ an import redeploys the credential with the configured secret.
 - **SAP:** the accepted constants for `client_authentication` and `scope_content_type` are not
   documented; they are passed through as SAP stores them. The grant-type placement shown in the
   UI has no API property.
-- **Provider:** custom parameters are not managed. Because an update is a full `PUT`, custom
-  parameters set in the UI may not survive it; this has not been verified. Optional-computed
-  attributes cannot be cleared from Terraform once SAP holds a value. OAuth2 authorization code
+- **SAP:** an update deletes the credential's custom parameters. A tenant check of 2026-10-04
+  showed that a `PUT` without them removes all of them, a `PUT` that sends them is refused
+  ("CustomParameters cannot be updated using this operation"), and `MERGE` and `PATCH` are not
+  supported. Every update or replacement through Terraform therefore removes custom parameters
+  maintained in SAP's UI. When a credential has custom parameters, the plan of such a change
+  shows the warning *Custom parameters will be deleted* with their number: cancel the apply, or
+  set them again in the UI afterwards.
+- **Provider:** custom parameters are not managed. Optional-computed attributes cannot be
+  cleared from Terraform once SAP holds a value. OAuth2 authorization code
   and SAML bearer credentials are separate artifact types and not supported.
 
 ## Related

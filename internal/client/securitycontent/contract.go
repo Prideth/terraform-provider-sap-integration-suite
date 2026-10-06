@@ -11,6 +11,7 @@ var Contract = apimeta.Contract{
 	Reads: []apimeta.StructUse{
 		{EntitySet: oauth2ClientCredentialsEntitySet, Value: OAuth2ClientCredential{}},
 		{EntitySet: oauth2ClientCredentialsEntitySet, Value: oauth2ClientCredentialWriteRequest{}},
+		{EntitySet: oauth2ClientCredentialsEntitySet, Value: oauth2CustomParameters{}},
 		{EntitySet: userCredentialsEntitySet, Value: UserCredential{}},
 		{EntitySet: userCredentialsEntitySet, Value: userCredentialWriteRequest{}},
 		{EntitySet: secureParametersEntitySet, Value: SecureParameter{}},
@@ -18,6 +19,9 @@ var Contract = apimeta.Contract{
 		{EntitySet: keystoreEntriesEntitySet, Value: KeystoreEntry{}},
 		{EntitySet: keyPairGenerationRequestsEntitySet, Value: keyPairGenerationWireRequest{}},
 		{EntitySet: keystoreResourcesEntitySet, Value: deleteKeystoreEntriesRequest{}},
+	},
+	Navigations: []apimeta.NavigationUse{
+		{EntitySet: oauth2ClientCredentialsEntitySet, Property: "CustomParameters"},
 	},
 	Keys: []apimeta.KeyUse{
 		apimeta.Key(keystoreEntriesEntitySet, "Hexalias", "Edm.String"),
