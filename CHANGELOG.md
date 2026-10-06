@@ -9,7 +9,7 @@ contain breaking schema or lifecycle changes; each one is listed under
 "Breaking changes" together with the steps it needs. Patch releases (0.2.1)
 only fix defects in their minor release.
 
-## Unreleased
+## 0.5.1 — 2026-10-06
 
 0.5.1 is a patch release of 0.5.0. It fixes two defects in the security
 content resources that a tenant probe of 2026-10-04 uncovered. Nothing else
