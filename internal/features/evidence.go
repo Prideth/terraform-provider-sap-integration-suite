@@ -61,6 +61,8 @@ const (
 	srcHelpIA2     = "SAP Help, Integration Assessment APIs (docs/ISuite_Integration_Assessment/integration-assessment-apis-47847b5.md in SAP-docs/btp-integration-suite, last changed 2026-07-02), read 2026-09-29, and the Hub catalog of package SAPIntegrationAssessment (EntitiesAPI 1.0.0, specification behind a login)"
 	srcAccRun3     = "acceptance run of 2026-09-29 14:35 on the development tenant, including TestAccIntegrationAssessment_landscape with the in-place moves"
 	srcAccRun05    = "0.5.0 tenant gate of 2026-10-04 17:21 on release/0.5.x: TestAccIntegrationAssessment_landscape, _technologyProfile and _taxonomy passed"
+	// srcValueMappingProbe is the update probe of value mappings.
+	srcValueMappingProbe = "tenant-probe -ValueMappingTests on the development tenant (2026-10-06 20:00): PUT with content, name and both, SaveAsVersion up and down, delete, on a synthetic tfAccProbeVMUpd value mapping"
 	// srcVirtualHostProbe is the write path probe of classic virtual hosts.
 	srcVirtualHostProbe = "apim-probe -VirtualHostTests on the development tenant (2026-10-06 20:09) with an APIManagement.SelfService.Administrator key: create, update and delete of a tfaccprobe alias host, error answers, reads with both keys"
 	srcAccRun2          = "acceptance run of 2026-09-27 21:30 on the development tenant, including TestAccIntegrationAssessment_landscape"
@@ -90,17 +92,17 @@ func reaudited(finding, next string, sources ...string) EvidenceRecord {
 // Evidence holds a record for every feature that is not StatusSupported.
 var Evidence = map[string]EvidenceRecord{
 	// --- Cloud Integration ---
-	"cloud_integration.value_mapping": ev(
-		"Create, read, deploy and delete are verified on a tenant; an in-place content update is not documented, so every change replaces the artifact.",
-		"A tenant check of PUT on ValueMappingDesigntimeArtifacts, or SAP documentation of it, would allow in-place updates and save_as_version.",
-		srcHelp, srcMetaCI, srcTenant),
+	"cloud_integration.value_mapping": evOn("2026-10-06",
+		"Create, read, deploy and delete are verified on a tenant. SAP answers every PUT with 501 Not Implemented, so every change replaces the artifact; SaveAsVersion only relabels the single stored version.",
+		"None unless SAP implements an update; the replacement stays the only way to change a value mapping.",
+		srcHelp, srcMetaCI, srcTenant, srcValueMappingProbe),
 	"cloud_integration.value_mapping_entry": evOn("2026-09-27",
 		"On a synthetic value mapping, the first UpsertValMaps (IsConfigured=true) dropped the pair's design-time values, a second upsert of the same source value added a duplicate that SAP made the default, and DeleteValMaps answered 202 without removing anything. There is no safe update or destroy.",
 		"None within Terraform unless SAP documents an entry update and a delete that works; revisit when the Integration Content API reference changes.",
 		srcHelp, srcMetaCI, srcGapProbe),
 	"cloud_integration.design_time_versioning": ev(
 		"SaveAsVersion is documented for integration flows and in $metadata for every versioned design-time type; the provider uses it for flows, message mappings and script collections.",
-		"Value mappings need an in-place update first (see cloud_integration.value_mapping); the other types need their own resources.",
+		"Value mappings have no update (PUT answers 501) and their SaveAsVersion only relabels the one stored version, so they get no save_as_version; the other types need their own resources.",
 		srcHelp, srcMetaCI, srcTenant),
 	"cloud_integration.data_type": evOn("2026-10-03",
 		"TestAccDataType_basic passed on a tenant: create, in-place change of schema and description, import and SaveAsVersion. Create, update (PUT), SaveAsVersion and delete work on a tenant with the bundle SAP stores for a data type (XSD, additionalAttributes.json, metainfo.prop); elements added on create and update are kept. SAP Help documents no request, so the contract comes from the $metadata and the probes.",

@@ -181,9 +181,14 @@ var Catalog = []Feature{
 		PublicAPI:   true,
 		APIProtocol: "OData V2",
 		Limitations: []string{
-			"No confirmed in-place update: changing name, content, or content_hash replaces the resource (Terraform deletes the artifact and uploads it again) instead of calling an unverified PUT.",
-			"Explicit versions (ValueMappingDesigntimeArtifactSaveAsVersion) are not used yet; see cloud_integration.design_time_versioning.",
-			"Whether Delete removes only the active version or every version of the artifact is unconfirmed against a primary source.",
+			"No in-place update: a tenant probe (2026-10-06) got 501 Not Implemented for every PUT on " +
+				"ValueMappingDesigntimeArtifacts, with content, name or both, so changing name, content or " +
+				"content_hash replaces the resource (Terraform deletes the artifact and uploads it again).",
+			"ValueMappingDesigntimeArtifactSaveAsVersion (only in $metadata) answered 200 but only relabels " +
+				"the one stored version, even to a lower number, without changing the content. It adds nothing a " +
+				"new Bundle-Version in the ZIP does not, so the provider does not use it.",
+			"SAP keeps one version of a value mapping: Delete removes the artifact completely (tenant probe, " +
+				"2026-10-06).",
 		},
 		Operations: Operations{Create: true, Read: true, Update: false, Delete: true, Import: true},
 	},

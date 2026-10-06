@@ -150,6 +150,15 @@ elsewhere, it confirms names, keys and types but not which operations SAP accept
   concurrently, so it does not change this resource's observable behavior, but it means
   `terraform destroy` is not guaranteed to remove every version SAP stored — flagged here rather
   than asserted as "deletes all versions".
+- **Settled on a tenant (2026-10-06)**: a probe on a synthetic value mapping answered every `PUT`
+  on `ValueMappingDesigntimeArtifacts(Id,Version='active')` with `501 Not Implemented`, whether it
+  carried `Name` and `ArtifactContent`, only one of them, or `Id` and `PackageId` as well; the
+  content stayed unchanged. `ValueMappingDesigntimeArtifactSaveAsVersion` answered 200 with an
+  empty body and relabeled the one stored version (1.0.1 to 1.0.5, then even down to 1.0.4); the
+  old version numbers were 404 afterwards. `DELETE` of `active` removed the artifact completely.
+  So there is no in-place update to implement, `SaveAsVersion` adds nothing a new
+  `Bundle-Version` does not, and the delete-scope question above is answered: SAP keeps only one
+  version.
 - **Deferred — entry-level operations**: `UpsertValMaps` (POST, insert/update individual
   mapping rows — confirmed to 404 if the target source/target agency-identifier scheme does not
   already exist), `UpdateDefaultValMap` (POST, sets a scheme's default value via a `ValMapId`

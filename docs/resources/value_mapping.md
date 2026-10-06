@@ -86,8 +86,12 @@ replacement, setting it after an import replaces the value mapping on the first 
   dropped the design-time values, a duplicate source value became the new default, and a
   delete answered `202` without deleting anything. Individual entries are therefore not
   managed; the ZIP is the unit of change.
-- **Provider:** `SaveAsVersion` for value mappings is not used. Whether a delete removes every
-  saved version is not documented.
+- **SAP:** no update. A tenant probe in October 2026 got `501 Not Implemented` for every `PUT`,
+  with new content, a new name or both, so every change replaces the value mapping. SAP keeps a
+  single version, and a delete removes it completely.
+- **Provider:** `ValueMappingDesigntimeArtifactSaveAsVersion` is not used. It is only in the
+  `$metadata`, and on the tenant it only relabeled the one stored version, even to a lower
+  number; a new `Bundle-Version` in the ZIP does the same.
 
 ## Related
 

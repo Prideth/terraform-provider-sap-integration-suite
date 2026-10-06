@@ -261,6 +261,10 @@ artifact's design-time content, not a fully independent object graph creatable p
   update via `ValueMappingDesigntimeArtifactSaveAsVersion` is deferred (ROADMAP.md, P3), once its exact
   contract can be confirmed against a live tenant or a reachable primary source — see
   `docs/sap-api-references.md`.
+
+  **Settled on a tenant (2026-10-06):** SAP answers every `PUT` on a value mapping with `501 Not
+  Implemented`, and `SaveAsVersion` only relabels the single stored version. The replacement is
+  therefore not a conservative fallback but the only way to change a value mapping.
 - **Delete**: `DELETE ValueMappingDesigntimeArtifacts(Id='{mapping_id}',Version='active')`.
 - **Version**: Computed only, exactly like `sapintegrationsuite_integration_flow` — SAP
   assigns it, Terraform never asks the user to manage a version string, which is also what

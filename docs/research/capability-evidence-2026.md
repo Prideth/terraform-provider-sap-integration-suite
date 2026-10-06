@@ -69,7 +69,7 @@ Usable, but the provider deliberately leaves out part of the lifecycle; the limi
 `cloud_integration.design_time_versioning` · checked 2026-09-26
 
 - **Finding:** SaveAsVersion is documented for integration flows and in $metadata for every versioned design-time type; the provider uses it for flows, message mappings and script collections.
-- **Next step:** Value mappings need an in-place update first (see cloud_integration.value_mapping); the other types need their own resources.
+- **Next step:** Value mappings have no update (PUT answers 501) and their SaveAsVersion only relabels the one stored version, so they get no save_as_version; the other types need their own resources.
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
@@ -97,14 +97,15 @@ Usable, but the provider deliberately leaves out part of the lifecycle; the limi
 
 ### Value Mapping
 
-`cloud_integration.value_mapping` · checked 2026-09-26
+`cloud_integration.value_mapping` · checked 2026-10-06
 
-- **Finding:** Create, read, deploy and delete are verified on a tenant; an in-place content update is not documented, so every change replaces the artifact.
-- **Next step:** A tenant check of PUT on ValueMappingDesigntimeArtifacts, or SAP documentation of it, would allow in-place updates and save_as_version.
+- **Finding:** Create, read, deploy and delete are verified on a tenant. SAP answers every PUT with 501 Not Implemented, so every change replaces the artifact; SaveAsVersion only relabels the single stored version.
+- **Next step:** None unless SAP implements an update; the replacement stays the only way to change a value mapping.
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
   - tenant probes and acceptance runs on a development tenant (September 2026)
+  - tenant-probe -ValueMappingTests on the development tenant (2026-10-06 20:00): PUT with content, name and both, SaveAsVersion up and down, delete, on a synthetic tfAccProbeVMUpd value mapping
 
 ### Key Pair
 

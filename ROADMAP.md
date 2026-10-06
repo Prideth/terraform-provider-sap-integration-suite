@@ -106,7 +106,8 @@ These need no further research, only a run of the prepared tests:
 
 ## P3 — later
 
-9. Value mapping in-place update and `save_as_version` (needs a verified PUT).
+9. **Value mapping update — settled.** A tenant probe (2026-10-06) got 501 for every `PUT`, and
+   `SaveAsVersion` only relabels the single stored version; value mappings stay replace-on-change.
 10. Integration adapters tested with real adapter content (create and read are not documented
     by an example).
 11. Classic certificate stores, applications, cache resources, rate plans, policy templates and

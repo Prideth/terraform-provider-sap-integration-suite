@@ -102,7 +102,8 @@ only if something moves the version or triggers a redeploy:
   ```
 
 - **Value mappings** have no `save_as_version`, and changing their content replaces the
-  artifact. Their version comes from `Bundle-Version` in the ZIP (a value mapping created from a
+  artifact: SAP answers every `PUT` on a value mapping with `501 Not Implemented` (tenant probe,
+  October 2026). Their version comes from `Bundle-Version` in the ZIP (a value mapping created from a
   ZIP with `Bundle-Version: 1.0.1` reported version 1.0.1). Raise it with each change, or pass
   the content hash to the deployment's `redeploy_triggers`.
 
