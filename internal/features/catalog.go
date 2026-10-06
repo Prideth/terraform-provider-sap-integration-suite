@@ -1447,30 +1447,38 @@ var Catalog = []Feature{
 		Name:   "API Management Virtual Host (Classic)",
 		Description: "A virtual host of the Classic API Portal: the default-domain alias or custom " +
 			"domain (with one-way or mutual TLS) under which API proxies are exposed.",
-		SupportStatus: StatusResearchRequired,
-		SupportReason: ReasonPublicAPIIncomplete,
-		PublicAPI:     true,
-		APIProtocol:   "OData V2 (Configuration.svc/VirtualHostRequests, Management.svc/VirtualHosts)",
-		Planned:       true,
+		SupportStatus:  StatusExperimental,
+		SupportReason:  ReasonPublicAPIIncomplete,
+		ContractSource: SourceSAPDocumentation,
+		ResourceTypes:  []string{"sapintegrationsuite_api_management_virtual_host"},
+		PublicAPI:      true,
+		APIProtocol:    "OData V2 (Configuration.svc/VirtualHostRequests, Management.svc/VirtualHosts)",
+		Planned:        true,
 		Limitations: []string{
 			"Create, update and delete are documented in SAP Help (Configuring a Default Domain / " +
 				"Custom Domain / Mutual TLS for a Virtual Host): POST " +
 				"/apiportal/operations/1.0/Configuration.svc/VirtualHostRequests with operation " +
-				"CREATE, UPDATE or DELETE and the fields accountId, virtualHostUrl (max 63 characters " +
-				"for an alias), isDefaultVirtualHostRequest, isForCustomDomain, keyStoreName, " +
-				"keyStoreAlias, trustStore, isClientAuthEnabled and virtualHostId. The response carries " +
-				"virtualHostId and allocationStatus.",
-			"Reading is confirmed by an API Portal tenant's Management.svc $metadata (September " +
-				"2026): VirtualHosts has the key id and the properties name, virtual_host, " +
-				"virtual_port, isDefault, isSSL, isForCustomDomain, isClientAuthEnabled, keyStoreName, " +
-				"keyStoreAlias, trustStore and projectPath, which covers every field the write request " +
-				"sets. A GET with an APIPortal.Administrator key returned 200. Whether " +
-				"allocationStatus can be anything other than COMPLETE is still not documented, and the " +
-				"write path has not been exercised.",
-			"Needs a service key with the APIManagement.SelfService.Administrator role, separate from " +
-				"APIPortal.Administrator. Deletion is refused while proxies (deployed, draft or in a " +
-				"revision) reference the host or while it is the default.",
+				"CREATE, UPDATE or DELETE. The resource sends the default domain bodies: accountId " +
+				"(the subaccount subdomain), virtualHostUrl (the alias), isDefaultVirtualHostRequest " +
+				"and, for update and delete, virtualHostId.",
+			"Tenant probe (2026-10-06) with a key of the role APIManagement.SelfService.Administrator: " +
+				"create, update and delete answered 201 and took effect at once (allocationStatus " +
+				"COMPLETE). virtualHostId is the id of Management.svc/VirtualHosts; SAP returns the full " +
+				"host name <alias>.<tenant domain>, not <alias>.sapdefaultdomain as in SAP Help. A " +
+				"duplicate alias, more than 63 characters and characters other than letters, digits and " +
+				"hyphens are refused with 400; an unknown or deleted ID with 400 " +
+				"VHR_NO_COMPLETED_RECORD_FOUND.",
+			"That key reads the list Management.svc/VirtualHosts but not a single entity (403), so " +
+				"the resource looks a host up in the list. Configuration.svc does not serve its " +
+				"$metadata to either key (403); the request fields come from SAP Help and the tenant's " +
+				"answers.",
+			"Custom domains and mutual TLS (keyStoreName, keyStoreAlias, trustStore, " +
+				"isClientAuthEnabled, isForCustomDomain) are documented but not tested, and the " +
+				"resource refuses to manage hosts that use them. It never makes a host the default " +
+				"one. Deletion is refused by SAP while proxies (deployed, draft or in a revision) " +
+				"reference the host or while it is the default.",
 		},
+		Operations: Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
 	},
 	{
 		Key:    "api_management.classic.api_product",

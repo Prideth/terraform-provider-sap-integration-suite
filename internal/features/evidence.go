@@ -61,7 +61,9 @@ const (
 	srcHelpIA2     = "SAP Help, Integration Assessment APIs (docs/ISuite_Integration_Assessment/integration-assessment-apis-47847b5.md in SAP-docs/btp-integration-suite, last changed 2026-07-02), read 2026-09-29, and the Hub catalog of package SAPIntegrationAssessment (EntitiesAPI 1.0.0, specification behind a login)"
 	srcAccRun3     = "acceptance run of 2026-09-29 14:35 on the development tenant, including TestAccIntegrationAssessment_landscape with the in-place moves"
 	srcAccRun05    = "0.5.0 tenant gate of 2026-10-04 17:21 on release/0.5.x: TestAccIntegrationAssessment_landscape, _technologyProfile and _taxonomy passed"
-	srcAccRun2     = "acceptance run of 2026-09-27 21:30 on the development tenant, including TestAccIntegrationAssessment_landscape"
+	// srcVirtualHostProbe is the write path probe of classic virtual hosts.
+	srcVirtualHostProbe = "apim-probe -VirtualHostTests on the development tenant (2026-10-06 20:09) with an APIManagement.SelfService.Administrator key: create, update and delete of a tfaccprobe alias host, error answers, reads with both keys"
+	srcAccRun2          = "acceptance run of 2026-09-27 21:30 on the development tenant, including TestAccIntegrationAssessment_landscape"
 )
 
 const checked = "2026-09-26"
@@ -230,10 +232,10 @@ var Evidence = map[string]EvidenceRecord{
 		"Policies are XML inside the proxy bundle, not separate entities; the proxy resource manages them as content.",
 		"None; policies stay part of the proxy bundle.",
 		srcRecipes, srcMetaAPIM),
-	"api_management.classic.virtual_host": ev(
-		"Create, update and delete are documented through Configuration.svc/VirtualHostRequests; the read schema is confirmed. The write path needs the APIManagement.SelfService.Administrator role and answered 403 with an administrator key.",
-		"A service key with APIManagement.SelfService.Administrator and a tenant test (a tenant-wide change, so a destructive gate).",
-		srcHelp, srcMetaAPIM, srcHubAPIM, srcTenant),
+	"api_management.classic.virtual_host": evOn("2026-10-06",
+		"Create, update and delete through Configuration.svc/VirtualHostRequests are documented and worked on a tenant with an APIManagement.SelfService.Administrator key: synchronous, 201, virtualHostId equal to the VirtualHosts id. sapintegrationsuite_api_management_virtual_host manages default domain hosts.",
+		"TestAccAPIManagementVirtualHost_basic passing on a tenant makes the resource supported; custom domains and mutual TLS need a keystore, a truststore and their own tenant test.",
+		srcHelp, srcMetaAPIM, srcHubAPIM, srcVirtualHostProbe),
 	"api_management.classic.certificate_store": ev(
 		"Schema confirmed; the Hub describes the KeyStore and TrustStore APIs as create and view only.",
 		"Documented update and delete.",

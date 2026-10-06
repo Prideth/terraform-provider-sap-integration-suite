@@ -25,6 +25,7 @@ deployed integration flow and its endpoint URL.
 | Partner Directory | string and binary parameters, alternative partners, authorized users, user credential parameters | `oauth` block |
 | Access policies | policies and their artifact references | `oauth` block |
 | Classic API Management | API providers, API products, certificate store references, key value maps | `api_management` block |
+| Classic API Management virtual hosts | additional virtual hosts on the default domain (experimental) | `api_management_self_service` block |
 | API Composition | business data graphs | `api_composition` block |
 | Integration Assessment | vendors, applications, application instances, technologies, technology instances, technology profiles (unofficial) | `integration_assessment` block |
 
@@ -73,6 +74,7 @@ reuses one client for another area, because SAP issues them from different servi
 |---|---|---|---|
 | `host` + `oauth` | Process Integration Runtime (`it-rt`) | `api` | Cloud Integration, Security Content, Partner Directory, access policies |
 | `api_management` | API Management, API portal | `apiportal-apiaccess` | Classic API Management |
+| `api_management_self_service` | API Management, API portal, role `APIManagement.SelfService.Administrator` | `apiportal-apiaccess` | Classic virtual hosts |
 | `api_composition` | API Composition | `configuration` | business data graphs |
 | `integration_assessment` | Integration Assessment APIs | `default` | the Integration Assessment landscape |
 
@@ -102,6 +104,7 @@ block wins; an attribute that is unset or an empty string falls back to its vari
 | `oauth.client_id` | `SAP_INTEGRATION_SUITE_CLIENT_ID` |
 | `oauth.client_secret` | `SAP_INTEGRATION_SUITE_CLIENT_SECRET` |
 | `api_management.*` | `SAP_INTEGRATION_SUITE_API_MANAGEMENT_HOST`, `_TOKEN_URL`, `_CLIENT_ID`, `_CLIENT_SECRET` |
+| `api_management_self_service.*` | `SAP_INTEGRATION_SUITE_API_MANAGEMENT_SELF_SERVICE_HOST`, `_TOKEN_URL`, `_CLIENT_ID`, `_CLIENT_SECRET`, `_SUBACCOUNT_SUBDOMAIN` |
 | `api_composition.*` | `SAP_INTEGRATION_SUITE_API_COMPOSITION_HOST`, `_TOKEN_URL`, `_CLIENT_ID`, `_CLIENT_SECRET`, `_USERNAME`, `_PASSWORD`, `_ORIGIN` |
 | `integration_assessment.*` | `SAP_INTEGRATION_SUITE_INTEGRATION_ASSESSMENT_ENTITIES_URL`, `_TOKEN_URL`, `_CLIENT_ID`, `_CLIENT_SECRET` |
 | `enable_experimental` | `SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL` |
@@ -109,8 +112,9 @@ block wins; an attribute that is unset or an empty string falls back to its vari
 | `convert_ui_labels` | `SAP_INTEGRATION_SUITE_CONVERT_UI_LABELS` |
 
 Missing Cloud Integration credentials do not fail the provider configuration; a resource or
-data source that needs them fails with an error that says what is missing. The `api_management`
-`api_composition` and `integration_assessment` blocks must have all four values or none; a
+data source that needs them fails with an error that says what is missing. The `api_management`,
+`api_management_self_service`, `api_composition` and `integration_assessment` blocks must have
+all four credential values or none; a
 partial block fails at once. The optional user login of `api_composition` needs `username` and
 `password` together.
 The feature catalog data sources work without any credentials.
@@ -310,6 +314,7 @@ The [Troubleshooting guide](guides/troubleshooting.md) covers more cases, and
 
 - `api_composition` (Block, Optional) Credentials for API Composition's Configuration API, used only by sapintegrationsuite_business_data_graph. The API has its own region-specific host and OAuth client, from a service key of an API Composition service instance with plan "configuration"; the oauth and api_management credentials do not work there. Set host, token_url, client_id and client_secret together, or none. username and password add a key user's login through that client, which the Configuration API needed on a tenant. Each value can also come from a SAP_INTEGRATION_SUITE_API_COMPOSITION_* environment variable. (see [below for nested schema](#nestedblock--api_composition))
 - `api_management` (Block, Optional) Optional, and independent of the oauth block above. Classic API Management (API Providers, API Products, Key Value Maps, Certificate Store References) authenticates against its own API Portal application URL and its own OAuth 2.0 client, generated from the apiportal-apiaccess service plan — never the Cloud Integration credentials configured above. Leave this entire block out if you do not use any sapintegrationsuite_api_provider, sapintegrationsuite_api_product, sapintegrationsuite_api_key_value_map, or sapintegrationsuite_api_management_certificate_store_reference resource or data source. All four values (or their SAP_INTEGRATION_SUITE_API_MANAGEMENT_* environment variable equivalents) must be supplied together, or all left unset. (see [below for nested schema](#nestedblock--api_management))
+- `api_management_self_service` (Block, Optional) Optional. A second Classic API Management key, used only by sapintegrationsuite_api_management_virtual_host. SAP lets only the role APIManagement.SelfService.Administrator create, change and delete virtual hosts; the api_management key, with APIPortal.Administrator, is refused. Create a second service instance of API Management, API portal, plan apiportal-apiaccess, with the parameter {"role": "APIManagement.SelfService.Administrator"}, and a service key for it. Set host, token_url, client_id and client_secret together, or none. Each value can also come from a SAP_INTEGRATION_SUITE_API_MANAGEMENT_SELF_SERVICE_* environment variable. (see [below for nested schema](#nestedblock--api_management_self_service))
 - `convert_ui_labels` (Boolean) Lets sapintegrationsuite_access_policy_reference accept the labels SAP's UI shows where SAP's API stores constants: "Matches" and "Equals" as operator, "name" or "Id" as attribute, and an artifact type label that spells exactly its constant, such as "Integration Flow" for INTEGRATION_FLOW. The provider sends the constant and shows each conversion as a plan warning; the state keeps your spelling. Only these proven conversions are made; other labels are still rejected with the value to use. Experimental: takes effect only together with enable_experimental = true. Off by default. Can also be set via the SAP_INTEGRATION_SUITE_CONVERT_UI_LABELS environment variable.
 - `enable_experimental` (Boolean) Allows resources and data sources whose support status is "experimental": implemented on a documented API, but their lifecycle has not yet passed an acceptance test on a tenant, so behavior or schema may still change. Off by default; a configuration that uses one fails until this is true. Can also be set via the SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL environment variable. See docs/feature-support.md for which ones they are.
 - `enable_unofficial` (Boolean) Allows resources and data sources whose support status is "unofficial": they work and were verified on a tenant, but SAP does not document the API behind them (it is known only from the service's $metadata), so SAP may change it without notice. It also allows the unofficial operations of otherwise documented resources, for example updating a message mapping's content in place or deleting a number range. Off by default; a configuration or plan that needs one fails until this is true. Can also be set via the SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL environment variable.
@@ -340,6 +345,18 @@ Optional:
 - `client_secret` (String, Sensitive) OAuth 2.0 client secret from the apiportal-apiaccess service key. Can also be set via the SAP_INTEGRATION_SUITE_API_MANAGEMENT_CLIENT_SECRET environment variable.
 - `host` (String) Base URL of the API Portal application, for example https://<tenant>.prod-eu10.apiportal.cfapps.eu10.hana.ondemand.com, as returned by the apiportal-apiaccess service key's "url" field. Can also be set via the SAP_INTEGRATION_SUITE_API_MANAGEMENT_HOST environment variable.
 - `token_url` (String) OAuth 2.0 token endpoint URL from the apiportal-apiaccess service key's "tokenUrl" field. Can also be set via the SAP_INTEGRATION_SUITE_API_MANAGEMENT_TOKEN_URL environment variable.
+
+
+<a id="nestedblock--api_management_self_service"></a>
+### Nested Schema for `api_management_self_service`
+
+Optional:
+
+- `client_id` (String) OAuth 2.0 client ID from the service key. Environment variable: SAP_INTEGRATION_SUITE_API_MANAGEMENT_SELF_SERVICE_CLIENT_ID.
+- `client_secret` (String, Sensitive) OAuth 2.0 client secret from the service key. Environment variable: SAP_INTEGRATION_SUITE_API_MANAGEMENT_SELF_SERVICE_CLIENT_SECRET.
+- `host` (String) Base URL of the API portal, the service key's "url" (the same host as in api_management). Environment variable: SAP_INTEGRATION_SUITE_API_MANAGEMENT_SELF_SERVICE_HOST.
+- `subaccount_subdomain` (String) Subdomain of the subaccount, which SAP's virtual host requests send as accountId. By default it is the first label of token_url (https://<subdomain>.authentication.<region>.hana.ondemand.com/oauth/token). Set it when your token URL has another form. Environment variable: SAP_INTEGRATION_SUITE_API_MANAGEMENT_SELF_SERVICE_SUBACCOUNT_SUBDOMAIN.
+- `token_url` (String) OAuth 2.0 token endpoint, the service key's "tokenUrl". Environment variable: SAP_INTEGRATION_SUITE_API_MANAGEMENT_SELF_SERVICE_TOKEN_URL.
 
 
 <a id="nestedblock--integration_assessment"></a>

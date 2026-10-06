@@ -58,6 +58,22 @@ func requireAPIManagementClassicHTTPClient(data *Data, noun string, diags *diag.
 	return false
 }
 
+// requireAPIManagementSelfServiceHTTPClient is the counterpart of
+// requireHTTPClient for provider.api_management_self_service, which only
+// virtual hosts need.
+func requireAPIManagementSelfServiceHTTPClient(data *Data, noun string, diags *diag.Diagnostics) bool {
+	if data.APIManagementSelfServiceHTTPClient != nil {
+		return true
+	}
+	diags.AddError(
+		"Classic API Management self-service configuration is required for this "+noun+".",
+		"Configure provider.api_management_self_service (host, token_url, client_id, client_secret) with a "+
+			"key whose service instance has the role APIManagement.SelfService.Administrator, or the "+
+			"corresponding SAP_INTEGRATION_SUITE_API_MANAGEMENT_SELF_SERVICE_* environment variables.",
+	)
+	return false
+}
+
 // requireAPICompositionHTTPClient is the API Composition counterpart of
 // requireHTTPClient. provider.api_composition is optional, so the check
 // happens when a resource or data source that needs it is configured.

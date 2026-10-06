@@ -2,9 +2,9 @@
 page_title: "Classic API Management"
 subcategory: "API Management"
 description: |-
-  API Providers, API Products, Key Value Maps and Certificate Store References for Classic API
-  Management — what this provider manages, what it deliberately does not (including API proxies,
-  for now), and exactly what evidence every decision rests on.
+  API Providers, API Products, Key Value Maps, Certificate Store References and Virtual Hosts
+  for Classic API Management — what this provider manages, what it deliberately does not
+  (including API proxies, for now), and exactly what evidence every decision rests on.
 ---
 
 # Classic API Management
@@ -67,6 +67,7 @@ it consumes.
 | API Product | `sapintegrationsuite_api_product` | Create, Read, Delete — no Update |
 | Certificate Store Reference | `sapintegrationsuite_api_management_certificate_store_reference` | Full CRUD |
 | Key Value Map | `sapintegrationsuite_api_key_value_map` | Create, Read, Delete — no Update, unencrypted only |
+| Virtual Host | `sapintegrationsuite_api_management_virtual_host` | Full CRUD on the default domain, experimental, own key |
 
 Every one of these is confirmed field-for-field against SAP's own official "SAP API Management
 Standalone Service" user guide (its worked Create/Update/Delete request and response bodies),
@@ -216,6 +217,53 @@ always sends `isEncrypted = false` and its `ValidateConfig` rejects `encrypted =
 Store secret values through unencrypted maps only until SAP's encrypted-entry read-back behavior
 is confirmed, or manage them outside Terraform.
 
+### Virtual Host
+
+An additional host name on the tenant's default domain, `<alias>.<tenant domain>`, under which
+the API portal exposes API proxies, for example `prod-apis.<tenant domain>` next to the default
+host. Experimental: set `enable_experimental = true`.
+
+```hcl
+resource "sapintegrationsuite_api_management_virtual_host" "prod" {
+  alias = "prod-apis"
+}
+```
+
+**A third key.** SAP lets only the role `APIManagement.SelfService.Administrator` change virtual
+hosts; a tenant answered the `api_management` key's requests with 403. Create a second service
+instance of plan `apiportal-apiaccess` with the parameter
+`{"role": "APIManagement.SelfService.Administrator"}` and configure its key in the
+`api_management_self_service` block:
+
+```hcl
+provider "sapintegrationsuite" {
+  enable_experimental = true
+
+  api_management_self_service {
+    host          = var.api_management_host
+    token_url     = var.self_service_token_url
+    client_id     = var.self_service_client_id
+    client_secret = var.self_service_client_secret
+  }
+}
+```
+
+**Requests, not entities.** Every change is a `POST` to
+`/apiportal/operations/1.0/Configuration.svc/VirtualHostRequests` with an `operation` of
+`CREATE`, `UPDATE` or `DELETE`, the subaccount subdomain as `accountId` (taken from the token URL
+unless `subaccount_subdomain` is set) and the alias as `virtualHostUrl`, exactly as SAP Help
+documents it. A tenant probe in October 2026 showed that each request takes effect at once, that
+the `virtualHostId` of the answer is the `id` of `Management.svc/VirtualHosts`, and that the
+self-service key may read that list but not a single host, so the provider looks a host up in
+the list. A changed alias renames the host in place; SAP then asks to redeploy and republish the
+proxies of products that use it.
+
+**Default domain only, for now.** Custom domains and mutual TLS use the same requests with a
+keystore, key alias, truststore and client authentication. They are documented but have not been
+tested, so the resource refuses to change or import hosts that use them, and it never makes a
+host the default one. SAP refuses to delete a virtual host while any proxy, deployed, draft or in
+an old revision, still references it, or while it is the default.
+
 ## What this provider deliberately does not manage, in this phase
 
 ### API Proxy, not yet
@@ -250,22 +298,12 @@ of the proxy's own opaque content, exactly like Cloud Integration's design-time 
 provider does not attempt to reproduce SAP's
 entire policy schema catalog as nested Terraform blocks.
 
-### Virtual Hosts
+### Virtual hosts with a custom domain or mutual TLS
 
-Classic virtual hosts, the default-domain aliases and custom domains under which proxies are
-reachable, have a documented API. It works with requests rather than entities: every change is a
-`POST` to `/apiportal/operations/1.0/Configuration.svc/VirtualHostRequests` with an `operation`
-of `CREATE`, `UPDATE` or `DELETE`, the subaccount subdomain as `accountId`, the alias or custom
-domain as `virtualHostUrl`, and for custom domains or mutual TLS the keystore, key alias and
-truststore. It needs a service key with the `APIManagement.SelfService.Administrator` role, which
-is a different role from the `APIPortal.Administrator` the other Classic resources use.
-
-What is missing is the read side. SAP only says that `Management.svc/VirtualHosts` returns the
-`virtualHostId`, and documents none of that entity's other fields. Without them the provider
-could create a virtual host but never notice when it changes or disappears, so it waits for the
-entity's schema (`Management.svc/$metadata` from an API Portal tenant would settle it). Keep in
-mind that SAP refuses to delete a virtual host while any proxy, deployed, draft or in an old
-revision, still references it, or while it is the default.
+The same `VirtualHostRequests` take a keystore (or a certificate store reference), a key alias and
+a truststore for custom domains and mutual TLS. They need DNS for the custom domain and TLS
+material in the API portal, and have not been tested yet; until they are,
+`sapintegrationsuite_api_management_virtual_host` manages default domain hosts only.
 
 ### Monetization, Rate Plans, and analytics
 
@@ -295,6 +333,9 @@ properties from SAP, so the configuration has to match them exactly, or the next
 replaces the product.
 `sapintegrationsuite_api_key_value_map` imports via its composite key,
 `"<name>/<scope>/<scope_id>"` (`terraform import sapintegrationsuite_api_key_value_map.oc_instance_token apim.oc.instance.token/APIPROXY/SampleAPI`).
+`sapintegrationsuite_api_management_virtual_host` imports by its ID, its alias or its full host
+name (`terraform import sapintegrationsuite_api_management_virtual_host.prod prod-apis`); a host
+renamed outside Terraform shows up as an alias change.
 
 Drift detection reads back every attribute this provider writes, except: `password_wo` on
 `sapintegrationsuite_api_provider` (write-only by design, never returned by `GET`, and this

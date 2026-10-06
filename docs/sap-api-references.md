@@ -1412,9 +1412,28 @@ response returns an `apimgmtconfiguration.VirtualHostRequest` with `virtualHostI
 `Management.svc/VirtualHosts`; its properties (key `id`; `name`, `virtual_host`, `virtual_port`,
 `isDefault`, `isSSL`, `isForCustomDomain`, `isClientAuthEnabled`, `keyStoreName`,
 `keyStoreAlias`, `trustStore`, `projectPath`) are confirmed by the committed
-`Management.svc/$metadata` snapshot. Recorded as `api_management.classic.virtual_host`,
-`public_api_incomplete`, until the write path has been exercised with the
-`APIManagement.SelfService.Administrator` role.
+`Management.svc/$metadata` snapshot.
+
+A tenant probe on 2026-10-06 (`apim-probe -VirtualHostTests`) exercised the write path with an
+`APIManagement.SelfService.Administrator` key, on a `tfaccprobe` alias host only:
+
+- `CREATE`, `UPDATE` and `DELETE` with the documented default domain bodies answered 201 and
+  took effect at once; create and update answered `allocationStatus` `COMPLETE`, delete `null`.
+  An update also worked with only `virtualHostId`, `virtualHostUrl` and `operation`.
+- The answer's `virtualHostId` is the `id` of `Management.svc/VirtualHosts`; each request has
+  its own `id`. `virtualHostUrl` came back as the full host name `<alias>.<tenant domain>`, not
+  as `<alias>.sapdefaultdomain` like the sample in SAP Help.
+- Errors, all 400: `VHR_URL_ALREADY_IN_USE` (duplicate alias),
+  `VHR_VIRTUALHOST_ALIAS_LENGTH_GREATER_THAN_63_CHARS`, `VHR_VIRTUALHOST_ALIAS_FORMAT_INVALID`
+  ("only Alphanumerics and hyphens", no leading or trailing hyphen) and
+  `VHR_NO_COMPLETED_RECORD_FOUND` for an unknown or deleted `virtualHostId`.
+- The self-service key may list `Management.svc/VirtualHosts` but not read
+  `VirtualHosts('<id>')` (403), and reads `Configuration.svc/VirtualHostRequests`, which the
+  `APIPortal.Administrator` key may not (403). `Configuration.svc/$metadata` answered 403 to both
+  keys, so no schema backs the request fields beyond SAP Help and the tenant's answers.
+
+`sapintegrationsuite_api_management_virtual_host` (0.9.0, experimental) implements default domain
+hosts on this basis; custom domains and mutual TLS stay untested.
 
 ### Not evaluated this phase
 

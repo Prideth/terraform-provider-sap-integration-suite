@@ -119,6 +119,27 @@ become the 0.8.0 section once 0.7.0 is released.
   attribute, the plan of an update warns when SAP holds parameters set in its
   UI. An import reads the parameters SAP holds.
 
+### Planned for 0.9.0: Classic virtual hosts
+
+These entries are on `feature/classic-virtual-hosts`, which builds on 0.8.0;
+they become the 0.9.0 section once 0.8.0 is released.
+
+- `sapintegrationsuite_api_management_virtual_host` (experimental, needs
+  `enable_experimental`): an additional virtual host of Classic API
+  Management on the tenant's default domain, `<alias>.<tenant domain>`. It
+  uses the requests SAP Help documents (`Configuration.svc/VirtualHostRequests`
+  with CREATE, UPDATE and DELETE) and reads the host from
+  `Management.svc/VirtualHosts`. A changed alias renames the host in place;
+  import takes the ID, the alias or the host name. Custom domains and mutual
+  TLS are not managed yet; the resource refuses hosts that use them. A tenant
+  probe created, renamed and deleted a host with exactly these requests; the
+  acceptance test has not run yet.
+- New provider block `api_management_self_service`: the key of a second
+  `apiportal-apiaccess` instance with the role
+  `APIManagement.SelfService.Administrator`, which SAP requires for virtual
+  hosts (the `api_management` key gets 403). `subaccount_subdomain` is taken
+  from the token URL unless set.
+
 ## 0.6.0 — 2026-10-03
 
 0.6.0 makes the API Composition business data graph usable on a tenant. The

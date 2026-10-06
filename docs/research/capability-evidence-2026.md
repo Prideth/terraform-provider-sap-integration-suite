@@ -19,8 +19,9 @@ And the provider never uses browser endpoints of SAP's UIs.
 |---|---:|
 | 🟡 Partial (`partial`) | 10 |
 | 👁️ Read-only (`read_only`) | 3 |
+| 🧪 Experimental (`experimental`) | 1 |
 | 🧭 Unofficial (`unofficial`) | 9 |
-| 🔬 Research required (`research_required`) | 5 |
+| 🔬 Research required (`research_required`) | 4 |
 | ❌ Public API incomplete (`public_api_incomplete`) | 8 |
 | ❌ Unsafe Terraform lifecycle (`unsafe_terraform_lifecycle`) | 2 |
 | ❌ No public API (`no_public_api`) | 26 |
@@ -173,6 +174,22 @@ Available as a data source only; the provider never creates, changes or deletes 
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
   - tenant probes and acceptance runs on a development tenant (September 2026)
 
+## 🧪 Experimental
+
+Implementation exists, but its lifecycle has not yet been sufficiently validated against a real SAP tenant.
+
+### API Management Virtual Host (Classic)
+
+`api_management.classic.virtual_host` · checked 2026-10-06
+
+- **Finding:** Create, update and delete through Configuration.svc/VirtualHostRequests are documented and worked on a tenant with an APIManagement.SelfService.Administrator key: synchronous, 201, virtualHostId equal to the VirtualHosts id. sapintegrationsuite_api_management_virtual_host manages default domain hosts.
+- **Next step:** TestAccAPIManagementVirtualHost_basic passing on a tenant makes the resource supported; custom domains and mutual TLS need a keystore, a truststore and their own tenant test.
+- **Sources:**
+  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
+  - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
+  - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
+  - apim-probe -VirtualHostTests on the development tenant (2026-10-06 20:09) with an APIManagement.SelfService.Administrator key: create, update and delete of a tfaccprobe alias host, error answers, reads with both keys
+
 ## 🧭 Unofficial
 
 Implementation has been validated, but relies on an API contract that SAP does not fully publish or officially document.
@@ -313,18 +330,6 @@ The capability has been identified, but its public API coverage, lifecycle seman
 - **Sources:**
   - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
   - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
-
-### API Management Virtual Host (Classic)
-
-`api_management.classic.virtual_host` · checked 2026-09-26
-
-- **Finding:** Create, update and delete are documented through Configuration.svc/VirtualHostRequests; the read schema is confirmed. The write path needs the APIManagement.SelfService.Administrator role and answered 403 with an administrator key.
-- **Next step:** A service key with APIManagement.SelfService.Administrator and a tenant test (a tenant-wide change, so a destructive gate).
-- **Sources:**
-  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
-  - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
-  - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
-  - tenant probes and acceptance runs on a development tenant (September 2026)
 
 ### Data Space Integration
 

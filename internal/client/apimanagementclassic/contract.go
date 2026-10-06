@@ -18,6 +18,7 @@ var Contract = apimeta.Contract{
 		{EntitySet: genericKeyMapEntriesEntitySet, Value: KeyValueMap{}},
 		{EntitySet: genericKeyMapEntriesEntitySet, Value: keyValueMapReadWire{}},
 		{EntitySet: "GenericKeyMapEntryValues", Value: keyValueMapEntryValueWire{}},
+		{EntitySet: virtualHostsEntitySet, Value: VirtualHost{}},
 	},
 	// Create bodies with deep inserts; never decoded.
 	Writes: []apimeta.StructUse{
@@ -31,6 +32,7 @@ var Contract = apimeta.Contract{
 		apimeta.Key(apiProductAdditionalPropertiesEntity, "entityId", "Edm.String", "name", "Edm.String"),
 		apimeta.Key(certificateStoreReferencesEntitySet, "name", "Edm.String"),
 		apimeta.Key(genericKeyMapEntriesEntitySet, "name", "Edm.String", "scope", "Edm.String", "scopeId", "Edm.String"),
+		apimeta.Key(virtualHostsEntitySet, "id", "Edm.String"),
 	},
 	Navigations: []apimeta.NavigationUse{
 		{EntitySet: apiProductsEntitySet, Property: "apiProxies"},

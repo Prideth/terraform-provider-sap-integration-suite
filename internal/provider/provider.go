@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	neturl "net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -44,6 +45,7 @@ type providerModel struct {
 	ConvertUILabels       types.Bool                  `tfsdk:"convert_ui_labels"`
 	OAuth                 *oauthModel                 `tfsdk:"oauth"`
 	APIManagement         *apiManagementModel         `tfsdk:"api_management"`
+	APIManagementSelfSvc  *apiManagementSelfSvcModel  `tfsdk:"api_management_self_service"`
 	APIComposition        *apiCompositionModel        `tfsdk:"api_composition"`
 	IntegrationAssessment *integrationAssessmentModel `tfsdk:"integration_assessment"`
 }
@@ -64,6 +66,19 @@ type apiManagementModel struct {
 	TokenURL     types.String `tfsdk:"token_url"`
 	ClientID     types.String `tfsdk:"client_id"`
 	ClientSecret types.String `tfsdk:"client_secret"`
+}
+
+// apiManagementSelfSvcModel mirrors the optional api_management_self_service
+// block: a second apiportal-apiaccess key, from an instance created with the
+// role APIManagement.SelfService.Administrator. Only that role may create,
+// change and delete virtual hosts; the api_management key gets 403 there.
+// SubaccountSubdomain is the accountId SAP's virtual host requests carry.
+type apiManagementSelfSvcModel struct {
+	Host                types.String `tfsdk:"host"`
+	TokenURL            types.String `tfsdk:"token_url"`
+	ClientID            types.String `tfsdk:"client_id"`
+	ClientSecret        types.String `tfsdk:"client_secret"`
+	SubaccountSubdomain types.String `tfsdk:"subaccount_subdomain"`
 }
 
 type integrationAssessmentModel struct {
@@ -110,6 +125,15 @@ type Data struct {
 	// document the two credential sets as interchangeable.
 	APIManagementClassicHost       string
 	APIManagementClassicHTTPClient *sapthttp.Client
+
+	// APIManagementSelfServiceHost and APIManagementSelfServiceHTTPClient
+	// come from provider.api_management_self_service, the key with the role
+	// APIManagement.SelfService.Administrator that virtual hosts need.
+	// APIManagementSelfServiceSubdomain is the subaccount subdomain sent as
+	// accountId; empty when neither set nor derivable from the token URL.
+	APIManagementSelfServiceHost       string
+	APIManagementSelfServiceHTTPClient *sapthttp.Client
+	APIManagementSelfServiceSubdomain  string
 
 	// APICompositionHost and APICompositionHTTPClient are the API
 	// Composition Configuration API counterparts of Host and HTTPClient,
@@ -244,6 +268,47 @@ func (p *sapIntegrationSuiteProvider) Schema(_ context.Context, _ provider.Schem
 						Description: "OAuth 2.0 client secret from the apiportal-apiaccess service key. Can " +
 							"also be set via the SAP_INTEGRATION_SUITE_API_MANAGEMENT_CLIENT_SECRET " +
 							"environment variable.",
+					},
+				},
+			},
+			"api_management_self_service": schema.SingleNestedBlock{
+				Description: "Optional. A second Classic API Management key, used only by " +
+					"sapintegrationsuite_api_management_virtual_host. SAP lets only the role " +
+					"APIManagement.SelfService.Administrator create, change and delete virtual hosts; the " +
+					"api_management key, with APIPortal.Administrator, is refused. Create a second service " +
+					"instance of API Management, API portal, plan apiportal-apiaccess, with the parameter " +
+					"{\"role\": \"APIManagement.SelfService.Administrator\"}, and a service key for it. Set host, " +
+					"token_url, client_id and client_secret together, or none. Each value can also come from a " +
+					"SAP_INTEGRATION_SUITE_API_MANAGEMENT_SELF_SERVICE_* environment variable.",
+				Attributes: map[string]schema.Attribute{
+					"host": schema.StringAttribute{
+						Optional: true,
+						Description: "Base URL of the API portal, the service key's \"url\" (the same host as in " +
+							"api_management). Environment variable: SAP_INTEGRATION_SUITE_API_MANAGEMENT_SELF_SERVICE_HOST.",
+					},
+					"token_url": schema.StringAttribute{
+						Optional: true,
+						Description: "OAuth 2.0 token endpoint, the service key's \"tokenUrl\". Environment variable: " +
+							"SAP_INTEGRATION_SUITE_API_MANAGEMENT_SELF_SERVICE_TOKEN_URL.",
+					},
+					"client_id": schema.StringAttribute{
+						Optional: true,
+						Description: "OAuth 2.0 client ID from the service key. Environment variable: " +
+							"SAP_INTEGRATION_SUITE_API_MANAGEMENT_SELF_SERVICE_CLIENT_ID.",
+					},
+					"client_secret": schema.StringAttribute{
+						Optional:  true,
+						Sensitive: true,
+						Description: "OAuth 2.0 client secret from the service key. Environment variable: " +
+							"SAP_INTEGRATION_SUITE_API_MANAGEMENT_SELF_SERVICE_CLIENT_SECRET.",
+					},
+					"subaccount_subdomain": schema.StringAttribute{
+						Optional: true,
+						Description: "Subdomain of the subaccount, which SAP's virtual host requests send as " +
+							"accountId. By default it is the first label of token_url " +
+							"(https://<subdomain>.authentication.<region>.hana.ondemand.com/oauth/token). Set it " +
+							"when your token URL has another form. Environment variable: " +
+							"SAP_INTEGRATION_SUITE_API_MANAGEMENT_SELF_SERVICE_SUBACCOUNT_SUBDOMAIN.",
 					},
 				},
 			},
@@ -395,6 +460,10 @@ func (p *sapIntegrationSuiteProvider) Configure(ctx context.Context, req provide
 	}
 
 	if !p.configureAPIManagementClassic(ctx, config.APIManagement, data, &resp.Diagnostics) {
+		return
+	}
+
+	if !p.configureAPIManagementSelfService(ctx, config.APIManagementSelfSvc, data, &resp.Diagnostics) {
 		return
 	}
 
@@ -566,6 +635,46 @@ func (p *sapIntegrationSuiteProvider) configureAPIComposition(ctx context.Contex
 	return ok
 }
 
+// configureAPIManagementSelfService resolves the optional
+// api_management_self_service block for virtual hosts.
+func (p *sapIntegrationSuiteProvider) configureAPIManagementSelfService(ctx context.Context, cfg *apiManagementSelfSvcModel, data *Data, diags *diag.Diagnostics) bool {
+	var host, tokenURL, clientID, clientSecret, subdomain types.String
+	if cfg != nil {
+		host, tokenURL, clientID, clientSecret = cfg.Host, cfg.TokenURL, cfg.ClientID, cfg.ClientSecret
+		subdomain = cfg.SubaccountSubdomain
+	}
+	block := credentialBlock{
+		title: "Classic API Management self-service", block: "api_management_self_service", urlAttr: "host",
+		envPrefix: "SAP_INTEGRATION_SUITE_API_MANAGEMENT_SELF_SERVICE_", usedBy: "sapintegrationsuite_api_management_virtual_host",
+	}
+	resolved, client, ok := block.resolve(ctx, p.version, host, tokenURL, clientID, clientSecret, nil, diags)
+	if !ok || client == nil {
+		return ok
+	}
+	data.APIManagementSelfServiceHost, data.APIManagementSelfServiceHTTPClient = resolved, client
+	data.APIManagementSelfServiceSubdomain = stringOrEnv(subdomain, block.envPrefix+"SUBACCOUNT_SUBDOMAIN")
+	if data.APIManagementSelfServiceSubdomain == "" {
+		data.APIManagementSelfServiceSubdomain = subdomainFromTokenURL(stringOrEnv(tokenURL, block.envPrefix+"TOKEN_URL"))
+	}
+	return true
+}
+
+// subdomainFromTokenURL returns the subaccount subdomain of an XSUAA token
+// URL, https://<subdomain>.authentication.<region>.hana.ondemand.com/oauth/token,
+// or "" for a URL of another form. On a tenant SAP recorded exactly this
+// label as the accountId of its own virtual host requests.
+func subdomainFromTokenURL(tokenURL string) string {
+	u, err := neturl.Parse(tokenURL)
+	if err != nil {
+		return ""
+	}
+	subdomain, rest, found := strings.Cut(u.Hostname(), ".")
+	if !found || subdomain == "" || !strings.HasPrefix(rest, "authentication.") {
+		return ""
+	}
+	return subdomain
+}
+
 // configureIntegrationAssessment resolves the optional
 // integration_assessment block for the Integration Assessment Entities API.
 func (p *sapIntegrationSuiteProvider) configureIntegrationAssessment(ctx context.Context, cfg *integrationAssessmentModel, data *Data, diags *diag.Diagnostics) bool {
@@ -620,6 +729,7 @@ func (p *sapIntegrationSuiteProvider) Resources(_ context.Context) []func() reso
 		NewAPIProviderResource,
 		NewAPIProductResource,
 		NewAPIManagementCertificateStoreReferenceResource,
+		NewAPIManagementVirtualHostResource,
 		NewAPIKeyValueMapResource,
 		NewBusinessDataGraphResource,
 		NewIntegrationAssessmentVendorResource,

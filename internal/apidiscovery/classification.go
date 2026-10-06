@@ -328,7 +328,6 @@ var classicAPIManagementClassification = concat(
 	[]rule{
 		candidate("APIProxyDeployments", "api_management.classic.api_proxy_deployment", ""),
 		candidate("Policies", "api_management.classic.policy", "Policies are also part of the proxy bundle."),
-		candidate("VirtualHosts", "api_management.classic.virtual_host", ""),
 		candidate("CertificateStores", "api_management.classic.certificate_store", ""),
 		candidate("Certificates", "api_management.classic.certificate_store", ""),
 		candidate("CacheResources", "api_management.classic.cache_resource", ""),

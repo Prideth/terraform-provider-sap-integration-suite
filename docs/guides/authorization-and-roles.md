@@ -27,6 +27,11 @@ apply to every service key of the instance.
 **Classic API Management.** The `api_management` block authenticates against the API Portal. Its
 client comes from a service instance of *API Management, API portal* with plan
 **`apiportal-apiaccess`**, and there the role is passed as an instance parameter.
+Virtual hosts need a second instance of the same plan with the role
+`APIManagement.SelfService.Administrator` (`{"role": "APIManagement.SelfService.Administrator"}`),
+configured in the `api_management_self_service` block: a tenant refused the virtual host
+requests of an `APIPortal.Administrator` key with 403. The self-service key may list the virtual
+hosts but reads nothing else of the API portal.
 
 A role change only shows up in tokens issued afterwards. For plan `api`, access tokens are valid
 for 12 hours by default, so a token fetched before the change keeps the old scopes. Each

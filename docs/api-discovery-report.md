@@ -23,7 +23,7 @@ SAP documentation, official SAP tooling, or a safe verification on a tenant
 | Service | Protocol | Snapshot | Entity sets | Operations | REST operations | Used | Candidates | Excluded |
 |---|---|---|---:|---:|---:|---:|---:|---:|
 | [cloud-integration](#cloud-integration) | OData V2 | 2026-10-03 | 131 | 35 | 0 | 52 | 22 | 92 |
-| [classic-api-management](#classic-api-management) | OData V2 | 2026-09-27 | 61 | 1 | 0 | 7 | 19 | 36 |
+| [classic-api-management](#classic-api-management) | OData V2 | 2026-09-27 | 61 | 1 | 0 | 8 | 18 | 36 |
 | [classic-api-management-transport](#classic-api-management-transport) | OpenAPI | none yet | | | | | | |
 | [classic-api-management-content-archive](#classic-api-management-content-archive) | OpenAPI | none yet | | | | | | |
 | [classic-api-management-virtual-host-request](#classic-api-management-virtual-host-request) | OData V2 | none yet | | | | | | |
@@ -179,7 +179,7 @@ Classic API Management, API portal Management.svc.
 - Snapshot: `testdata/api-metadata/classic-api-management.json`, captured 2026-09-27 from live /$metadata
 - Contract: 61 entity sets, 0 singletons, 61 entity types, 5 complex types, 0 enum types, 1 operations; 66 types reachable from the entity sets and operations, 0 unreachable, 0 unresolved references
 
-### Used by the provider (7)
+### Used by the provider (8)
 
 | Name | Kind | Type or method | Client packages |
 |---|---|---|---|
@@ -190,8 +190,9 @@ Classic API Management, API portal Management.svc.
 | CertificateStoreReferences | entity set | CertificateStoreReference | `apimanagementclassic` |
 | GenericKeyMapEntries | entity set | GenericKeyMapEntry | `apimanagementclassic` |
 | GenericKeyMapEntryValues | entity set | GenericKeyMapEntryValue | `apimanagementclassic` |
+| VirtualHosts | entity set | VirtualHost | `apimanagementclassic` |
 
-### Candidates (19)
+### Candidates (18)
 
 | Name | Kind | Catalog entry | Catalog status | Note |
 |---|---|---|---|---|
@@ -213,7 +214,6 @@ Classic API Management, API portal Management.svc.
 | TemplatePolicys | entity set | `api_management.classic.policy_template` | unsupported |  |
 | ACLProductLinkages | entity set | `api_management.classic.product_access_control` | unsupported |  |
 | RatePlans | entity set | `api_management.classic.rate_plan` | unsupported |  |
-| VirtualHosts | entity set | `api_management.classic.virtual_host` | research_required |  |
 
 ### Excluded (36)
 
