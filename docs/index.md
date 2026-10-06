@@ -25,7 +25,7 @@ deployed integration flow and its endpoint URL.
 | Partner Directory | string and binary parameters, alternative partners, authorized users, user credential parameters | `oauth` block |
 | Access policies | policies and their artifact references | `oauth` block |
 | Classic API Management | API providers, API products, certificate store references, key value maps | `api_management` block |
-| Classic API Management virtual hosts | additional virtual hosts on the default domain (experimental) | `api_management_self_service` block |
+| Classic API Management virtual hosts | additional virtual hosts on the default domain | `api_management_self_service` block |
 | API Composition | business data graphs | `api_composition` block |
 | Integration Assessment | vendors, applications, application instances, technologies, technology instances, technology profiles (unofficial) | `integration_assessment` block |
 

@@ -61,6 +61,8 @@ const (
 	srcHelpIA2     = "SAP Help, Integration Assessment APIs (docs/ISuite_Integration_Assessment/integration-assessment-apis-47847b5.md in SAP-docs/btp-integration-suite, last changed 2026-07-02), read 2026-09-29, and the Hub catalog of package SAPIntegrationAssessment (EntitiesAPI 1.0.0, specification behind a login)"
 	srcAccRun3     = "acceptance run of 2026-09-29 14:35 on the development tenant, including TestAccIntegrationAssessment_landscape with the in-place moves"
 	srcAccRun05    = "0.5.0 tenant gate of 2026-10-04 17:21 on release/0.5.x: TestAccIntegrationAssessment_landscape, _technologyProfile and _taxonomy passed"
+	// srcVirtualHostAcc is the first acceptance run of the virtual host resource.
+	srcVirtualHostAcc = "acceptance run of 2026-10-06 21:29 on feature/classic-virtual-hosts: TestAccAPIManagementVirtualHost_basic passed (create, rename, import by alias, delete)"
 	// srcValueMappingProbe is the update probe of value mappings.
 	srcValueMappingProbe = "tenant-probe -ValueMappingTests on the development tenant (2026-10-06 20:00): PUT with content, name and both, SaveAsVersion up and down, delete, on a synthetic tfAccProbeVMUpd value mapping"
 	// srcVirtualHostProbe is the write path probe of classic virtual hosts.
@@ -235,9 +237,9 @@ var Evidence = map[string]EvidenceRecord{
 		"None; policies stay part of the proxy bundle.",
 		srcRecipes, srcMetaAPIM),
 	"api_management.classic.virtual_host": evOn("2026-10-06",
-		"Create, update and delete through Configuration.svc/VirtualHostRequests are documented and worked on a tenant with an APIManagement.SelfService.Administrator key: synchronous, 201, virtualHostId equal to the VirtualHosts id. sapintegrationsuite_api_management_virtual_host manages default domain hosts.",
-		"TestAccAPIManagementVirtualHost_basic passing on a tenant makes the resource supported; custom domains and mutual TLS need a keystore, a truststore and their own tenant test.",
-		srcHelp, srcMetaAPIM, srcHubAPIM, srcVirtualHostProbe),
+		"Create, update and delete through Configuration.svc/VirtualHostRequests are documented and work on a tenant with an APIManagement.SelfService.Administrator key: synchronous, 201, virtualHostId equal to the VirtualHosts id. sapintegrationsuite_api_management_virtual_host manages default domain hosts; its acceptance test passed. Custom domains and mutual TLS are not managed.",
+		"Custom domains and mutual TLS need DNS for a custom domain, a keystore, a truststore and their own tenant test; then the feature becomes supported.",
+		srcHelp, srcMetaAPIM, srcHubAPIM, srcVirtualHostProbe, srcVirtualHostAcc),
 	"api_management.classic.certificate_store": ev(
 		"Schema confirmed; the Hub describes the KeyStore and TrustStore APIs as create and view only.",
 		"Documented update and delete.",

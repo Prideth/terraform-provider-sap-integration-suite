@@ -1441,8 +1441,9 @@ A tenant probe on 2026-10-06 (`apim-probe -VirtualHostTests`) exercised the writ
   `APIPortal.Administrator` key may not (403). `Configuration.svc/$metadata` answered 403 to both
   keys, so no schema backs the request fields beyond SAP Help and the tenant's answers.
 
-`sapintegrationsuite_api_management_virtual_host` (0.9.0, experimental) implements default domain
-hosts on this basis; custom domains and mutual TLS stay untested.
+`sapintegrationsuite_api_management_virtual_host` (0.9.0, partial) implements default domain hosts
+on this basis, and its acceptance test passed on 2026-10-06; custom domains and mutual TLS stay
+untested.
 
 ### Not evaluated this phase
 

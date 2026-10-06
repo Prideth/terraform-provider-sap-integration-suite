@@ -161,7 +161,7 @@ Legend: ✅ Supported · 🟡 Partial · 👁️ Read-only · 🧪 Experimental 
 | API Management Policy Template (Classic) | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
 | API Management Product Access Control (Classic) | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
 | API Management Rate Plan (Classic) | ❌ | Planned — API details unconfirmed — see [feature-support.md](docs/feature-support.md#all-features) |
-| API Management Virtual Host (Classic) | 🧪 | Resource — see [feature-support.md](docs/feature-support.md#all-features) |
+| API Management Virtual Host (Classic) | 🟡 | Resource — see [feature-support.md](docs/feature-support.md#all-features) |
 
 ### Current API Management / API Artifacts
 
@@ -234,7 +234,7 @@ Legend: ✅ Supported · 🟡 Partial · 👁️ Read-only · 🧪 Experimental 
 | Trading Partner Management Partner Directory Generation | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
 | Trading Partner Management Partner Profile | ❌ | No suitable public API — see [feature-support.md](docs/feature-support.md#all-features) |
 
-21 supported · 10 partial · 3 read-only · 1 experimental · 9 unofficial · 4 research required · 49 unsupported · 2 separate provider, out of 99 evaluated Integration Suite features.
+21 supported · 11 partial · 3 read-only · 0 experimental · 9 unofficial · 4 research required · 49 unsupported · 2 separate provider, out of 99 evaluated Integration Suite features.
 
 <!-- END GENERATED FEATURE SUPPORT -->
 

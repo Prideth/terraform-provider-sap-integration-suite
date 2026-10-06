@@ -76,7 +76,7 @@ Do not conflate these: a feature can be fully supported by this provider and sti
 | `api_management.classic.policy_template` | api_management_classic | unsupported (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
 | `api_management.classic.product_access_control` | api_management_classic | unsupported (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
 | `api_management.classic.rate_plan` | api_management_classic | unsupported (public_api_incomplete) | — | Yes | — | — | — | — | — | — | — |
-| `api_management.classic.virtual_host` | api_management_classic | experimental (public_api_incomplete) | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
+| `api_management.classic.virtual_host` | api_management_classic | partial (public_api_incomplete) | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
 | `capabilities.api_gateway` | capability_provisioning | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
 | `capabilities.api_management` | capability_provisioning | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
 | `capabilities.cloud_integration` | capability_provisioning | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
@@ -180,7 +180,6 @@ provider "sapintegrationsuite" {
 | Type | Status | Switch |
 |---|---|---|
 | `sapintegrationsuite_access_policy_runtime_assignments` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_api_management_virtual_host` | experimental | `enable_experimental` |
 | `sapintegrationsuite_data_type` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_fault_message_type` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_application_instance` | unofficial | `enable_unofficial` |
@@ -263,10 +262,11 @@ Grouped by why, not just that. A feature can be `partial` and reachable via one 
   - Management.svc $metadata: ACLProductLinkages (key ruleId; entityId, entityType, permissionSet, operation, isPublished). The Hub describes the Access Control Service (CF) as "view and create rules"; update and delete are not described.
 - **`api_management.classic.rate_plan`** — Monetization rate plans attached to API products.
   - Management.svc $metadata: RatePlans (key id; rate, currency, frequency, type, validity, isActive, isPublished). The Hub lists only billing and metering APIs for monetization, no rate plan API.
-- **`api_management.classic.virtual_host`** — A virtual host of the Classic API Portal: the default-domain alias or custom domain (with one-way or mutual TLS) under which API proxies are exposed. (🧪 Experimental)
+- **`api_management.classic.virtual_host`** — A virtual host of the Classic API Portal: the default-domain alias or custom domain (with one-way or mutual TLS) under which API proxies are exposed. (partial support already implemented — see Limitations below)
   - Create, update and delete are documented in SAP Help (Configuring a Default Domain / Custom Domain / Mutual TLS for a Virtual Host): POST /apiportal/operations/1.0/Configuration.svc/VirtualHostRequests with operation CREATE, UPDATE or DELETE. The resource sends the default domain bodies: accountId (the subaccount subdomain), virtualHostUrl (the alias), isDefaultVirtualHostRequest and, for update and delete, virtualHostId.
   - Tenant probe (2026-10-06) with a key of the role APIManagement.SelfService.Administrator: create, update and delete answered 201 and took effect at once (allocationStatus COMPLETE). virtualHostId is the id of Management.svc/VirtualHosts; SAP returns the full host name <alias>.<tenant domain>, not <alias>.sapdefaultdomain as in SAP Help. A duplicate alias, more than 63 characters and characters other than letters, digits and hyphens are refused with 400; an unknown or deleted ID with 400 VHR_NO_COMPLETED_RECORD_FOUND.
   - That key reads the list Management.svc/VirtualHosts but not a single entity (403), so the resource looks a host up in the list. Configuration.svc does not serve its $metadata to either key (403); the request fields come from SAP Help and the tenant's answers.
+  - TestAccAPIManagementVirtualHost_basic passed on a tenant (2026-10-06): create, rename in place, import by alias and delete of a default domain host.
   - Custom domains and mutual TLS (keyStoreName, keyStoreAlias, trustStore, isClientAuthEnabled, isForCustomDomain) are documented but not tested, and the resource refuses to manage hosts that use them. It never makes a host the default one. Deletion is refused by SAP while proxies (deployed, draft or in a revision) reference the host or while it is the default.
 - **`cloud_integration.data_type`** — A reusable XSD data type artifact (simple or complex) used by message types and mappings. (🧭 Unofficial)
   - The tenant $metadata defines DataTypeDesigntimeArtifacts (Id and Version as key, PackageId, Name, Namespace, Description, IsSimpleType, ArtifactContent) and a DataTypeDesigntimeArtifactSaveAsVersion function import. SAP Help documents only the UI and lists no API resource or example request for data types.

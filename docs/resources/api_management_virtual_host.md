@@ -14,10 +14,9 @@ stage, for example `prod-apis.<tenant domain>` next to `test-apis.<tenant domain
 second tenant. This resource manages such additional hosts on the tenant's default domain: you
 choose the alias, SAP appends the domain.
 
-**Status:** experimental. SAP Help documents the requests (*Configuring a Default Domain for a
-Virtual Host*), and a tenant probe created, renamed and deleted a host with exactly these
-requests, but the resource's acceptance test has not run on a tenant yet. Set
-`enable_experimental = true` in the provider block to use it.
+**Status:** partial. SAP Help documents the requests (*Configuring a Default Domain for a Virtual
+Host*), and the resource's acceptance test created, renamed, imported and deleted a host on a
+tenant. Partial because virtual hosts with a custom domain or mutual TLS are not managed yet.
 
 ## Prerequisites
 
@@ -29,8 +28,6 @@ requests, but the resource's acceptance test has not run on a tenant yet. Set
 
   ```terraform
   provider "sapintegrationsuite" {
-    enable_experimental = true
-
     api_management_self_service {
       host          = var.api_portal_url             # the key's "url"
       token_url     = var.self_service_token_url     # the key's "tokenUrl"
@@ -60,9 +57,8 @@ requests, but the resource's acceptance test has not run on a tenant yet. Set
 ## Example Usage
 
 ```terraform
-# Needs enable_experimental = true and the api_management_self_service block
-# (a key with the role APIManagement.SelfService.Administrator) in the
-# provider block.
+# Needs the api_management_self_service block (a key with the role
+# APIManagement.SelfService.Administrator) in the provider block.
 
 # An additional host name for production APIs: prod-apis.<tenant domain>.
 resource "sapintegrationsuite_api_management_virtual_host" "prod" {

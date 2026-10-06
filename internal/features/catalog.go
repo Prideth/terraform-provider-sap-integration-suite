@@ -1452,7 +1452,7 @@ var Catalog = []Feature{
 		Name:   "API Management Virtual Host (Classic)",
 		Description: "A virtual host of the Classic API Portal: the default-domain alias or custom " +
 			"domain (with one-way or mutual TLS) under which API proxies are exposed.",
-		SupportStatus:  StatusExperimental,
+		SupportStatus:  StatusPartial,
 		SupportReason:  ReasonPublicAPIIncomplete,
 		ContractSource: SourceSAPDocumentation,
 		ResourceTypes:  []string{"sapintegrationsuite_api_management_virtual_host"},
@@ -1477,6 +1477,8 @@ var Catalog = []Feature{
 				"the resource looks a host up in the list. Configuration.svc does not serve its " +
 				"$metadata to either key (403); the request fields come from SAP Help and the tenant's " +
 				"answers.",
+			"TestAccAPIManagementVirtualHost_basic passed on a tenant (2026-10-06): create, rename in " +
+				"place, import by alias and delete of a default domain host.",
 			"Custom domains and mutual TLS (keyStoreName, keyStoreAlias, trustStore, " +
 				"isClientAuthEnabled, isForCustomDomain) are documented but not tested, and the " +
 				"resource refuses to manage hosts that use them. It never makes a host the default " +

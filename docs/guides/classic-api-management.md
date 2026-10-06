@@ -67,7 +67,7 @@ it consumes.
 | API Product | `sapintegrationsuite_api_product` | Create, Read, Delete — no Update |
 | Certificate Store Reference | `sapintegrationsuite_api_management_certificate_store_reference` | Full CRUD |
 | Key Value Map | `sapintegrationsuite_api_key_value_map` | Create, Read, Delete — no Update, unencrypted only |
-| Virtual Host | `sapintegrationsuite_api_management_virtual_host` | Full CRUD on the default domain, experimental, own key |
+| Virtual Host | `sapintegrationsuite_api_management_virtual_host` | Full CRUD on the default domain, own key |
 
 Every one of these is confirmed field-for-field against SAP's own official "SAP API Management
 Standalone Service" user guide (its worked Create/Update/Delete request and response bodies),
@@ -221,7 +221,7 @@ is confirmed, or manage them outside Terraform.
 
 An additional host name on the tenant's default domain, `<alias>.<tenant domain>`, under which
 the API portal exposes API proxies, for example `prod-apis.<tenant domain>` next to the default
-host. Experimental: set `enable_experimental = true`.
+host.
 
 ```hcl
 resource "sapintegrationsuite_api_management_virtual_host" "prod" {
@@ -237,8 +237,6 @@ instance of plan `apiportal-apiaccess` with the parameter
 
 ```hcl
 provider "sapintegrationsuite" {
-  enable_experimental = true
-
   api_management_self_service {
     host          = var.api_management_host
     token_url     = var.self_service_token_url

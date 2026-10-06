@@ -17,9 +17,8 @@ And the provider never uses browser endpoints of SAP's UIs.
 
 | Classification | Features |
 |---|---:|
-| 🟡 Partial (`partial`) | 10 |
+| 🟡 Partial (`partial`) | 11 |
 | 👁️ Read-only (`read_only`) | 3 |
-| 🧪 Experimental (`experimental`) | 1 |
 | 🧭 Unofficial (`unofficial`) | 9 |
 | 🔬 Research required (`research_required`) | 4 |
 | ❌ Public API incomplete (`public_api_incomplete`) | 8 |
@@ -53,6 +52,19 @@ Usable, but the provider deliberately leaves out part of the lifecycle; the limi
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
   - tenant probes and acceptance runs on a development tenant (September 2026)
+
+### API Management Virtual Host (Classic)
+
+`api_management.classic.virtual_host` · checked 2026-10-06
+
+- **Finding:** Create, update and delete through Configuration.svc/VirtualHostRequests are documented and work on a tenant with an APIManagement.SelfService.Administrator key: synchronous, 201, virtualHostId equal to the VirtualHosts id. sapintegrationsuite_api_management_virtual_host manages default domain hosts; its acceptance test passed. Custom domains and mutual TLS are not managed.
+- **Next step:** Custom domains and mutual TLS need DNS for a custom domain, a keystore, a truststore and their own tenant test; then the feature becomes supported.
+- **Sources:**
+  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
+  - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
+  - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
+  - apim-probe -VirtualHostTests on the development tenant (2026-10-06 20:09) with an APIManagement.SelfService.Administrator key: create, update and delete of a tfaccprobe alias host, error answers, reads with both keys
+  - acceptance run of 2026-10-06 21:29 on feature/classic-virtual-hosts: TestAccAPIManagementVirtualHost_basic passed (create, rename, import by alias, delete)
 
 ### Custom Tag Configuration
 
@@ -174,22 +186,6 @@ Available as a data source only; the provider never creates, changes or deletes 
 - **Sources:**
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
   - tenant probes and acceptance runs on a development tenant (September 2026)
-
-## 🧪 Experimental
-
-Implementation exists, but its lifecycle has not yet been sufficiently validated against a real SAP tenant.
-
-### API Management Virtual Host (Classic)
-
-`api_management.classic.virtual_host` · checked 2026-10-06
-
-- **Finding:** Create, update and delete through Configuration.svc/VirtualHostRequests are documented and worked on a tenant with an APIManagement.SelfService.Administrator key: synchronous, 201, virtualHostId equal to the VirtualHosts id. sapintegrationsuite_api_management_virtual_host manages default domain hosts.
-- **Next step:** TestAccAPIManagementVirtualHost_basic passing on a tenant makes the resource supported; custom domains and mutual TLS need a keystore, a truststore and their own tenant test.
-- **Sources:**
-  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
-  - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
-  - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
-  - apim-probe -VirtualHostTests on the development tenant (2026-10-06 20:09) with an APIManagement.SelfService.Administrator key: create, update and delete of a tfaccprobe alias host, error answers, reads with both keys
 
 ## 🧭 Unofficial
 

@@ -1,6 +1,5 @@
-# Needs enable_experimental = true and the api_management_self_service block
-# (a key with the role APIManagement.SelfService.Administrator) in the
-# provider block.
+# Needs the api_management_self_service block (a key with the role
+# APIManagement.SelfService.Administrator) in the provider block.
 
 # An additional host name for production APIs: prod-apis.<tenant domain>.
 resource "sapintegrationsuite_api_management_virtual_host" "prod" {

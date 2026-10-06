@@ -31,7 +31,7 @@ prepared on `release/0.5.x`, 0.6.0 on `release/0.6.x`.
 | 0.6.0 | API Composition: business data graph hardening | prepared on `release/0.6.x`; every change is tenant-verified | releasing 0.5.0 first |
 | 0.7.0 | Cloud Integration data types, message types, fault message types, service interfaces | in progress on `feature/design-time-types`; data types, message types, fault message types and service interfaces done (unofficial) | release preparation |
 | 0.8.0 | Security Content completion | in progress on `feature/security-content`: certificate chains, PGP keys and OAuth2 custom parameters done (unofficial, acceptance tests passed) | releasing 0.7.0 first |
-| 0.9.0 | Classic API Management infrastructure, above all virtual hosts; the API proxy only if the official Transport API request passes its acceptance test | in progress on `feature/classic-virtual-hosts`: default domain virtual hosts done (experimental until the acceptance test passes) | releasing 0.8.0 first |
+| 0.9.0 | Classic API Management infrastructure, above all virtual hosts; the API proxy only if the official Transport API request passes its acceptance test | in progress on `feature/classic-virtual-hosts`: default domain virtual hosts done (partial, acceptance test passed) | releasing 0.8.0 first |
 | 0.10.0 | Edge Integration Cell targeting | proposed | a tenant with an Edge Integration Cell (P1 item 3) |
 | 0.11.0 | Data Space Integration desired-state configuration | proposed | the DSIAPI specification (P2 item 7) |
 
@@ -93,7 +93,7 @@ These need no further research, only a run of the prepared tests:
    to 150 characters, and 0.3.2 checks all of them at plan time.
 6. **Classic virtual hosts.** Default domain hosts are implemented for 0.9.0 on the documented
    `Configuration.svc/VirtualHostRequests`, after a tenant probe with an
-   `APIManagement.SelfService.Administrator` key (2026-10-06). Next: the acceptance test, then
+   `APIManagement.SelfService.Administrator` key (2026-10-06); the acceptance test passed. Next:
    custom domains and mutual TLS, which need DNS and TLS material for their own tenant test.
 7. **Data Space Integration.** Parse the DSIAPI OpenAPI document (`cmd/apidiscovery -spec-dir`)
    once it is available, then model only desired-state configuration (assets, policies,

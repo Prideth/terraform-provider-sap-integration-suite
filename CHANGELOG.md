@@ -124,16 +124,14 @@ become the 0.8.0 section once 0.7.0 is released.
 These entries are on `feature/classic-virtual-hosts`, which builds on 0.8.0;
 they become the 0.9.0 section once 0.8.0 is released.
 
-- `sapintegrationsuite_api_management_virtual_host` (experimental, needs
-  `enable_experimental`): an additional virtual host of Classic API
-  Management on the tenant's default domain, `<alias>.<tenant domain>`. It
+- `sapintegrationsuite_api_management_virtual_host` (partial): an
+  additional virtual host of Classic API Management on the tenant's default domain, `<alias>.<tenant domain>`. It
   uses the requests SAP Help documents (`Configuration.svc/VirtualHostRequests`
   with CREATE, UPDATE and DELETE) and reads the host from
   `Management.svc/VirtualHosts`. A changed alias renames the host in place;
   import takes the ID, the alias or the host name. Custom domains and mutual
-  TLS are not managed yet; the resource refuses hosts that use them. A tenant
-  probe created, renamed and deleted a host with exactly these requests; the
-  acceptance test has not run yet.
+  TLS are not managed yet; the resource refuses hosts that use them. The
+  acceptance test created, renamed, imported and deleted a host on a tenant.
 - New provider block `api_management_self_service`: the key of a second
   `apiportal-apiaccess` instance with the role
   `APIManagement.SelfService.Administrator`, which SAP requires for virtual

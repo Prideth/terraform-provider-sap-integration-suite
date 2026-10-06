@@ -27,10 +27,6 @@ func TestAccAPIManagementVirtualHost_basic(t *testing.T) {
 	alias := testAccName()
 	config := func(alias string) string {
 		return fmt.Sprintf(`
-provider "sapintegrationsuite" {
-  enable_experimental = true
-}
-
 resource "sapintegrationsuite_api_management_virtual_host" "test" {
   alias = %q
 }

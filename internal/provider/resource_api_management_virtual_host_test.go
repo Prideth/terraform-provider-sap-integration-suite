@@ -111,11 +111,6 @@ func TestAPIManagementVirtualHostResource_Configure(t *testing.T) {
 	r := NewAPIManagementVirtualHostResource().(resource.ResourceWithConfigure)
 	var resp resource.ConfigureResponse
 	r.Configure(context.Background(), resource.ConfigureRequest{ProviderData: &Data{}}, &resp)
-	if !resp.Diagnostics.HasError() || !strings.Contains(resp.Diagnostics.Errors()[0].Summary(), "experimental") {
-		t.Fatalf("Configure() without enable_experimental = %v, want the experimental error", resp.Diagnostics)
-	}
-	resp = resource.ConfigureResponse{}
-	r.Configure(context.Background(), resource.ConfigureRequest{ProviderData: &Data{EnableExperimental: true}}, &resp)
 	if !resp.Diagnostics.HasError() || !strings.Contains(resp.Diagnostics.Errors()[0].Detail(), "api_management_self_service") {
 		t.Fatalf("Configure() without the self-service block = %v, want an error naming api_management_self_service", resp.Diagnostics)
 	}
