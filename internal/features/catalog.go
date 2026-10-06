@@ -787,10 +787,11 @@ var Catalog = []Feature{
 				"resource (SAP documents re-entering the secret on every edit for the sibling OAuth2 " +
 				"Client Credentials artifact; this provider assumes the same requirement here since it " +
 				"could not find a documented exception for User Credentials).",
-			"Kind and CompanyId are properties of UserCredential in the tenant $metadata, and a tenant " +
-				"rejected a create without Kind. SAP does not document the accepted Kind values beyond " +
-				"the UI's types; kind=\"SuccessFactors\" and \"OpenConnectors\" were not tested against those " +
-				"systems. See docs/guides/security-content.md.",
+			"Kind takes only default, successfactors and openconnectors, in lower case: a tenant " +
+				"(2026-10-04) refused every other value, including the SuccessFactors and OpenConnectors " +
+				"that releases before 0.5.1 documented. successfactors needs CompanyId; openconnectors " +
+				"needs a password in the undocumented Open Connectors credential format. kind is " +
+				"checked while planning.",
 			"Deployment status (SAP's UI shows Stored/Deployed/Error) is not exposed: this project could " +
 				"not confirm the OData property name for it, and would rather omit a computed attribute " +
 				"than expose one that is silently always empty.",
@@ -824,11 +825,11 @@ var Catalog = []Feature{
 				"ClientAuthentication, ScopeContentType, Resource and Audience properties confirmed by " +
 				"a tenant $metadata. Their accepted constants are undocumented, so they are passed " +
 				"through; they are Optional+Computed so every PUT resends values set in the UI.",
-			"Custom parameters are not managed: $metadata shows them as a CustomParameters " +
-				"navigation (Key, Value, SendAsPartOf, all three forming the key), but not whether they " +
-				"are written by deep insert or separately. The UI's grant-type placement (URL or body) " +
-				"has no API property at all. Because a PUT replaces the entity, custom parameters set " +
-				"in the UI may not survive an update through Terraform; this has not been verified.",
+			"Custom parameters are not managed, and SAP deletes them with every update: a tenant " +
+				"(2026-10-04) removed all of them on a PUT without them, refused a PUT with them (400), " +
+				"and answered MERGE with 405 and PATCH with 501. The plan of an update or replacement " +
+				"warns when the credential has custom parameters. The UI's grant-type placement (URL or " +
+				"body) has no API property at all.",
 			"Update is implemented as a full PUT redeploy and resends client_secret_wo on every apply " +
 				"that touches this resource, matching SAP's documented requirement to re-enter the " +
 				"client secret on every edit.",

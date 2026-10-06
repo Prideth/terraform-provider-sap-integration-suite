@@ -154,12 +154,12 @@ var Evidence = map[string]EvidenceRecord{
 
 	// --- Security ---
 	"security.user_credential": ev(
-		"Create, read, update and delete verified on a tenant; the password is write-only, and kinds other than default are corroborated only by example payloads.",
-		"tenant-probe -GapTests lists the kinds that exist on the tenant; the deployment status property is still unknown.",
+		"Create, read, update and delete verified on a tenant; the password is write-only. The kinds default, successfactors and openconnectors (lower case only) were confirmed by SAP's error text on 2026-10-04.",
+		"The deployment status property is still unknown; the Open Connectors password format is undocumented.",
 		srcHelp, srcMetaCI, srcTenant),
 	"security.oauth2_client_credential": ev(
-		"Lifecycle verified on a tenant; CustomParameters is a navigation without a documented write path.",
-		"A UI-created custom parameter read back through the API (pending tenant check), then a deep-insert test.",
+		"Lifecycle verified on a tenant. CustomParameters (2026-10-04): created only by a deep insert, deleted by every PUT, refused in a PUT, no MERGE or PATCH; the plan warns before an update deletes them.",
+		"Managing them needs replace-on-change semantics; planned for a later minor release.",
 		srcHelp, srcMetaCI, srcTenant),
 	"security.keystore_entry": ev(
 		"Read contract verified against $metadata and a tenant; certificates and key pairs have their own resources.",

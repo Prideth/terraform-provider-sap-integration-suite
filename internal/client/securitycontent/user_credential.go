@@ -25,7 +25,7 @@ const userCredentialsEntitySet = "UserCredentials" // #nosec G101 -- an OData en
 //
 // Kind and CompanyId model the credential "Type" SAP's UI exposes
 // (generic Basic, SuccessFactors, OpenConnectors): CompanyId is only
-// meaningful when Kind is "SuccessFactors". Their exact OData property
+// meaningful when Kind is "successfactors". Their exact OData property
 // casing is corroborated by a documented example payload but not by this
 // project's own inspection of a live tenant's $metadata; see
 // docs/guides/security-content.md for the verification status of every
@@ -147,6 +147,13 @@ func (c *Client) DeleteUserCredential(ctx context.Context, name string) error {
 // DefaultUserCredentialKind is the Kind of a generic basic/username-token
 // credential, the value a tenant returned for one (September 2026).
 const DefaultUserCredentialKind = "default"
+
+// UserCredentialKinds are the only Kind values SAP accepts, in exactly this
+// spelling: a tenant (2026-10-04) answered 500 "Property 'Kind' must one of
+// [successfactors, default, openconnectors]" for anything else, including
+// "Default", "SuccessFactors" and "OpenConnectors". successfactors also
+// needs CompanyId ("must not be empty or null").
+var UserCredentialKinds = []string{DefaultUserCredentialKind, "successfactors", "openconnectors"}
 
 // credentialKind fills in the default Kind. A tenant rejected a create
 // without Kind ("Property 'Kind' must not be empty or null") and one with
