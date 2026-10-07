@@ -1460,10 +1460,23 @@ had no certificate store when probed (`Management.svc/CertificateStores` empty, 
 
 The resource sends these two fields when `client_auth_enabled` is set, and
 `isClientAuthEnabled: false` without a truststore to switch it off; a host without mutual TLS
-still gets the tested default domain body. `apim-probe -VirtualHostMtlsTests` (PENDING #70) checks
-the documented bodies, how the host list shows the truststore, an update without the TLS fields,
-switching off (with the truststore left out and as `null`), a `ref://` reference and the errors
-for a missing or unknown truststore.
+still gets the tested default domain body. A tenant run on 2026-10-07
+(`apim-probe -VirtualHostMtlsTests`, a truststore created in the UI with a self-signed client
+certificate) settled the open points:
+
+- Create and update with the documented bodies answered 201 `COMPLETE`; the host list showed
+  `isClientAuthEnabled` true and `trustStore` exactly as sent, and a `ref://<reference>` value
+  as well (the acceptance test's import compared it).
+- An update without the TLS fields (the default domain body) kept client authentication and the
+  truststore.
+- `isClientAuthEnabled: false`, with the truststore left out or sent as `null`, switched client
+  authentication off and cleared the truststore. A plain host was switched on by an update.
+- Errors, both 400: `VHR_VIRTUALHOST_TRUST_STORE_MISSING` for client authentication without a
+  truststore, `VIRTUAL_HOST_CREATE_ERROR` ("has invalid truststore reference …") for an unknown
+  one.
+
+`TestAccAPIManagementVirtualHost_mutualTLS` passed in the same run: create with the truststore,
+move to a certificate store reference, import, switch off.
 
 ### Not evaluated this phase
 

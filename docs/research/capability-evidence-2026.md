@@ -57,14 +57,15 @@ Usable, but the provider deliberately leaves out part of the lifecycle; the limi
 
 `api_management.classic.virtual_host` · checked 2026-10-07
 
-- **Finding:** Create, update and delete through Configuration.svc/VirtualHostRequests are documented and work on a tenant with an APIManagement.SelfService.Administrator key: synchronous, 201, virtualHostId equal to the VirtualHosts id. sapintegrationsuite_api_management_virtual_host manages default domain hosts; its acceptance test passed. Mutual TLS on the default domain (isClientAuthEnabled and trustStore, SAP Help 9faf7ce) is implemented from the documented requests but not yet tenant-tested. Custom domains are not managed.
-- **Next step:** Mutual TLS: apim-probe -VirtualHostMtlsTests and TestAccAPIManagementVirtualHost_mutualTLS with a truststore created in the UI. Custom domains need DNS, a keystore with the server certificate and their own tenant test; then the feature becomes supported.
+- **Finding:** Create, update and delete through Configuration.svc/VirtualHostRequests are documented and work on a tenant with an APIManagement.SelfService.Administrator key: synchronous, 201, virtualHostId equal to the VirtualHosts id. sapintegrationsuite_api_management_virtual_host manages default domain hosts; its acceptance test passed. Mutual TLS on the default domain (isClientAuthEnabled and trustStore, SAP Help 9faf7ce) works the same way: probed and acceptance-tested with a truststore created in the UI; switching it off with isClientAuthEnabled false clears the truststore. Custom domains are not managed.
+- **Next step:** Custom domains need DNS, a keystore with the server certificate and their own tenant test; then the feature becomes supported.
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)
   - Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)
   - apim-probe -VirtualHostTests on the development tenant (2026-10-06 20:09) with an APIManagement.SelfService.Administrator key: create, update and delete of a tfaccprobe alias host, error answers, reads with both keys
   - acceptance run of 2026-10-06 21:29 on feature/classic-virtual-hosts: TestAccAPIManagementVirtualHost_basic passed (create, rename, import by alias, delete)
+  - run-all-probes -All on feature/classic-virtual-hosts (2026-10-07 20:44): apim-probe -VirtualHostMtlsTests on tfaccprobe-mtls hosts with a truststore created in the UI, and TestAccAPIManagementVirtualHost_mutualTLS passed (create with the truststore, move to a ref:// certificate store reference, import, switch off)
 
 ### Custom Tag Configuration
 

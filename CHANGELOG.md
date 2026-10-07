@@ -137,8 +137,11 @@ they become the 0.9.0 section once 0.8.0 is released.
   make the host ask every caller for a client certificate, with the fields
   SAP Help documents in *Configuring Mutual TLS for Default Domain Virtual
   Host*. Switching it on or off changes the host in place; hosts without
-  mutual TLS still get the request without these fields. Built from the
-  documentation; its acceptance test has not run on a tenant yet.
+  mutual TLS still get the request without these fields. SAP Help shows no
+  body for switching off; `isClientAuthEnabled: false` did it on a tenant
+  and cleared the truststore. The acceptance test created a host with
+  mutual TLS, moved it to a certificate store reference, imported it and
+  switched client authentication off on a tenant.
 - New provider block `api_management_self_service`: the key of a second
   `apiportal-apiaccess` instance with the role
   `APIManagement.SelfService.Administrator`, which SAP requires for virtual

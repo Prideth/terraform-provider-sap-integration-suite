@@ -169,9 +169,9 @@ func planTLS(plan apiManagementVirtualHostModel) *apimanagementclassic.VirtualHo
 }
 
 // tlsApplied reports whether the host shows the client authentication of
-// tls (nil: off). The truststore is not compared: how SAP lists a
-// ref:// reference is not known yet, and a difference shows as drift
-// rather than as a timeout.
+// tls (nil: off). The truststore is not compared: SAP lists it as sent, a
+// ref:// reference included (tenant test, October 2026), and a difference
+// would rather show as drift than as a timeout.
 func tlsApplied(h *apimanagementclassic.VirtualHost, tls *apimanagementclassic.VirtualHostTLS) bool {
 	return h.IsClientAuthEnabled == (tls != nil && tls.ClientAuthEnabled)
 }
@@ -305,7 +305,9 @@ func (r *apiManagementVirtualHostResource) Update(ctx context.Context, req resou
 
 	alias := plan.Alias.ValueString()
 	// The TLS fields are sent only when mutual TLS is on or is switched
-	// off; a host without it gets the default domain body.
+	// off; a host without it gets the default domain body. On a tenant an
+	// update without them kept a host's mutual TLS, and isClientAuthEnabled
+	// false without a truststore switched it off and cleared the truststore.
 	tls := planTLS(plan)
 	if tls == nil && current.IsClientAuthEnabled {
 		tls = &apimanagementclassic.VirtualHostTLS{}
@@ -373,8 +375,8 @@ func unsupportedVirtualHost(h *apimanagementclassic.VirtualHost) string {
 
 // virtualHostModel is the state of a host. configured is the alias in the
 // configuration; it is kept when the host's alias differs only in case.
-// The truststore counts only while client authentication is on, so that one
-// SAP keeps after switching it off is no difference.
+// The truststore counts only while client authentication is on; on a tenant
+// SAP cleared it when client authentication was switched off.
 func virtualHostModel(h *apimanagementclassic.VirtualHost, configured types.String) apiManagementVirtualHostModel {
 	alias := types.StringValue(h.Alias())
 	if !configured.IsNull() && !configured.IsUnknown() && strings.EqualFold(configured.ValueString(), h.Alias()) {

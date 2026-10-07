@@ -18,8 +18,9 @@ caller (mutual TLS), for example one host for partners with certificates next to
 **Status:** partial. SAP Help documents the requests (*Configuring a Default Domain for a Virtual
 Host*), and the resource's acceptance test created, renamed, imported and deleted a host on a
 tenant. Mutual TLS follows SAP Help's *Configuring Mutual TLS for Default Domain Virtual Host*;
-its acceptance test has not run on a tenant yet. Partial because virtual hosts with a custom
-domain are not managed.
+its acceptance test created a host with mutual TLS, moved it to a certificate store reference,
+imported it and switched client authentication off on a tenant. Partial because virtual hosts
+with a custom domain are not managed.
 
 ## Prerequisites
 
@@ -76,11 +77,17 @@ SAP's certificate for the default domain.
   A reference is the better choice for rotation: when the certificates change, create a new
   truststore in the UI and repoint the reference; the host itself does not change.
 - **Switching it on or off** is an in-place update with the documented `UPDATE` request, which
-  now carries `isClientAuthEnabled` and `trustStore`. Hosts without mutual TLS keep getting the
-  request without those fields, exactly as before. As with a renamed host, SAP asks to redeploy
+  then carries `isClientAuthEnabled` and `trustStore`. SAP Help shows no body for switching off;
+  the provider sends `isClientAuthEnabled: false` without a truststore, and on a tenant SAP
+  switched client authentication off and cleared the truststore. Hosts without mutual TLS keep
+  getting the request without those fields; on a tenant, such an update also left the mutual TLS
+  of a host unchanged. As with a renamed host, SAP asks to redeploy
   and republish the API proxies of products that use the host.
-- **Drift:** `client_auth_enabled` and `trust_store` are read back from the host list. A
-  truststore SAP still lists after client authentication was switched off does not count.
+- **Errors:** without a truststore SAP answers `400 VHR_VIRTUALHOST_TRUST_STORE_MISSING` (the
+  provider already refuses that plan), with an unknown one `400 VIRTUAL_HOST_CREATE_ERROR`
+  ("invalid truststore reference").
+- **Drift:** `client_auth_enabled` and `trust_store` are read back from the host list, which
+  shows the truststore as it was sent, `ref://` included.
 
 ## Example Usage
 
@@ -106,10 +113,6 @@ truststore; hosts with a custom domain or a keystore cannot be imported.
 - **Provider:** only virtual hosts on the default domain are managed. Custom domains (keystore,
   key alias, custom domain flag) are documented by SAP but need DNS and a server certificate for a
   test, and the resource refuses to change or import a host that uses them.
-- **Provider:** mutual TLS is built from SAP Help's documented requests; its acceptance test
-  (`TestAccAPIManagementVirtualHost_mutualTLS`) has not run on a tenant yet. How SAP lists a
-  `ref://` truststore and whether switching client authentication off clears the truststore are
-  open until then.
 - **Provider:** the resource never makes a host the default one; an imported default host keeps
   its flag when its alias changes.
 

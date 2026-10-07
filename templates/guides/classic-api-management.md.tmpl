@@ -260,7 +260,8 @@ proxies of products that use it.
 mutual TLS on the default domain: the host then asks every caller for a client certificate and
 checks it against a truststore of the API portal, named directly or through a certificate store
 reference (`ref://<name>`). The truststore is created in the UI; Terraform only refers to it. This
-part is built from the documentation and its acceptance test has not run on a tenant yet.
+part passed its acceptance test on a tenant, including a move to a certificate store reference and
+switching client authentication off again, which SAP Help does not describe.
 
 **Default domain only, for now.** Custom domains use the same requests with a keystore and key
 alias for the server certificate. They are documented but have not been tested, so the resource

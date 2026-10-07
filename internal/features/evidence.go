@@ -63,6 +63,8 @@ const (
 	srcAccRun05    = "0.5.0 tenant gate of 2026-10-04 17:21 on release/0.5.x: TestAccIntegrationAssessment_landscape, _technologyProfile and _taxonomy passed"
 	// srcVirtualHostAcc is the first acceptance run of the virtual host resource.
 	srcVirtualHostAcc = "acceptance run of 2026-10-06 21:29 on feature/classic-virtual-hosts: TestAccAPIManagementVirtualHost_basic passed (create, rename, import by alias, delete)"
+	// srcVirtualHostMtls is the mutual TLS probe and acceptance run of virtual hosts.
+	srcVirtualHostMtls = "run-all-probes -All on feature/classic-virtual-hosts (2026-10-07 20:44): apim-probe -VirtualHostMtlsTests on tfaccprobe-mtls hosts with a truststore created in the UI, and TestAccAPIManagementVirtualHost_mutualTLS passed (create with the truststore, move to a ref:// certificate store reference, import, switch off)"
 	// srcValueMappingProbe is the update probe of value mappings.
 	srcValueMappingProbe = "tenant-probe -ValueMappingTests on the development tenant (2026-10-06 20:00): PUT with content, name and both, SaveAsVersion up and down, delete, on a synthetic tfAccProbeVMUpd value mapping"
 	// srcVirtualHostProbe is the write path probe of classic virtual hosts.
@@ -237,9 +239,9 @@ var Evidence = map[string]EvidenceRecord{
 		"None; policies stay part of the proxy bundle.",
 		srcRecipes, srcMetaAPIM),
 	"api_management.classic.virtual_host": evOn("2026-10-07",
-		"Create, update and delete through Configuration.svc/VirtualHostRequests are documented and work on a tenant with an APIManagement.SelfService.Administrator key: synchronous, 201, virtualHostId equal to the VirtualHosts id. sapintegrationsuite_api_management_virtual_host manages default domain hosts; its acceptance test passed. Mutual TLS on the default domain (isClientAuthEnabled and trustStore, SAP Help 9faf7ce) is implemented from the documented requests but not yet tenant-tested. Custom domains are not managed.",
-		"Mutual TLS: apim-probe -VirtualHostMtlsTests and TestAccAPIManagementVirtualHost_mutualTLS with a truststore created in the UI. Custom domains need DNS, a keystore with the server certificate and their own tenant test; then the feature becomes supported.",
-		srcHelp, srcMetaAPIM, srcHubAPIM, srcVirtualHostProbe, srcVirtualHostAcc),
+		"Create, update and delete through Configuration.svc/VirtualHostRequests are documented and work on a tenant with an APIManagement.SelfService.Administrator key: synchronous, 201, virtualHostId equal to the VirtualHosts id. sapintegrationsuite_api_management_virtual_host manages default domain hosts; its acceptance test passed. Mutual TLS on the default domain (isClientAuthEnabled and trustStore, SAP Help 9faf7ce) works the same way: probed and acceptance-tested with a truststore created in the UI; switching it off with isClientAuthEnabled false clears the truststore. Custom domains are not managed.",
+		"Custom domains need DNS, a keystore with the server certificate and their own tenant test; then the feature becomes supported.",
+		srcHelp, srcMetaAPIM, srcHubAPIM, srcVirtualHostProbe, srcVirtualHostAcc, srcVirtualHostMtls),
 	"api_management.classic.certificate_store": ev(
 		"Schema confirmed; the Hub describes the KeyStore and TrustStore APIs as create and view only.",
 		"Documented update and delete.",

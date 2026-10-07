@@ -1481,9 +1481,14 @@ var Catalog = []Feature{
 				"answers.",
 			"TestAccAPIManagementVirtualHost_basic passed on a tenant (2026-10-06): create, rename in " +
 				"place, import by alias and delete of a default domain host.",
-			"Mutual TLS on the default domain (client_auth_enabled, trust_store) is implemented from " +
-				"the documented requests; TestAccAPIManagementVirtualHost_mutualTLS has not run on a " +
-				"tenant yet. The truststore itself is created in the UI; no documented API creates it.",
+			"Mutual TLS on the default domain (client_auth_enabled, trust_store): a probe (2026-10-07) " +
+				"found the host list showing isClientAuthEnabled and the truststore as sent, ref:// " +
+				"included; an update without the TLS fields kept mutual TLS; isClientAuthEnabled false " +
+				"switched it off and cleared the truststore (SAP Help shows no body for that). A missing " +
+				"truststore is refused with 400 VHR_VIRTUALHOST_TRUST_STORE_MISSING, an unknown one with " +
+				"400 VIRTUAL_HOST_CREATE_ERROR. TestAccAPIManagementVirtualHost_mutualTLS passed: create, " +
+				"move to a certificate store reference, import, switch off. The truststore itself is " +
+				"created in the UI; no documented API creates it.",
 			"Custom domains (keyStoreName, keyStoreAlias, isForCustomDomain) are documented but not " +
 				"tested, and the resource refuses to manage hosts that use them. It never makes a host " +
 				"the default one. Deletion is refused by SAP while proxies (deployed, draft or in a " +
