@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/testutil/accgate"
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/testutil/samples"
@@ -121,6 +122,57 @@ resource "sapintegrationsuite_value_mapping_deployment" "test" {
 			{
 				Config: config(true),
 				Check:  resource.TestCheckResourceAttr("sapintegrationsuite_value_mapping_deployment.test", "status", "STARTED"),
+			},
+		},
+	})
+}
+
+// save_as_version on a value mapping (unofficial): the create labels the
+// upload 2.0.0, a lower number relabels it in place, and an import reads
+// the new label. SAP keeps one version, so nothing else changes.
+func TestAccValueMapping_saveAsVersion(t *testing.T) {
+	accgate.Require(t, accgate.CloudIntegration, samples.EnvLocalContent)
+	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "true")
+	vm := samples.LocalArtifactOfType(t, "ValueMapping")
+	synthetic, err := samples.SyntheticValueMapping(vm.Content, "tfacc")
+	if err != nil {
+		t.Fatal(err)
+	}
+	pkg, id := testAccName(), testAccName()
+	path := testAccArtifactFile(t, synthetic, id)
+	config := func(version string) string {
+		return testAccPackageConfig(pkg, "value mapping version test") + fmt.Sprintf(`
+resource "sapintegrationsuite_value_mapping" "test" {
+  package_id      = sapintegrationsuite_integration_package.test.id
+  mapping_id      = %[1]q
+  name            = "tf-acc %[1]s"
+  content         = %[2]q
+  content_hash    = filesha256(%[2]q)
+  save_as_version = %[3]q
+}
+`, id, path, version)
+	}
+	const address = "sapintegrationsuite_value_mapping.test"
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: config("2.0.0"),
+				Check:  resource.TestCheckResourceAttr(address, "version", "2.0.0"),
+			},
+			{
+				Config: config("1.9.0"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(address, plancheck.ResourceActionUpdate)},
+				},
+				Check: resource.TestCheckResourceAttr(address, "version", "1.9.0"),
+			},
+			{
+				ResourceName:            address,
+				ImportState:             true,
+				ImportStateIdFunc:       testAccAttrImportID(address, "id"),
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"content", "content_hash", "save_as_version"},
 			},
 		},
 	})

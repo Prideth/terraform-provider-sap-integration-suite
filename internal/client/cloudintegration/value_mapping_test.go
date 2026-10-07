@@ -215,3 +215,34 @@ func TestClient_DeployValueMapping_NotFoundIsError(t *testing.T) {
 		t.Fatalf("expected a not-found *apierror.Error, got %v", err)
 	}
 }
+
+// A tenant answered ValueMappingDesigntimeArtifactSaveAsVersion with 200 and
+// no body (October 2026); the new label is then read from the active
+// artifact.
+func TestClient_SaveValueMappingAsVersion(t *testing.T) {
+	var requests []string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests = append(requests, r.Method+" "+r.URL.RequestURI())
+		if r.Method == http.MethodPost {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		_, _ = w.Write([]byte(`{"d": {"Id": "CompanyCodes", "Version": "1.0.5", "Name": "Company Codes", "PackageId": "P"}}`))
+	}))
+	defer server.Close()
+
+	mapping, err := New(http.DefaultClient, server.URL).SaveValueMappingAsVersion(context.Background(), "CompanyCodes", "1.0.5")
+	if err != nil {
+		t.Fatalf("SaveValueMappingAsVersion() error: %v", err)
+	}
+	if mapping.Version != "1.0.5" {
+		t.Errorf("Version = %q, want 1.0.5 from the read-back", mapping.Version)
+	}
+	want := []string{
+		"POST /api/v1/ValueMappingDesigntimeArtifactSaveAsVersion?Id='CompanyCodes'&SaveAsVersion='1.0.5'",
+		"GET /api/v1/ValueMappingDesigntimeArtifacts(Id='CompanyCodes',Version='active')",
+	}
+	if len(requests) != len(want) || requests[0] != want[0] || requests[1] != want[1] {
+		t.Errorf("requests = %q, want %q", requests, want)
+	}
+}

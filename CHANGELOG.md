@@ -142,6 +142,14 @@ they become the 0.9.0 section once 0.8.0 is released.
   and cleared the truststore. The acceptance test created a host with
   mutual TLS, moved it to a certificate store reference, imported it and
   switched client authentication off on a tenant.
+- `save_as_version` (unofficial) on `sapintegrationsuite_value_mapping`: gives
+  the value mapping a version number through
+  `ValueMappingDesigntimeArtifactSaveAsVersion`, which only SAP's `$metadata`
+  declares. SAP keeps one version of a value mapping, so this relabels it,
+  even to a lower number, without touching the content; a changed value
+  relabels in place instead of replacing the value mapping. Needs
+  `enable_unofficial = true`. Content and name changes still replace the
+  value mapping, because SAP answers every update with 501.
 - New provider block `api_management_self_service`: the key of a second
   `apiportal-apiaccess` instance with the role
   `APIManagement.SelfService.Administrator`, which SAP requires for virtual

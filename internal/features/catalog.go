@@ -184,13 +184,15 @@ var Catalog = []Feature{
 			"No in-place update: a tenant probe (2026-10-06) got 501 Not Implemented for every PUT on " +
 				"ValueMappingDesigntimeArtifacts, with content, name or both, so changing name, content or " +
 				"content_hash replaces the resource (Terraform deletes the artifact and uploads it again).",
-			"ValueMappingDesigntimeArtifactSaveAsVersion (only in $metadata) answered 200 but only relabels " +
-				"the one stored version, even to a lower number, without changing the content. It adds nothing a " +
-				"new Bundle-Version in the ZIP does not, so the provider does not use it.",
+			"save_as_version uses ValueMappingDesigntimeArtifactSaveAsVersion (only in $metadata), which " +
+				"answered 200 and relabels the one stored version, even to a lower number, without changing " +
+				"the content (tenant probe, 2026-10-06). A changed save_as_version relabels in place; it needs " +
+				"enable_unofficial.",
 			"SAP keeps one version of a value mapping: Delete removes the artifact completely (tenant probe, " +
 				"2026-10-06).",
 		},
-		Operations: Operations{Create: true, Read: true, Update: false, Delete: true, Import: true},
+		UndocumentedOperations: []string{"save_as_version (ValueMappingDesigntimeArtifactSaveAsVersion is only in $metadata; SAP Help lists read, download, create, upload, deploy and delete)"},
+		Operations:             Operations{Create: true, Read: true, Update: false, Delete: true, Import: true},
 	},
 	{
 		Key:             "cloud_integration.value_mapping_deployment",

@@ -104,7 +104,7 @@ Do not conflate these: a feature can be fully supported by this provider and sti
 | `cloud_integration.script_collection_deployment` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Resource |
 | `cloud_integration.service_endpoints` | cloud_integration | read_only (unsafe_terraform_lifecycle) | sap_documentation | Yes | — | Yes | — | — | — | — | Data Source |
 | `cloud_integration.service_interface` | cloud_integration | unofficial (public_api_incomplete) | metadata_only | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
-| `cloud_integration.value_mapping` | cloud_integration | partial (unsafe_terraform_lifecycle) | sap_documentation | Yes | Yes | Yes | — | Yes | Yes | — | Resource + Data Source |
+| `cloud_integration.value_mapping` | cloud_integration | partial (unsafe_terraform_lifecycle) | sap_documentation (some operations unofficial) | Yes | Yes | Yes | — | Yes | Yes | — | Resource + Data Source |
 | `cloud_integration.value_mapping_deployment` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Resource |
 | `cloud_integration.value_mapping_entry` | cloud_integration | unsupported (unsafe_terraform_lifecycle) | — | Yes | — | — | — | — | — | — | — |
 | `cloud_integration.variable` | cloud_integration | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
@@ -219,6 +219,7 @@ Individual operations of an otherwise documented feature can be unofficial too. 
 | `cloud_integration.number_range` | delete |
 | `cloud_integration.number_range` | import |
 | `cloud_integration.script_collection` | update of the content (PUT; SAP documents create, upload of resources and deploy) |
+| `cloud_integration.value_mapping` | save_as_version (ValueMappingDesigntimeArtifactSaveAsVersion is only in $metadata; SAP Help lists read, download, create, upload, deploy and delete) |
 | `security.access_policy` | description update (PATCH, verified on a tenant) |
 | `security.access_policy_reference` | create a reference to an artifact type SAP does not document for access policies (eight types SAP's API lists, verified on a tenant) |
 | `security.key_pair` | read of the certificate signing request (KeystoreEntries('<hexalias>')/SigningRequest/$value is only in $metadata) |
@@ -364,7 +365,7 @@ Grouped by why, not just that. A feature can be `partial` and reachable via one 
   - All exposed fields are checked against a tenant $metadata document. API definition links carry a url and a name; the format "type" (oas-json, edmx, ...) that SAP's documentation mentions is not a property of the Definition entity, and earlier releases that exposed it always returned an empty value.
 - **`cloud_integration.value_mapping`** — A value mapping design-time artifact's content, managed as file-based content. (partial support already implemented — see Limitations below)
   - No in-place update: a tenant probe (2026-10-06) got 501 Not Implemented for every PUT on ValueMappingDesigntimeArtifacts, with content, name or both, so changing name, content or content_hash replaces the resource (Terraform deletes the artifact and uploads it again).
-  - ValueMappingDesigntimeArtifactSaveAsVersion (only in $metadata) answered 200 but only relabels the one stored version, even to a lower number, without changing the content. It adds nothing a new Bundle-Version in the ZIP does not, so the provider does not use it.
+  - save_as_version uses ValueMappingDesigntimeArtifactSaveAsVersion (only in $metadata), which answered 200 and relabels the one stored version, even to a lower number, without changing the content (tenant probe, 2026-10-06). A changed save_as_version relabels in place; it needs enable_unofficial.
   - SAP keeps one version of a value mapping: Delete removes the artifact completely (tenant probe, 2026-10-06).
 - **`cloud_integration.value_mapping_entry`** — Individual source/target value pairs inside a value mapping's agency/identifier pair, managed through UpsertValMaps, UpdateDefaultValMap and DeleteValMaps.
   - Tenant check of 2026-09-27 on a synthetic value mapping: the first UpsertValMaps with IsConfigured=true switched the agency pair to State Configured and dropped the two values the design-time content had defined; a second UpsertValMaps with the same source value added a second entry instead of changing the first, and SAP made the newest one the default; DeleteValMaps for the pair answered 202 and removed nothing; every call left the artifact in version Draft. A resource could neither update an entry in place nor destroy what it created, so entries stay unmanaged.

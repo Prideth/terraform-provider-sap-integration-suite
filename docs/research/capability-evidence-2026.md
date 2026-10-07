@@ -110,10 +110,10 @@ Usable, but the provider deliberately leaves out part of the lifecycle; the limi
 
 ### Value Mapping
 
-`cloud_integration.value_mapping` · checked 2026-10-06
+`cloud_integration.value_mapping` · checked 2026-10-07
 
-- **Finding:** Create, read, deploy and delete are verified on a tenant. SAP answers every PUT with 501 Not Implemented, so every change replaces the artifact; SaveAsVersion only relabels the single stored version.
-- **Next step:** None unless SAP implements an update; the replacement stays the only way to change a value mapping.
+- **Finding:** Create, read, deploy and delete are verified on a tenant. SAP answers every PUT with 501 Not Implemented, so every change of content or name replaces the artifact; SaveAsVersion only relabels the single stored version, which the unofficial save_as_version offers in place.
+- **Next step:** None unless SAP implements an update; TestAccValueMapping_saveAsVersion confirms the relabel through the provider.
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)

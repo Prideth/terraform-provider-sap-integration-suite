@@ -108,7 +108,7 @@ elsewhere, it confirms names, keys and types but not which operations SAP accept
 - **SAP product area**: Integration Suite / Cloud Integration
 - **Official API**: Integration Content API
 - **Entity sets / actions**: `ValueMappingDesigntimeArtifacts`,
-  `ValueMappingDesigntimeArtifactSaveAsVersion` (action, not currently used — see Update below),
+  `ValueMappingDesigntimeArtifactSaveAsVersion` (action, used by the unofficial `save_as_version` — see below),
   `IntegrationRuntimeArtifacts` (the same shared runtime-artifacts entity
   `sapintegrationsuite_integration_flow_deployment` uses — confirmed via SAP's own "Runtime
   Status API" description as covering "currently deployed integration artifacts" generally,
@@ -159,6 +159,13 @@ elsewhere, it confirms names, keys and types but not which operations SAP accept
   So there is no in-place update to implement, `SaveAsVersion` adds nothing a new
   `Bundle-Version` does not, and the delete-scope question above is answered: SAP keeps only one
   version.
+- **`save_as_version` (2026-10-07, unofficial)**: on request, the relabeling is offered after all,
+  as a version label set from Terraform: `save_as_version` calls
+  `ValueMappingDesigntimeArtifactSaveAsVersion?Id='<id>'&SaveAsVersion='<version>'` after the
+  create, and a changed value calls it in place without replacing the value mapping. The function is
+  only in the `$metadata` (SAP Help lists read, download, create, upload, deploy and delete for value
+  mappings), so it is gated behind `enable_unofficial` and listed among the undocumented operations.
+  `TestAccValueMapping_saveAsVersion` covers create with a label, a lower label in place and import.
 - **Deferred — entry-level operations**: `UpsertValMaps` (POST, insert/update individual
   mapping rows — confirmed to 404 if the target source/target agency-identifier scheme does not
   already exist), `UpdateDefaultValMap` (POST, sets a scheme's default value via a `ValMapId`
@@ -1476,7 +1483,12 @@ certificate) settled the open points:
   one.
 
 `TestAccAPIManagementVirtualHost_mutualTLS` passed in the same run: create with the truststore,
-move to a certificate store reference, import, switch off.
+move to a certificate store reference, import, switch off. A second run with the administrator key
+working in the probe (2026-10-07 21:21) showed the UI truststore in `Management.svc/CertificateStores`
+with `storeType` `TS`, the reference listed as `ref://<name>` on the host, and SAP refusing to delete
+a reference a host uses (400 `CERTIFICATE_STORE_REFERENCE_LINKED_VIRTUAL_HOST_LINK_VALIDATION_ERROR`).
+Once, a create answered `VHR_URL_ALREADY_IN_USE` for an alias whose host had been deleted half an
+hour before and was not in the list; the same create seconds later succeeded.
 
 ### Not evaluated this phase
 

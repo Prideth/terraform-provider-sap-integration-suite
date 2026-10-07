@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/apierror"
@@ -27,7 +29,16 @@ func NewValueMappingResource() resource.Resource {
 
 type valueMappingResource struct {
 	client *cloudintegration.Client
+	// allowUnofficial is the provider's enable_unofficial:
+	// ValueMappingDesigntimeArtifactSaveAsVersion is only in $metadata.
+	allowUnofficial bool
 }
+
+var _ resource.ResourceWithModifyPlan = &valueMappingResource{}
+
+// valueMappingSaveAsVersionOp names save_as_version the way the feature
+// catalog lists it among the undocumented operations.
+const valueMappingSaveAsVersionOp = "save_as_version (ValueMappingDesigntimeArtifactSaveAsVersion)"
 
 type valueMappingModel struct {
 	ID          types.String `tfsdk:"id"`
@@ -37,6 +48,8 @@ type valueMappingModel struct {
 	Content     types.String `tfsdk:"content"`
 	ContentHash types.String `tfsdk:"content_hash"`
 	Version     types.String `tfsdk:"version"`
+
+	SaveAsVersion types.String `tfsdk:"save_as_version"`
 }
 
 func (r *valueMappingResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -118,8 +131,22 @@ func (r *valueMappingResource) Schema(_ context.Context, _ resource.SchemaReques
 				},
 			},
 			"version": schema.StringAttribute{
-				Computed:    true,
-				Description: "The design-time version SAP assigned to the most recent upload.",
+				Computed: true,
+				Description: "The design-time version SAP holds: the Bundle-Version of the uploaded content, " +
+					"or save_as_version once that is set.",
+			},
+			"save_as_version": schema.StringAttribute{
+				Optional: true,
+				Description: "UNOFFICIAL: a version number to give the value mapping, for example \"1.0.3\", " +
+					"through ValueMappingDesigntimeArtifactSaveAsVersion, which only SAP's $metadata declares. " +
+					"SAP keeps one version of a value mapping, so this relabels that version; it does not keep " +
+					"the previous one and does not change the content. A changed value relabels in place, " +
+					"without replacing the value mapping, and SAP accepts a lower number too. On a replacement " +
+					"(new content or name) the new upload is labeled with it again. Needs enable_unofficial = " +
+					"true. Without it, the version is the Bundle-Version in the content's manifest.",
+				Validators: []validator.String{
+					stringvalidator.RegexMatches(designtimeVersionPattern, "must be a version of the form major.minor.patch, for example 1.0.3"),
+				},
 			},
 		},
 	}
@@ -138,6 +165,7 @@ func (r *valueMappingResource) Configure(_ context.Context, req resource.Configu
 		return
 	}
 	r.client = cloudintegration.New(data.HTTPClient, data.Host)
+	r.allowUnofficial = data.EnableUnofficial
 }
 
 func (r *valueMappingResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -157,13 +185,49 @@ func (r *valueMappingResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
+	if _, due := versionToSave(plan.SaveAsVersion, types.StringNull()); due &&
+		!requireUnofficialOperation(r.allowUnofficial, "sapintegrationsuite_value_mapping", valueMappingSaveAsVersionOp, &resp.Diagnostics) {
+		return
+	}
+
 	mapping, err := r.client.CreateValueMapping(ctx, plan.PackageID.ValueString(), plan.MappingID.ValueString(), plan.Name.ValueString(), content)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to create SAP Integration Suite value mapping", diagnosticDetail(err))
 		return
 	}
+	if v, due := versionToSave(plan.SaveAsVersion, types.StringNull()); due {
+		saved, err := r.client.SaveValueMappingAsVersion(ctx, plan.MappingID.ValueString(), v)
+		if err != nil {
+			unsaved := plan
+			unsaved.SaveAsVersion = types.StringNull()
+			resp.Diagnostics.Append(resp.State.Set(ctx, valueMappingToModel(plan.PackageID.ValueString(), mapping, unsaved))...)
+			resp.Diagnostics.AddError("Value mapping created, but saving it as version "+v+" failed", diagnosticDetail(err))
+			return
+		}
+		mapping.Version = saved.Version
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, valueMappingToModel(plan.PackageID.ValueString(), mapping, plan))...)
+}
+
+// ModifyPlan stops, without enable_unofficial, a plan that gives the value
+// mapping a version through save_as_version, on create, on a replacement or
+// in place: SAP documents no SaveAsVersion for value mappings.
+func (r *valueMappingResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if r.client == nil || req.Plan.Raw.IsNull() {
+		return // not configured yet (Create and Update check again), or a destroy
+	}
+	var planned types.String
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, pathRoot("save_as_version"), &planned)...)
+	prior := types.StringNull()
+	// A replacement uploads anew, so it saves the version again.
+	if !req.State.Raw.IsNull() && len(resp.RequiresReplace) == 0 {
+		resp.Diagnostics.Append(req.State.GetAttribute(ctx, pathRoot("save_as_version"), &prior)...)
+	}
+	// An unknown version is checked again in Create and Update.
+	if _, due := versionToSave(planned, prior); due {
+		requireUnofficialOperation(r.allowUnofficial, "sapintegrationsuite_value_mapping", valueMappingSaveAsVersionOp, &resp.Diagnostics)
+	}
 }
 
 func (r *valueMappingResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -187,25 +251,39 @@ func (r *valueMappingResource) Read(ctx context.Context, req resource.ReadReques
 	resp.Diagnostics.Append(resp.State.Set(ctx, valueMappingToModel(state.PackageID.ValueString(), mapping, state))...)
 }
 
-// Update is not reachable for any meaningful configuration change: name,
-// content, and content_hash — the only attributes a user can change — are
-// all RequiresReplace (see Schema), so Terraform performs a Create+Delete
-// instead of calling Update whenever any of them change. This is a
-// deliberate choice, not an oversight: see the comment above
-// DeleteValueMapping in internal/client/cloudintegration/value_mapping.go
-// for why this provider does not retain an unverified in-place update call
-// for this resource. The Terraform Plugin Framework's resource.Resource
-// interface still requires an Update method to exist; it is only ever
-// invoked here with a plan that carries no actual attribute change, so it
-// just copies the plan through without calling the API.
+// Update only relabels: name, content and content_hash are RequiresReplace
+// (see Schema), because a tenant answered every PUT on a value mapping with
+// 501 Not Implemented (October 2026). What remains in place is
+// save_as_version: a changed value is saved through SaveAsVersion, a removed
+// one changes nothing on SAP's side.
 func (r *valueMappingResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan valueMappingModel
+	var plan, prior valueMappingModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &prior)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
+	var mapping *cloudintegration.ValueMapping
+	var err error
+	if v, due := versionToSave(plan.SaveAsVersion, prior.SaveAsVersion); due {
+		if !requireUnofficialOperation(r.allowUnofficial, "sapintegrationsuite_value_mapping", valueMappingSaveAsVersionOp, &resp.Diagnostics) {
+			return
+		}
+		mapping, err = r.client.SaveValueMappingAsVersion(ctx, plan.MappingID.ValueString(), v)
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to save value mapping as version "+v, diagnosticDetail(err))
+			return
+		}
+	} else {
+		mapping, err = r.client.GetValueMapping(ctx, plan.PackageID.ValueString(), plan.MappingID.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to read SAP Integration Suite value mapping", diagnosticDetail(err))
+			return
+		}
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, valueMappingToModel(plan.PackageID.ValueString(), mapping, plan))...)
 }
 
 func (r *valueMappingResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -244,5 +322,7 @@ func valueMappingToModel(packageID string, mapping *cloudintegration.ValueMappin
 		Content:     previous.Content,
 		ContentHash: previous.ContentHash,
 		Version:     types.StringValue(mapping.Version),
+
+		SaveAsVersion: previous.SaveAsVersion,
 	}
 }

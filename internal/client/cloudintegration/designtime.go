@@ -66,6 +66,15 @@ func (c *Client) SaveScriptCollectionAsVersion(ctx context.Context, scriptCollec
 		func() (*ScriptCollection, error) { return c.GetScriptCollection(ctx, "", scriptCollectionID) })
 }
 
+// SaveValueMappingAsVersion gives a value mapping an explicit version. SAP
+// keeps one version of a value mapping: a tenant (October 2026) answered 200
+// with an empty body and relabeled that version, even to a lower number,
+// without changing the content.
+func (c *Client) SaveValueMappingAsVersion(ctx context.Context, mappingID, version string) (*ValueMapping, error) {
+	return saveAsVersion(ctx, c, "ValueMappingDesigntimeArtifactSaveAsVersion", mappingID, version,
+		func() (*ValueMapping, error) { return c.GetValueMapping(ctx, "", mappingID) })
+}
+
 // designtimeUpdateRequest is the body of a content update (PUT on
 // <Artifact>(Id,Version='active')). It carries only the name and the content:
 // a tenant answered a message mapping update that also sent empty Id and
