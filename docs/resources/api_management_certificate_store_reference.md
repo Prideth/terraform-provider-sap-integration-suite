@@ -74,6 +74,11 @@ The ID is the reference's name. Everything is recovered.
 ## Limitations
 
 - **SAP:** stores and their certificates can only be managed in the UI.
+- **SAP:** a reference that a virtual host uses as its truststore (`ref://<name>`) cannot be
+  deleted: SAP answers `400 CERTIFICATE_STORE_REFERENCE_LINKED_VIRTUAL_HOST_LINK_VALIDATION_ERROR`
+  (tenant probe, October 2026). Refer to the reference from the
+  [virtual host](api_management_virtual_host.md) so that Terraform changes or deletes the host
+  first.
 - **Provider:** this is unrelated to the Cloud Integration keystore that
   [`sapintegrationsuite_certificate`](certificate.md) and
   [`sapintegrationsuite_key_pair`](key_pair.md) manage; API Management has its own stores.
