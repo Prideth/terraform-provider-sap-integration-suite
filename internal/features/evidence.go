@@ -98,7 +98,7 @@ var Evidence = map[string]EvidenceRecord{
 	// --- Cloud Integration ---
 	"cloud_integration.value_mapping": evOn("2026-10-07",
 		"Create, read, deploy and delete are verified on a tenant. SAP answers every PUT with 501 Not Implemented, so every change of content or name replaces the artifact; SaveAsVersion only relabels the single stored version, which the unofficial save_as_version offers in place.",
-		"None unless SAP implements an update; TestAccValueMapping_saveAsVersion confirms the relabel through the provider.",
+		"None unless SAP implements an update. TestAccValueMapping_saveAsVersion passed (2026-10-07 22:09): create labeled 2.0.0, relabeled in place to 1.9.0, imported.",
 		srcHelp, srcMetaCI, srcTenant, srcValueMappingProbe),
 	"cloud_integration.value_mapping_entry": evOn("2026-09-27",
 		"On a synthetic value mapping, the first UpsertValMaps (IsConfigured=true) dropped the pair's design-time values, a second upsert of the same source value added a duplicate that SAP made the default, and DeleteValMaps answered 202 without removing anything. There is no safe update or destroy.",

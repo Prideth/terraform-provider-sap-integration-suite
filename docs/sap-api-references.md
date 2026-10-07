@@ -165,7 +165,8 @@ elsewhere, it confirms names, keys and types but not which operations SAP accept
   create, and a changed value calls it in place without replacing the value mapping. The function is
   only in the `$metadata` (SAP Help lists read, download, create, upload, deploy and delete for value
   mappings), so it is gated behind `enable_unofficial` and listed among the undocumented operations.
-  `TestAccValueMapping_saveAsVersion` covers create with a label, a lower label in place and import.
+  `TestAccValueMapping_saveAsVersion` passed on a tenant (2026-10-07): create labeled 2.0.0, relabeled
+  in place to 1.9.0, import.
 - **Deferred — entry-level operations**: `UpsertValMaps` (POST, insert/update individual
   mapping rows — confirmed to 404 if the target source/target agency-identifier scheme does not
   already exist), `UpdateDefaultValMap` (POST, sets a scheme's default value via a `ValMapId`

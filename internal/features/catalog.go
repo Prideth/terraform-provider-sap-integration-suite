@@ -187,7 +187,7 @@ var Catalog = []Feature{
 			"save_as_version uses ValueMappingDesigntimeArtifactSaveAsVersion (only in $metadata), which " +
 				"answered 200 and relabels the one stored version, even to a lower number, without changing " +
 				"the content (tenant probe, 2026-10-06). A changed save_as_version relabels in place; it needs " +
-				"enable_unofficial.",
+				"enable_unofficial. TestAccValueMapping_saveAsVersion passed on a tenant (2026-10-07).",
 			"SAP keeps one version of a value mapping: Delete removes the artifact completely (tenant probe, " +
 				"2026-10-06).",
 		},
