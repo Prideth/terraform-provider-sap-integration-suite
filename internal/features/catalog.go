@@ -1465,7 +1465,9 @@ var Catalog = []Feature{
 				"/apiportal/operations/1.0/Configuration.svc/VirtualHostRequests with operation " +
 				"CREATE, UPDATE or DELETE. The resource sends the default domain bodies: accountId " +
 				"(the subaccount subdomain), virtualHostUrl (the alias), isDefaultVirtualHostRequest " +
-				"and, for update and delete, virtualHostId.",
+				"and, for update and delete, virtualHostId; for mutual TLS also isClientAuthEnabled " +
+				"and trustStore (a truststore name or ref://<certificate store reference>), as SAP Help " +
+				"documents them in Configuring Mutual TLS for Default Domain Virtual Host.",
 			"Tenant probe (2026-10-06) with a key of the role APIManagement.SelfService.Administrator: " +
 				"create, update and delete answered 201 and took effect at once (allocationStatus " +
 				"COMPLETE). virtualHostId is the id of Management.svc/VirtualHosts; SAP returns the full " +
@@ -1479,11 +1481,13 @@ var Catalog = []Feature{
 				"answers.",
 			"TestAccAPIManagementVirtualHost_basic passed on a tenant (2026-10-06): create, rename in " +
 				"place, import by alias and delete of a default domain host.",
-			"Custom domains and mutual TLS (keyStoreName, keyStoreAlias, trustStore, " +
-				"isClientAuthEnabled, isForCustomDomain) are documented but not tested, and the " +
-				"resource refuses to manage hosts that use them. It never makes a host the default " +
-				"one. Deletion is refused by SAP while proxies (deployed, draft or in a revision) " +
-				"reference the host or while it is the default.",
+			"Mutual TLS on the default domain (client_auth_enabled, trust_store) is implemented from " +
+				"the documented requests; TestAccAPIManagementVirtualHost_mutualTLS has not run on a " +
+				"tenant yet. The truststore itself is created in the UI; no documented API creates it.",
+			"Custom domains (keyStoreName, keyStoreAlias, isForCustomDomain) are documented but not " +
+				"tested, and the resource refuses to manage hosts that use them. It never makes a host " +
+				"the default one. Deletion is refused by SAP while proxies (deployed, draft or in a " +
+				"revision) reference the host or while it is the default.",
 		},
 		Operations: Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
 	},

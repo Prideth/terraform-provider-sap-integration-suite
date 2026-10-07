@@ -25,8 +25,15 @@ import (
 // show in Management.svc/VirtualHosts, where hosts can only be listed.
 type fakeVirtualHosts struct {
 	mu       sync.Mutex
-	hosts    map[string]string // id -> alias
+	hosts    map[string]fakeVirtualHost
 	requests []map[string]any
+}
+
+// fakeVirtualHost is what the fake keeps of a host.
+type fakeVirtualHost struct {
+	alias      string
+	clientAuth bool
+	trustStore string
 }
 
 const fakeVirtualHostDomain = ".mysubaccount.apimanagement.eu10.hana.ondemand.com"
@@ -36,42 +43,59 @@ func (f *fakeVirtualHosts) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer f.mu.Unlock()
 	switch {
 	case r.Method == http.MethodGet && strings.HasSuffix(r.URL.Path, "/Management.svc/VirtualHosts"):
-		var rows []string
-		for id, alias := range f.hosts {
-			rows = append(rows, fmt.Sprintf(`{"id":%q,"name":%q,"isDefault":false,"isSSL":true,"virtual_host":%q,"virtual_port":443}`,
-				id, id, alias+fakeVirtualHostDomain))
-		}
-		_, _ = w.Write([]byte(`{"d":{"results":[` + strings.Join(rows, ",") + `]}}`))
+		f.list(w)
 	case r.Method == http.MethodPost && strings.HasSuffix(r.URL.Path, "/Configuration.svc/VirtualHostRequests"):
 		var req map[string]any
 		body, _ := io.ReadAll(r.Body)
 		_ = json.Unmarshal(body, &req)
 		f.requests = append(f.requests, req)
-		id, _ := req["virtualHostId"].(string)
-		alias, _ := req["virtualHostUrl"].(string)
-		switch req["operation"] {
-		case "CREATE":
-			id = fmt.Sprintf("00000000-0000-4000-8000-%012d", len(f.requests))
-			f.hosts[id] = alias
-		case "UPDATE", "DELETE":
-			if _, ok := f.hosts[id]; !ok {
-				w.WriteHeader(http.StatusBadRequest)
-				_, _ = w.Write([]byte(`{"error":{"code":"VHR_NO_COMPLETED_RECORD_FOUND","message":{"lang":"en","value":"Could not locate previous status for the virtual host id ` + id + `."}}}`))
-				return
-			}
-			if req["operation"] == "DELETE" {
-				delete(f.hosts, id)
-				alias = ""
-			} else {
-				f.hosts[id] = alias
-			}
-		}
-		w.WriteHeader(http.StatusCreated)
-		_, _ = fmt.Fprintf(w, `{"d":{"id":"request-%d","virtualHostId":%q,"virtualHostUrl":%q,"allocationStatus":"COMPLETE","allocatedPort":443,"operation":%q}}`,
-			len(f.requests), id, alias+fakeVirtualHostDomain, req["operation"])
+		f.request(w, req)
 	default:
 		w.WriteHeader(http.StatusForbidden)
 	}
+}
+
+func (f *fakeVirtualHosts) list(w http.ResponseWriter) {
+	var rows []string
+	for id, h := range f.hosts {
+		trustStore := "null"
+		if h.trustStore != "" {
+			trustStore = fmt.Sprintf("%q", h.trustStore)
+		}
+		rows = append(rows, fmt.Sprintf(`{"id":%q,"name":%q,"isDefault":false,"isSSL":true,"isClientAuthEnabled":%t,"trustStore":%s,"virtual_host":%q,"virtual_port":443}`,
+			id, id, h.clientAuth, trustStore, h.alias+fakeVirtualHostDomain))
+	}
+	_, _ = w.Write([]byte(`{"d":{"results":[` + strings.Join(rows, ",") + `]}}`))
+}
+
+func (f *fakeVirtualHosts) request(w http.ResponseWriter, req map[string]any) {
+	id, _ := req["virtualHostId"].(string)
+	alias, _ := req["virtualHostUrl"].(string)
+	clientAuth, _ := req["isClientAuthEnabled"].(bool)
+	trustStore, _ := req["trustStore"].(string)
+	host := fakeVirtualHost{alias: alias, clientAuth: clientAuth, trustStore: trustStore}
+	current, known := f.hosts[id]
+	switch {
+	case req["operation"] == "CREATE":
+		id = fmt.Sprintf("00000000-0000-4000-8000-%012d", len(f.requests))
+		f.hosts[id] = host
+	case !known:
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(`{"error":{"code":"VHR_NO_COMPLETED_RECORD_FOUND","message":{"lang":"en","value":"Could not locate previous status for the virtual host id ` + id + `."}}}`))
+		return
+	case req["operation"] == "DELETE":
+		delete(f.hosts, id)
+		alias = ""
+	default:
+		if _, sent := req["isClientAuthEnabled"]; !sent {
+			// Without the TLS fields the fake keeps the host's setting.
+			host.clientAuth, host.trustStore = current.clientAuth, current.trustStore
+		}
+		f.hosts[id] = host
+	}
+	w.WriteHeader(http.StatusCreated)
+	_, _ = fmt.Fprintf(w, `{"d":{"id":"request-%d","virtualHostId":%q,"virtualHostUrl":%q,"allocationStatus":"COMPLETE","allocatedPort":443,"operation":%q}}`,
+		len(f.requests), id, alias+fakeVirtualHostDomain, req["operation"])
 }
 
 func virtualHostTestResource(t *testing.T, fake *fakeVirtualHosts) (*apiManagementVirtualHostResource, func()) {
@@ -89,21 +113,27 @@ func virtualHostSchema(r *apiManagementVirtualHostResource) schema.Schema {
 	return schemaResp.Schema
 }
 
-func virtualHostPlan(t *testing.T, r *apiManagementVirtualHostResource, id, alias string) tfsdk.Plan {
+// virtualHostPlan plans a host; a trustStore switches mutual TLS on.
+func virtualHostPlan(t *testing.T, r *apiManagementVirtualHostResource, id, alias, trustStore string) tfsdk.Plan {
 	t.Helper()
 	s := virtualHostSchema(r)
 	objType := s.Type().TerraformType(context.Background()).(tftypes.Object)
-	var idValue any
+	var idValue, trustStoreValue any
 	if id != "" {
 		idValue = id
 	}
+	if trustStore != "" {
+		trustStoreValue = trustStore
+	}
 	return tfsdk.Plan{Schema: s, Raw: tftypes.NewValue(objType, map[string]tftypes.Value{
-		"id":        tftypes.NewValue(tftypes.String, idValue),
-		"alias":     tftypes.NewValue(tftypes.String, alias),
-		"host_name": tftypes.NewValue(tftypes.String, tftypes.UnknownValue),
-		"port":      tftypes.NewValue(tftypes.Number, tftypes.UnknownValue),
-		"default":   tftypes.NewValue(tftypes.Bool, tftypes.UnknownValue),
-		"ssl":       tftypes.NewValue(tftypes.Bool, tftypes.UnknownValue),
+		"id":                  tftypes.NewValue(tftypes.String, idValue),
+		"alias":               tftypes.NewValue(tftypes.String, alias),
+		"host_name":           tftypes.NewValue(tftypes.String, tftypes.UnknownValue),
+		"port":                tftypes.NewValue(tftypes.Number, tftypes.UnknownValue),
+		"default":             tftypes.NewValue(tftypes.Bool, tftypes.UnknownValue),
+		"ssl":                 tftypes.NewValue(tftypes.Bool, tftypes.UnknownValue),
+		"client_auth_enabled": tftypes.NewValue(tftypes.Bool, trustStore != ""),
+		"trust_store":         tftypes.NewValue(tftypes.String, trustStoreValue),
 	})}
 }
 
@@ -117,13 +147,13 @@ func TestAPIManagementVirtualHostResource_Configure(t *testing.T) {
 }
 
 func TestAPIManagementVirtualHostResource_Lifecycle(t *testing.T) {
-	fake := &fakeVirtualHosts{hosts: map[string]string{}}
+	fake := &fakeVirtualHosts{hosts: map[string]fakeVirtualHost{}}
 	r, closeServer := virtualHostTestResource(t, fake)
 	defer closeServer()
 	ctx := context.Background()
 
 	createResp := &resource.CreateResponse{State: newTestState(t, virtualHostSchema(r))}
-	r.Create(ctx, resource.CreateRequest{Plan: virtualHostPlan(t, r, "", "prod-apis")}, createResp)
+	r.Create(ctx, resource.CreateRequest{Plan: virtualHostPlan(t, r, "", "prod-apis", "")}, createResp)
 	if createResp.Diagnostics.HasError() {
 		t.Fatalf("Create() produced diagnostics: %v", createResp.Diagnostics)
 	}
@@ -135,7 +165,7 @@ func TestAPIManagementVirtualHostResource_Lifecycle(t *testing.T) {
 	id := created.ID.ValueString()
 
 	updateResp := &resource.UpdateResponse{State: createResp.State}
-	r.Update(ctx, resource.UpdateRequest{Plan: virtualHostPlan(t, r, id, "prod-apis-2"), State: createResp.State}, updateResp)
+	r.Update(ctx, resource.UpdateRequest{Plan: virtualHostPlan(t, r, id, "prod-apis-2", ""), State: createResp.State}, updateResp)
 	if updateResp.Diagnostics.HasError() {
 		t.Fatalf("Update() produced diagnostics: %v", updateResp.Diagnostics)
 	}
@@ -169,8 +199,92 @@ func TestAPIManagementVirtualHostResource_Lifecycle(t *testing.T) {
 	}
 }
 
+func TestAPIManagementVirtualHostResource_MutualTLS(t *testing.T) {
+	fake := &fakeVirtualHosts{hosts: map[string]fakeVirtualHost{}}
+	r, closeServer := virtualHostTestResource(t, fake)
+	defer closeServer()
+	ctx := context.Background()
+
+	createResp := &resource.CreateResponse{State: newTestState(t, virtualHostSchema(r))}
+	r.Create(ctx, resource.CreateRequest{Plan: virtualHostPlan(t, r, "", "mtls-apis", "clients")}, createResp)
+	if createResp.Diagnostics.HasError() {
+		t.Fatalf("Create() produced diagnostics: %v", createResp.Diagnostics)
+	}
+	var created apiManagementVirtualHostModel
+	createResp.State.Get(ctx, &created)
+	if !created.ClientAuthEnabled.ValueBool() || created.TrustStore.ValueString() != "clients" {
+		t.Errorf("state after create = %+v, want client authentication against clients", created)
+	}
+	id := created.ID.ValueString()
+
+	// Another truststore, through a certificate store reference.
+	updateResp := &resource.UpdateResponse{State: createResp.State}
+	r.Update(ctx, resource.UpdateRequest{Plan: virtualHostPlan(t, r, id, "mtls-apis", "ref://clients-2026"), State: createResp.State}, updateResp)
+	var updated apiManagementVirtualHostModel
+	updateResp.State.Get(ctx, &updated)
+	if updateResp.Diagnostics.HasError() || updated.TrustStore.ValueString() != "ref://clients-2026" {
+		t.Fatalf("Update() = %v, state %+v; want the reference", updateResp.Diagnostics, updated)
+	}
+
+	// Switched off: the update says so explicitly.
+	offResp := &resource.UpdateResponse{State: updateResp.State}
+	r.Update(ctx, resource.UpdateRequest{Plan: virtualHostPlan(t, r, id, "mtls-apis", ""), State: updateResp.State}, offResp)
+	var off apiManagementVirtualHostModel
+	offResp.State.Get(ctx, &off)
+	if offResp.Diagnostics.HasError() || off.ClientAuthEnabled.ValueBool() || !off.TrustStore.IsNull() {
+		t.Fatalf("Update(off) = %v, state %+v; want client authentication off", offResp.Diagnostics, off)
+	}
+
+	want := []string{
+		`{"accountId":"mysubaccount","isClientAuthEnabled":true,"isDefaultVirtualHostRequest":false,"operation":"CREATE","trustStore":"clients","virtualHostUrl":"mtls-apis"}`,
+		`{"accountId":"mysubaccount","isClientAuthEnabled":true,"isDefaultVirtualHostRequest":false,"operation":"UPDATE","trustStore":"ref://clients-2026","virtualHostId":"` + id + `","virtualHostUrl":"mtls-apis"}`,
+		`{"accountId":"mysubaccount","isClientAuthEnabled":false,"isDefaultVirtualHostRequest":false,"operation":"UPDATE","virtualHostId":"` + id + `","virtualHostUrl":"mtls-apis"}`,
+	}
+	for i, req := range fake.requests {
+		got, _ := json.Marshal(req)
+		if i >= len(want) || string(got) != want[i] {
+			t.Errorf("request %d = %s", i, got)
+		}
+	}
+
+	// An update of a host without mutual TLS leaves the TLS fields out.
+	plainResp := &resource.UpdateResponse{State: offResp.State}
+	r.Update(ctx, resource.UpdateRequest{Plan: virtualHostPlan(t, r, id, "plain-apis", ""), State: offResp.State}, plainResp)
+	if last := fake.requests[len(fake.requests)-1]; plainResp.Diagnostics.HasError() || last["isClientAuthEnabled"] != nil {
+		t.Errorf("Update(plain) = %v, request %v; want the default domain body", plainResp.Diagnostics, last)
+	}
+}
+
+func TestAPIManagementVirtualHostResource_ValidateConfig(t *testing.T) {
+	r := &apiManagementVirtualHostResource{}
+	for _, tc := range []struct {
+		clientAuth bool
+		trustStore string
+		wantError  bool
+	}{
+		{false, "", false},
+		{true, "clients", false},
+		{true, "", true},
+		{false, "clients", true},
+	} {
+		plan := virtualHostPlan(t, r, "", "apis", tc.trustStore)
+		raw := map[string]tftypes.Value{}
+		_ = plan.Raw.As(&raw)
+		raw["client_auth_enabled"] = tftypes.NewValue(tftypes.Bool, tc.clientAuth)
+		objType := plan.Schema.Type().TerraformType(context.Background()).(tftypes.Object)
+		resp := &resource.ValidateConfigResponse{}
+		r.ValidateConfig(context.Background(), resource.ValidateConfigRequest{
+			Config: tfsdk.Config{Schema: plan.Schema, Raw: tftypes.NewValue(objType, raw)},
+		}, resp)
+		if resp.Diagnostics.HasError() != tc.wantError {
+			t.Errorf("client_auth_enabled = %v, trust_store = %q: diagnostics %v, want error %v",
+				tc.clientAuth, tc.trustStore, resp.Diagnostics, tc.wantError)
+		}
+	}
+}
+
 func TestAPIManagementVirtualHostResource_ImportByAlias(t *testing.T) {
-	fake := &fakeVirtualHosts{hosts: map[string]string{"00000000-0000-4000-8000-000000000042": "test-apis"}}
+	fake := &fakeVirtualHosts{hosts: map[string]fakeVirtualHost{"00000000-0000-4000-8000-000000000042": {alias: "test-apis"}}}
 	r, closeServer := virtualHostTestResource(t, fake)
 	defer closeServer()
 	ctx := context.Background()
@@ -219,9 +333,11 @@ func TestUnsupportedVirtualHost(t *testing.T) {
 	if msg := unsupportedVirtualHost(&apimanagementclassic.VirtualHost{ID: "id"}); msg != "" {
 		t.Errorf("default domain host refused: %s", msg)
 	}
+	if msg := unsupportedVirtualHost(&apimanagementclassic.VirtualHost{ID: "id", IsClientAuthEnabled: true, TrustStore: "clients"}); msg != "" {
+		t.Errorf("mutual TLS host refused: %s", msg)
+	}
 	for _, h := range []apimanagementclassic.VirtualHost{
-		{ID: "id", IsForCustomDomain: true}, {ID: "id", IsClientAuthEnabled: true},
-		{ID: "id", KeyStoreName: "ref://keystore"}, {ID: "id", TrustStore: "truststore"},
+		{ID: "id", IsForCustomDomain: true}, {ID: "id", KeyStoreName: "ref://keystore"}, {ID: "id", KeyStoreAlias: "server"},
 	} {
 		if unsupportedVirtualHost(&h) == "" {
 			t.Errorf("host %+v accepted, want it refused", h)

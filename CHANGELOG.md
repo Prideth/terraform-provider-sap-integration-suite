@@ -129,9 +129,16 @@ they become the 0.9.0 section once 0.8.0 is released.
   uses the requests SAP Help documents (`Configuration.svc/VirtualHostRequests`
   with CREATE, UPDATE and DELETE) and reads the host from
   `Management.svc/VirtualHosts`. A changed alias renames the host in place;
-  import takes the ID, the alias or the host name. Custom domains and mutual
-  TLS are not managed yet; the resource refuses hosts that use them. The
-  acceptance test created, renamed, imported and deleted a host on a tenant.
+  import takes the ID, the alias or the host name. Custom domains are not
+  managed yet; the resource refuses hosts that use them. The acceptance test
+  created, renamed, imported and deleted a host on a tenant.
+- Mutual TLS for that resource: `client_auth_enabled` and `trust_store` (a
+  truststore of the API portal or `ref://<certificate store reference>`)
+  make the host ask every caller for a client certificate, with the fields
+  SAP Help documents in *Configuring Mutual TLS for Default Domain Virtual
+  Host*. Switching it on or off changes the host in place; hosts without
+  mutual TLS still get the request without these fields. Built from the
+  documentation; its acceptance test has not run on a tenant yet.
 - New provider block `api_management_self_service`: the key of a second
   `apiportal-apiaccess` instance with the role
   `APIManagement.SelfService.Administrator`, which SAP requires for virtual

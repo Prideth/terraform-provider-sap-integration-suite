@@ -31,7 +31,7 @@ prepared on `release/0.5.x`, 0.6.0 on `release/0.6.x`.
 | 0.6.0 | API Composition: business data graph hardening | prepared on `release/0.6.x`; every change is tenant-verified | releasing 0.5.0 first |
 | 0.7.0 | Cloud Integration data types, message types, fault message types, service interfaces | in progress on `feature/design-time-types`; data types, message types, fault message types and service interfaces done (unofficial) | release preparation |
 | 0.8.0 | Security Content completion | in progress on `feature/security-content`: certificate chains, PGP keys and OAuth2 custom parameters done (unofficial, acceptance tests passed) | releasing 0.7.0 first |
-| 0.9.0 | Classic API Management infrastructure, above all virtual hosts; the API proxy only if the official Transport API request passes its acceptance test | in progress on `feature/classic-virtual-hosts`: default domain virtual hosts done (partial, acceptance test passed) | releasing 0.8.0 first |
+| 0.9.0 | Classic API Management infrastructure, above all virtual hosts; the API proxy only if the official Transport API request passes its acceptance test | in progress on `feature/classic-virtual-hosts`: default domain virtual hosts done (partial, acceptance test passed); mutual TLS implemented, its tenant test waits for a truststore | releasing 0.8.0 first |
 | 0.10.0 | Edge Integration Cell targeting | proposed | a tenant with an Edge Integration Cell (P1 item 3) |
 | 0.11.0 | Data Space Integration desired-state configuration | proposed | the DSIAPI specification (P2 item 7) |
 
@@ -48,6 +48,7 @@ These need no further research, only a run of the prepared tests:
 | Item | Test | Decides |
 |---|---|---|
 | Classic API proxy | the official Transport API specification, then `TestAccAPIProxy_sample` | Even the tenant's own export, renamed, answered `APIPROXY_ZIP_ERROR`, so the import request is the problem, not the bundle. The resource is implemented but not registered; the specification (`APIPortal_Transport_CF`, needs an SAP login) shows the documented request, after which the resource is registered as experimental |
+| Virtual hosts with mutual TLS | `apim-probe -VirtualHostMtlsTests`, then `TestAccAPIManagementVirtualHost_mutualTLS`; both need a truststore created in the UI (`acceptance.virtual_host_trust_store`) | Whether SAP takes the documented mutual TLS bodies, how it lists a `ref://` truststore and how client authentication is switched off; passing confirms the mutual TLS part of the virtual host resource |
 | Live contract check | `TestAccMetadata` (`SAP_INTEGRATION_SUITE_ACC_METADATA`) | First comparison of the committed snapshots with a tenant, including the service documents |
 | Deployments with longer timeouts | message mapping and value mapping acceptance tests | Whether slow deployments need more than the documented timeout advice |
 
@@ -93,8 +94,10 @@ These need no further research, only a run of the prepared tests:
    to 150 characters, and 0.3.2 checks all of them at plan time.
 6. **Classic virtual hosts.** Default domain hosts are implemented for 0.9.0 on the documented
    `Configuration.svc/VirtualHostRequests`, after a tenant probe with an
-   `APIManagement.SelfService.Administrator` key (2026-10-06); the acceptance test passed. Next:
-   custom domains and mutual TLS, which need DNS and TLS material for their own tenant test.
+   `APIManagement.SelfService.Administrator` key (2026-10-06); the acceptance test passed. Mutual
+   TLS on the default domain needs no DNS, only a truststore created in the UI; it is implemented
+   from SAP Help and waits for `-VirtualHostMtlsTests` and its acceptance test (P0). Next: custom
+   domains, which need DNS and a server certificate for their own tenant test.
 7. **Data Space Integration.** Parse the DSIAPI OpenAPI document (`cmd/apidiscovery -spec-dir`)
    once it is available, then model only desired-state configuration (assets, policies,
    contract definitions); negotiations, agreements and transfers stay out of scope.

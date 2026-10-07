@@ -9,8 +9,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -27,6 +29,8 @@ const apiManagementVirtualHostTypeName = "sapintegrationsuite_api_management_vir
 // a wrong one (400 VHR_VIRTUALHOST_ALIAS_FORMAT_INVALID): "only
 // Alphanumerics and hyphens", no leading or trailing hyphen.
 var virtualHostAlias = regexp.MustCompile(`^[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?$`)
+
+var _ resource.ResourceWithValidateConfig = &apiManagementVirtualHostResource{}
 
 // virtualHostWait bounds the wait for a request to show in the host list.
 const virtualHostWait = 2 * time.Minute
@@ -49,6 +53,9 @@ type apiManagementVirtualHostModel struct {
 	Port     types.Int64  `tfsdk:"port"`
 	Default  types.Bool   `tfsdk:"default"`
 	SSL      types.Bool   `tfsdk:"ssl"`
+
+	ClientAuthEnabled types.Bool   `tfsdk:"client_auth_enabled"`
+	TrustStore        types.String `tfsdk:"trust_store"`
 }
 
 func (r *apiManagementVirtualHostResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -62,9 +69,12 @@ func (r *apiManagementVirtualHostResource) Schema(_ context.Context, _ resource.
 			"SAP Help documents the requests (Configuring a Default Domain for a Virtual Host): create, " +
 			"update and delete are POST requests to Configuration.svc/VirtualHostRequests, and the hosts are " +
 			"read from Management.svc/VirtualHosts.\n\n" +
+			"With client_auth_enabled and trust_store, the host asks every client for a certificate and " +
+			"checks it against a truststore of the API portal (mutual TLS, SAP Help: Configuring Mutual TLS " +
+			"for Default Domain Virtual Host).\n\n" +
 			"Needs provider.api_management_self_service, a key with the role " +
 			"APIManagement.SelfService.Administrator; the api_management key is refused. Virtual hosts with " +
-			"a custom domain or mutual TLS are not managed by this resource yet. SAP refuses to delete a " +
+			"a custom domain or a keystore are not managed by this resource yet. SAP refuses to delete a " +
 			"virtual host while it is the default one or while API proxies, drafts or revisions refer to it.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -104,8 +114,66 @@ func (r *apiManagementVirtualHostResource) Schema(_ context.Context, _ resource.
 				Description:   "Whether the virtual host serves HTTPS.",
 				PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
 			},
+			"client_auth_enabled": schema.BoolAttribute{
+				Optional: true,
+				Computed: true,
+				Default:  booldefault.StaticBool(false),
+				Description: "Mutual TLS: whether the host asks every client for a certificate and accepts only " +
+					"those trust_store vouches for. Needs trust_store. Switching it on or off changes the host in " +
+					"place; SAP then asks to redeploy and republish the API proxies of products that use it. " +
+					"Default false.",
+			},
+			"trust_store": schema.StringAttribute{
+				Optional: true,
+				Description: "The truststore that holds the client certificates, or the certificates of the " +
+					"CAs that issued them, for client_auth_enabled: the name of a truststore of the API portal, " +
+					"or ref://<name> for a certificate store reference that points at one (see " +
+					"sapintegrationsuite_api_management_certificate_store_reference). SAP asks for the whole " +
+					"chain (client, intermediate and root certificates) in the truststore, and for client " +
+					"certificates with the Client Authentication extended key usage. The truststore itself is " +
+					"created in the SAP Integration Suite UI. Only allowed with client_auth_enabled.",
+				Validators: []validator.String{stringvalidator.LengthAtLeast(1)},
+			},
 		},
 	}
+}
+
+// ValidateConfig checks that trust_store and client_auth_enabled come
+// together: SAP Help documents mutual TLS as client authentication against
+// a truststore, and a truststore alone as nothing.
+func (r *apiManagementVirtualHostResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var config apiManagementVirtualHostModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() || config.ClientAuthEnabled.IsUnknown() || config.TrustStore.IsUnknown() {
+		return
+	}
+	enabled := config.ClientAuthEnabled.ValueBool()
+	switch {
+	case enabled && config.TrustStore.IsNull():
+		resp.Diagnostics.AddAttributeError(path.Root("trust_store"), "Missing truststore",
+			"client_auth_enabled = true needs trust_store: the truststore (or ref://<certificate store "+
+				"reference>) the host checks client certificates against.")
+	case !enabled && !config.TrustStore.IsNull():
+		resp.Diagnostics.AddAttributeError(path.Root("trust_store"), "Truststore without client authentication",
+			"trust_store is used only for mutual TLS; set client_auth_enabled = true or remove trust_store.")
+	}
+}
+
+// planTLS is the mutual TLS setting of a plan, nil without client
+// authentication.
+func planTLS(plan apiManagementVirtualHostModel) *apimanagementclassic.VirtualHostTLS {
+	if !plan.ClientAuthEnabled.ValueBool() {
+		return nil
+	}
+	return &apimanagementclassic.VirtualHostTLS{ClientAuthEnabled: true, TrustStore: plan.TrustStore.ValueString()}
+}
+
+// tlsApplied reports whether the host shows the client authentication of
+// tls (nil: off). The truststore is not compared: how SAP lists a
+// ref:// reference is not known yet, and a difference shows as drift
+// rather than as a timeout.
+func tlsApplied(h *apimanagementclassic.VirtualHost, tls *apimanagementclassic.VirtualHostTLS) bool {
+	return h.IsClientAuthEnabled == (tls != nil && tls.ClientAuthEnabled)
 }
 
 func (r *apiManagementVirtualHostResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -145,7 +213,8 @@ func (r *apiManagementVirtualHostResource) Create(ctx context.Context, req resou
 		return
 	}
 
-	created, err := r.client.CreateVirtualHost(ctx, r.subdomain, plan.Alias.ValueString())
+	tls := planTLS(plan)
+	created, err := r.client.CreateVirtualHost(ctx, r.subdomain, plan.Alias.ValueString(), tls)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to create Classic API Management virtual host", diagnosticDetail(err))
 		return
@@ -158,15 +227,19 @@ func (r *apiManagementVirtualHostResource) Create(ctx context.Context, req resou
 	// Saved from SAP's answer before the wait, so that a host SAP created is
 	// never lost from state; the read below replaces it.
 	resp.Diagnostics.Append(resp.State.Set(ctx, apiManagementVirtualHostModel{
-		ID:       types.StringValue(created.VirtualHostID),
-		Alias:    plan.Alias,
-		HostName: stringOrNull(created.VirtualHostURL),
-		Port:     types.Int64Value(int64(created.AllocatedPort)),
-		Default:  types.BoolValue(false),
-		SSL:      types.BoolNull(),
+		ID:                types.StringValue(created.VirtualHostID),
+		Alias:             plan.Alias,
+		HostName:          stringOrNull(created.VirtualHostURL),
+		Port:              types.Int64Value(int64(created.AllocatedPort)),
+		Default:           types.BoolValue(false),
+		SSL:               types.BoolNull(),
+		ClientAuthEnabled: plan.ClientAuthEnabled,
+		TrustStore:        plan.TrustStore,
 	})...)
 
-	host := r.wait(ctx, created.VirtualHostID, func(h *apimanagementclassic.VirtualHost) bool { return h != nil }, &resp.Diagnostics)
+	host := r.wait(ctx, created.VirtualHostID, func(h *apimanagementclassic.VirtualHost) bool {
+		return h != nil && tlsApplied(h, tls)
+	}, &resp.Diagnostics)
 	if host == nil {
 		return
 	}
@@ -231,12 +304,18 @@ func (r *apiManagementVirtualHostResource) Update(ctx context.Context, req resou
 	}
 
 	alias := plan.Alias.ValueString()
-	if _, err := r.client.UpdateVirtualHost(ctx, r.subdomain, current.ID, alias, current.IsDefault); err != nil {
+	// The TLS fields are sent only when mutual TLS is on or is switched
+	// off; a host without it gets the default domain body.
+	tls := planTLS(plan)
+	if tls == nil && current.IsClientAuthEnabled {
+		tls = &apimanagementclassic.VirtualHostTLS{}
+	}
+	if _, err := r.client.UpdateVirtualHost(ctx, r.subdomain, current.ID, alias, current.IsDefault, tls); err != nil {
 		resp.Diagnostics.AddError("Failed to update Classic API Management virtual host", diagnosticDetail(err))
 		return
 	}
 	host := r.wait(ctx, current.ID, func(h *apimanagementclassic.VirtualHost) bool {
-		return h != nil && strings.EqualFold(h.Alias(), alias)
+		return h != nil && strings.EqualFold(h.Alias(), alias) && tlsApplied(h, tls)
 	}, &resp.Diagnostics)
 	if host == nil {
 		return
@@ -282,29 +361,37 @@ func (r *apiManagementVirtualHostResource) ImportState(ctx context.Context, req 
 
 // unsupportedVirtualHost explains why the resource cannot manage a host,
 // or returns "". Its update sends the default domain body, which would
-// drop a custom domain or mutual TLS setting.
+// drop a custom domain or a keystore.
 func unsupportedVirtualHost(h *apimanagementclassic.VirtualHost) string {
-	if h.IsForCustomDomain || h.IsClientAuthEnabled || h.KeyStoreName != "" || h.TrustStore != "" {
-		return fmt.Sprintf("Virtual host %s (%s) uses a custom domain, mutual TLS, a keystore or a truststore. "+
-			"This resource manages only virtual hosts on the default domain without them; change this host "+
-			"in SAP instead.", h.ID, h.HostName)
+	if h.IsForCustomDomain || h.KeyStoreName != "" || h.KeyStoreAlias != "" {
+		return fmt.Sprintf("Virtual host %s (%s) uses a custom domain or a keystore. This resource manages "+
+			"only virtual hosts on the default domain, with or without mutual TLS; change this host in SAP "+
+			"instead.", h.ID, h.HostName)
 	}
 	return ""
 }
 
 // virtualHostModel is the state of a host. configured is the alias in the
 // configuration; it is kept when the host's alias differs only in case.
+// The truststore counts only while client authentication is on, so that one
+// SAP keeps after switching it off is no difference.
 func virtualHostModel(h *apimanagementclassic.VirtualHost, configured types.String) apiManagementVirtualHostModel {
 	alias := types.StringValue(h.Alias())
 	if !configured.IsNull() && !configured.IsUnknown() && strings.EqualFold(configured.ValueString(), h.Alias()) {
 		alias = configured
 	}
+	trustStore := types.StringNull()
+	if h.IsClientAuthEnabled {
+		trustStore = stringOrNull(h.TrustStore)
+	}
 	return apiManagementVirtualHostModel{
-		ID:       types.StringValue(h.ID),
-		Alias:    alias,
-		HostName: types.StringValue(h.HostName),
-		Port:     types.Int64Value(int64(h.Port)),
-		Default:  types.BoolValue(h.IsDefault),
-		SSL:      types.BoolValue(h.IsSSL),
+		ID:                types.StringValue(h.ID),
+		Alias:             alias,
+		HostName:          types.StringValue(h.HostName),
+		Port:              types.Int64Value(int64(h.Port)),
+		Default:           types.BoolValue(h.IsDefault),
+		SSL:               types.BoolValue(h.IsSSL),
+		ClientAuthEnabled: types.BoolValue(h.IsClientAuthEnabled),
+		TrustStore:        trustStore,
 	}
 }

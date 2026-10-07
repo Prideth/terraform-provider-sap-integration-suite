@@ -2,8 +2,8 @@
 page_title: "sapintegrationsuite_api_management_virtual_host Resource - sapintegrationsuite"
 subcategory: "API Management"
 description: |-
-  An additional virtual host of Classic API Management on the tenant's default domain: a host
-  name under which the API portal exposes API proxies.
+  An additional virtual host of Classic API Management on the tenant's default domain, optionally
+  with mutual TLS: a host name under which the API portal exposes API proxies.
 ---
 
 # sapintegrationsuite_api_management_virtual_host (Resource)
@@ -12,11 +12,14 @@ A virtual host is a host name under which the API portal of Classic API Manageme
 proxies. Every tenant has a default one; additional hosts let you separate APIs by audience or
 stage, for example `prod-apis.<tenant domain>` next to `test-apis.<tenant domain>`, without a
 second tenant. This resource manages such additional hosts on the tenant's default domain: you
-choose the alias, SAP appends the domain.
+choose the alias, SAP appends the domain. A host can also demand a client certificate from every
+caller (mutual TLS), for example one host for partners with certificates next to an ordinary one.
 
 **Status:** partial. SAP Help documents the requests (*Configuring a Default Domain for a Virtual
 Host*), and the resource's acceptance test created, renamed, imported and deleted a host on a
-tenant. Partial because virtual hosts with a custom domain or mutual TLS are not managed yet.
+tenant. Mutual TLS follows SAP Help's *Configuring Mutual TLS for Default Domain Virtual Host*;
+its acceptance test has not run on a tenant yet. Partial because virtual hosts with a custom
+domain are not managed.
 
 ## Prerequisites
 
@@ -54,6 +57,31 @@ tenant. Partial because virtual hosts with a custom domain or mutual TLS are not
 `prod-apis.mysubaccount.apimanagement.eu10.hana.ondemand.com`. SAP Help shows
 `prod-apis.sapdefaultdomain` in its sample answer; a tenant returned the real host name.
 
+## Mutual TLS
+
+With `client_auth_enabled = true`, the API gateway asks every caller of the host for a client
+certificate during the TLS handshake and accepts only certificates the truststore in
+`trust_store` vouches for. API proxies behind the host need no policy for this; a caller without
+a valid certificate does not get through the handshake. The host's own server certificate stays
+SAP's certificate for the default domain.
+
+- **The truststore comes first.** Create it in the SAP Integration Suite UI (*Configure* >
+  *APIs* > *Certificates* > *Create*, type *Trust Store*) and upload the client certificates as
+  PEM or DER, or the certificates of the CA that issues them. SAP asks for the whole chain (client,
+  intermediate and root certificates) in the truststore and, for certificates created or renewed
+  for virtual hosts, the *Client Authentication* extended key usage (SAP Note 3725252). There is
+  no documented API to create the truststore itself, so Terraform only refers to it.
+- **`trust_store`** is the truststore's name, or `ref://<name>` for a
+  [certificate store reference](api_management_certificate_store_reference.md) that points at it.
+  A reference is the better choice for rotation: when the certificates change, create a new
+  truststore in the UI and repoint the reference; the host itself does not change.
+- **Switching it on or off** is an in-place update with the documented `UPDATE` request, which
+  now carries `isClientAuthEnabled` and `trustStore`. Hosts without mutual TLS keep getting the
+  request without those fields, exactly as before. As with a renamed host, SAP asks to redeploy
+  and republish the API proxies of products that use the host.
+- **Drift:** `client_auth_enabled` and `trust_store` are read back from the host list. A
+  truststore SAP still lists after client authentication was switched off does not count.
+
 ## Example Usage
 
 {{ tffile "examples/resources/sapintegrationsuite_api_management_virtual_host/resource.tf" }}
@@ -65,7 +93,8 @@ tenant. Partial because virtual hosts with a custom domain or mutual TLS are not
 {{ codefile "shell" "examples/resources/sapintegrationsuite_api_management_virtual_host/import.sh" }}
 
 The ID may be the virtual host's ID (`virtualHostId`, a UUID), its alias or its full host name.
-Hosts with a custom domain or mutual TLS cannot be imported.
+Hosts with mutual TLS on the default domain are imported with their client authentication and
+truststore; hosts with a custom domain or a keystore cannot be imported.
 
 ## Limitations
 
@@ -74,14 +103,18 @@ Hosts with a custom domain or mutual TLS cannot be imported.
   provider checks the format while planning. Deletion is refused while proxies refer to the host.
 - **SAP:** `Configuration.svc` does not serve its `$metadata` to the API portal keys, so the
   request fields are known from SAP Help and the tenant's answers only.
-- **Provider:** only virtual hosts on the default domain are managed. Custom domains and mutual
-  TLS (keystore, key alias, truststore, client authentication) are documented by SAP but have not
-  been tested, and the resource refuses to change or import a host that uses them.
+- **Provider:** only virtual hosts on the default domain are managed. Custom domains (keystore,
+  key alias, custom domain flag) are documented by SAP but need DNS and a server certificate for a
+  test, and the resource refuses to change or import a host that uses them.
+- **Provider:** mutual TLS is built from SAP Help's documented requests; its acceptance test
+  (`TestAccAPIManagementVirtualHost_mutualTLS`) has not run on a tenant yet. How SAP lists a
+  `ref://` truststore and whether switching client authentication off clears the truststore are
+  open until then.
 - **Provider:** the resource never makes a host the default one; an imported default host keeps
   its flag when its alias changes.
 
 ## Related
 
 - [`sapintegrationsuite_api_management_certificate_store_reference`](api_management_certificate_store_reference.md),
-  the keystore and truststore references custom domain and mutual TLS hosts use.
+  the truststore reference a mutual TLS host can use in `trust_store`.
 - [Classic API Management guide](../guides/classic-api-management.md).

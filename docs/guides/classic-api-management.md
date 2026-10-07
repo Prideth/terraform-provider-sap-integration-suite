@@ -256,10 +256,15 @@ self-service key may read that list but not a single host, so the provider looks
 the list. A changed alias renames the host in place; SAP then asks to redeploy and republish the
 proxies of products that use it.
 
-**Default domain only, for now.** Custom domains and mutual TLS use the same requests with a
-keystore, key alias, truststore and client authentication. They are documented but have not been
-tested, so the resource refuses to change or import hosts that use them, and it never makes a
-host the default one. SAP refuses to delete a virtual host while any proxy, deployed, draft or in
+**Mutual TLS.** `client_auth_enabled` and `trust_store` add the two fields SAP Help documents for
+mutual TLS on the default domain: the host then asks every caller for a client certificate and
+checks it against a truststore of the API portal, named directly or through a certificate store
+reference (`ref://<name>`). The truststore is created in the UI; Terraform only refers to it. This
+part is built from the documentation and its acceptance test has not run on a tenant yet.
+
+**Default domain only, for now.** Custom domains use the same requests with a keystore and key
+alias for the server certificate. They are documented but have not been tested, so the resource
+refuses to change or import hosts that use them, and it never makes a host the default one. SAP refuses to delete a virtual host while any proxy, deployed, draft or in
 an old revision, still references it, or while it is the default.
 
 ## What this provider deliberately does not manage, in this phase
@@ -296,12 +301,13 @@ of the proxy's own opaque content, exactly like Cloud Integration's design-time 
 provider does not attempt to reproduce SAP's
 entire policy schema catalog as nested Terraform blocks.
 
-### Virtual hosts with a custom domain or mutual TLS
+### Virtual hosts with a custom domain
 
-The same `VirtualHostRequests` take a keystore (or a certificate store reference), a key alias and
-a truststore for custom domains and mutual TLS. They need DNS for the custom domain and TLS
-material in the API portal, and have not been tested yet; until they are,
-`sapintegrationsuite_api_management_virtual_host` manages default domain hosts only.
+The same `VirtualHostRequests` take a keystore (or a certificate store reference) and a key alias
+for a custom domain, optionally with mutual TLS on top. They need DNS for the custom domain and a
+server certificate in the API portal, and have not been tested yet; until they are,
+`sapintegrationsuite_api_management_virtual_host` manages default domain hosts only, with or
+without mutual TLS.
 
 ### Monetization, Rate Plans, and analytics
 

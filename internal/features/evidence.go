@@ -236,9 +236,9 @@ var Evidence = map[string]EvidenceRecord{
 		"Policies are XML inside the proxy bundle, not separate entities; the proxy resource manages them as content.",
 		"None; policies stay part of the proxy bundle.",
 		srcRecipes, srcMetaAPIM),
-	"api_management.classic.virtual_host": evOn("2026-10-06",
-		"Create, update and delete through Configuration.svc/VirtualHostRequests are documented and work on a tenant with an APIManagement.SelfService.Administrator key: synchronous, 201, virtualHostId equal to the VirtualHosts id. sapintegrationsuite_api_management_virtual_host manages default domain hosts; its acceptance test passed. Custom domains and mutual TLS are not managed.",
-		"Custom domains and mutual TLS need DNS for a custom domain, a keystore, a truststore and their own tenant test; then the feature becomes supported.",
+	"api_management.classic.virtual_host": evOn("2026-10-07",
+		"Create, update and delete through Configuration.svc/VirtualHostRequests are documented and work on a tenant with an APIManagement.SelfService.Administrator key: synchronous, 201, virtualHostId equal to the VirtualHosts id. sapintegrationsuite_api_management_virtual_host manages default domain hosts; its acceptance test passed. Mutual TLS on the default domain (isClientAuthEnabled and trustStore, SAP Help 9faf7ce) is implemented from the documented requests but not yet tenant-tested. Custom domains are not managed.",
+		"Mutual TLS: apim-probe -VirtualHostMtlsTests and TestAccAPIManagementVirtualHost_mutualTLS with a truststore created in the UI. Custom domains need DNS, a keystore with the server certificate and their own tenant test; then the feature becomes supported.",
 		srcHelp, srcMetaAPIM, srcHubAPIM, srcVirtualHostProbe, srcVirtualHostAcc),
 	"api_management.classic.certificate_store": ev(
 		"Schema confirmed; the Hub describes the KeyStore and TrustStore APIs as create and view only.",

@@ -59,15 +59,22 @@ func TestClient_VirtualHostRequests(t *testing.T) {
 
 	client := New(http.DefaultClient, server.URL)
 	ctx := context.Background()
-	created, err := client.CreateVirtualHost(ctx, "mysubaccount", "prod-apis")
+	created, err := client.CreateVirtualHost(ctx, "mysubaccount", "prod-apis", nil)
 	if err != nil {
 		t.Fatalf("CreateVirtualHost() error: %v", err)
 	}
 	if created.VirtualHostID != "79b619fc-0000-4000-8000-000000000002" || created.AllocationStatus != "COMPLETE" {
 		t.Errorf("created = %+v", created)
 	}
-	if _, err := client.UpdateVirtualHost(ctx, "mysubaccount", "79b619fc-0000-4000-8000-000000000002", "prod-apis-2", true); err != nil {
+	if _, err := client.UpdateVirtualHost(ctx, "mysubaccount", "79b619fc-0000-4000-8000-000000000002", "prod-apis-2", true, nil); err != nil {
 		t.Fatalf("UpdateVirtualHost() error: %v", err)
+	}
+	// Mutual TLS: switched on at create, then off again by an update.
+	if _, err := client.CreateVirtualHost(ctx, "mysubaccount", "mtls-apis", &VirtualHostTLS{ClientAuthEnabled: true, TrustStore: "ref://clients"}); err != nil {
+		t.Fatalf("CreateVirtualHost(mutual TLS) error: %v", err)
+	}
+	if _, err := client.UpdateVirtualHost(ctx, "mysubaccount", "79b619fc-0000-4000-8000-000000000002", "mtls-apis", false, &VirtualHostTLS{}); err != nil {
+		t.Fatalf("UpdateVirtualHost(mutual TLS off) error: %v", err)
 	}
 	if err := client.DeleteVirtualHost(ctx, "79b619fc-0000-4000-8000-000000000002"); err != nil {
 		t.Fatalf("DeleteVirtualHost() error: %v", err)
@@ -76,6 +83,8 @@ func TestClient_VirtualHostRequests(t *testing.T) {
 	want := []string{
 		`{"accountId":"mysubaccount","virtualHostUrl":"prod-apis","isDefaultVirtualHostRequest":false,"operation":"CREATE"}`,
 		`{"accountId":"mysubaccount","virtualHostUrl":"prod-apis-2","isDefaultVirtualHostRequest":true,"operation":"UPDATE","virtualHostId":"79b619fc-0000-4000-8000-000000000002"}`,
+		`{"accountId":"mysubaccount","virtualHostUrl":"mtls-apis","isDefaultVirtualHostRequest":false,"isClientAuthEnabled":true,"trustStore":"ref://clients","operation":"CREATE"}`,
+		`{"accountId":"mysubaccount","virtualHostUrl":"mtls-apis","isDefaultVirtualHostRequest":false,"isClientAuthEnabled":false,"operation":"UPDATE","virtualHostId":"79b619fc-0000-4000-8000-000000000002"}`,
 		`{"operation":"DELETE","virtualHostId":"79b619fc-0000-4000-8000-000000000002"}`,
 	}
 	if len(bodies) != len(want) {

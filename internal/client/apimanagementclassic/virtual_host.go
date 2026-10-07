@@ -55,17 +55,41 @@ func (h VirtualHost) Alias() string {
 
 // virtualHostRequestWire is the body of a POST to
 // Configuration.svc/VirtualHostRequests, as SAP Help documents it in
-// "Configuring a Default Domain for a Virtual Host": one request type for
-// create, update and delete, told apart by operation. Configuration.svc
-// does not serve its $metadata to the apiportal-apiaccess keys (403 for
-// both roles on a tenant, October 2026), so the field names come from the
-// documented requests and the tenant's answers, not from a schema.
+// "Configuring a Default Domain for a Virtual Host" and "Configuring Mutual
+// TLS for Default Domain Virtual Host": one request type for create, update
+// and delete, told apart by operation. Configuration.svc does not serve its
+// $metadata to the apiportal-apiaccess keys (403 for both roles on a
+// tenant, October 2026), so the field names come from the documented
+// requests and the tenant's answers, not from a schema.
 type virtualHostRequestWire struct {
 	AccountID                   string `json:"accountId,omitempty"`
 	VirtualHostURL              string `json:"virtualHostUrl,omitempty"`
 	IsDefaultVirtualHostRequest *bool  `json:"isDefaultVirtualHostRequest,omitempty"`
+	IsClientAuthEnabled         *bool  `json:"isClientAuthEnabled,omitempty"`
+	TrustStore                  string `json:"trustStore,omitempty"`
 	Operation                   string `json:"operation"`
 	VirtualHostID               string `json:"virtualHostId,omitempty"`
+}
+
+// VirtualHostTLS is the mutual TLS setting of a default domain virtual
+// host. With ClientAuthEnabled, the API gateway asks every client for a
+// certificate and checks it against TrustStore: the name of a truststore of
+// the API portal, or "ref://<name>" for a certificate store reference that
+// points at one.
+type VirtualHostTLS struct {
+	ClientAuthEnabled bool
+	TrustStore        string
+}
+
+// apply writes the setting into a request. A nil setting leaves the TLS
+// fields out, which is the default domain body without mutual TLS.
+func (t *VirtualHostTLS) apply(request *virtualHostRequestWire) {
+	if t == nil {
+		return
+	}
+	enabled := t.ClientAuthEnabled
+	request.IsClientAuthEnabled = &enabled
+	request.TrustStore = t.TrustStore
 }
 
 // VirtualHostRequest is SAP's answer to a request: a record of the request
@@ -123,28 +147,34 @@ func (c *Client) WaitForVirtualHost(ctx context.Context, id string, ready func(*
 
 // CreateVirtualHost requests a virtual host with this alias on the
 // tenant's default domain, not as the default host: the documented sample
-// body. accountID is the subdomain of the subaccount.
-func (c *Client) CreateVirtualHost(ctx context.Context, accountID, alias string) (*VirtualHostRequest, error) {
+// body. accountID is the subdomain of the subaccount; tls, when not nil,
+// adds the documented mutual TLS fields.
+func (c *Client) CreateVirtualHost(ctx context.Context, accountID, alias string, tls *VirtualHostTLS) (*VirtualHostRequest, error) {
 	isDefault := false
-	return c.requestVirtualHost(ctx, virtualHostRequestWire{
+	request := virtualHostRequestWire{
 		AccountID:                   accountID,
 		VirtualHostURL:              alias,
 		IsDefaultVirtualHostRequest: &isDefault,
 		Operation:                   "CREATE",
-	})
+	}
+	tls.apply(&request)
+	return c.requestVirtualHost(ctx, request)
 }
 
-// UpdateVirtualHost changes the alias of a default domain virtual host.
-// The body is the documented one; isDefault is sent as it is, so pass the
-// host's current value to leave the default host unchanged.
-func (c *Client) UpdateVirtualHost(ctx context.Context, accountID, id, alias string, isDefault bool) (*VirtualHostRequest, error) {
-	return c.requestVirtualHost(ctx, virtualHostRequestWire{
+// UpdateVirtualHost changes the alias, and with a tls setting the mutual
+// TLS, of a default domain virtual host. The body is the documented one;
+// isDefault is sent as it is, so pass the host's current value to leave the
+// default host unchanged. A nil tls leaves the TLS fields out of the body.
+func (c *Client) UpdateVirtualHost(ctx context.Context, accountID, id, alias string, isDefault bool, tls *VirtualHostTLS) (*VirtualHostRequest, error) {
+	request := virtualHostRequestWire{
 		AccountID:                   accountID,
 		VirtualHostURL:              alias,
 		IsDefaultVirtualHostRequest: &isDefault,
 		Operation:                   "UPDATE",
 		VirtualHostID:               id,
-	})
+	}
+	tls.apply(&request)
+	return c.requestVirtualHost(ctx, request)
 }
 
 // DeleteVirtualHost deletes a virtual host. SAP refuses it while the host

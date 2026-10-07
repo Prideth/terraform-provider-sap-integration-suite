@@ -55,10 +55,10 @@ Usable, but the provider deliberately leaves out part of the lifecycle; the limi
 
 ### API Management Virtual Host (Classic)
 
-`api_management.classic.virtual_host` · checked 2026-10-06
+`api_management.classic.virtual_host` · checked 2026-10-07
 
-- **Finding:** Create, update and delete through Configuration.svc/VirtualHostRequests are documented and work on a tenant with an APIManagement.SelfService.Administrator key: synchronous, 201, virtualHostId equal to the VirtualHosts id. sapintegrationsuite_api_management_virtual_host manages default domain hosts; its acceptance test passed. Custom domains and mutual TLS are not managed.
-- **Next step:** Custom domains and mutual TLS need DNS for a custom domain, a keystore, a truststore and their own tenant test; then the feature becomes supported.
+- **Finding:** Create, update and delete through Configuration.svc/VirtualHostRequests are documented and work on a tenant with an APIManagement.SelfService.Administrator key: synchronous, 201, virtualHostId equal to the VirtualHosts id. sapintegrationsuite_api_management_virtual_host manages default domain hosts; its acceptance test passed. Mutual TLS on the default domain (isClientAuthEnabled and trustStore, SAP Help 9faf7ce) is implemented from the documented requests but not yet tenant-tested. Custom domains are not managed.
+- **Next step:** Mutual TLS: apim-probe -VirtualHostMtlsTests and TestAccAPIManagementVirtualHost_mutualTLS with a truststore created in the UI. Custom domains need DNS, a keystore with the server certificate and their own tenant test; then the feature becomes supported.
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - API portal Management.svc $metadata snapshot testdata/api-metadata/classic-api-management.json (2026-09-26)

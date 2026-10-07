@@ -1442,8 +1442,28 @@ A tenant probe on 2026-10-06 (`apim-probe -VirtualHostTests`) exercised the writ
   keys, so no schema backs the request fields beyond SAP Help and the tenant's answers.
 
 `sapintegrationsuite_api_management_virtual_host` (0.9.0, partial) implements default domain hosts
-on this basis, and its acceptance test passed on 2026-10-06; custom domains and mutual TLS stay
-untested.
+on this basis, and its acceptance test passed on 2026-10-06; custom domains stay untested.
+
+**Mutual TLS on the default domain** (read 2026-10-07 from
+`configuring-mutual-tls-for-default-domain-virtual-host-9faf7ce` in the `SAP-docs/btp-integration-suite`
+mirror). SAP Help documents create and update bodies that add two fields to the default domain
+body: `isClientAuthEnabled` ("must be set to true to enable mutual TLS") and `trustStore`, "the
+name of the truststore that holds the client certificate, or name of the certificate store
+reference that points to the trust store", written as `"ref://<reference_name>"` or
+`"<trust_store_name>"`. No keystore is involved: the host keeps SAP's server certificate for the
+default domain. SAP asks for client, intermediate and root certificates in the truststore and,
+since SAP Note 3725252, for client certificates with the Client Authentication extended key
+usage. The page shows no body for switching client authentication off. The truststore itself is
+created in the UI (*Manage Certificates*, `manage-certificates-c665875`: Trust Store, PEM or DER);
+the Business Accelerator Hub's TrustStore API (create and view) is behind a login, and the tenant
+had no certificate store when probed (`Management.svc/CertificateStores` empty, 2026-10-06).
+
+The resource sends these two fields when `client_auth_enabled` is set, and
+`isClientAuthEnabled: false` without a truststore to switch it off; a host without mutual TLS
+still gets the tested default domain body. `apim-probe -VirtualHostMtlsTests` (PENDING #70) checks
+the documented bodies, how the host list shows the truststore, an update without the TLS fields,
+switching off (with the truststore left out and as `null`), a `ref://` reference and the errors
+for a missing or unknown truststore.
 
 ### Not evaluated this phase
 
