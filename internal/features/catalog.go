@@ -246,10 +246,9 @@ var Catalog = []Feature{
 		Name:   "Design-Time Artifact Versioning",
 		Description: "Saving a design-time artifact under an explicit version number (for example " +
 			"1.0.3) instead of working only on the active draft.",
-		SupportStatus:          StatusPartial,
-		ContractSource:         SourceSAPDocumentation,
-		UndocumentedOperations: []string{"save_as_version on script collections (ScriptCollectionDesigntimeArtifactSaveAsVersion is only in $metadata; integration flows and message mappings are documented)"},
-		SupportReason:          ReasonNotImplemented,
+		SupportStatus:  StatusPartial,
+		ContractSource: SourceSAPDocumentation,
+		SupportReason:  ReasonNotImplemented,
 		ResourceTypes: []string{
 			"sapintegrationsuite_integration_flow",
 			"sapintegrationsuite_message_mapping",
@@ -259,12 +258,12 @@ var Catalog = []Feature{
 		APIProtocol: "OData V2 (function imports)",
 		Limitations: []string{
 			"save_as_version calls <Artifact>SaveAsVersion?Id=''&SaveAsVersion='' after the content " +
-				"upload, as SAP Help documents for IntegrationDesigntimeArtifactSaveAsVersion; the " +
-				"tenant $metadata confirms the same function import for message mappings and script " +
-				"collections. A new version is saved only when save_as_version changes.",
+				"upload, as SAP Help documents for IntegrationDesigntimeArtifactSaveAsVersion and the " +
+				"Integration Content API specification (2026-10-10) for every versioned design-time " +
+				"type. A new version is saved only when save_as_version changes.",
 			"Not yet available for value mappings: that resource replaces the artifact on every " +
 				"change, and a version bump must not recreate it. Data types, message types, fault " +
-				"message types and service interfaces have the function import too but no resource.",
+				"message types and service interfaces have save_as_version on their own resources.",
 			"SAP does not document what happens when the version already exists or is lower than " +
 				"the current one; SAP's error is passed through unchanged.",
 		},
@@ -276,17 +275,20 @@ var Catalog = []Feature{
 		Name:   "Data Type",
 		Description: "A reusable XSD data type artifact (simple or complex) used by message types " +
 			"and mappings.",
-		SupportStatus:  StatusUnofficial,
-		SupportReason:  ReasonPublicAPIIncomplete,
-		ContractSource: SourceMetadataOnly,
+		SupportStatus:  StatusSupported,
+		ContractSource: SourceAPISpecification,
 		ResourceTypes:  []string{"sapintegrationsuite_data_type"},
 		PublicAPI:      true,
 		APIProtocol:    "OData V2",
 		Limitations: []string{
-			"The tenant $metadata defines DataTypeDesigntimeArtifacts (Id and Version as key, " +
-				"PackageId, Name, Namespace, Description, IsSimpleType, ArtifactContent) and a " +
-				"DataTypeDesigntimeArtifactSaveAsVersion function import. SAP Help documents only the " +
-				"UI and lists no API resource or example request for data types.",
+			"SAP's Integration Content API specification on the Business Accelerator Hub (downloaded " +
+				"2026-10-10) documents DataTypeDesigntimeArtifacts: create, read, update (PUT with " +
+				"Description and ArtifactContent), delete, the $value download and " +
+				"DataTypeDesigntimeArtifactSaveAsVersion. SAP Help still documents only the UI.",
+			"The update also sends Name, as the probes that found the update did; the specification's " +
+				"update body does not list it. Whether SAP needs it is not probed.",
+			"The specification describes the content only as a base64 ZIP archive. The bundle the " +
+				"provider builds follows the layout SAP itself stores for a data type, not a documented format.",
 			"Gap probes on a tenant (September and October 2026): a create needs the bundle as SAP " +
 				"stores it, with additionalAttributes.json and metainfo.prop next to the XSD; a package " +
 				"export's bundle lacks both and fails with 500 \"map is null\". With them, create, " +
@@ -308,17 +310,19 @@ var Catalog = []Feature{
 		Name:   "Message Type",
 		Description: "A message type artifact that wraps a data type as a message root element, " +
 			"and the fault message type, which adds SAP's standard fault data.",
-		SupportStatus:  StatusUnofficial,
-		SupportReason:  ReasonPublicAPIIncomplete,
-		ContractSource: SourceMetadataOnly,
+		SupportStatus:  StatusSupported,
+		ContractSource: SourceAPISpecification,
 		ResourceTypes:  []string{"sapintegrationsuite_message_type", "sapintegrationsuite_fault_message_type"},
 		PublicAPI:      true,
 		APIProtocol:    "OData V2",
 		Limitations: []string{
-			"The tenant $metadata defines MessageTypeDesigntimeArtifacts (Id and Version as key, " +
-				"PackageId, Name, Namespace, Description, DataTypeUsed, ArtifactContent) and a " +
-				"SaveAsVersion function import; FaultMessageTypeDesigntimeArtifacts has the same shape " +
-				"for fault messages. SAP Help documents only the UI for both.",
+			"SAP's Integration Content API specification on the Business Accelerator Hub (downloaded " +
+				"2026-10-10) documents MessageTypeDesigntimeArtifacts and " +
+				"FaultMessageTypeDesigntimeArtifacts: create, read, update, delete, the $value download " +
+				"and SaveAsVersion. Its update bodies leave out Name, which matches SAP refusing a name " +
+				"change. SAP Help still documents only the UI for both.",
+			"The specification lists Namespace in the message type's update body. The provider still " +
+				"replaces a message type whose namespace changes, because an in-place change is not probed.",
 			"ESR probes on a tenant (2026-10-03): a create without content works, and SAP generates " +
 				"the schema from DataTypeUsed (an element of that data type; a fault message type adds " +
 				"ExchangeFaultData). An update changes Description and DataTypeUsed and regenerates the " +
@@ -340,16 +344,17 @@ var Catalog = []Feature{
 		Name:   "Service Interface",
 		Description: "A service interface artifact describing operations and their request, " +
 			"response and fault message types.",
-		SupportStatus:  StatusUnofficial,
-		SupportReason:  ReasonPublicAPIIncomplete,
-		ContractSource: SourceMetadataOnly,
+		SupportStatus:  StatusSupported,
+		ContractSource: SourceAPISpecification,
 		ResourceTypes:  []string{"sapintegrationsuite_service_interface"},
 		PublicAPI:      true,
 		APIProtocol:    "OData V2",
 		Limitations: []string{
-			"The tenant $metadata defines ServiceInterfaceDesigntimeArtifacts (Id and Version as " +
-				"key, PackageId, Name, Namespace, Description, ArtifactContent, Resources navigation) " +
-				"and a SaveAsVersion function import. SAP Help documents creating, editing and " +
+			"SAP's Integration Content API specification on the Business Accelerator Hub (downloaded " +
+				"2026-10-10) documents ServiceInterfaceDesigntimeArtifacts: create, read, update (PUT " +
+				"with Name, Description and ArtifactContent), delete, the $value download and " +
+				"SaveAsVersion. It describes the content only as a base64 ZIP archive, so the operation " +
+				"model inside it comes from SAP's own bundles. SAP Help documents creating, editing and " +
 				"importing service interfaces from the Enterprise Services Repository only in the UI.",
 			"The operation model (src/main/resources/json/<name>.json in a bundle nested in the " +
 				"$value) follows two service interfaces SAP's editor created (package exports, " +
@@ -367,18 +372,17 @@ var Catalog = []Feature{
 		Operations: Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
 	},
 	{
-		Key:                    "cloud_integration.script_collection",
-		Domain:                 "cloud_integration",
-		Name:                   "Script Collection",
-		Description:            "A reusable collection of Groovy/JavaScript scripts shared across multiple integration flows.",
-		SupportStatus:          StatusSupported,
-		ContractSource:         SourceSAPDocumentation,
-		UndocumentedOperations: []string{"update of the content (PUT; SAP documents create, upload of resources and deploy)"},
-		ResourceTypes:          []string{"sapintegrationsuite_script_collection"},
-		DataSourceTypes:        []string{"sapintegrationsuite_script_collection"},
-		PublicAPI:              true,
-		APIProtocol:            "OData V2",
-		Operations:             Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
+		Key:             "cloud_integration.script_collection",
+		Domain:          "cloud_integration",
+		Name:            "Script Collection",
+		Description:     "A reusable collection of Groovy/JavaScript scripts shared across multiple integration flows.",
+		SupportStatus:   StatusSupported,
+		ContractSource:  SourceSAPDocumentation,
+		ResourceTypes:   []string{"sapintegrationsuite_script_collection"},
+		DataSourceTypes: []string{"sapintegrationsuite_script_collection"},
+		PublicAPI:       true,
+		APIProtocol:     "OData V2",
+		Operations:      Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
 	},
 	{
 		Key:             "cloud_integration.script_collection_deployment",
@@ -394,18 +398,17 @@ var Catalog = []Feature{
 		Operations:      Operations{Create: true, Read: true, Update: true, Delete: true, Import: true, Deploy: true, Undeploy: true},
 	},
 	{
-		Key:                    "cloud_integration.message_mapping",
-		Domain:                 "cloud_integration",
-		Name:                   "Message Mapping",
-		Description:            "A reusable, package-level message mapping artifact's design-time content — not the inline/local message mapping step an integration flow can also define directly inside its own content.",
-		SupportStatus:          StatusSupported,
-		ContractSource:         SourceSAPDocumentation,
-		UndocumentedOperations: []string{"update of the content (PUT; SAP documents read, create and delete)"},
-		ResourceTypes:          []string{"sapintegrationsuite_message_mapping"},
-		DataSourceTypes:        []string{"sapintegrationsuite_message_mapping"},
-		PublicAPI:              true,
-		APIProtocol:            "OData V2",
-		Operations:             Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
+		Key:             "cloud_integration.message_mapping",
+		Domain:          "cloud_integration",
+		Name:            "Message Mapping",
+		Description:     "A reusable, package-level message mapping artifact's design-time content — not the inline/local message mapping step an integration flow can also define directly inside its own content.",
+		SupportStatus:   StatusSupported,
+		ContractSource:  SourceSAPDocumentation,
+		ResourceTypes:   []string{"sapintegrationsuite_message_mapping"},
+		DataSourceTypes: []string{"sapintegrationsuite_message_mapping"},
+		PublicAPI:       true,
+		APIProtocol:     "OData V2",
+		Operations:      Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
 	},
 	{
 		Key:             "cloud_integration.message_mapping_deployment",

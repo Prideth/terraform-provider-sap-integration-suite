@@ -92,20 +92,6 @@ func TestOperationGates_Plan(t *testing.T) {
 		resource.Resource
 		resource.ResourceWithModifyPlan
 	}
-	newMM := func(c, a bool) gated {
-		r := &messageMappingResource{allowUnofficial: a}
-		if c {
-			r.client = ci
-		}
-		return r
-	}
-	newSC := func(c, a bool) gated {
-		r := &scriptCollectionResource{allowUnofficial: a}
-		if c {
-			r.client = ci
-		}
-		return r
-	}
 	newVM := func(c, a bool) gated {
 		r := &valueMappingResource{allowUnofficial: a}
 		if c {
@@ -141,41 +127,6 @@ func TestOperationGates_Plan(t *testing.T) {
 		replace     bool
 		wantRefusal bool
 	}{
-		{
-			name:        "message mapping content update",
-			newResource: newMM,
-			state:       map[string]tftypes.Value{"id": str("MM"), "name": str("old")},
-			plan:        map[string]tftypes.Value{"id": str("MM"), "name": str("new")},
-			wantRefusal: true,
-		},
-		{
-			name:        "message mapping create",
-			newResource: newMM,
-			plan:        map[string]tftypes.Value{"id": str("MM"), "save_as_version": str("1.0.1")},
-		},
-		{
-			name:        "script collection content update",
-			newResource: newSC,
-			state:       map[string]tftypes.Value{"id": str("SC"), "name": str("old")},
-			plan:        map[string]tftypes.Value{"id": str("SC"), "name": str("new")},
-			wantRefusal: true,
-		},
-		{
-			name:        "script collection create with save_as_version",
-			newResource: newSC,
-			plan:        map[string]tftypes.Value{"id": str("SC"), "save_as_version": str("1.0.1")},
-			wantRefusal: true,
-		},
-		{
-			name:        "script collection create without save_as_version",
-			newResource: newSC,
-			plan:        map[string]tftypes.Value{"id": str("SC")},
-		},
-		{
-			name:        "script collection destroy",
-			newResource: newSC,
-			state:       map[string]tftypes.Value{"id": str("SC")},
-		},
 		{
 			name:        "value mapping create with save_as_version",
 			newResource: newVM,

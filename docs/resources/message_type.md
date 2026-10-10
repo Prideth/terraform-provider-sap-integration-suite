@@ -2,7 +2,7 @@
 page_title: "sapintegrationsuite_message_type Resource - sapintegrationsuite"
 subcategory: "Cloud Integration"
 description: |-
-  A message type in an integration package, built on a data type. Unofficial; needs enable_unofficial.
+  A message type in an integration package, built on a data type.
 ---
 
 # sapintegrationsuite_message_type (Resource)
@@ -11,10 +11,10 @@ Manages a message type: the message structure that service interfaces and mappin
 SAP generates the message type's schema itself: a root element named `name` of the data type
 given in `data_type_id`. You do not upload a schema.
 
-**Status:** unofficial. Needs `enable_unofficial = true`. SAP documents no request for
-message types: the Integration Content API's `$metadata` declares them, and its acceptance test
-created, changed, imported and versioned one on a tenant (October 2026). Because the API is undocumented, SAP may change it
-without notice.
+**Status:** supported. SAP's Integration Content API specification on the Business Accelerator
+Hub documents `MessageTypeDesigntimeArtifacts`: create, read, update, delete, the content download
+and `MessageTypeDesigntimeArtifactSaveAsVersion`. Its acceptance test created, changed, imported
+and versioned a message type on a tenant (October 2026).
 
 ## Prerequisites
 
@@ -40,8 +40,6 @@ example, so that Terraform deletes the message type first.
 ## Example Usage
 
 ```terraform
-# Message types are unofficial: SAP documents no request for them. Needs
-# enable_unofficial = true in the provider block.
 resource "sapintegrationsuite_message_type" "order" {
   package_id      = sapintegrationsuite_integration_package.sales.id
   message_type_id = "OrderMessage"

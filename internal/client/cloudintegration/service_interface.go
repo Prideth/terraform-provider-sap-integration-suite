@@ -21,9 +21,9 @@ const (
 )
 
 // ServiceInterface is the wire representation of a ServiceInterfaceDesigntimeArtifacts
-// entity. SAP documents no request for it; the entity set and its
-// SaveAsVersion function import come from the Integration Content API's
-// $metadata. A create without content works (tenant, 2026-10-03): SAP then
+// entity. The Integration Content API specification on the Business
+// Accelerator Hub documents the entity set and its SaveAsVersion function
+// import; it describes the content only as a ZIP archive. A create without content works (tenant, 2026-10-03): SAP then
 // generates a bundle with one outbound asynchronous operation that names no
 // message type. Model holds the operation model read from the bundle.
 type ServiceInterface struct {

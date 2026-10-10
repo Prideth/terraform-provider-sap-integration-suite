@@ -27,9 +27,6 @@ func NewMessageMappingResource() resource.Resource {
 
 type messageMappingResource struct {
 	client *cloudintegration.Client
-	// allowUnofficial is the provider's enable_unofficial: the content
-	// update (PUT) is not documented by SAP.
-	allowUnofficial bool
 }
 
 type messageMappingModel struct {
@@ -60,9 +57,8 @@ func (r *messageMappingResource) Schema(_ context.Context, _ resource.SchemaRequ
 			"by the separate sapintegrationsuite_message_mapping_deployment resource, and is " +
 			"never triggered automatically by deploying an integration flow that references this " +
 			"mapping — SAP does not do that either.\n\n" +
-			"SAP documents reading, creating and deleting message mappings, not updating them. An " +
-			"in-place update (new content or name) sends the content with PUT, which works on a " +
-			"tenant but is unofficial, so it needs enable_unofficial = true in the provider block.",
+			"An in-place update (new content or name) sends the content with PUT, as SAP's " +
+			"Integration Content API specification documents it.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
@@ -136,7 +132,6 @@ func (r *messageMappingResource) Configure(_ context.Context, req resource.Confi
 		return
 	}
 	r.client = cloudintegration.New(data.HTTPClient, data.Host)
-	r.allowUnofficial = data.EnableUnofficial
 }
 
 func (r *messageMappingResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -198,22 +193,7 @@ func (r *messageMappingResource) Read(ctx context.Context, req resource.ReadRequ
 	resp.Diagnostics.Append(resp.State.Set(ctx, messageMappingToModel(state.PackageID.ValueString(), mapping, state))...)
 }
 
-// ModifyPlan stops a plan that updates a message mapping in place without
-// enable_unofficial: every update sends the content with PUT, which SAP does
-// not document for message mappings (it documents read, create and delete).
-func (r *messageMappingResource) ModifyPlan(_ context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	if r.client == nil {
-		return // provider not configured yet; Update checks again
-	}
-	if isInPlaceUpdate(req, resp) {
-		requireUnofficialOperation(r.allowUnofficial, "sapintegrationsuite_message_mapping", "update of the content (PUT)", &resp.Diagnostics)
-	}
-}
-
 func (r *messageMappingResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	if !requireUnofficialOperation(r.allowUnofficial, "sapintegrationsuite_message_mapping", "update of the content (PUT)", &resp.Diagnostics) {
-		return
-	}
 	var plan messageMappingModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	var prior messageMappingModel

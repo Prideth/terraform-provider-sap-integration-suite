@@ -1,5 +1,3 @@
-# Service interfaces are unofficial: SAP documents no request for them.
-# Needs enable_unofficial = true in the provider block.
 resource "sapintegrationsuite_service_interface" "orders" {
   package_id           = sapintegrationsuite_integration_package.sales.id
   service_interface_id = "OrderService"

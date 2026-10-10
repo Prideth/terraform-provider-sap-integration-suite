@@ -209,8 +209,9 @@ resource "sapintegrationsuite_message_mapping_deployment" "test" {
 // content with another mapping under the same ID, import, then deploy.
 func TestAccMessageMapping_sample(t *testing.T) {
 	accgate.Require(t, accgate.CloudIntegration)
-	// Replacing the content in place (PUT) is an unofficial operation.
-	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "true")
+	// Replacing the content in place (PUT) is documented in the Integration
+	// Content specification and needs no opt-in switch.
+	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "")
 	pkg, mapping := testAccName(), testAccName()
 	v1 := testAccArtifactFile(t, samples.Get(t, "spend-account-dim-map"), mapping)
 	v2 := testAccArtifactFile(t, samples.Get(t, "spend-supplier-dim-map"), mapping)

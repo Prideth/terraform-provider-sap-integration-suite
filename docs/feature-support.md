@@ -86,24 +86,24 @@ Do not conflate these: a feature can be fully supported by this provider and sti
 | `cloud_integration.custom_tag_configuration` | cloud_integration | partial (unsafe_terraform_lifecycle) | sap_documentation | Yes | Yes | Yes | Yes | — | Yes | — | Resource + Data Source |
 | `cloud_integration.data_store` | cloud_integration | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
 | `cloud_integration.data_store_entry` | cloud_integration | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
-| `cloud_integration.data_type` | cloud_integration | unofficial (public_api_incomplete) | metadata_only | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
-| `cloud_integration.design_time_versioning` | cloud_integration | partial (not_implemented) | sap_documentation (some operations unofficial) | Yes | Yes | — | Yes | — | — | — | Resource |
+| `cloud_integration.data_type` | cloud_integration | supported | api_specification | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
+| `cloud_integration.design_time_versioning` | cloud_integration | partial (not_implemented) | sap_documentation | Yes | Yes | — | Yes | — | — | — | Resource |
 | `cloud_integration.integration_adapter` | cloud_integration | partial (public_api_incomplete) | sap_documentation | Yes | Yes | Yes | — | Yes | Yes | — | Resource + Data Source |
 | `cloud_integration.integration_adapter_deployment` | cloud_integration | partial (public_api_incomplete) | sap_documentation | Yes | Yes | Yes | — | Yes | — | Yes | Resource |
 | `cloud_integration.integration_flow` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
 | `cloud_integration.integration_flow_configuration` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | — | Yes | — | Resource |
 | `cloud_integration.integration_flow_deployment` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Resource |
 | `cloud_integration.integration_package` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
-| `cloud_integration.message_mapping` | cloud_integration | supported | sap_documentation (some operations unofficial) | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
+| `cloud_integration.message_mapping` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
 | `cloud_integration.message_mapping_deployment` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Resource |
 | `cloud_integration.message_processing_logs` | cloud_integration | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
 | `cloud_integration.message_stores` | cloud_integration | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
-| `cloud_integration.message_type` | cloud_integration | unofficial (public_api_incomplete) | metadata_only | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
+| `cloud_integration.message_type` | cloud_integration | supported | api_specification | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
 | `cloud_integration.number_range` | cloud_integration | supported | sap_documentation (some operations unofficial) | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
-| `cloud_integration.script_collection` | cloud_integration | supported | sap_documentation (some operations unofficial) | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
+| `cloud_integration.script_collection` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
 | `cloud_integration.script_collection_deployment` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Resource |
 | `cloud_integration.service_endpoints` | cloud_integration | read_only (unsafe_terraform_lifecycle) | sap_documentation | Yes | — | Yes | — | — | — | — | Data Source |
-| `cloud_integration.service_interface` | cloud_integration | unofficial (public_api_incomplete) | metadata_only | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
+| `cloud_integration.service_interface` | cloud_integration | supported | api_specification | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
 | `cloud_integration.value_mapping` | cloud_integration | partial (unsafe_terraform_lifecycle) | sap_documentation (some operations unofficial) | Yes | Yes | Yes | — | Yes | Yes | — | Resource + Data Source |
 | `cloud_integration.value_mapping_deployment` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Resource |
 | `cloud_integration.value_mapping_entry` | cloud_integration | unsupported (unsafe_terraform_lifecycle) | — | Yes | — | — | — | — | — | — | — |
@@ -180,8 +180,6 @@ provider "sapintegrationsuite" {
 | Type | Status | Switch |
 |---|---|---|
 | `sapintegrationsuite_access_policy_runtime_assignments` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_data_type` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_fault_message_type` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_application_instance` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_application` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_deployment_model` | unofficial | `enable_unofficial` |
@@ -200,25 +198,20 @@ provider "sapintegrationsuite" {
 | `sapintegrationsuite_integration_assessment_use_case_pattern` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_integration_assessment_vendor` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_key_pair_certificate_chain` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_message_type` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_pgp_public_key` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_pgp_secret_key` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_secure_parameter` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_service_interface` | unofficial | `enable_unofficial` |
 
-Individual operations of an otherwise documented feature can be unofficial too. They are switched off by `enable_unofficial` as well, but only the operation: the resource itself stays usable with its documented operations. A plan that needs one of them fails with an error that names the operation, for example an in-place update of a message mapping's content. Number ranges without the switch work with what SAP documents: a refresh keeps the state instead of reading the number range, an update has to change `current_value_wo_version` so that it can send the counter, and delete and import are refused.
+Individual operations of an otherwise documented feature can be unofficial too. They are switched off by `enable_unofficial` as well, but only the operation: the resource itself stays usable with its documented operations. A plan that needs one of them fails with an error that names the operation, for example an in-place change of an access policy's description. Number ranges without the switch work with what SAP documents: a refresh keeps the state instead of reading the number range, an update has to change `current_value_wo_version` so that it can send the counter, and delete and import are refused.
 
 | Feature | Implemented operation that SAP does not document |
 |---|---|
 | `api_composition.business_data_graph` | delete (DELETE on the graph) |
 | `api_composition.business_data_graph` | update body (PATCH with the writable properties) |
 | `api_composition.business_data_graph` | settings named only in the $metadata (description, odata_containment, locating_policy.description, key_mapping cues) |
-| `cloud_integration.design_time_versioning` | save_as_version on script collections (ScriptCollectionDesigntimeArtifactSaveAsVersion is only in $metadata; integration flows and message mappings are documented) |
-| `cloud_integration.message_mapping` | update of the content (PUT; SAP documents read, create and delete) |
 | `cloud_integration.number_range` | read by name |
 | `cloud_integration.number_range` | delete |
 | `cloud_integration.number_range` | import |
-| `cloud_integration.script_collection` | update of the content (PUT; SAP documents create, upload of resources and deploy) |
 | `cloud_integration.value_mapping` | save_as_version (ValueMappingDesigntimeArtifactSaveAsVersion is only in $metadata; SAP Help lists read, download, create, upload, deploy and delete) |
 | `security.access_policy` | description update (PATCH, verified on a tenant) |
 | `security.access_policy_reference` | create a reference to an artifact type SAP does not document for access policies (eight types SAP's API lists, verified on a tenant) |
@@ -232,8 +225,8 @@ Grouped by why, not just that. A feature can be `partial` and reachable via one 
 ### Public API exists but provider implementation is pending
 
 - **`cloud_integration.design_time_versioning`** — Saving a design-time artifact under an explicit version number (for example 1.0.3) instead of working only on the active draft. (partial support already implemented — see Limitations below)
-  - save_as_version calls <Artifact>SaveAsVersion?Id=''&SaveAsVersion='' after the content upload, as SAP Help documents for IntegrationDesigntimeArtifactSaveAsVersion; the tenant $metadata confirms the same function import for message mappings and script collections. A new version is saved only when save_as_version changes.
-  - Not yet available for value mappings: that resource replaces the artifact on every change, and a version bump must not recreate it. Data types, message types, fault message types and service interfaces have the function import too but no resource.
+  - save_as_version calls <Artifact>SaveAsVersion?Id=''&SaveAsVersion='' after the content upload, as SAP Help documents for IntegrationDesigntimeArtifactSaveAsVersion and the Integration Content API specification (2026-10-10) for every versioned design-time type. A new version is saved only when save_as_version changes.
+  - Not yet available for value mappings: that resource replaces the artifact on every change, and a version bump must not recreate it. Data types, message types, fault message types and service interfaces have save_as_version on their own resources.
   - SAP does not document what happens when the version already exists or is lower than the current one; SAP's error is passed through unchanged.
 
 ### Public API details are not fully confirmed
@@ -270,11 +263,6 @@ Grouped by why, not just that. A feature can be `partial` and reachable via one 
   - TestAccAPIManagementVirtualHost_basic passed on a tenant (2026-10-06): create, rename in place, import by alias and delete of a default domain host.
   - Mutual TLS on the default domain (client_auth_enabled, trust_store): a probe (2026-10-07) found the host list showing isClientAuthEnabled and the truststore as sent, ref:// included; an update without the TLS fields kept mutual TLS; isClientAuthEnabled false switched it off and cleared the truststore (SAP Help shows no body for that). A missing truststore is refused with 400 VHR_VIRTUALHOST_TRUST_STORE_MISSING, an unknown one with 400 VIRTUAL_HOST_CREATE_ERROR. TestAccAPIManagementVirtualHost_mutualTLS passed: create, move to a certificate store reference, import, switch off. The truststore itself is created in the UI; no documented API creates it.
   - Custom domains (keyStoreName, keyStoreAlias, isForCustomDomain) are documented but not tested, and the resource refuses to manage hosts that use them. It never makes a host the default one. Deletion is refused by SAP while proxies (deployed, draft or in a revision) reference the host or while it is the default.
-- **`cloud_integration.data_type`** — A reusable XSD data type artifact (simple or complex) used by message types and mappings. (🧭 Unofficial)
-  - The tenant $metadata defines DataTypeDesigntimeArtifacts (Id and Version as key, PackageId, Name, Namespace, Description, IsSimpleType, ArtifactContent) and a DataTypeDesigntimeArtifactSaveAsVersion function import. SAP Help documents only the UI and lists no API resource or example request for data types.
-  - Gap probes on a tenant (September and October 2026): a create needs the bundle as SAP stores it, with additionalAttributes.json and metainfo.prop next to the XSD; a package export's bundle lacks both and fails with 500 "map is null". With them, create, update (PUT with Name and ArtifactContent), SaveAsVersion and delete work, and an element added on create or update is kept. The provider builds that bundle from xsd, namespace and description. SAP takes the description and the namespace from the entity, not from the bundle, so the provider sends them in the create and update bodies. TestAccDataType_basic passed on a tenant (2026-10-03): create, in-place change of schema and description, import, SaveAsVersion.
-  - Complex data types only: the bundle of a simple type (IsSimpleType) was not examined.
-  - SAP stores the complex type under the data type's name and normalizes the schema, so the schema is not read back for drift detection; xsd is taken from the configuration.
 - **`cloud_integration.integration_adapter`** — A custom Integration Adapter design-time artifact (a *.esa archive built with the SAP Adapter SDK), imported into a Cloud Integration package. Cloud Foundry environment only. (partial support already implemented — see Limitations below)
   - This provider's evidence base for this entity is thinner than for the sibling design-time artifact types it manages: SAP's own "Integration Adapter Example Requests, Cloud Foundry Environment" documentation shows only Delete (confirming the entity is keyed by Id alone, not the composite (Id, Version) key every other design-time artifact type in this API uses) and the Deploy action — no Create or Read example was found. The property names and the single Id key are confirmed by a tenant $metadata document, but no SAP example shows a Create request for this entity. See docs/guides/integration-adapters.md.
   - No in-place update: SAP documents that importing an ID that already exists on the tenant is rejected as an error, which is positive evidence against a working reimport-to-update flow, so every attribute is RequiresReplace rather than an unverified PUT/PATCH.
@@ -285,15 +273,6 @@ Grouped by why, not just that. A feature can be `partial` and reachable via one 
   - Deploy is confirmed directly from SAP's own example request: POST DeployIntegrationAdapterDesigntimeArtifact?Id='...', singular "Artifact" (matching every sibling deploy action in this API), with no Version query parameter (unlike every sibling deploy action, consistent with Id being this entity's only confirmed key).
   - Runtime status polling and undeploy reuse the same shared IntegrationRuntimeArtifacts entity every other *_deployment resource in this provider polls/undeploys through, by analogy — this project could not independently confirm that a deployed custom adapter surfaces through that same shared entity as opposed to an adapter-specific status/undeploy mechanism (for example BuildAndDeployStatus). See docs/guides/integration-adapters.md.
   - Whether a fresh deployment's runtime status becomes visible immediately or after a build/deploy delay specific to adapters (as opposed to ordinary content deployment) was not confirmed.
-- **`cloud_integration.message_type`** — A message type artifact that wraps a data type as a message root element, and the fault message type, which adds SAP's standard fault data. (🧭 Unofficial)
-  - The tenant $metadata defines MessageTypeDesigntimeArtifacts (Id and Version as key, PackageId, Name, Namespace, Description, DataTypeUsed, ArtifactContent) and a SaveAsVersion function import; FaultMessageTypeDesigntimeArtifacts has the same shape for fault messages. SAP Help documents only the UI for both.
-  - ESR probes on a tenant (2026-10-03): a create without content works, and SAP generates the schema from DataTypeUsed (an element of that data type; a fault message type adds ExchangeFaultData). An update changes Description and DataTypeUsed and regenerates the content, but SAP refuses to update Name, so changing the name replaces the artifact. TestAccMessageType_basic passed on a tenant for both (2026-10-03): create, in-place switch of the data type and the description, import, SaveAsVersion.
-  - A read returns DataTypeUsed empty even when it took effect; the provider reads the data type from the generated bundle: dtUniqueIdinMT in additionalAttributes.json (the artifact ID), dtUsedinMT (the name) only when the ID is missing. They differ for SAP's standard data types such as ExchangeFaultData, whose IDs carry a hash suffix (package export, 2026-10-03). Whether a create accepts a standard data type by ID or by name is not probed.
-  - SAP does not check references: a data type that a message type uses can be deleted.
-- **`cloud_integration.service_interface`** — A service interface artifact describing operations and their request, response and fault message types. (🧭 Unofficial)
-  - The tenant $metadata defines ServiceInterfaceDesigntimeArtifacts (Id and Version as key, PackageId, Name, Namespace, Description, ArtifactContent, Resources navigation) and a SaveAsVersion function import. SAP Help documents creating, editing and importing service interfaces from the Enterprise Services Repository only in the UI.
-  - The operation model (src/main/resources/json/<name>.json in a bundle nested in the $value) follows two service interfaces SAP's editor created (package exports, 2026-10-03 and 2026-10-04): an asynchronous operation with request and fault message, and a synchronous one with request, response and fault message, each message named by ID, name, namespace, version and package; the manifest names them in Require-Capability.
-  - Tenant probe (2026-10-04): a create without content works (SAP generates one operation without messages). An update needs Name next to ArtifactContent (without it, 500 "name is null") and the nested bundle as $value returns it (the interface's own bundle alone answers 400 "The bundle is not of type ServiceInterface"); SAP stores the uploaded asynchronous operation and drops messageDetails. TestAccServiceInterface_basic passed on a tenant (2026-10-04): create with an asynchronous operation, an in-place switch to a synchronous operation with a response plus a second operation, import, SaveAsVersion.
 - **`edge_integration_cell.access_policy_replication`** — The runtimes (Cloud Integration runtime, Integration Cell, specific Edge Integration Cells) an Access Policy is replicated to, and the replication state of each. (🧭 Unofficial)
   - Readable, not writable: the tenant $metadata defines AccessPolicyRuntimeAssignments (Id, RuntimeLocationId, TransferStatus, TransferErrors, StatusUpdatedAt) as a navigation property of AccessPolicies, which the data source reads. Whether assignments can be created or deleted through the API is not documented, and $metadata carries no creatable/updatable flags, so choosing runtimes stays a UI step.
   - transfer_status is passed through as SAP returns it: the UI shows Fail, Success and Pending, but the API values are plain strings with no documented enumeration.

@@ -107,15 +107,13 @@ only if something moves the version or triggers a redeploy:
   ZIP with `Bundle-Version: 1.0.1` reported version 1.0.1). Raise it with each change, or pass
   the content hash to the deployment's `redeploy_triggers`.
 
-### Updates that need `enable_unofficial`
+### In-place updates
 
-SAP documents a content update (`PUT`) for integration flows only. For message mappings and
-script collections the same request works on a tenant, but SAP does not document it, and SAP
-does not document `save_as_version` for script collections either. These are unofficial
-operations: without `enable_unofficial = true` in the provider block, a plan that changes a
-message mapping or script collection in place, or creates a script collection with
-`save_as_version`, fails with an error that names the operation. Creating, reading, importing,
-deploying and deleting them works without the switch.
+SAP's Integration Content API specification documents the content update (`PUT`) for
+integration flows, message mappings and script collections, and `SaveAsVersion` for every
+versioned design-time type, so changing their content or saving a version needs no opt-in
+switch. Until the specification was published, the provider treated the update of message
+mappings and script collections and `save_as_version` on script collections as unofficial.
 
 ## Deploying
 
