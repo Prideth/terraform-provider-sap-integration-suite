@@ -156,7 +156,7 @@ they become the 0.9.0 section once 0.8.0 is released.
   hosts (the `api_management` key gets 403). `subaccount_subdomain` is taken
   from the token URL unless set.
 
-## 0.6.0 — 2026-10-03
+## 0.6.0 — 2026-10-10
 
 0.6.0 makes the API Composition business data graph usable on a tenant. The
 provider logs in to the Configuration API the way a tenant accepted it, its
