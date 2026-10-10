@@ -9,7 +9,7 @@ contain breaking schema or lifecycle changes; each one is listed under
 "Breaking changes" together with the steps it needs. Patch releases (0.2.1)
 only fix defects in their minor release.
 
-## 0.6.0 — 2026-10-03
+## 0.6.0 — 2026-10-10
 
 0.6.0 makes the API Composition business data graph usable on a tenant. The
 provider logs in to the Configuration API the way a tenant accepted it, its
