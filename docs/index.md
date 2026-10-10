@@ -124,7 +124,7 @@ terraform {
   required_providers {
     sapintegrationsuite = {
       source  = "Prideth/sap-integration-suite"
-      version = "~> 0.5.0"
+      version = "~> 0.6.0"
     }
   }
 }
@@ -158,7 +158,7 @@ terraform {
       source = "Prideth/sap-integration-suite"
       # A 0.x minor release may contain breaking changes; pin the minor
       # version and read the upgrade notes before raising it.
-      version = "~> 0.5.0"
+      version = "~> 0.6.0"
     }
   }
 }

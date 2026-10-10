@@ -74,7 +74,7 @@ interfaces.
   type that a message type uses be deleted. Refer to the data type resource
   so that Terraform orders the deletion.
 
-## 0.6.0 — 2026-10-03
+## 0.6.0 — 2026-10-10
 
 0.6.0 makes the API Composition business data graph usable on a tenant. The
 provider logs in to the Configuration API the way a tenant accepted it, its
