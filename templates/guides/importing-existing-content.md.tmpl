@@ -90,8 +90,8 @@ therefore often shows a change even though nothing on the tenant differs:
   mappings, script collections or adapters. After the import, `content` and
   `content_hash` are empty in state. If your configuration sets them, the first apply uploads
   that file once; make sure it is the content you want on the tenant. For message mappings and
-  script collections, that upload is an in-place update and needs `enable_unofficial`; to adopt
-  them without it, leave `content` and `content_hash` out until you change the content.
+  script collections, that upload is an in-place update; to adopt them without uploading
+  anything, leave `content` and `content_hash` out until you change the content.
   Value mappings and adapters cannot be updated in place, so setting `content` after an import
   replaces them.
 - **Secrets.** Passwords, client secrets and secure parameter values are write-only and never

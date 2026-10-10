@@ -13,8 +13,9 @@ artifact; a mapping defined inside a flow's own model is part of that flow's ZIP
 with [`sapintegrationsuite_integration_flow`](integration_flow.md).
 
 **Status:** supported. Backed by `MessageMappingDesigntimeArtifacts` of the Integration Content
-API. SAP documents reading, creating, deleting and `SaveAsVersion`. The in-place content update
-works on a tenant but is not documented, so it needs `enable_unofficial = true`.
+API. SAP's Integration Content API specification on the Business Accelerator Hub documents
+every operation this resource uses: create, read, the in-place update (`PUT`), delete and
+`SaveAsVersion`.
 
 ## Prerequisites
 
@@ -29,7 +30,7 @@ works on a tenant but is not documented, so it needs `enable_unofficial = true`.
 |---|---|
 | Create | Uploads the ZIP; with `save_as_version`, saves it under that version. |
 | Read | Reads name and version. `content` and `content_hash` keep the values of the last apply. |
-| Update | **Needs `enable_unofficial`.** A new `content_hash` or `name` sends the content with `PUT`. Without the switch, the plan fails with an error that names the operation. A changed `save_as_version` saves a new version. |
+| Update | A new `content_hash` or `name` sends the content with `PUT`. A changed `save_as_version` saves a new version. |
 | Replacement | Changing `mapping_id` or `package_id` creates a new mapping. |
 | Delete | Deletes the design-time artifact. |
 
@@ -51,15 +52,13 @@ add a [`sapintegrationsuite_message_mapping_deployment`](message_mapping_deploym
 {{ codefile "shell" "examples/resources/sapintegrationsuite_message_mapping/import.sh" }}
 
 The ID is `<package_id>/<mapping_id>`. SAP returns no file, so if the configuration sets
-`content`, the first apply uploads it, which is an in-place update and needs
-`enable_unofficial`. To adopt a mapping with documented operations only, leave `content` and
-`content_hash` out until you change the content.
+`content`, the first apply uploads it as an in-place update. To adopt a mapping without
+uploading anything, leave `content` and `content_hash` out until you change the content.
 
 ## Limitations
 
-- **SAP:** no documented update of the content. The provider sends a `PUT` shaped like SAP's
-  documented integration flow update, which a tenant accepted in September 2026. Whether a delete removes every saved
-  version or only the active one is not documented.
+- **SAP:** whether a delete removes every saved version or only the active one is not
+  documented.
 - **Provider:** files up to 32 MiB from local disk. Content changes made in the UI are not
   detected.
 

@@ -60,6 +60,17 @@ passed an acceptance test on a tenant. They need no opt-in switch.
   from labels on a tenant, found the constants stored and imported it without
   a difference.
 
+### Changed
+
+- **Message mapping and script collection updates need no opt-in
+  switch.** SAP's Integration Content API specification documents the
+  content update (`PUT`) of message mappings and script collections and
+  `SaveAsVersion` of script collections. Until now they were unofficial
+  operations: a plan that changed a message mapping or script collection in
+  place, or created a script collection with `save_as_version`, failed
+  without `enable_unofficial = true`. They now work without it; a
+  configuration that sets the switch only for them can drop it.
+
 ### Known limitations
 
 - Complex data types only; simple types were not examined.

@@ -12,9 +12,9 @@ instead of each carrying its own copy. Flows reference the collection by ID; it 
 deployed before the flows that use it.
 
 **Status:** supported. Backed by `ScriptCollectionDesigntimeArtifacts` of the Integration
-Content API. SAP documents creating, reading and deleting script collections. The in-place
-content update and `save_as_version` work on a tenant but are not documented, so they need
-`enable_unofficial = true`.
+Content API. SAP's Integration Content API specification on the Business Accelerator Hub
+documents every operation this resource uses: create, read, the in-place update (`PUT`), delete
+and `SaveAsVersion`.
 
 ## Prerequisites
 
@@ -26,9 +26,9 @@ content update and `save_as_version` work on a tenant but are not documented, so
 
 | Operation | What happens |
 |---|---|
-| Create | Uploads the ZIP. `save_as_version` on create needs `enable_unofficial`. |
+| Create | Uploads the ZIP; with `save_as_version`, saves it under that version. |
 | Read | Reads name and version. `content` and `content_hash` keep the values of the last apply. |
-| Update | **Needs `enable_unofficial`.** A new `content_hash` or `name` sends the content with `PUT`; a changed `save_as_version` saves a new version. Without the switch, the plan fails with an error that names the operation. |
+| Update | A new `content_hash` or `name` sends the content with `PUT`; a changed `save_as_version` saves a new version. |
 | Replacement | Changing `script_collection_id` or `package_id` creates a new collection. |
 | Delete | Deletes the design-time artifact. |
 
@@ -47,13 +47,12 @@ unchanged: keep `Bundle-SymbolicName` in the ZIP equal to `script_collection_id`
 {{ codefile "shell" "examples/resources/sapintegrationsuite_script_collection/import.sh" }}
 
 The ID is `<package_id>/<script_collection_id>`. SAP returns no file, so setting `content` in
-the configuration makes the first apply upload it, which needs `enable_unofficial`. Leave
-`content` and `content_hash` out to adopt a collection with documented operations only.
+the configuration makes the first apply upload it as an in-place update. Leave `content` and
+`content_hash` out to adopt a collection without uploading anything.
 
 ## Limitations
 
-- **SAP:** no documented update and no documented `SaveAsVersion` for script collections. The
-  ID must be unique across the whole tenant, not only within the package.
+- **SAP:** the ID must be unique across the whole tenant, not only within the package.
 - **Provider:** files up to 32 MiB from local disk; the bundle ID in the ZIP is not aligned.
 
 ## Related

@@ -87,20 +87,20 @@ Do not conflate these: a feature can be fully supported by this provider and sti
 | `cloud_integration.data_store` | cloud_integration | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
 | `cloud_integration.data_store_entry` | cloud_integration | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
 | `cloud_integration.data_type` | cloud_integration | supported | api_specification | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
-| `cloud_integration.design_time_versioning` | cloud_integration | partial (not_implemented) | sap_documentation (some operations unofficial) | Yes | Yes | — | Yes | — | — | — | Resource |
+| `cloud_integration.design_time_versioning` | cloud_integration | partial (not_implemented) | sap_documentation | Yes | Yes | — | Yes | — | — | — | Resource |
 | `cloud_integration.integration_adapter` | cloud_integration | partial (public_api_incomplete) | sap_documentation | Yes | Yes | Yes | — | Yes | Yes | — | Resource + Data Source |
 | `cloud_integration.integration_adapter_deployment` | cloud_integration | partial (public_api_incomplete) | sap_documentation | Yes | Yes | Yes | — | Yes | — | Yes | Resource |
 | `cloud_integration.integration_flow` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
 | `cloud_integration.integration_flow_configuration` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | — | Yes | — | Resource |
 | `cloud_integration.integration_flow_deployment` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Resource |
 | `cloud_integration.integration_package` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
-| `cloud_integration.message_mapping` | cloud_integration | supported | sap_documentation (some operations unofficial) | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
+| `cloud_integration.message_mapping` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
 | `cloud_integration.message_mapping_deployment` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Resource |
 | `cloud_integration.message_processing_logs` | cloud_integration | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
 | `cloud_integration.message_stores` | cloud_integration | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
 | `cloud_integration.message_type` | cloud_integration | supported | api_specification | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
 | `cloud_integration.number_range` | cloud_integration | supported | sap_documentation (some operations unofficial) | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
-| `cloud_integration.script_collection` | cloud_integration | supported | sap_documentation (some operations unofficial) | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
+| `cloud_integration.script_collection` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
 | `cloud_integration.script_collection_deployment` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Resource |
 | `cloud_integration.service_endpoints` | cloud_integration | read_only (unsafe_terraform_lifecycle) | sap_documentation | Yes | — | Yes | — | — | — | — | Data Source |
 | `cloud_integration.service_interface` | cloud_integration | supported | api_specification | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
@@ -199,19 +199,16 @@ provider "sapintegrationsuite" {
 | `sapintegrationsuite_integration_assessment_vendor` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_secure_parameter` | unofficial | `enable_unofficial` |
 
-Individual operations of an otherwise documented feature can be unofficial too. They are switched off by `enable_unofficial` as well, but only the operation: the resource itself stays usable with its documented operations. A plan that needs one of them fails with an error that names the operation, for example an in-place update of a message mapping's content. Number ranges without the switch work with what SAP documents: a refresh keeps the state instead of reading the number range, an update has to change `current_value_wo_version` so that it can send the counter, and delete and import are refused.
+Individual operations of an otherwise documented feature can be unofficial too. They are switched off by `enable_unofficial` as well, but only the operation: the resource itself stays usable with its documented operations. A plan that needs one of them fails with an error that names the operation, for example an in-place change of an access policy's description. Number ranges without the switch work with what SAP documents: a refresh keeps the state instead of reading the number range, an update has to change `current_value_wo_version` so that it can send the counter, and delete and import are refused.
 
 | Feature | Implemented operation that SAP does not document |
 |---|---|
 | `api_composition.business_data_graph` | delete (DELETE on the graph) |
 | `api_composition.business_data_graph` | update body (PATCH with the writable properties) |
 | `api_composition.business_data_graph` | settings named only in the $metadata (description, odata_containment, locating_policy.description, key_mapping cues) |
-| `cloud_integration.design_time_versioning` | save_as_version on script collections (ScriptCollectionDesigntimeArtifactSaveAsVersion is only in $metadata; integration flows and message mappings are documented) |
-| `cloud_integration.message_mapping` | update of the content (PUT; SAP documents read, create and delete) |
 | `cloud_integration.number_range` | read by name |
 | `cloud_integration.number_range` | delete |
 | `cloud_integration.number_range` | import |
-| `cloud_integration.script_collection` | update of the content (PUT; SAP documents create, upload of resources and deploy) |
 | `security.access_policy` | description update (PATCH, verified on a tenant) |
 | `security.access_policy_reference` | create a reference to an artifact type SAP does not document for access policies (eight types SAP's API lists, verified on a tenant) |
 
@@ -222,7 +219,7 @@ Grouped by why, not just that. A feature can be `partial` and reachable via one 
 ### Public API exists but provider implementation is pending
 
 - **`cloud_integration.design_time_versioning`** — Saving a design-time artifact under an explicit version number (for example 1.0.3) instead of working only on the active draft. (partial support already implemented — see Limitations below)
-  - save_as_version calls <Artifact>SaveAsVersion?Id=''&SaveAsVersion='' after the content upload, as SAP Help documents for IntegrationDesigntimeArtifactSaveAsVersion; the tenant $metadata confirms the same function import for message mappings and script collections. A new version is saved only when save_as_version changes.
+  - save_as_version calls <Artifact>SaveAsVersion?Id=''&SaveAsVersion='' after the content upload, as SAP Help documents for IntegrationDesigntimeArtifactSaveAsVersion and the Integration Content API specification (2026-10-10) for every versioned design-time type. A new version is saved only when save_as_version changes.
   - Not yet available for value mappings: that resource replaces the artifact on every change, and a version bump must not recreate it. Data types, message types, fault message types and service interfaces have save_as_version on their own resources.
   - SAP does not document what happens when the version already exists or is lower than the current one; SAP's error is passed through unchanged.
 
