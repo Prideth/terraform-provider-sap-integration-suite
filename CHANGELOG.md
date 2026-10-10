@@ -119,7 +119,7 @@ become the 0.8.0 section once 0.7.0 is released.
   attribute, the plan of an update warns when SAP holds parameters set in its
   UI. An import reads the parameters SAP holds.
 
-## 0.6.0 — 2026-10-03
+## 0.6.0 — 2026-10-10
 
 0.6.0 makes the API Composition business data graph usable on a tenant. The
 provider logs in to the Configuration API the way a tenant accepted it, its

@@ -21,14 +21,13 @@ Priorities:
 
 Each 0.x minor release has one theme. Released so far: 0.1.0 (the broad first provider), 0.2.0
 (the tenant-verified rework), 0.3.0 (contract sources, opt-in switches, Registry documentation)
-with the patches 0.3.1 and 0.3.2, and 0.4.0 (the Integration Assessment landscape). Each minor
-line has one release branch, `release/<minor>.x`, and every release is a tag on it: 0.5.0 is
-prepared on `release/0.5.x`, 0.6.0 on `release/0.6.x`.
+with the patches 0.3.1 and 0.3.2, 0.4.0 (the Integration Assessment landscape), 0.5.0
+(Integration Assessment technology profiles and the ISA-M taxonomy) with the patch 0.5.1, and
+0.6.0 (API Composition: business data graph hardening). Each minor line has one release branch,
+`release/<minor>.x`, and every release is a tag on it.
 
 | Version | Theme | State | Precondition |
 |---|---|---|---|
-| 0.5.0 | Integration Assessment technology profiles and the ISA-M taxonomy | prepared on `release/0.5.x`; tenant gate passed on 2026-10-04 | — |
-| 0.6.0 | API Composition: business data graph hardening | prepared on `release/0.6.x`; every change is tenant-verified | releasing 0.5.0 first |
 | 0.7.0 | Cloud Integration data types, message types, fault message types, service interfaces | in progress on `feature/design-time-types`; data types, message types, fault message types and service interfaces done (unofficial) | release preparation |
 | 0.8.0 | Security Content completion | in progress on `feature/security-content`: certificate chains, PGP keys and OAuth2 custom parameters done (unofficial, acceptance tests passed) | releasing 0.7.0 first |
 | 0.9.0 | Classic API Management infrastructure, above all virtual hosts; the API proxy only if the official Transport API request passes its acceptance test | proposed | P2 item 6 and the Transport API specification |
@@ -66,7 +65,7 @@ These need no further research, only a run of the prepared tests:
    supported; its update body and delete request work but stay behind `enable_unofficial`,
    because SAP does not document them. The settings the `$metadata` adds are settable behind
    `enable_unofficial`, and all of them, cue-scoped key mappings included, passed tenant tests
-   on 2026-10-03. Nothing is open for 0.6.0.
+   on 2026-10-03 and again in the 0.6.0 tenant gate on 2026-10-10. Nothing is open for 0.6.0.
 3. **Edge Integration Cell targeting.** `TestAccEdgeIntegrationCell_securityAndPartnerDirectory`
    needs a tenant with an Edge Integration Cell. Passing it makes `runtime_location_id`
    supported for the tested resources; the deployment resources follow with their own test.
