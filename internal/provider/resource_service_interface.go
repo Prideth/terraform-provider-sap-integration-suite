@@ -65,10 +65,9 @@ func (r *serviceInterfaceResource) Metadata(_ context.Context, req resource.Meta
 func (r *serviceInterfaceResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages a service interface in an integration package: its operations and the " +
-			"message types, response message types and fault message types they use. SAP documents no " +
-			"request for service interfaces; the Integration Content API's $metadata declares them, and " +
-			"the operation model follows the bundles SAP's editor writes, so this resource needs the " +
-			"provider's opt-in switch shown in the status.",
+			"message types, response message types and fault message types they use, through the " +
+			"ServiceInterfaceDesigntimeArtifacts of SAP's Integration Content API. The operation model " +
+			"inside the content follows the bundles SAP's own editor writes.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:      true,

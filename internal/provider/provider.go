@@ -164,7 +164,7 @@ func (p *sapIntegrationSuiteProvider) Schema(_ context.Context, _ provider.Schem
 					"\"unofficial\": they work and were verified on a tenant, but SAP does not " +
 					"document the API behind them (it is known only from the service's $metadata), " +
 					"so SAP may change it without notice. It also allows the unofficial operations of " +
-					"otherwise documented resources, for example updating a message mapping's content " +
+					"otherwise documented resources, for example changing an access policy's description " +
 					"in place or deleting a number range. Off by default; a configuration or plan that " +
 					"needs one fails until this is true. Can also be set via the " +
 					"SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL environment variable.",

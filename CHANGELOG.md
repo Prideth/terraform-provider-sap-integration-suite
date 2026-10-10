@@ -13,31 +13,29 @@ only fix defects in their minor release.
 
 0.7.0 is planned to manage the ESR-style design-time types of Cloud
 Integration: data types, message types, fault message types and service
-interfaces.
+interfaces. All four are supported: SAP's Integration Content API
+specification on the Business Accelerator Hub documents them, and each
+passed an acceptance test on a tenant. They need no opt-in switch.
 
 ### New resources
 
-- `sapintegrationsuite_data_type` (unofficial): a complex data type in an
-  integration package, built from an XML schema. SAP documents no request
-  for data types. The provider builds the artifact bundle the way SAP stores
-  a data type, because SAP rejects a package export's bundle (500 "map is
-  null"), and checks the schema while planning. An acceptance test created
-  a data type, changed its schema and description in place, imported it and
-  saved a version on a tenant. Needs `enable_unofficial = true`.
+- `sapintegrationsuite_data_type`: a complex data type in an integration
+  package, built from an XML schema. The provider builds the artifact
+  bundle the way SAP stores a data type, because SAP rejects a package
+  export's bundle (500 "map is null"), and checks the schema while
+  planning. An acceptance test created a data type, changed its schema and
+  description in place, imported it and saved a version on a tenant.
 - `sapintegrationsuite_message_type` and
-  `sapintegrationsuite_fault_message_type` (unofficial): a message type or
-  fault message type built on a data type. SAP documents no request for
-  either. SAP generates the schema from the data type given in
-  `data_type_id` (a fault message type adds SAP's standard fault data), so
-  no schema is uploaded. The data type and the description change in place;
+  `sapintegrationsuite_fault_message_type`: a message type or fault message
+  type built on a data type. SAP generates the schema from the data type
+  given in `data_type_id` (a fault message type adds SAP's standard fault
+  data), so no schema is uploaded. The data type and the description change in place;
   SAP refuses to update the name, so a new name replaces the artifact. An
   acceptance test created both, switched their data type and description
-  in place, imported them and saved a version on a tenant. Needs
-  `enable_unofficial = true`.
-- `sapintegrationsuite_service_interface` (unofficial): a service
-  interface with its operations, each naming a request message type, a
-  response message type for a synchronous operation, and fault message
-  types. SAP documents no request for service interfaces. The provider
+  in place, imported them and saved a version on a tenant.
+- `sapintegrationsuite_service_interface`: a service interface with its
+  operations, each naming a request message type, a response message type
+  for a synchronous operation, and fault message types. The provider
   creates the interface without content and then writes the operations into
   its bundle in the form SAP's own editor uses, which it learned from an
   asynchronous and a synchronous service interface created in the UI;
@@ -45,7 +43,6 @@ interfaces.
   acceptance test created a service interface with an asynchronous
   operation, switched it in place to a synchronous one with a response and
   added a second operation, imported it and saved a version on a tenant.
-  Needs `enable_unofficial = true`.
 
 ### New
 
@@ -62,6 +59,17 @@ interfaces.
   the plan with the constant to use. An acceptance test created a reference
   from labels on a tenant, found the constants stored and imported it without
   a difference.
+
+### Changed
+
+- **Message mapping and script collection updates need no opt-in
+  switch.** SAP's Integration Content API specification documents the
+  content update (`PUT`) of message mappings and script collections and
+  `SaveAsVersion` of script collections. Until now they were unofficial
+  operations: a plan that changed a message mapping or script collection in
+  place, or created a script collection with `save_as_version`, failed
+  without `enable_unofficial = true`. They now work without it; a
+  configuration that sets the switch only for them can drop it.
 
 ### Known limitations
 

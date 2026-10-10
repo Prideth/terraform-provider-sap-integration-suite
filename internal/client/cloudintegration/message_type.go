@@ -32,8 +32,8 @@ var (
 )
 
 // MessageType is the wire representation of a message type or a fault
-// message type. SAP documents no request for either; the entity sets come
-// from the Integration Content API's $metadata and were tested on a tenant
+// message type. The Integration Content API specification on the Business
+// Accelerator Hub documents both entity sets; they were tested on a tenant
 // (2026-10-03). SAP generates the content itself from DataTypeUsed: the
 // schema includes the data type and defines an element of its type (a fault
 // message type adds SAP's standard ExchangeFaultData). A read returns

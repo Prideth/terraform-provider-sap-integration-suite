@@ -106,10 +106,8 @@ func (r *messageTypeResource) Schema(_ context.Context, _ resource.SchemaRequest
 			"additional detail, the data type given in data_type_id."
 	}
 	resp.Schema = schema.Schema{
-		Description: fmt.Sprintf("Manages a %s in an integration package. %s SAP documents no request "+
-			"for %ss; the Integration Content API's $metadata declares them, and the requests this "+
-			"resource sends were tested on a tenant, so it needs the provider's opt-in switch shown in "+
-			"the status.", what, generated, what),
+		Description: fmt.Sprintf("Manages a %s in an integration package through SAP's Integration "+
+			"Content API. %s", what, generated),
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:      true,

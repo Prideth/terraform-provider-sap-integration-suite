@@ -28,7 +28,7 @@ with the patches 0.3.1 and 0.3.2, 0.4.0 (the Integration Assessment landscape), 
 
 | Version | Theme | State | Precondition |
 |---|---|---|---|
-| 0.7.0 | Cloud Integration data types, message types, fault message types, service interfaces | in progress on `feature/design-time-types`; data types, message types, fault message types and service interfaces done (unofficial) | release preparation |
+| 0.7.0 | Cloud Integration data types, message types, fault message types, service interfaces | in progress on `feature/design-time-types`; data types, message types, fault message types and service interfaces done (supported: Integration Content specification, acceptance tests passed) | release preparation |
 | 0.8.0 | Security Content completion | in progress on `feature/security-content`: certificate chains, PGP keys and OAuth2 custom parameters done (unofficial, acceptance tests passed) | releasing 0.7.0 first |
 | 0.9.0 | Classic API Management infrastructure, above all virtual hosts; the API proxy only if the official Transport API request passes its acceptance test | proposed | P2 item 6 and the Transport API specification |
 | 0.10.0 | Edge Integration Cell targeting | proposed | a tenant with an Edge Integration Cell (P1 item 3) |
@@ -69,16 +69,17 @@ These need no further research, only a run of the prepared tests:
 3. **Edge Integration Cell targeting.** `TestAccEdgeIntegrationCell_securityAndPartnerDirectory`
    needs a tenant with an Edge Integration Cell. Passing it makes `runtime_location_id`
    supported for the tested resources; the deployment resources follow with their own test.
-4. **Data types, message types, fault message types, service interfaces.** The `$metadata`
-   defines all four with `SaveAsVersion`. For data types (September 2026): reading, deleting and
-   `SaveAsVersion` work, and so does a create with content once the bundle carries
+4. **Data types, message types, fault message types, service interfaces.** SAP's Integration
+   Content API specification on the Business Accelerator Hub (downloaded 2026-10-10) documents
+   all four with create, read, update, delete and `SaveAsVersion`, so all four are supported.
+   What the tenant showed about the content: for data types (September 2026), reading, deleting
+   and `SaveAsVersion` work, and so does a create with content once the bundle carries
    `additionalAttributes.json` and `metainfo.prop` as SAP's own `$value` does. A media `PUT`
    on `$value` answers 501. SAP rewrites the XSD's type name to the artifact's name, keeps the
    elements of a type on create and update (probe, 2026-10-03), and takes description and
-   namespace from the request body. `sapintegrationsuite_data_type` is implemented and passed its
-   acceptance test, so it is unofficial. Message types and fault message types need no content:
-   SAP generates their schema from `DataTypeUsed`; both are implemented and unofficial. Next:
-   service interfaces, whose bundle is a JSON operation model in nested archives.
+   namespace from the request body. Message types and fault message types need no content: SAP
+   generates their schema from `DataTypeUsed`. A service interface's bundle is a JSON operation
+   model in nested archives. All of them passed their acceptance tests.
 
 ## P2 — partly confirmed, more evidence first
 

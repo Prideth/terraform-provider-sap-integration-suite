@@ -58,10 +58,8 @@ func (r *dataTypeResource) Metadata(_ context.Context, req resource.MetadataRequ
 func (r *dataTypeResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages a complex data type in an integration package: an XML schema that message " +
-			"types and service interfaces build on. SAP documents no request for data types; the " +
-			"Integration Content API's $metadata declares DataTypeDesigntimeArtifacts, and every " +
-			"operation of this resource was tested on a tenant. It therefore needs the provider's " +
-			"opt-in switch shown in the status.\n\n" +
+			"types and service interfaces build on, through the DataTypeDesigntimeArtifacts of SAP's " +
+			"Integration Content API.\n\n" +
 			"The provider builds the artifact bundle from xsd, namespace and description the way SAP " +
 			"stores a data type, because SAP rejects a bundle without its additional attribute files. " +
 			"SAP stores the complex type under the data type's name and normalizes the schema, so the " +

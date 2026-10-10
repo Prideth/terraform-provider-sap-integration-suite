@@ -1,5 +1,3 @@
-# Data types are unofficial: SAP documents no request for them. Needs
-# enable_unofficial = true in the provider block.
 resource "sapintegrationsuite_data_type" "order" {
   package_id   = sapintegrationsuite_integration_package.sales.id
   data_type_id = "Order"

@@ -88,7 +88,7 @@ Legend: ✅ Supported · 🟡 Partial · 👁️ Read-only · 🧪 Experimental 
 | Custom Tag Configuration | 🟡 | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
 | Data Store | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
 | Data Store Entry | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
-| Data Type | 🧭 | Resource — see [feature-support.md](docs/feature-support.md#all-features) |
+| Data Type | ✅ | Resource |
 | Design-Time Artifact Versioning | 🟡 | Resource — see [feature-support.md](docs/feature-support.md#all-features) |
 | Integration Adapter | 🟡 | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
 | Integration Adapter Deployment | 🟡 | Resource — see [feature-support.md](docs/feature-support.md#all-features) |
@@ -100,12 +100,12 @@ Legend: ✅ Supported · 🟡 Partial · 👁️ Read-only · 🧪 Experimental 
 | Message Mapping Deployment | ✅ | Resource |
 | Message Processing Logs | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
 | Message Store Entries / JMS Resources | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
-| Message Type | 🧭 | Resource — see [feature-support.md](docs/feature-support.md#all-features) |
+| Message Type | ✅ | Resource |
 | Number Range | ✅ | Resource |
 | Script Collection | ✅ | Resource + Data Source |
 | Script Collection Deployment | ✅ | Resource |
 | Service Endpoints | 👁️ | Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
-| Service Interface | 🧭 | Resource — see [feature-support.md](docs/feature-support.md#all-features) |
+| Service Interface | ✅ | Resource |
 | Value Mapping | 🟡 | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
 | Value Mapping Deployment | ✅ | Resource |
 | Value Mapping Entry | ❌ | No safe Terraform lifecycle confirmed — see [feature-support.md](docs/feature-support.md#all-features) |
@@ -234,7 +234,7 @@ Legend: ✅ Supported · 🟡 Partial · 👁️ Read-only · 🧪 Experimental 
 | Trading Partner Management Partner Directory Generation | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
 | Trading Partner Management Partner Profile | ❌ | No suitable public API — see [feature-support.md](docs/feature-support.md#all-features) |
 
-21 supported · 10 partial · 3 read-only · 0 experimental · 9 unofficial · 5 research required · 49 unsupported · 2 separate provider, out of 99 evaluated Integration Suite features.
+24 supported · 10 partial · 3 read-only · 0 experimental · 6 unofficial · 5 research required · 49 unsupported · 2 separate provider, out of 99 evaluated Integration Suite features.
 
 <!-- END GENERATED FEATURE SUPPORT -->
 

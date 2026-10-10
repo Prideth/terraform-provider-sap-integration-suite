@@ -17,9 +17,9 @@ const dataTypeDesigntimeArtifactsEntitySet = "DataTypeDesigntimeArtifacts"
 
 // DataType is the wire representation of a DataTypeDesigntimeArtifacts
 // entity, a data type of the Cloud Integration ESR-style design-time
-// content. SAP Help documents no request for it; the entity set, its
-// properties and DataTypeDesigntimeArtifactSaveAsVersion come from the
-// Integration Content API's $metadata, and every operation this client uses
+// content. The Integration Content API specification on the Business
+// Accelerator Hub documents the entity set, its create and update bodies and
+// DataTypeDesigntimeArtifactSaveAsVersion; every operation this client uses
 // was verified on a tenant (gap probes of September and October 2026).
 type DataType struct {
 	ID           string `json:"Id"`
@@ -46,8 +46,11 @@ type dataTypeCreate struct {
 }
 
 // dataTypeUpdate is the update body: the name, the description and the
-// content. Id and PackageId are left out, as for the other design-time
-// artifacts, whose updates SAP rejects when they carry them.
+// content. The specification's update body lists only Description and
+// ArtifactContent; Name stays because the probes that found the update sent
+// it, and an update without it was not tried. Id and PackageId are left out,
+// as for the other design-time artifacts, whose updates SAP rejects when they
+// carry them.
 type dataTypeUpdate struct {
 	Name        string `json:"Name"`
 	Description string `json:"Description,omitempty"`

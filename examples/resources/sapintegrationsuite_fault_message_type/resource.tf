@@ -1,5 +1,3 @@
-# Fault message types are unofficial: SAP documents no request for them.
-# Needs enable_unofficial = true in the provider block.
 resource "sapintegrationsuite_fault_message_type" "order_rejected" {
   package_id            = sapintegrationsuite_integration_package.sales.id
   fault_message_type_id = "OrderRejected"

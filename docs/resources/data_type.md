@@ -2,7 +2,7 @@
 page_title: "sapintegrationsuite_data_type Resource - sapintegrationsuite"
 subcategory: "Cloud Integration"
 description: |-
-  A complex data type in an integration package, built from an XML schema. Unofficial; needs enable_unofficial.
+  A complex data type in an integration package, built from an XML schema.
 ---
 
 # sapintegrationsuite_data_type (Resource)
@@ -10,11 +10,12 @@ description: |-
 Manages a data type: a complex XML type that message types and service interfaces of the same
 package build on. You provide the schema; the provider uploads it as a data type artifact.
 
-**Status:** unofficial. Needs `enable_unofficial = true`. SAP documents no request for data
-types: the Integration Content API's `$metadata` declares `DataTypeDesigntimeArtifacts`, and an
-acceptance test created a data type, changed its schema and description in place, imported it and
-saved a version on a tenant (October 2026). Because the API is undocumented, SAP may change it
-without notice.
+**Status:** supported. SAP's Integration Content API specification on the Business Accelerator
+Hub documents `DataTypeDesigntimeArtifacts`: create, read, update, delete, the content download
+and `DataTypeDesigntimeArtifactSaveAsVersion`. An acceptance test created a data type, changed its
+schema and description in place, imported it and saved a version on a tenant (October 2026). The
+specification describes the content only as a ZIP archive; the bundle the provider builds from
+`xsd` follows the layout SAP itself stores for a data type.
 
 ## Prerequisites
 
@@ -46,8 +47,6 @@ because references to the type must use the stored name.
 ## Example Usage
 
 ```terraform
-# Data types are unofficial: SAP documents no request for them. Needs
-# enable_unofficial = true in the provider block.
 resource "sapintegrationsuite_data_type" "order" {
   package_id   = sapintegrationsuite_integration_package.sales.id
   data_type_id = "Order"
