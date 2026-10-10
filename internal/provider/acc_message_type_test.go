@@ -58,12 +58,12 @@ func testAccTypeXSD(name string) string {
 }
 
 // Message types and fault message types on data types: create, switch the
-// data type and the description in place, import, save a version. SAP
-// documents no request for either; this test made both unofficial
-// (passed 2026-10-03).
+// data type and the description in place, import, save a version. It
+// passed on 2026-10-03, when both needed enable_unofficial; since SAP's
+// Integration Content API specification documents them, it runs without it.
 func TestAccMessageType_basic(t *testing.T) {
 	accgate.Require(t, accgate.CloudIntegration)
-	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "true")
+	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "")
 	pkg, dt1, dt2, mt, fm := testAccName(), testAccName(), testAccName(), testAccName(), testAccName()
 	const mtName, fmName = "sapintegrationsuite_message_type.test", "sapintegrationsuite_fault_message_type.test"
 	resource.Test(t, resource.TestCase{

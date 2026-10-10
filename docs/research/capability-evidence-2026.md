@@ -19,7 +19,7 @@ And the provider never uses browser endpoints of SAP's UIs.
 |---|---:|
 | 🟡 Partial (`partial`) | 10 |
 | 👁️ Read-only (`read_only`) | 3 |
-| 🧭 Unofficial (`unofficial`) | 7 |
+| 🧭 Unofficial (`unofficial`) | 4 |
 | 🔬 Research required (`research_required`) | 7 |
 | ❌ Public API incomplete (`public_api_incomplete`) | 8 |
 | ❌ Unsafe Terraform lifecycle (`unsafe_terraform_lifecycle`) | 2 |
@@ -67,12 +67,13 @@ Usable, but the provider deliberately leaves out part of the lifecycle; the limi
 
 `cloud_integration.design_time_versioning` · checked 2026-09-26
 
-- **Finding:** SaveAsVersion is documented for integration flows and in $metadata for every versioned design-time type; the provider uses it for flows, message mappings and script collections.
-- **Next step:** Value mappings need an in-place update first (see cloud_integration.value_mapping); the other types need their own resources.
+- **Finding:** SaveAsVersion is documented for integration flows in SAP Help and, since the Integration Content specification of 2026-10-10, for every versioned design-time type; the provider uses it for flows, message mappings, script collections, data types, message types, fault message types and service interfaces.
+- **Next step:** Value mappings need an in-place update first (see cloud_integration.value_mapping).
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
   - tenant probes and acceptance runs on a development tenant (September 2026)
+  - Integration Content API specification (IntegrationContent 1.0.0, Swagger 2.0) from the Business Accelerator Hub, downloaded 2026-10-10: create, read, update, delete, $value and SaveAsVersion for data types, message types, fault message types and service interfaces, PUT for message mappings and script collections, SaveAsVersion for every versioned design-time type
 
 ### Integration Adapter
 
@@ -176,39 +177,6 @@ Available as a data source only; the provider never creates, changes or deletes 
 ## 🧭 Unofficial
 
 Implementation has been validated, but relies on an API contract that SAP does not fully publish or officially document.
-
-### Data Type
-
-`cloud_integration.data_type` · checked 2026-10-03
-
-- **Finding:** TestAccDataType_basic passed on a tenant: create, in-place change of schema and description, import and SaveAsVersion. Create, update (PUT), SaveAsVersion and delete work on a tenant with the bundle SAP stores for a data type (XSD, additionalAttributes.json, metainfo.prop); elements added on create and update are kept. SAP Help documents no request, so the contract comes from the $metadata and the probes.
-- **Next step:** None within the provider; it becomes supported if SAP documents the Data Types API (the Hub and SAP Help list none today).
-- **Sources:**
-  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
-  - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
-  - a package export of the development tenant (2026-09-26): API artifacts and data types travel as package content
-  - tenant-probe -GapTests on a development tenant (2026-09-27), synthetic tfAccProbe* objects only
-
-### Message Type
-
-`cloud_integration.message_type` · checked 2026-10-03
-
-- **Finding:** TestAccMessageType_basic passed on a tenant for message types and fault message types. Create without content, update of Description and DataTypeUsed (PUT without Name, which SAP refuses), SaveAsVersion and delete work on a tenant; SAP generates the schema from DataTypeUsed. SAP Help documents neither message types nor fault message types.
-- **Next step:** None within the provider; both become supported if SAP documents the message type APIs.
-- **Sources:**
-  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
-  - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
-  - tenant probes and acceptance runs on a development tenant (September 2026)
-
-### Service Interface
-
-`cloud_integration.service_interface` · checked 2026-09-26
-
-- **Finding:** $metadata has ServiceInterfaceDesigntimeArtifacts with SaveAsVersion and a Resources navigation; SAP Help documents only the UI and ESR import.
-- **Next step:** Same as message types, after data types are settled.
-- **Sources:**
-  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
-  - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
 
 ### Edge Integration Cell Access Policy Replication
 

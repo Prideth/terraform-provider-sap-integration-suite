@@ -2,7 +2,7 @@
 page_title: "sapintegrationsuite_fault_message_type Resource - sapintegrationsuite"
 subcategory: "Cloud Integration"
 description: |-
-  A fault message type in an integration package, built on a data type. Unofficial; needs enable_unofficial.
+  A fault message type in an integration package, built on a data type.
 ---
 
 # sapintegrationsuite_fault_message_type (Resource)
@@ -12,10 +12,10 @@ SAP generates the fault message type's schema itself: a root element named `name
 standard fault data (`ExchangeFaultData`) and, as additional detail, the data type given in
 `data_type_id`. You do not upload a schema.
 
-**Status:** unofficial. Needs `enable_unofficial = true`. SAP documents no request for
-fault message types: the Integration Content API's `$metadata` declares them, and its acceptance test
-created, changed, imported and versioned one on a tenant (October 2026). Because the API is undocumented, SAP may change it
-without notice.
+**Status:** supported. SAP's Integration Content API specification on the Business Accelerator
+Hub documents `FaultMessageTypeDesigntimeArtifacts`: create, read, update, delete, the content
+download and `FaultMessageTypeDesigntimeArtifactSaveAsVersion`. Its acceptance test created,
+changed, imported and versioned a fault message type on a tenant (October 2026).
 
 ## Prerequisites
 
@@ -41,8 +41,6 @@ example, so that Terraform deletes the fault message type first.
 ## Example Usage
 
 ```terraform
-# Fault message types are unofficial: SAP documents no request for them.
-# Needs enable_unofficial = true in the provider block.
 resource "sapintegrationsuite_fault_message_type" "order_rejected" {
   package_id            = sapintegrationsuite_integration_package.sales.id
   fault_message_type_id = "OrderRejected"

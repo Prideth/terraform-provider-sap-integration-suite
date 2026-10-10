@@ -61,6 +61,7 @@ const (
 	srcAccRun3     = "acceptance run of 2026-09-29 14:35 on the development tenant, including TestAccIntegrationAssessment_landscape with the in-place moves"
 	srcAccRun05    = "0.5.0 tenant gate of 2026-10-04 17:21 on release/0.5.x: TestAccIntegrationAssessment_landscape, _technologyProfile and _taxonomy passed"
 	srcAccRun2     = "acceptance run of 2026-09-27 21:30 on the development tenant, including TestAccIntegrationAssessment_landscape"
+	srcHubCISpec   = "Integration Content API specification (IntegrationContent 1.0.0, Swagger 2.0) from the Business Accelerator Hub, downloaded 2026-10-10: create, read, update, delete, $value and SaveAsVersion for data types, message types, fault message types and service interfaces, PUT for message mappings and script collections, SaveAsVersion for every versioned design-time type"
 )
 
 const checked = "2026-09-26"
@@ -96,21 +97,9 @@ var Evidence = map[string]EvidenceRecord{
 		"None within Terraform unless SAP documents an entry update and a delete that works; revisit when the Integration Content API reference changes.",
 		srcHelp, srcMetaCI, srcGapProbe),
 	"cloud_integration.design_time_versioning": ev(
-		"SaveAsVersion is documented for integration flows and in $metadata for every versioned design-time type; the provider uses it for flows, message mappings and script collections.",
-		"Value mappings need an in-place update first (see cloud_integration.value_mapping); the other types need their own resources.",
-		srcHelp, srcMetaCI, srcTenant),
-	"cloud_integration.data_type": evOn("2026-10-03",
-		"TestAccDataType_basic passed on a tenant: create, in-place change of schema and description, import and SaveAsVersion. Create, update (PUT), SaveAsVersion and delete work on a tenant with the bundle SAP stores for a data type (XSD, additionalAttributes.json, metainfo.prop); elements added on create and update are kept. SAP Help documents no request, so the contract comes from the $metadata and the probes.",
-		"None within the provider; it becomes supported if SAP documents the Data Types API (the Hub and SAP Help list none today).",
-		srcHelp, srcMetaCI, srcExport, srcGapProbe),
-	"cloud_integration.message_type": evOn("2026-10-03",
-		"TestAccMessageType_basic passed on a tenant for message types and fault message types. Create without content, update of Description and DataTypeUsed (PUT without Name, which SAP refuses), SaveAsVersion and delete work on a tenant; SAP generates the schema from DataTypeUsed. SAP Help documents neither message types nor fault message types.",
-		"None within the provider; both become supported if SAP documents the message type APIs.",
-		srcHelp, srcMetaCI, srcTenant),
-	"cloud_integration.service_interface": ev(
-		"$metadata has ServiceInterfaceDesigntimeArtifacts with SaveAsVersion and a Resources navigation; SAP Help documents only the UI and ESR import.",
-		"Same as message types, after data types are settled.",
-		srcHelp, srcMetaCI),
+		"SaveAsVersion is documented for integration flows in SAP Help and, since the Integration Content specification of 2026-10-10, for every versioned design-time type; the provider uses it for flows, message mappings, script collections, data types, message types, fault message types and service interfaces.",
+		"Value mappings need an in-place update first (see cloud_integration.value_mapping).",
+		srcHelp, srcMetaCI, srcTenant, srcHubCISpec),
 	"cloud_integration.service_endpoints": ev(
 		"Endpoints are generated from deployed content; the read contract is verified against $metadata and a tenant.",
 		"None; discovery only by design.",
