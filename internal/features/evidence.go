@@ -107,7 +107,7 @@ var Evidence = map[string]EvidenceRecord{
 		srcHelp, srcMetaCI, srcGapProbe),
 	"cloud_integration.design_time_versioning": ev(
 		"SaveAsVersion is documented for integration flows in SAP Help and, since the Integration Content specification of 2026-10-10, for every versioned design-time type; the provider uses it for flows, message mappings, script collections, data types, message types, fault message types and service interfaces.",
-		"Value mappings need an in-place update first (see cloud_integration.value_mapping).",
+		"Value mappings have no update (no PUT in the specification either), so their save_as_version only relabels the one stored version; see cloud_integration.value_mapping.",
 		srcHelp, srcMetaCI, srcTenant, srcHubCISpec),
 	"cloud_integration.service_endpoints": ev(
 		"Endpoints are generated from deployed content; the read contract is verified against $metadata and a tenant.",

@@ -82,7 +82,7 @@ Usable, but the provider deliberately leaves out part of the lifecycle; the limi
 `cloud_integration.design_time_versioning` · checked 2026-09-26
 
 - **Finding:** SaveAsVersion is documented for integration flows in SAP Help and, since the Integration Content specification of 2026-10-10, for every versioned design-time type; the provider uses it for flows, message mappings, script collections, data types, message types, fault message types and service interfaces.
-- **Next step:** Value mappings need an in-place update first (see cloud_integration.value_mapping).
+- **Next step:** Value mappings have no update (no PUT in the specification either), so their save_as_version only relabels the one stored version; see cloud_integration.value_mapping.
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)

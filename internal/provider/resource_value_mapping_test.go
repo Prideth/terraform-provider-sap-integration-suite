@@ -78,7 +78,7 @@ func TestValueMappingResource_SaveAsVersion(t *testing.T) {
 	fake := &fakeValueMappings{}
 	server := httptest.NewServer(fake)
 	defer server.Close()
-	r := &valueMappingResource{client: cloudintegration.New(http.DefaultClient, server.URL), allowUnofficial: true}
+	r := &valueMappingResource{client: cloudintegration.New(http.DefaultClient, server.URL)}
 	ctx := context.Background()
 	content := filepath.Join(t.TempDir(), "company-codes.zip")
 	if err := os.WriteFile(content, []byte("PK"), 0o600); err != nil {
@@ -112,12 +112,11 @@ func TestValueMappingResource_SaveAsVersion(t *testing.T) {
 		t.Errorf("Update(removed) = %v, version %q, save_as_version %q, requests %v", removed.Diagnostics, v, s, fake.requests)
 	}
 
-	// Without enable_unofficial the relabel is refused before any request.
-	r.allowUnofficial = false
-	before := len(fake.requests)
-	refused := &resource.UpdateResponse{State: relabel.State}
-	r.Update(ctx, resource.UpdateRequest{Plan: valueMappingPlan(r, content, "3.0.0"), State: relabel.State}, refused)
-	if !unofficialOperationError(refused.Diagnostics) || len(fake.requests) != before {
-		t.Errorf("Update() without enable_unofficial = %v after %d requests; want the unofficial error and none", refused.Diagnostics, len(fake.requests)-before)
+	// SaveAsVersion is documented in the Integration Content specification,
+	// so labeling again needs no opt-in switch.
+	again := &resource.UpdateResponse{State: removed.State}
+	r.Update(ctx, resource.UpdateRequest{Plan: valueMappingPlan(r, content, "3.0.0"), State: removed.State}, again)
+	if v, _ := version(again.State); again.Diagnostics.HasError() || v != "3.0.0" {
+		t.Errorf("Update(3.0.0) = %v, version %q; want 3.0.0", again.Diagnostics, v)
 	}
 }

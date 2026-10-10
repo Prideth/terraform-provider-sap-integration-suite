@@ -3,7 +3,7 @@ page_title: "sapintegrationsuite_value_mapping Resource - sapintegrationsuite"
 subcategory: "Cloud Integration"
 description: |-
   A value mapping artifact (lookup tables between agencies and identifiers), uploaded from a
-  local ZIP file. Replace-only, except for an unofficial version label.
+  local ZIP file. Replace-only, except for its version label.
 ---
 
 # sapintegrationsuite_value_mapping (Resource)
@@ -13,10 +13,10 @@ example company codes in the ERP and in a partner's format. Flows read them at r
 artifact has to be deployed with
 [`sapintegrationsuite_value_mapping_deployment`](value_mapping_deployment.md).
 
-**Status:** partial. SAP documents creating, reading and deleting value mappings, but no
-in-place update. Every change of the content or name therefore replaces the artifact. The one
-exception, `save_as_version`, is unofficial: it uses a function SAP declares only in its
-`$metadata` and needs `enable_unofficial = true`.
+**Status:** partial. SAP's Integration Content API specification documents creating, reading,
+deleting and `SaveAsVersion` for value mappings, but no in-place update. Every change of the
+content or name therefore replaces the artifact. The one exception is `save_as_version`, which
+relabels the stored version in place.
 
 ## Prerequisites
 
@@ -29,9 +29,9 @@ exception, `save_as_version`, is unofficial: it uses a function SAP declares onl
 
 | Operation | What happens |
 |---|---|
-| Create | Uploads the ZIP. With `save_as_version` (needs `enable_unofficial`), it then gives the value mapping that version. |
+| Create | Uploads the ZIP. With `save_as_version`, it then gives the value mapping that version. |
 | Read | Reads name and version. |
-| Update | Only a changed `save_as_version` (needs `enable_unofficial`): SAP relabels the stored version in place, without touching the content. Removing `save_as_version` changes nothing on SAP's side. Every other attribute forces replacement. Without the switch, a plan that sets or changes `save_as_version` fails with an error that names the operation. |
+| Update | Only a changed `save_as_version`: SAP relabels the stored version in place, without touching the content. Removing `save_as_version` changes nothing on SAP's side. Every other attribute forces replacement. |
 | Replacement | A new `content_hash`, `content`, `name`, `mapping_id` or `package_id` deletes the artifact and uploads it again, and labels it with `save_as_version` again when that is set. `create_before_destroy` does not help while `mapping_id` stays the same, because the ID is taken until the old artifact is gone. The runtime keeps the deployed content until the deployment redeploys; pass `content_hash` to its `redeploy_triggers`. |
 | Delete | Deletes the design-time artifact. |
 
@@ -75,7 +75,7 @@ resource "sapintegrationsuite_value_mapping" "company_codes" {
 
 - `content` (String) Path to the local content file for the value mapping project, for example "${path.module}/value-mappings/company-codes.zip". Required to manage the mapping's content; left as-is on import until a matching configuration is applied, since SAP does not return a local file path for an existing design-time artifact. Changing it replaces the value mapping — see the "name" attribute above for why.
 - `content_hash` (String) SHA-256 hash of the content file, for example filesha256("${path.module}/value-mappings/company-codes.zip"). Terraform replaces the value mapping when this hash changes — see the "name" attribute above for why.
-- `save_as_version` (String) UNOFFICIAL: a version number to give the value mapping, for example "1.0.3", through ValueMappingDesigntimeArtifactSaveAsVersion, which only SAP's $metadata declares. SAP keeps one version of a value mapping, so this relabels that version; it does not keep the previous one and does not change the content. A changed value relabels in place, without replacing the value mapping, and SAP accepts a lower number too. On a replacement (new content or name) the new upload is labeled with it again. Needs enable_unofficial = true. Without it, the version is the Bundle-Version in the content's manifest.
+- `save_as_version` (String) A version number to give the value mapping, for example "1.0.3", through ValueMappingDesigntimeArtifactSaveAsVersion of the Integration Content API. SAP keeps one version of a value mapping, so this relabels that version; it does not keep the previous one and does not change the content. A changed value relabels in place, without replacing the value mapping, and SAP accepts a lower number too. On a replacement (new content or name) the new upload is labeled with it again. Without it, the version is the Bundle-Version in the content's manifest.
 
 ### Read-Only
 
@@ -102,10 +102,8 @@ replacement, setting it after an import replaces the value mapping on the first 
 - **SAP:** no update. A tenant probe in October 2026 got `501 Not Implemented` for every `PUT`,
   with new content, a new name or both, so every change replaces the value mapping. SAP keeps a
   single version, and a delete removes it completely.
-- **Provider:** `save_as_version` rests on `ValueMappingDesigntimeArtifactSaveAsVersion`, which is
-  only in the `$metadata`; SAP Help lists read, download, create, upload, deploy and delete for
-  value mappings. It was verified on a tenant and stays behind `enable_unofficial`, because SAP
-  may change it without notice.
+- **SAP:** `ValueMappingDesigntimeArtifactSaveAsVersion` does not keep the previous version: it
+  relabels the one SAP stores, even to a lower number.
 
 ## Related
 

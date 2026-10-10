@@ -113,7 +113,9 @@ SAP's Integration Content API specification documents the content update (`PUT`)
 integration flows, message mappings and script collections, and `SaveAsVersion` for every
 versioned design-time type, so changing their content or saving a version needs no opt-in
 switch. Until the specification was published, the provider treated the update of message
-mappings and script collections and `save_as_version` on script collections as unofficial.
+mappings and script collections and `save_as_version` on script collections and value mappings
+as unofficial. Value mappings still have no update; their `save_as_version` relabels the one
+version SAP keeps.
 
 ## Deploying
 

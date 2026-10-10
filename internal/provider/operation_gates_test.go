@@ -92,13 +92,6 @@ func TestOperationGates_Plan(t *testing.T) {
 		resource.Resource
 		resource.ResourceWithModifyPlan
 	}
-	newVM := func(c, a bool) gated {
-		r := &valueMappingResource{allowUnofficial: a}
-		if c {
-			r.client = ci
-		}
-		return r
-	}
 	newAP := func(c, a bool) gated {
 		r := &accessPolicyResource{allowUnofficial: a}
 		if c {
@@ -127,38 +120,6 @@ func TestOperationGates_Plan(t *testing.T) {
 		replace     bool
 		wantRefusal bool
 	}{
-		{
-			name:        "value mapping create with save_as_version",
-			newResource: newVM,
-			plan:        map[string]tftypes.Value{"id": str("P/VM"), "save_as_version": str("1.0.1")},
-			wantRefusal: true,
-		},
-		{
-			name:        "value mapping create without save_as_version",
-			newResource: newVM,
-			plan:        map[string]tftypes.Value{"id": str("P/VM")},
-		},
-		{
-			name:        "value mapping relabel in place",
-			newResource: newVM,
-			state:       map[string]tftypes.Value{"id": str("P/VM"), "save_as_version": str("1.0.1")},
-			plan:        map[string]tftypes.Value{"id": str("P/VM"), "save_as_version": str("1.0.2")},
-			wantRefusal: true,
-		},
-		{
-			name:        "value mapping save_as_version removed",
-			newResource: newVM,
-			state:       map[string]tftypes.Value{"id": str("P/VM"), "save_as_version": str("1.0.1")},
-			plan:        map[string]tftypes.Value{"id": str("P/VM")},
-		},
-		{
-			name:        "value mapping replacement keeping save_as_version",
-			newResource: newVM,
-			state:       map[string]tftypes.Value{"id": str("P/VM"), "name": str("old"), "save_as_version": str("1.0.1")},
-			plan:        map[string]tftypes.Value{"name": str("new"), "save_as_version": str("1.0.1")},
-			replace:     true,
-			wantRefusal: true,
-		},
 		{
 			name:        "access policy description update",
 			newResource: newAP,

@@ -104,7 +104,7 @@ Do not conflate these: a feature can be fully supported by this provider and sti
 | `cloud_integration.script_collection_deployment` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Resource |
 | `cloud_integration.service_endpoints` | cloud_integration | read_only (unsafe_terraform_lifecycle) | sap_documentation | Yes | — | Yes | — | — | — | — | Data Source |
 | `cloud_integration.service_interface` | cloud_integration | supported | api_specification | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
-| `cloud_integration.value_mapping` | cloud_integration | partial (unsafe_terraform_lifecycle) | sap_documentation (some operations unofficial) | Yes | Yes | Yes | — | Yes | Yes | — | Resource + Data Source |
+| `cloud_integration.value_mapping` | cloud_integration | partial (unsafe_terraform_lifecycle) | sap_documentation | Yes | Yes | Yes | — | Yes | Yes | — | Resource + Data Source |
 | `cloud_integration.value_mapping_deployment` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Resource |
 | `cloud_integration.value_mapping_entry` | cloud_integration | unsupported (unsafe_terraform_lifecycle) | — | Yes | — | — | — | — | — | — | — |
 | `cloud_integration.variable` | cloud_integration | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
@@ -212,7 +212,6 @@ Individual operations of an otherwise documented feature can be unofficial too. 
 | `cloud_integration.number_range` | read by name |
 | `cloud_integration.number_range` | delete |
 | `cloud_integration.number_range` | import |
-| `cloud_integration.value_mapping` | save_as_version (ValueMappingDesigntimeArtifactSaveAsVersion is only in $metadata; SAP Help lists read, download, create, upload, deploy and delete) |
 | `security.access_policy` | description update (PATCH, verified on a tenant) |
 | `security.access_policy_reference` | create a reference to an artifact type SAP does not document for access policies (eight types SAP's API lists, verified on a tenant) |
 | `security.key_pair` | read of the certificate signing request (KeystoreEntries('<hexalias>')/SigningRequest/$value is only in $metadata) |
@@ -226,7 +225,7 @@ Grouped by why, not just that. A feature can be `partial` and reachable via one 
 
 - **`cloud_integration.design_time_versioning`** — Saving a design-time artifact under an explicit version number (for example 1.0.3) instead of working only on the active draft. (partial support already implemented — see Limitations below)
   - save_as_version calls <Artifact>SaveAsVersion?Id=''&SaveAsVersion='' after the content upload, as SAP Help documents for IntegrationDesigntimeArtifactSaveAsVersion and the Integration Content API specification (2026-10-10) for every versioned design-time type. A new version is saved only when save_as_version changes.
-  - Not yet available for value mappings: that resource replaces the artifact on every change, and a version bump must not recreate it. Data types, message types, fault message types and service interfaces have save_as_version on their own resources.
+  - Value mappings, data types, message types, fault message types and service interfaces have save_as_version on their own resources. SAP keeps one version of a value mapping, so there it relabels the stored version.
   - SAP does not document what happens when the version already exists or is lower than the current one; SAP's error is passed through unchanged.
 
 ### Public API details are not fully confirmed
@@ -344,7 +343,7 @@ Grouped by why, not just that. A feature can be `partial` and reachable via one 
   - All exposed fields are checked against a tenant $metadata document. API definition links carry a url and a name; the format "type" (oas-json, edmx, ...) that SAP's documentation mentions is not a property of the Definition entity, and earlier releases that exposed it always returned an empty value.
 - **`cloud_integration.value_mapping`** — A value mapping design-time artifact's content, managed as file-based content. (partial support already implemented — see Limitations below)
   - No in-place update: a tenant probe (2026-10-06) got 501 Not Implemented for every PUT on ValueMappingDesigntimeArtifacts, with content, name or both, so changing name, content or content_hash replaces the resource (Terraform deletes the artifact and uploads it again).
-  - save_as_version uses ValueMappingDesigntimeArtifactSaveAsVersion (only in $metadata), which answered 200 and relabels the one stored version, even to a lower number, without changing the content (tenant probe, 2026-10-06). A changed save_as_version relabels in place; it needs enable_unofficial. TestAccValueMapping_saveAsVersion passed on a tenant (2026-10-07).
+  - save_as_version uses ValueMappingDesigntimeArtifactSaveAsVersion, which the Integration Content API specification documents (2026-10-10). It answered 200 and relabels the one stored version, even to a lower number, without changing the content (tenant probe, 2026-10-06). A changed save_as_version relabels in place. TestAccValueMapping_saveAsVersion passed on a tenant (2026-10-07). The specification also confirms that value mappings have no update (no PUT).
   - SAP keeps one version of a value mapping: Delete removes the artifact completely (tenant probe, 2026-10-06).
 - **`cloud_integration.value_mapping_entry`** — Individual source/target value pairs inside a value mapping's agency/identifier pair, managed through UpsertValMaps, UpdateDefaultValMap and DeleteValMaps.
   - Tenant check of 2026-09-27 on a synthetic value mapping: the first UpsertValMaps with IsConfigured=true switched the agency pair to State Configured and dropped the two values the design-time content had defined; a second UpsertValMaps with the same source value added a second entry instead of changing the first, and SAP made the newest one the default; DeleteValMaps for the pair answered 202 and removed nothing; every call left the artifact in version Draft. A resource could neither update an entry in place nor destroy what it created, so entries stay unmanaged.

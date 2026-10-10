@@ -184,15 +184,16 @@ var Catalog = []Feature{
 			"No in-place update: a tenant probe (2026-10-06) got 501 Not Implemented for every PUT on " +
 				"ValueMappingDesigntimeArtifacts, with content, name or both, so changing name, content or " +
 				"content_hash replaces the resource (Terraform deletes the artifact and uploads it again).",
-			"save_as_version uses ValueMappingDesigntimeArtifactSaveAsVersion (only in $metadata), which " +
-				"answered 200 and relabels the one stored version, even to a lower number, without changing " +
-				"the content (tenant probe, 2026-10-06). A changed save_as_version relabels in place; it needs " +
-				"enable_unofficial. TestAccValueMapping_saveAsVersion passed on a tenant (2026-10-07).",
+			"save_as_version uses ValueMappingDesigntimeArtifactSaveAsVersion, which the Integration " +
+				"Content API specification documents (2026-10-10). It answered 200 and relabels the one " +
+				"stored version, even to a lower number, without changing the content (tenant probe, " +
+				"2026-10-06). A changed save_as_version relabels in place. TestAccValueMapping_saveAsVersion " +
+				"passed on a tenant (2026-10-07). The specification also confirms that value mappings have " +
+				"no update (no PUT).",
 			"SAP keeps one version of a value mapping: Delete removes the artifact completely (tenant probe, " +
 				"2026-10-06).",
 		},
-		UndocumentedOperations: []string{"save_as_version (ValueMappingDesigntimeArtifactSaveAsVersion is only in $metadata; SAP Help lists read, download, create, upload, deploy and delete)"},
-		Operations:             Operations{Create: true, Read: true, Update: false, Delete: true, Import: true},
+		Operations: Operations{Create: true, Read: true, Update: false, Delete: true, Import: true},
 	},
 	{
 		Key:             "cloud_integration.value_mapping_deployment",
@@ -261,9 +262,9 @@ var Catalog = []Feature{
 				"upload, as SAP Help documents for IntegrationDesigntimeArtifactSaveAsVersion and the " +
 				"Integration Content API specification (2026-10-10) for every versioned design-time " +
 				"type. A new version is saved only when save_as_version changes.",
-			"Not yet available for value mappings: that resource replaces the artifact on every " +
-				"change, and a version bump must not recreate it. Data types, message types, fault " +
-				"message types and service interfaces have save_as_version on their own resources.",
+			"Value mappings, data types, message types, fault message types and service interfaces " +
+				"have save_as_version on their own resources. SAP keeps one version of a value mapping, so " +
+				"there it relabels the stored version.",
 			"SAP does not document what happens when the version already exists or is lower than " +
 				"the current one; SAP's error is passed through unchanged.",
 		},

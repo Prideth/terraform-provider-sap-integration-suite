@@ -127,12 +127,14 @@ resource "sapintegrationsuite_value_mapping_deployment" "test" {
 	})
 }
 
-// save_as_version on a value mapping (unofficial): the create labels the
-// upload 2.0.0, a lower number relabels it in place, and an import reads
-// the new label. SAP keeps one version, so nothing else changes.
+// save_as_version on a value mapping: the create labels the upload 2.0.0,
+// a lower number relabels it in place, and an import reads the new label.
+// SAP keeps one version, so nothing else changes. It passed on 2026-10-07
+// behind enable_unofficial; since the Integration Content specification
+// documents SaveAsVersion for value mappings, it runs without the switch.
 func TestAccValueMapping_saveAsVersion(t *testing.T) {
 	accgate.Require(t, accgate.CloudIntegration, samples.EnvLocalContent)
-	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "true")
+	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "")
 	vm := samples.LocalArtifactOfType(t, "ValueMapping")
 	synthetic, err := samples.SyntheticValueMapping(vm.Content, "tfacc")
 	if err != nil {
