@@ -23,12 +23,12 @@ Each 0.x minor release has one theme. Released so far: 0.1.0 (the broad first pr
 (the tenant-verified rework), 0.3.0 (contract sources, opt-in switches, Registry documentation)
 with the patches 0.3.1 and 0.3.2, 0.4.0 (the Integration Assessment landscape), 0.5.0
 (Integration Assessment technology profiles and the ISA-M taxonomy) with the patch 0.5.1, and
-0.6.0 (API Composition: business data graph hardening). Each minor line has one release branch,
-`release/<minor>.x`, and every release is a tag on it.
+0.6.0 (API Composition: business data graph hardening), and 0.7.0 (Cloud Integration data
+types, message types, fault message types and service interfaces). Each minor line has one
+release branch, `release/<minor>.x`, and every release is a tag on it.
 
 | Version | Theme | State | Precondition |
 |---|---|---|---|
-| 0.7.0 | Cloud Integration data types, message types, fault message types, service interfaces | in progress on `feature/design-time-types`; data types, message types, fault message types and service interfaces done (supported: Integration Content specification, acceptance tests passed) | release preparation |
 | 0.8.0 | Security Content completion | proposed | the upload formats in P2 item 5 |
 | 0.9.0 | Classic API Management infrastructure, above all virtual hosts; the API proxy only if the official Transport API request passes its acceptance test | proposed | P2 item 6 and the Transport API specification |
 | 0.10.0 | Edge Integration Cell targeting | proposed | a tenant with an Edge Integration Cell (P1 item 3) |

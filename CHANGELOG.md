@@ -9,11 +9,10 @@ contain breaking schema or lifecycle changes; each one is listed under
 "Breaking changes" together with the steps it needs. Patch releases (0.2.1)
 only fix defects in their minor release.
 
-## Unreleased (planned as 0.7.0)
+## 0.7.0 — 2026-10-15
 
-0.7.0 is planned to manage the ESR-style design-time types of Cloud
-Integration: data types, message types, fault message types and service
-interfaces. All four are supported: SAP's Integration Content API
+0.7.0 manages the ESR-style design-time types of Cloud Integration: data
+types, message types, fault message types and service interfaces. All four are supported: SAP's Integration Content API
 specification on the Business Accelerator Hub documents them, and each
 passed an acceptance test on a tenant. They need no opt-in switch.
 
@@ -81,6 +80,14 @@ passed an acceptance test on a tenant. They need no opt-in switch.
 - SAP does not check references between design-time types: it lets a data
   type that a message type uses be deleted. Refer to the data type resource
   so that Terraform orders the deletion.
+
+### Upgrade notes
+
+No state migration and no breaking change. The feature data sources report
+data types, message types and service interfaces as `supported`; they used
+to report `research_required`. A configuration that sets
+`enable_unofficial = true` only to update message mappings or script
+collections can drop it.
 
 ## 0.6.0 — 2026-10-10
 
