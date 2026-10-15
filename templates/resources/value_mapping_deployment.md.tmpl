@@ -23,7 +23,7 @@ Integration Content API.
 | Operation | What happens |
 |---|---|
 | Create | Deploys `mapping_version` and polls the runtime status until SAP reports `STARTED` or `ERROR`, or `timeouts.create` (default 10 minutes) elapses. |
-| Read | Reads the runtime artifact. `mapping_version` and `status` reflect what SAP runs now, so a redeploy outside Terraform shows as drift. An artifact that was undeployed outside Terraform drops out of state, and the next apply deploys it again. |
+| Read | Reads the runtime artifact. `mapping_version` and `status` reflect what SAP runs now, so a redeploy outside Terraform shows as drift. A `mapping_version` of `Draft` or `active` stays as configured: SAP deploys the draft, but the runtime reports the last saved version number, so drift of such a version is not detected. An artifact that was undeployed outside Terraform drops out of state, and the next apply deploys it again. |
 | Update | A new `mapping_version` or changed `redeploy_triggers` redeploys in place. |
 | Replacement | Changing `mapping_id`, `package_id` or `runtime_location_id` undeploys and deploys anew. |
 | Delete | Sends the undeploy request (bounded by `timeouts.delete`, default 10 minutes); SAP removes the runtime artifact asynchronously. |

@@ -29,8 +29,10 @@ complete list of changes is in the
 
 ## 0.7.0 to 0.7.1
 
-0.7.1 only rebuilds the provider with Go 1.27.2 and `golang.org/x/net` 0.60.0, which fix known
-vulnerabilities; nothing is renamed and no state is migrated. Run `terraform init -upgrade`; a
+0.7.1 rebuilds the provider with Go 1.27.2 and `golang.org/x/net` 0.60.0, which fix known
+vulnerabilities, and lets `sapintegrationsuite_value_mapping_deployment` deploy a value mapping
+that is a draft (`mapping_version = "Draft"`); that apply used to fail with an inconsistent
+result. Nothing is renamed and no state is migrated. Run `terraform init -upgrade`; a
 constraint of `~> 0.7.0` already allows 0.7.1.
 
 ## 0.6 to 0.7
