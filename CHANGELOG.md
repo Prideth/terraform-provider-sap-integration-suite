@@ -125,6 +125,22 @@ they become the 0.9.0 section once 0.8.0 is released.
   hosts (the `api_management` key gets 403). `subaccount_subdomain` is taken
   from the token URL unless set.
 
+### Planned for 0.10.0: Integration Assessment key characteristics
+
+These entries are on `feature/ia-key-characteristics`, which builds on 0.9.0;
+they become the 0.10.0 section once 0.9.0 is released.
+
+- `sapintegrationsuite_integration_assessment_key_characteristic_group`,
+  `sapintegrationsuite_integration_assessment_key_characteristic` and
+  `sapintegrationsuite_integration_assessment_key_characteristic_value`
+  (experimental, need `enable_experimental = true`): key characteristics of
+  a tenant's own, next to SAP's ISA-M entries, in a group of its own, with
+  their values, which a technology key characteristic rates a technology
+  on. SAP's Entities API specification documents creating, updating and
+  deleting all three; names, descriptions and a key characteristic's type
+  (`is_single`) change in place, a new group or key characteristic
+  replaces the entry. Not yet tested on a tenant.
+
 ### Planned for 0.7.1
 
 These fixes are on `release/0.7.x`; they become the 0.7.1 section once

@@ -40,10 +40,19 @@ type Style struct {
 }
 
 // KeyCharacteristic is a criterion the assessment rates technologies on.
+// IsSingle is the UI's type: true for Single (a yes-or-no question in a
+// questionnaire), false for Multi (several answers).
 type KeyCharacteristic struct {
-	ID   string `json:"Id"`
-	Name string `json:"Name"`
+	ID                     string        `json:"Id"`
+	Name                   string        `json:"Name"`
+	Description            *string       `json:"Description"`
+	IsSingle               bool          `json:"IsSingle"`
+	KeyCharacteristicGroup *linkedEntity `json:"KeyCharacteristicGroup"`
 }
+
+// KeyCharacteristicGroupID is the Id of the group the key characteristic
+// belongs to, or "" when the read did not expand it.
+func (k *KeyCharacteristic) KeyCharacteristicGroupID() string { return k.KeyCharacteristicGroup.id() }
 
 // KeyCharacteristicValue is one possible value of a key characteristic.
 type KeyCharacteristicValue struct {

@@ -2332,11 +2332,44 @@ var Catalog = []Feature{
 				"and the specification describes it only as a list; its meaning (the domain that applies " +
 				"between a source and a target deployment model) comes from its links.",
 			"The taxonomy is SAP's reference content, adjusted in the UI if at all, so there are no " +
-				"resources for it. The specification also documents create, update and delete for key " +
-				"characteristic groups, key characteristics and key characteristic values; the provider " +
-				"does not offer them.",
+				"resources for it. Key characteristic groups, key characteristics and values of a tenant's " +
+				"own are resources of integration_assessment.custom_key_characteristics.",
 			"Needs provider.integration_assessment: the service key of an \"Integration Assessment " +
 				"APIs\" service instance; the other credential sets do not work there.",
+		},
+	},
+	{
+		Key:    "integration_assessment.custom_key_characteristics",
+		Domain: "integration_assessment",
+		Name:   "Integration Assessment Custom Key Characteristics",
+		Description: "Key characteristic groups, key characteristics and their values that a tenant " +
+			"maintains itself next to SAP's ISA-M entries, for technology ratings and questionnaires.",
+		SupportStatus:  StatusExperimental,
+		SupportReason:  ReasonPublicAPIIncomplete,
+		ContractSource: SourceAPISpecification,
+		ResourceTypes: []string{
+			"sapintegrationsuite_integration_assessment_key_characteristic_group",
+			"sapintegrationsuite_integration_assessment_key_characteristic",
+			"sapintegrationsuite_integration_assessment_key_characteristic_value",
+		},
+		PublicAPI:   true,
+		APIProtocol: "OData V2",
+		Planned:     true,
+		Operations:  Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
+		Limitations: []string{
+			"SAP's Entities API specification on the Business Accelerator Hub (downloaded 2026-10-10) " +
+				"documents create (POST), read, update (PATCH) and delete for KeyCharacteristicGroup, " +
+				"KeyCharacteristic and KeyCharacteristicValue; the live $metadata has the same properties. " +
+				"SAP describes maintaining your own key characteristics in the Integration Assessment UI.",
+			"Not yet tested on a tenant, so experimental: whether SAP accepts groups of its own next to its " +
+				"five delivered ones, what a delete does to a key characteristic that still has values or " +
+				"technology ratings, and whether the type (IsSingle) can change once values exist.",
+			"The update bodies list no links, so moving a key characteristic to another group or a value to " +
+				"another key characteristic replaces it.",
+			"Only entries the configuration creates are managed; SAP's delivered entries are read with the " +
+				"data sources and never changed.",
+			"Needs provider.integration_assessment: the service key of an \"Integration Assessment " +
+				"APIs\" service instance.",
 		},
 	},
 	{

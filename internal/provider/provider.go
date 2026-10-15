@@ -740,6 +740,9 @@ func (p *sapIntegrationSuiteProvider) Resources(_ context.Context) []func() reso
 		NewIntegrationAssessmentTechnologyDomainResource,
 		NewIntegrationAssessmentTechnologyStyleResource,
 		NewIntegrationAssessmentTechnologyKeyCharacteristicResource,
+		NewIntegrationAssessmentKeyCharacteristicGroupResource,
+		NewIntegrationAssessmentKeyCharacteristicResource,
+		NewIntegrationAssessmentKeyCharacteristicValueResource,
 	}
 }
 

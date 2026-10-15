@@ -119,6 +119,7 @@ Do not conflate these: a feature can be fully supported by this provider and sti
 | `integration_advisor.design_time_content` | other_capability | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
 | `integration_advisor.runtime_artifact_injection` | other_capability | unsupported (out_of_scope) | — | No | — | — | — | — | — | — | — |
 | `integration_assessment.assessment_workflow` | integration_assessment | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
+| `integration_assessment.custom_key_characteristics` | integration_assessment | experimental (public_api_incomplete) | api_specification | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource |
 | `integration_assessment.landscape_configuration` | integration_assessment | supported | api_specification (some operations unofficial) | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
 | `integration_assessment.master_data` | integration_assessment | supported | api_specification | Yes | — | Yes | — | — | — | — | Data Source |
 | `integration_cell.runtime` | integration_cell | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
@@ -180,6 +181,9 @@ provider "sapintegrationsuite" {
 | Type | Status | Switch |
 |---|---|---|
 | `sapintegrationsuite_access_policy_runtime_assignments` | unofficial | `enable_unofficial` |
+| `sapintegrationsuite_integration_assessment_key_characteristic_group` | experimental | `enable_experimental` |
+| `sapintegrationsuite_integration_assessment_key_characteristic_value` | experimental | `enable_experimental` |
+| `sapintegrationsuite_integration_assessment_key_characteristic` | experimental | `enable_experimental` |
 | `sapintegrationsuite_key_pair_certificate_chain` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_pgp_public_key` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_pgp_secret_key` | unofficial | `enable_unofficial` |
@@ -262,6 +266,12 @@ Grouped by why, not just that. A feature can be `partial` and reachable via one 
 - **`edge_integration_cell.deployment_target`** — Addressing an Edge Integration Cell instead of the cloud runtime: deploying content to it and managing its security material, selected with runtime_location_id. (🔬 Research required)
   - Not supported yet. SAP Help's Integration Content, Security Content, Partner Directory, message processing log, message store and number range pages (mirror of 2026-09-18) document https://<host>/location/<runtime location id>/api/v1/<path> for calling the same APIs against an Edge Integration Cell, once for all operations and without per-operation examples, and SAP's own CI/CD tooling still called the path unpublished in May 2026. It has not been verified against a tenant with an Edge Integration Cell.
   - The deployment, credential, certificate, key pair and Partner Directory resources and their data sources carry an optional runtime_location_id that sends requests to that path, and import IDs accept a location:<id>/ prefix. TestAccEdgeIntegrationCell_securityAndPartnerDirectory (gate SAP_INTEGRATION_SUITE_ACC_EDGE_INTEGRATION_CELL) checks both; until it passes on a tenant, leave runtime_location_id unset.
+- **`integration_assessment.custom_key_characteristics`** — Key characteristic groups, key characteristics and their values that a tenant maintains itself next to SAP's ISA-M entries, for technology ratings and questionnaires. (🧪 Experimental)
+  - SAP's Entities API specification on the Business Accelerator Hub (downloaded 2026-10-10) documents create (POST), read, update (PATCH) and delete for KeyCharacteristicGroup, KeyCharacteristic and KeyCharacteristicValue; the live $metadata has the same properties. SAP describes maintaining your own key characteristics in the Integration Assessment UI.
+  - Not yet tested on a tenant, so experimental: whether SAP accepts groups of its own next to its five delivered ones, what a delete does to a key characteristic that still has values or technology ratings, and whether the type (IsSingle) can change once values exist.
+  - The update bodies list no links, so moving a key characteristic to another group or a value to another key characteristic replaces it.
+  - Only entries the configuration creates are managed; SAP's delivered entries are read with the data sources and never changed.
+  - Needs provider.integration_assessment: the service key of an "Integration Assessment APIs" service instance.
 - **`security.certificate_chain`** — A certificate chain associated with a key pair. (🧭 Unofficial)
   - SAP Help names importing and exporting a key pair's certificate chain and creating a certificate signing request as capabilities of the Key Pair API; the requests are documented only in the API specification on the Business Accelerator Hub, which needs a login. The provider uses what the tenant $metadata declares and a tenant probe verified on 2026-10-04: the CSR through KeystoreEntries('<hexalias>')/SigningRequest/$value (sapintegrationsuite_key_pair.certificate_signing_request), the upload as PUT CertificateChainResources('<hexalias>')/$value with fingerprintVerified=true, and the export through KeystoreEntries('<hexalias>')/ChainResource/$value, a PKCS#7 bundle.
   - SAP accepted PEM in any order, without the root and the leaf alone; it refuses a certificate issued for another key (400 "The public key of the CA Reply is different"). After the upload the key pair reports the signed certificate's issuer and validity; sapintegrationsuite_key_pair keeps the validity it was generated with.

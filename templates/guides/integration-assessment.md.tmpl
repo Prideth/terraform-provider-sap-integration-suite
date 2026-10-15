@@ -226,8 +226,24 @@ instances, 50 technologies, 150 technology instances and 10,000 vendors per tena
   are the state of a piece of work, not configuration, so none of these entities has a resource.
 - **Content import and export.** The Management API's `ImportContent` and `ExportContent`
   are one-shot transport actions.
-- **The taxonomy itself.** Domains, styles, patterns, key characteristics and the other ISA-M
-  entries are SAP's reference content. They are looked up, never created or changed.
+- **SAP's taxonomy.** Domains, styles, patterns, SAP's key characteristics and the other ISA-M
+  entries are SAP's reference content. They are looked up, never created or changed. Key
+  characteristics of your own are the exception: see below.
+
+## Key characteristics of your own
+
+Next to SAP's key characteristics, a tenant can maintain its own criteria, for example the
+rules of its integration guidelines, and rate technologies on them. Three experimental
+resources manage them; they need `enable_experimental = true` until their acceptance test has
+passed on a tenant:
+
+- [`integration_assessment_key_characteristic_group`](../resources/integration_assessment_key_characteristic_group.md): a group of your own.
+- [`integration_assessment_key_characteristic`](../resources/integration_assessment_key_characteristic.md): a key characteristic in a group, *Single* or *Multi*.
+- [`integration_assessment_key_characteristic_value`](../resources/integration_assessment_key_characteristic_value.md): a value of it, which [`integration_assessment_technology_key_characteristic`](../resources/integration_assessment_technology_key_characteristic.md) rates a technology on.
+
+SAP's Entities API specification documents creating, updating and deleting all three. Moving a
+key characteristic to another group or a value to another key characteristic replaces it,
+because the specification's update bodies have no links.
 
 ## Importing existing objects
 

@@ -1,0 +1,61 @@
+---
+page_title: "sapintegrationsuite_integration_assessment_key_characteristic_group Resource - sapintegrationsuite"
+subcategory: "Integration Assessment"
+description: |-
+  A key characteristic group a tenant maintains itself.
+---
+
+# sapintegrationsuite_integration_assessment_key_characteristic_group (Resource)
+
+Key characteristics are the criteria Integration Assessment rates technologies on and asks about
+in questionnaires. SAP groups its own into Connectivity, Integration Use Cases, Metadata
+Management, Monitoring and Operations, and Transformations. This resource adds a group for
+criteria of your own, for example the rules of your integration guidelines.
+
+**Status:** experimental. Needs `enable_experimental = true` in the provider block. SAP's Entities API
+specification on the Business Accelerator Hub documents creating, updating and deleting this
+entity, but the resource has not passed an acceptance test on a tenant yet, so its behavior or
+schema may still change.
+
+## Prerequisites
+
+- `enable_experimental = true` and the `integration_assessment` provider block, with the service
+  key of an *Integration Assessment APIs* service instance (plan `default`). The Cloud Integration
+  credentials do not work for this API.
+- An Integration Assessment subscription in the subaccount.
+
+## Lifecycle
+
+| Operation | What happens |
+|---|---|
+| Create | Creates the group. |
+| Read | Reads the name and the description. |
+| Update | `name` and `description` change in place (PATCH). Removing `description` clears it. |
+| Replacement | None. |
+| Delete | Deletes the group. Key characteristics that refer to it are deleted first, because Terraform orders by the reference. |
+
+## Example Usage
+
+{{ tffile "examples/resources/sapintegrationsuite_integration_assessment_key_characteristic_group/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ codefile "shell" "examples/resources/sapintegrationsuite_integration_assessment_key_characteristic_group/import.sh" }}
+
+The ID is the UUID the service assigned. Everything is recovered from the service.
+
+## Limitations
+
+- **Not yet tested on a tenant:** whether SAP accepts groups of its own next to its delivered
+  ones, what a delete does while values or technology ratings still refer to an entry, and
+  whether the type of a key characteristic can change once it has values.
+- **Provider:** only entries the configuration creates are managed. SAP's delivered entries are
+  looked up with the data sources and never changed.
+
+## Related
+
+- [`sapintegrationsuite_integration_assessment_key_characteristic`](integration_assessment_key_characteristic.md): the key characteristics of the group.
+- [`sapintegrationsuite_integration_assessment_key_characteristic_group`](../data-sources/integration_assessment_key_characteristic_group.md) data source: SAP's groups by name.
+- [Integration Assessment guide](../guides/integration-assessment.md).

@@ -1,0 +1,60 @@
+---
+page_title: "sapintegrationsuite_integration_assessment_key_characteristic_value Resource - sapintegrationsuite"
+subcategory: "Integration Assessment"
+description: |-
+  A value of a key characteristic a tenant maintains itself.
+---
+
+# sapintegrationsuite_integration_assessment_key_characteristic_value (Resource)
+
+The values of a key characteristic are the predefined answers of its question in a
+questionnaire. A technology is rated on a value with
+[`sapintegrationsuite_integration_assessment_technology_key_characteristic`](integration_assessment_technology_key_characteristic.md).
+
+**Status:** experimental. Needs `enable_experimental = true` in the provider block. SAP's Entities API
+specification on the Business Accelerator Hub documents creating, updating and deleting this
+entity, but the resource has not passed an acceptance test on a tenant yet, so its behavior or
+schema may still change.
+
+## Prerequisites
+
+- `enable_experimental = true` and the `integration_assessment` provider block, with the service
+  key of an *Integration Assessment APIs* service instance (plan `default`). The Cloud Integration
+  credentials do not work for this API.
+- An Integration Assessment subscription in the subaccount.
+- The key characteristic: [`sapintegrationsuite_integration_assessment_key_characteristic`](integration_assessment_key_characteristic.md).
+
+## Lifecycle
+
+| Operation | What happens |
+|---|---|
+| Create | Creates the value of the key characteristic given in `key_characteristic_id`. |
+| Read | Reads the name, the description and the key characteristic. |
+| Update | `name` and `description` change in place (PATCH). Removing `description` clears it. |
+| Replacement | Changing `key_characteristic_id` creates a new value: the specification's update body has no key characteristic. |
+| Delete | Deletes the value. |
+
+## Example Usage
+
+{{ tffile "examples/resources/sapintegrationsuite_integration_assessment_key_characteristic_value/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ codefile "shell" "examples/resources/sapintegrationsuite_integration_assessment_key_characteristic_value/import.sh" }}
+
+The ID is the UUID the service assigned. Everything is recovered from the service.
+
+## Limitations
+
+- **Not yet tested on a tenant:** whether SAP accepts groups of its own next to its delivered
+  ones, what a delete does while values or technology ratings still refer to an entry, and
+  whether the type of a key characteristic can change once it has values.
+- **Provider:** only entries the configuration creates are managed. SAP's delivered entries are
+  looked up with the data sources and never changed.
+
+## Related
+
+- [`sapintegrationsuite_integration_assessment_key_characteristic_value`](../data-sources/integration_assessment_key_characteristic_value.md) data source: looks up a value by its key characteristic's name and its own.
+- [Integration Assessment guide](../guides/integration-assessment.md).
