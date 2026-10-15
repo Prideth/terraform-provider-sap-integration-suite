@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -147,6 +148,7 @@ func (r *valueMappingDeploymentResource) Create(ctx context.Context, req resourc
 	}
 
 	m := valueMappingDeploymentToModel(plan.PackageID.ValueString(), artifact, plan.Timeouts)
+	m.MappingVersion = keepSymbolicVersion(plan.MappingVersion, m.MappingVersion)
 	m.RedeployTriggers = plan.RedeployTriggers
 	m.RuntimeLocationID = plan.RuntimeLocationID
 	resp.Diagnostics.Append(resp.State.Set(ctx, m)...)
@@ -180,6 +182,7 @@ func (r *valueMappingDeploymentResource) Read(ctx context.Context, req resource.
 	// part-way. Writing it into mapping_version (a Required, non-Computed
 	// attribute) is what makes that visible as drift on the next plan.
 	m := valueMappingDeploymentToModel(state.PackageID.ValueString(), artifact, state.Timeouts)
+	m.MappingVersion = keepSymbolicVersion(state.MappingVersion, m.MappingVersion)
 	m.RedeployTriggers = state.RedeployTriggers
 	m.RuntimeLocationID = state.RuntimeLocationID
 	resp.Diagnostics.Append(resp.State.Set(ctx, m)...)
@@ -216,6 +219,7 @@ func (r *valueMappingDeploymentResource) Update(ctx context.Context, req resourc
 	}
 
 	m := valueMappingDeploymentToModel(plan.PackageID.ValueString(), artifact, plan.Timeouts)
+	m.MappingVersion = keepSymbolicVersion(plan.MappingVersion, m.MappingVersion)
 	m.RedeployTriggers = plan.RedeployTriggers
 	m.RuntimeLocationID = plan.RuntimeLocationID
 	resp.Diagnostics.Append(resp.State.Set(ctx, m)...)
@@ -260,6 +264,21 @@ func (r *valueMappingDeploymentResource) ImportState(ctx context.Context, req re
 	setImportedRuntimeLocation(ctx, loc, resp.State.SetAttribute, &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, pathRoot("package_id"), packageID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, pathRoot("mapping_id"), mappingID)...)
+}
+
+// keepSymbolicVersion returns the configured version when it is "Draft" or
+// "active" and the deployed one otherwise. SAP deploys a value mapping's
+// draft when asked for Version='Draft', but the runtime then reports the
+// last saved version number (tenant test 2026-10-15: "Draft" deployed,
+// "1.0.1" reported), so a symbolic version can never match what the runtime
+// says. Entries added through UpsertValMaps and edits in SAP's UI leave the
+// value mapping in Draft. Drift of a symbolic version is not detected.
+func keepSymbolicVersion(configured, deployed types.String) types.String {
+	switch strings.ToLower(configured.ValueString()) {
+	case "draft", "active":
+		return configured
+	}
+	return deployed
 }
 
 func valueMappingDeploymentToModel(packageID string, artifact *cloudintegration.RuntimeArtifact, tf timeouts.Value) valueMappingDeploymentModel {
