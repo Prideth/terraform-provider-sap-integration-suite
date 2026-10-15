@@ -9,6 +9,22 @@ contain breaking schema or lifecycle changes; each one is listed under
 "Breaking changes" together with the steps it needs. Patch releases (0.2.1)
 only fix defects in their minor release.
 
+## Unreleased (planned as 0.7.1)
+
+### Fixed
+
+- The provider is built with Go 1.27.2 and `golang.org/x/net` 0.60.0.
+  0.7.0 was built with Go 1.27.1 and `golang.org/x/net` 0.59.0, which have
+  known vulnerabilities in HTTP/2, `net/http`, `net/textproto` and
+  `crypto/tls` (GO-2026-6603, GO-2026-6605, GO-2026-6607, GO-2026-6608,
+  GO-2026-6610 to GO-2026-6613 and GO-2026-6617). `govulncheck` reports
+  calls to the affected code, for example from the plugin server that
+  Terraform talks to.
+
+### Upgrade notes
+
+Nothing to change: no schema or state change.
+
 ## 0.7.0 — 2026-10-15
 
 0.7.0 manages the ESR-style design-time types of Cloud Integration: data
