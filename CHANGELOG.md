@@ -20,6 +20,15 @@ only fix defects in their minor release.
   GO-2026-6610 to GO-2026-6613 and GO-2026-6617). `govulncheck` reports
   calls to the affected code, for example from the plugin server that
   Terraform talks to.
+- `sapintegrationsuite_value_mapping_deployment` can deploy a value mapping
+  that is a draft. A value mapping edited in SAP's UI, or one whose entries
+  changed through the API, has the version `Draft`, and
+  `sapintegrationsuite_value_mapping.<name>.version` says so. SAP deploys
+  the draft, but the runtime then reports the last saved version number,
+  so the apply failed with "Provider produced inconsistent result after
+  apply" (`mapping_version` was "Draft", but now "1.0.1"). A
+  `mapping_version` of `Draft` or `active` is now kept as configured; a
+  redeploy of such a version outside Terraform is not detected as drift.
 
 ### Upgrade notes
 
