@@ -1,0 +1,32 @@
+---
+page_title: "sapintegrationsuite_value_mapping_entries Data Source - sapintegrationsuite"
+subcategory: "Cloud Integration"
+description: |-
+  Lists the source and target value pairs of one agency pair of a value mapping.
+---
+
+# sapintegrationsuite_value_mapping_entries (Data Source)
+
+Reads the entries of one agency pair of a value mapping: each source and target value pair, the
+ID SAP gives it, and whether SAP uses it by default for its source value. Use it to look up a
+mapping in a configuration, or to find the ID for importing a
+[`sapintegrationsuite_value_mapping_entry`](../resources/value_mapping_entry.md).
+
+**Status:** partial, like the entry resource. The reads (`ValMapSchema(...)/ValMaps` and
+`DefaultValMaps`) are documented in SAP's Integration Content API specification and passed the
+entry resource's acceptance test on a tenant.
+
+Reading the agency pair the other way round (target as source) returns the same entries with
+source and target values swapped. An agency pair the value mapping does not have fails the plan
+with SAP's `404`.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/sapintegrationsuite_value_mapping_entries/data-source.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Related
+
+- [`sapintegrationsuite_value_mapping_entry`](../resources/value_mapping_entry.md)
+- [`sapintegrationsuite_value_mapping`](value_mapping.md) (data source)

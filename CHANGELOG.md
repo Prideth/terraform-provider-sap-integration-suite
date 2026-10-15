@@ -145,6 +145,25 @@ they become the 0.10.0 section once 0.9.0 is released.
   values and a technology rating on a custom value, changed them in place,
   replaced the key characteristic with a new type and imported them.
 
+### Planned for 0.11.0: Value mapping entries
+
+These entries are on `feature/value-mapping-entries`, which builds on
+0.10.0; they become the 0.11.0 section once 0.10.0 is released.
+
+- `sapintegrationsuite_value_mapping_entry` (partial): one source and
+  target value pair of a value mapping, added to an agency pair the value
+  mapping's content has, through `UpsertValMaps` of the Integration
+  Content API. Changing the values in place uses `UpsertValMaps` with
+  `ValMapId`, a parameter only the `$metadata` declares, and needs
+  `enable_unofficial = true`. SAP has no request that deletes a single
+  entry, and `DeleteValMaps` removes the whole agency pair for good, so
+  destroying the resource leaves the entry in the value mapping; the plan
+  warns about it. Writes to one value mapping run one after another. A
+  tenant probe settled what the specification leaves open (PENDING #75),
+  and an acceptance test added, deployed, changed and imported an entry.
+- `sapintegrationsuite_value_mapping_entries` (data source): the entries
+  of one agency pair, with their IDs and whether SAP uses them by default.
+
 ### Planned for 0.7.1
 
 These fixes are on `release/0.7.x`; they become the 0.7.1 section once

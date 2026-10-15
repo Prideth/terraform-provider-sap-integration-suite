@@ -32,8 +32,9 @@ release branch, `release/<minor>.x`, and every release is a tag on it.
 | 0.8.0 | Security Content completion | in progress on `feature/security-content`: certificate chains, PGP keys and OAuth2 custom parameters done (unofficial, acceptance tests passed) | — |
 | 0.9.0 | Classic API Management infrastructure, above all virtual hosts; the API proxy only if the official Transport API request passes its acceptance test | in progress on `feature/classic-virtual-hosts`: default domain virtual hosts with optional mutual TLS done (partial, acceptance tests passed) | releasing 0.8.0 first |
 | 0.10.0 | Integration Assessment key characteristics of a tenant's own | in progress on `feature/ia-key-characteristics`: groups, key characteristics and values done (supported: Entities API specification, acceptance test passed) | releasing 0.9.0 first |
-| 0.11.0 | Edge Integration Cell targeting | proposed | a tenant with an Edge Integration Cell (P1 item 3) |
-| 0.12.0 | Data Space Integration desired-state configuration | proposed | the DSIAPI specification (P2 item 7) |
+| 0.11.0 | Cloud Integration value mapping entries | in progress on `feature/value-mapping-entries`: `sapintegrationsuite_value_mapping_entry` and the entries data source done (partial: no single-entry delete; acceptance test passed) | releasing 0.10.0 first |
+| 0.12.0 | Edge Integration Cell targeting | proposed | a tenant with an Edge Integration Cell (P1 item 3) |
+| 0.13.0 | Data Space Integration desired-state configuration | proposed | the DSIAPI specification (P2 item 7) |
 
 The order follows what is closest to a tenant-verified result, not importance, and changes when a
 precondition is met earlier. Current API Management (API artifacts, MCP servers, runtime
@@ -130,8 +131,6 @@ These need no further research, only a run of the prepared tests:
   virtual hosts. Channels: the Hub's API Management and Cloud Integration packages, the Client
   SDK on Maven Central, What's New for Integrations and APIs. The design for an API artifact
   resource is in `docs/guides/current-api-management.md`.
-- Value mapping entries: SAP's entry functions dropped values and deleted nothing in tenant
-  tests (2026-09-27). Revisit when SAP documents an update and a delete that work.
 - Capability activation for every Integration Suite capability.
 - Known hosts, certificate-to-user mapping (Neo only today), where-used lists.
 - OData Provisioning, Integration Advisor, Trading Partner Management configuration, Migration

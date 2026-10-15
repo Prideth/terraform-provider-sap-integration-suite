@@ -22,7 +22,7 @@ SAP documentation, official SAP tooling, or a safe verification on a tenant
 
 | Service | Protocol | Snapshot | Entity sets | Operations | REST operations | Used | Candidates | Excluded |
 |---|---|---|---:|---:|---:|---:|---:|---:|
-| [cloud-integration](#cloud-integration) | OData V2 | 2026-10-03 | 131 | 35 | 0 | 52 | 22 | 92 |
+| [cloud-integration](#cloud-integration) | OData V2 | 2026-10-03 | 131 | 35 | 0 | 56 | 18 | 92 |
 | [classic-api-management](#classic-api-management) | OData V2 | 2026-09-27 | 61 | 1 | 0 | 8 | 18 | 36 |
 | [classic-api-management-transport](#classic-api-management-transport) | OpenAPI | none yet | | | | | | |
 | [classic-api-management-content-archive](#classic-api-management-content-archive) | OpenAPI | none yet | | | | | | |
@@ -46,7 +46,7 @@ Cloud Integration (Integration Content, Security Content, Partner Directory, mes
 
 The service document lists 25 of the 131 entity sets. The other 106 are declared in `$metadata` only. The list does not decide whether a set can be addressed: the provider reads and writes several of them on a tenant (for example UserCredentials and StringParameters), while others answered 404 (PgpKeyrings). Only a tenant check settles it: APIDefinitions, AlternativePartners, AuthorizedUsers, B2BArchivingConfigurations, B2BArchivingKeyPerformanceIndicators, BinaryParameters, BuildAndDeployStatus, BusinessDocumentExtFields, BusinessDocumentNotes, BusinessDocumentPayloads, BusinessDocumentProcessingEvents, BusinessDocumentProtocolHeaders, BusinessDocumentRelations, BusinessDocuments, CertificateChainResources, CertificateResources, CertificateSigningRequests, ChainCertificates, CommunicationProtocolHeaders, Configurations, CustomObjects, CustomParameters, CustomTagConfigurations, CustomTags, DataStoreEntries, DataStores, DataTypeDesigntimeArtifacts, DefaultValMaps, DesignGuidelineExecutionResults, DesignGuidelines, EntryPoints, ErrorDetails, ExtendedFieldsConfigs, FaultMessageTypeDesigntimeArtifacts, FunctionalAcknowledgements, GenericIdempotentRepositoryEntries, HistoryKeystoreEntries, IdMapFromId2s, IdMapFromIds, IdMapToIds, IdempotentRepositoryEntries, IntegrationAdapterDesigntimeArtifacts, IntegrationConnections, IntegrationDesigntimeArtifacts, IntegrationDesigntimeLocks, IntegrationFlows, IntegrationPackages, IntegrationRuntimeArtifacts, JmsArtifacts, JmsBrokers, JmsMessages, JmsQueues, KeyPairGenerationRequests, KeyPairResources, KeyringRuntimeAssignment, KeystoreEntries, KeystoreResources, Keystores, Locks, MDIDeltaToken, MessageMappingDesigntimeArtifacts, MessageTypeDesigntimeArtifacts, MessagingMessages, MessagingQueues, NodeProfiles, NumberRanges, OAuth2AuthorizationCodes, OAuth2ClientCredentials, OrphanedInterchanges, Partners, PgpKeyEntries, PgpKeyEntryImportResults, PgpKeyPublicResources, PgpKeySecretResources, PgpKeyringPublicResources, PgpKeyringSecretResources, PgpKeyrings, PgpPublicKeyrings, PgpSecretKeyrings, PgpSubKeys, PgpUserIds, QueueStates, Queues, RSAKeyGenerationRequests, Resources, Roles, RuntimeArtifactErrorInformations, RuntimeSyncInfos, SSHKeyGenerationRequests, SSHKeyResources, ScriptCollectionDesigntimeArtifacts, SecureParameters, SecurityArtifacts, ServiceEndpoints, ServiceInterfaceDesigntimeArtifacts, StringParameters, TechnicalAcknowledgements, UserCredentialParameters, UserCredentials, ValMapSchema, ValMaps, ValueMappingDesigntimeArtifacts, Variables, WNNodes, XiDataStoreArtifacts, XiDataStores.
 
-### Used by the provider (52)
+### Used by the provider (56)
 
 | Name | Kind | Type or method | Client packages |
 |---|---|---|---|
@@ -64,6 +64,7 @@ The service document lists 25 of the 131 entity sets. The other 106 are declared
 | CustomParameters | entity set | CustomParameter | `securitycontent` |
 | CustomTagConfigurations | entity set | CustomTagConfiguration | `cloudintegration` |
 | DataTypeDesigntimeArtifacts | entity set | DataTypeDesigntimeArtifact | `cloudintegration` |
+| DefaultValMaps | entity set | DefaultValMap | `cloudintegration` |
 | EntryPoints | entity set | EntryPoint | `cloudintegration` |
 | FaultMessageTypeDesigntimeArtifacts | entity set | FaultMessageTypeDesigntimeArtifact | `cloudintegration` |
 | IntegrationAdapterDesigntimeArtifacts | entity set | IntegrationAdapterDesigntimeArtifact | `cloudintegration` |
@@ -89,6 +90,8 @@ The service document lists 25 of the 131 entity sets. The other 106 are declared
 | StringParameters | entity set | StringParameter | `partnerdirectory` |
 | UserCredentialParameters | entity set | UserCredentialParameter | `partnerdirectory` |
 | UserCredentials | entity set | UserCredential | `securitycontent` |
+| ValMapSchema | entity set | ValMapSchema | `cloudintegration` |
+| ValMaps | entity set | ValMap | `cloudintegration` |
 | ValueMappingDesigntimeArtifacts | entity set | ValueMappingDesigntimeArtifact | `cloudintegration` |
 | DataTypeDesigntimeArtifactSaveAsVersion | operation | POST | `cloudintegration` |
 | DeployIntegrationAdapterDesigntimeArtifact | operation | POST | `cloudintegration` |
@@ -102,8 +105,9 @@ The service document lists 25 of the 131 entity sets. The other 106 are declared
 | MessageTypeDesigntimeArtifactSaveAsVersion | operation | POST | `cloudintegration` |
 | ScriptCollectionDesigntimeArtifactSaveAsVersion | operation | POST | `cloudintegration` |
 | ServiceInterfaceDesigntimeArtifactSaveAsVersion | operation | POST | `cloudintegration` |
+| UpsertValMaps | operation | POST | `cloudintegration` |
 
-### Candidates (22)
+### Candidates (18)
 
 | Name | Kind | Catalog entry | Catalog status | Note |
 |---|---|---|---|---|
@@ -113,12 +117,8 @@ The service document lists 25 of the 131 entity sets. The other 106 are declared
 | activateB2BArchivingConfiguration | operation | `cloud_integration.archiving` | unsupported |  |
 | CustomTags | entity set | `cloud_integration.custom_tag_configuration` | partial | Custom tag values of an integration package (IntegrationPackages/CustomTags). |
 | ValueMappingDesigntimeArtifactSaveAsVersion | operation | `cloud_integration.design_time_versioning` | partial | The value mapping resource does not save versions yet. |
-| DefaultValMaps | entity set | `cloud_integration.value_mapping_entry` | unsupported | Default value of one agency/identifier pair. |
-| ValMapSchema | entity set | `cloud_integration.value_mapping_entry` | unsupported | Agency/identifier pairs of a value mapping. |
-| ValMaps | entity set | `cloud_integration.value_mapping_entry` | unsupported | Value pairs of one agency/identifier pair. |
-| DeleteValMaps | operation | `cloud_integration.value_mapping_entry` | unsupported |  |
-| UpdateDefaultValMap | operation | `cloud_integration.value_mapping_entry` | unsupported |  |
-| UpsertValMaps | operation | `cloud_integration.value_mapping_entry` | unsupported |  |
+| DeleteValMaps | operation | `cloud_integration.value_mapping_entry` | partial |  |
+| UpdateDefaultValMap | operation | `cloud_integration.value_mapping_entry` | partial |  |
 | ChainCertificates | entity set | `security.certificate_chain` | unofficial | Certificate details of a key pair's chain; the chain resource parses the exported chain itself. |
 | KeyPairResources | entity set | `security.key_pair` | partial | Upload of an externally created key pair (PKCS#12 with password); private material would be write-only. |
 | RSAKeyGenerationRequests | entity set | `security.key_pair` | partial | Key pair generation from an RSA file. |

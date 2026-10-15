@@ -701,6 +701,7 @@ func (p *sapIntegrationSuiteProvider) Resources(_ context.Context) []func() reso
 		NewAccessPolicyReferenceResource,
 		NewValueMappingResource,
 		NewValueMappingDeploymentResource,
+		NewValueMappingEntryResource,
 		NewMessageMappingResource,
 		NewDataTypeResource,
 		NewMessageTypeResource,
@@ -750,6 +751,7 @@ func (p *sapIntegrationSuiteProvider) DataSources(_ context.Context) []func() da
 	return []func() datasource.DataSource{
 		NewIntegrationPackageDataSource,
 		NewValueMappingDataSource,
+		NewValueMappingEntriesDataSource,
 		NewMessageMappingDataSource,
 		NewScriptCollectionDataSource,
 		NewAccessPolicyDataSource,

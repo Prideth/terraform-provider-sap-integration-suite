@@ -108,7 +108,7 @@ Legend: ✅ Supported · 🟡 Partial · 👁️ Read-only · 🧪 Experimental 
 | Service Interface | ✅ | Resource |
 | Value Mapping | 🟡 | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
 | Value Mapping Deployment | ✅ | Resource |
-| Value Mapping Entry | ❌ | No safe Terraform lifecycle confirmed — see [feature-support.md](docs/feature-support.md#all-features) |
+| Value Mapping Entry | 🟡 | Resource + Data Source — see [feature-support.md](docs/feature-support.md#all-features) |
 | Variable | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
 
 ### Security & Access Policies
@@ -235,7 +235,7 @@ Legend: ✅ Supported · 🟡 Partial · 👁️ Read-only · 🧪 Experimental 
 | Trading Partner Management Partner Directory Generation | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
 | Trading Partner Management Partner Profile | ❌ | No suitable public API — see [feature-support.md](docs/feature-support.md#all-features) |
 
-27 supported · 11 partial · 3 read-only · 0 experimental · 4 unofficial · 4 research required · 49 unsupported · 2 separate provider, out of 100 evaluated Integration Suite features.
+27 supported · 12 partial · 3 read-only · 0 experimental · 4 unofficial · 4 research required · 48 unsupported · 2 separate provider, out of 100 evaluated Integration Suite features.
 
 <!-- END GENERATED FEATURE SUPPORT -->
 
@@ -424,9 +424,10 @@ most important ones:
   description update of access policies and updating or deleting business
   data graphs work on a tenant but are not documented by SAP; they need
   `enable_unofficial = true`.
-- **Value mapping entries** are not managed individually: SAP's entry
-  functions dropped values and deleted nothing in tenant tests. The value
-  mapping's content is the unit of change.
+- **Value mapping entries** can be added and changed one by one
+  (`sapintegrationsuite_value_mapping_entry`), but not deleted: SAP has no
+  request that deletes a single entry, so destroying the resource leaves the
+  entry in the value mapping.
 - **Current API Management** (API artifacts, MCP servers, Integration Cell,
   its virtual hosts and runtime profiles) has no public API as of September
   2026. See [`docs/guides/current-api-management.md`](docs/guides/current-api-management.md).

@@ -136,6 +136,18 @@ func TestOperationGates_Plan(t *testing.T) {
 		}
 		return r
 	}
+	newVME := func(c, a bool) gated {
+		r := &valueMappingEntryResource{allowUnofficial: a}
+		if c {
+			r.client = ci
+		}
+		return r
+	}
+	vme := func(source, target string) map[string]tftypes.Value {
+		return map[string]tftypes.Value{"id": str("VM/A/a/B/b/e1"), "value_mapping_id": str("VM"), "source_agency": str("A"),
+			"source_identifier": str("a"), "target_agency": str("B"), "target_identifier": str("b"),
+			"source_value": str(source), "target_value": str(target), "entry_id": str("e1")}
+	}
 	newNR := func(c, a bool) gated {
 		r := &numberRangeResource{allowUnofficial: a}
 		if c {
@@ -246,6 +258,23 @@ func TestOperationGates_Plan(t *testing.T) {
 			plan: map[string]tftypes.Value{"id": str("ti"), "name": str("n"),
 				"technology_id": str("t"), "deployment_model_id": str("d2")},
 			wantRefusal: true,
+		},
+		{
+			name:        "value mapping entry target change",
+			newResource: newVME,
+			state:       vme("DE", "276"),
+			plan:        vme("DE", "280"),
+			wantRefusal: true,
+		},
+		{
+			name:        "value mapping entry create",
+			newResource: newVME,
+			plan:        vme("DE", "276"),
+		},
+		{
+			name:        "value mapping entry destroy (warns only)",
+			newResource: newVME,
+			state:       vme("DE", "276"),
 		},
 		{
 			name:        "number range update keeping the counter",

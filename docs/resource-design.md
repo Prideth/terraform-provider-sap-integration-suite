@@ -176,7 +176,10 @@ Before designing the Terraform resources, this section separates two distinct SA
 that are easy to conflate: the **design-time artifact** (a versioned container, structurally a
 sibling of `IntegrationDesigntimeArtifacts` in the same Integration Content API), and
 **individual mapping entries** inside it (managed through a different, entry-oriented set of
-OData actions with its own preconditions).
+OData actions with its own preconditions). Entries are `sapintegrationsuite_value_mapping_entry`
+since 0.11: added with `UpsertValMaps`, changed with its `ValMapId` parameter (unofficial), never
+deleted, because SAP has no single-entry delete and `DeleteValMaps` removes the whole agency pair
+for good (tenant probe 2026-10-15).
 
 **Confirmed operations** (Integration Content API, OData V2, `CloudIntegrationAPI` package):
 
@@ -1829,8 +1832,7 @@ contract did.
 `sapintegrationsuite_capability`, `sapintegrationsuite_api_artifact`,
 `sapintegrationsuite_api_artifact_deployment`, message mapping entry-level or dependent-resource
 management (schema files referenced by a mapping are managed as part of the opaque content
-archive, not as separate Terraform resources), and value mapping entry-level management (see
-above) are designed at the API level in `api-capability-matrix.md` but intentionally not
+archive, not as separate Terraform resources) are designed at the API level in `api-capability-matrix.md` but intentionally not
 implemented yet, to keep each release small and high quality (see `ROADMAP.md`). Partner
 Directory resources are no longer in this list — see the sections above. Security material is
 now split: user credentials and OAuth2 client credentials are implemented (see the sections

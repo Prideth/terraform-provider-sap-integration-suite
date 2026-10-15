@@ -17,12 +17,12 @@ And the provider never uses browser endpoints of SAP's UIs.
 
 | Classification | Features |
 |---|---:|
-| 🟡 Partial (`partial`) | 11 |
+| 🟡 Partial (`partial`) | 12 |
 | 👁️ Read-only (`read_only`) | 3 |
 | 🧭 Unofficial (`unofficial`) | 4 |
 | 🔬 Research required (`research_required`) | 4 |
 | ❌ Public API incomplete (`public_api_incomplete`) | 8 |
-| ❌ Unsafe Terraform lifecycle (`unsafe_terraform_lifecycle`) | 2 |
+| ❌ Unsafe Terraform lifecycle (`unsafe_terraform_lifecycle`) | 1 |
 | ❌ No public API (`no_public_api`) | 26 |
 | ❌ Out of scope (`out_of_scope`) | 13 |
 | ↗️ Separate provider (`separate_provider`) | 2 |
@@ -120,6 +120,18 @@ Usable, but the provider deliberately leaves out part of the lifecycle; the limi
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
   - tenant probes and acceptance runs on a development tenant (September 2026)
   - tenant-probe -ValueMappingTests on the development tenant (2026-10-06 20:00): PUT with content, name and both, SaveAsVersion up and down, delete, on a synthetic tfAccProbeVMUpd value mapping
+
+### Value Mapping Entry
+
+`cloud_integration.value_mapping_entry` · checked 2026-10-15
+
+- **Finding:** With IsConfigured=false, UpsertValMaps adds entries cleanly and, with the $metadata-only ValMapId, changes them in place; the entries land in the design-time content and the artifact becomes a Draft. No request deletes a single entry, and DeleteValMaps removes the whole agency pair for good. The IsConfigured=true check of 2026-09-27 had dropped the design-time values.
+- **Next step:** TestAccValueMappingEntry_basic passed on 2026-10-15, so the resource is partial. It becomes supported only if SAP documents a request that deletes a single entry.
+- **Sources:**
+  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
+  - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
+  - Integration Content API specification (IntegrationContent 1.0.0, Swagger 2.0) from the Business Accelerator Hub, downloaded 2026-10-10: create, read, update, delete, $value and SaveAsVersion for data types, message types, fault message types and service interfaces, PUT for message mappings and script collections, SaveAsVersion for every versioned design-time type
+  - tenant-probe -ValueMappingEntryTests on the development tenant (2026-10-15 21:38, PENDING #75): UpsertValMaps with and without ValMapId, UpdateDefaultValMap, DeleteValMaps and single-entry deletes on the synthetic value mapping tfAccProbeVMEnt
 
 ### Key Pair
 
@@ -386,17 +398,6 @@ A public API exists, but a Terraform resource could not implement its lifecycle 
 - **Sources:**
   - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
-
-### Value Mapping Entry
-
-`cloud_integration.value_mapping_entry` · checked 2026-09-27
-
-- **Finding:** On a synthetic value mapping, the first UpsertValMaps (IsConfigured=true) dropped the pair's design-time values, a second upsert of the same source value added a duplicate that SAP made the default, and DeleteValMaps answered 202 without removing anything. There is no safe update or destroy.
-- **Next step:** None within Terraform unless SAP documents an entry update and a delete that works; revisit when the Integration Content API reference changes.
-- **Sources:**
-  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
-  - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
-  - tenant-probe -GapTests on a development tenant (2026-09-27), synthetic tfAccProbe* objects only
 
 ## ❌ No public API
 

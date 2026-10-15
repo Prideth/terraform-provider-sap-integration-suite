@@ -39,6 +39,9 @@ var Contract = apimeta.Contract{
 		{EntitySet: integrationFlowConfigurationsEntitySet, Value: IntegrationFlowConfiguration{}},
 		{EntitySet: integrationFlowConfigurationsEntitySet, Value: integrationFlowConfigurationWrite{}},
 		{EntitySet: valueMappingDesigntimeArtifactsEntitySet, Value: ValueMapping{}},
+		{EntitySet: valMapSchemaNavigation, Value: valMapSchema{}},
+		{EntitySet: "ValMaps", Value: valMap{}},
+		{EntitySet: "DefaultValMaps", Value: valMap{}},
 	},
 	Writes: []apimeta.StructUse{
 		// Content update body, sent to each versioned design-time entity set.
@@ -75,11 +78,16 @@ var Contract = apimeta.Contract{
 		apimeta.Key(numberRangesEntitySet, "Name", "Edm.String"),
 		apimeta.Key(customTagConfigurationsEntitySet, "Id", "Edm.String"),
 		apimeta.Key(integrationFlowConfigurationsEntitySet, "ParameterKey", "Edm.String"),
+		apimeta.Key(valMapSchemaNavigation, "SrcAgency", "Edm.String", "SrcId", "Edm.String", "TgtAgency", "Edm.String", "TgtId", "Edm.String"),
+		apimeta.Key("ValMaps", "Id", "Edm.String"),
 	},
 	Navigations: []apimeta.NavigationUse{
 		{EntitySet: accessPoliciesEntitySet, Property: accessPolicyRuntimeAssignmentsEntitySet},
 		{EntitySet: integrationDesigntimeArtifactsEntitySet, Property: "Configurations"},
 		{EntitySet: runtimeArtifactsEntitySet, Property: "ErrorInformation"},
+		{EntitySet: valueMappingDesigntimeArtifactsEntitySet, Property: valMapSchemaNavigation},
+		{EntitySet: valMapSchemaNavigation, Property: "ValMaps"},
+		{EntitySet: valMapSchemaNavigation, Property: "DefaultValMaps"},
 	},
 	Operations: []apimeta.OperationUse{
 		{Name: "DeployIntegrationDesigntimeArtifact", HTTPMethod: "POST", Parameters: []string{"Id", "Version"}},
@@ -94,5 +102,9 @@ var Contract = apimeta.Contract{
 		{Name: "FaultMessageTypeDesigntimeArtifactSaveAsVersion", HTTPMethod: "POST", Parameters: []string{"Id", "SaveAsVersion"}},
 		{Name: serviceInterfaceSaveAsVersion, HTTPMethod: "POST", Parameters: []string{"Id", "SaveAsVersion"}},
 		{Name: "ScriptCollectionDesigntimeArtifactSaveAsVersion", HTTPMethod: "POST", Parameters: []string{"Id", "SaveAsVersion"}},
+		// ValMapId is sent only to change an entry; the specification leaves it out.
+		{Name: upsertValMapsFunction, HTTPMethod: "POST", Parameters: []string{
+			"Id", "Version", "SrcAgency", "SrcId", "TgtAgency", "TgtId", "ValMapId", "SrcValue", "TgtValue", "IsConfigured",
+		}},
 	},
 }

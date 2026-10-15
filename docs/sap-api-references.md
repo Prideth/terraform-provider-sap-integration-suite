@@ -1964,7 +1964,7 @@ deactivation, and per-flow settings are UI-only; see the catalog entry
 |---|---|---|
 | API Proxy content upload | `Management.svc/APIProxies` (Classic API Management) | Entity, GET, and DELETE confirmed; the ZIP content Create/Update wire format is not — see `docs/guides/classic-api-management.md` |
 | Certificate Chain, Secure Parameter, Known Hosts | Security Content API | Reverified during the Security Content phase; remain without a confirmed public contract (Certificate Chain is documented only as a Key Pair capability) or without any public API at all (Known Hosts) — see `docs/guides/security-content.md` |
-| Value mapping entry-level management | `UpsertValMaps`, `UpdateDefaultValMap`, `DeleteValMaps` | Confirmed public, deferred — exact payload/path shapes and delete granularity not confirmed against a reachable primary source; see `docs/resource-design.md` |
+| Value mapping entry-level management | `UpsertValMaps`, `UpdateDefaultValMap`, `DeleteValMaps` | Documented in the Integration Content specification and probed on a tenant (2026-10-15): entries are added and, with `ValMapId`, changed; no request deletes a single entry. Implemented as `sapintegrationsuite_value_mapping_entry` (partial); see `docs/resource-design.md` |
 | Integration Assessment | `EntitiesAPI`/`ManagementAPI`, both OData (see above) | Confirmed public with a fully confirmed entity inventory; no field-level wire contract confirmed for any entity. Unblocked by the services' `$metadata`, fetched with a service key — see `docs/guides/integration-assessment.md` |
 
 ## Explicitly ruled out

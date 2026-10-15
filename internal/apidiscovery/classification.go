@@ -218,10 +218,6 @@ var cloudIntegrationClassification = concat(
 	// Design-time content the provider does not manage yet.
 	[]rule{
 		candidate("ValueMappingDesigntimeArtifactSaveAsVersion", "cloud_integration.design_time_versioning", "The value mapping resource does not save versions yet."),
-		candidate("ValMapSchema", "cloud_integration.value_mapping_entry", "Agency/identifier pairs of a value mapping."),
-		candidate("ValMaps", "cloud_integration.value_mapping_entry", "Value pairs of one agency/identifier pair."),
-		candidate("DefaultValMaps", "cloud_integration.value_mapping_entry", "Default value of one agency/identifier pair."),
-		candidate("UpsertValMaps", "cloud_integration.value_mapping_entry", ""),
 		candidate("UpdateDefaultValMap", "cloud_integration.value_mapping_entry", ""),
 		candidate("DeleteValMaps", "cloud_integration.value_mapping_entry", ""),
 		candidate("CustomTags", "cloud_integration.custom_tag_configuration", "Custom tag values of an integration package (IntegrationPackages/CustomTags)."),

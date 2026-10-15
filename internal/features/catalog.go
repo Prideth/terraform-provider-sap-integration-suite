@@ -213,34 +213,44 @@ var Catalog = []Feature{
 		Domain: "cloud_integration",
 		Name:   "Value Mapping Entry",
 		Description: "Individual source/target value pairs inside a value mapping's " +
-			"agency/identifier pair, managed through UpsertValMaps, UpdateDefaultValMap and " +
-			"DeleteValMaps.",
-		SupportStatus: StatusUnsupported,
-		SupportReason: ReasonUnsafeTerraformLifecycle,
-		PublicAPI:     true,
-		APIProtocol:   "OData V2 (function imports)",
+			"agency/identifier pair, added through UpsertValMaps and read through ValMapSchema.",
+		SupportStatus:  StatusPartial,
+		SupportReason:  ReasonUnsafeTerraformLifecycle,
+		ContractSource: SourceAPISpecification,
+		UndocumentedOperations: []string{"entry change in place (UpsertValMaps with ValMapId, a parameter " +
+			"only the $metadata declares, verified on a tenant)"},
+		ResourceTypes:   []string{"sapintegrationsuite_value_mapping_entry"},
+		DataSourceTypes: []string{"sapintegrationsuite_value_mapping_entries"},
+		PublicAPI:       true,
+		APIProtocol:     "OData V2 (function imports)",
+		Planned:         true,
+		Operations:      Operations{Create: true, Read: true, Update: true, Import: true},
 		Limitations: []string{
-			"Tenant check of 2026-09-27 on a synthetic value mapping: the first UpsertValMaps with " +
-				"IsConfigured=true switched the agency pair to State Configured and dropped the two " +
-				"values the design-time content had defined; a second UpsertValMaps with the same " +
-				"source value added a second entry instead of changing the first, and SAP made the " +
-				"newest one the default; DeleteValMaps for the pair answered 202 and removed nothing; " +
-				"every call left the artifact in version Draft. A resource could neither update an " +
-				"entry in place nor destroy what it created, so entries stay unmanaged.",
-			"Create and update are documented (POST /UpsertValMaps?Id=&Version=&SrcAgency=&SrcId=" +
-				"&TgtAgency=&TgtId=&SrcValue=&TgtValue=&IsConfigured=, returning a ValMap with Id " +
-				"and Value{SrcValue, TgtValue}), and reading goes through ValMapSchema(...)/ValMaps. " +
-				"Deletion is not documented per entry: DeleteValMaps takes only Id, Version and the " +
-				"agency/identifier pair, and the tenant $metadata has no ValMapId parameter for it.",
-			"A resource per entry could therefore not implement destroy. A resource owning a whole " +
-				"agency/identifier pair could, but SAP does not document whether UpsertValMaps creates " +
-				"a missing pair, what IsConfigured=false does (SAP only says it should always be true " +
-				"once configured), or whether DeleteValMaps removes the pair or only its entries. " +
-				"Those need a check against a tenant before business data is written.",
-			"Entries set through the API also compete with the value mapping's own content: " +
-				"uploading content through sapintegrationsuite_value_mapping replaces them.",
+			"SAP's Integration Content API specification (Business Accelerator Hub, downloaded 2026-10-10) " +
+				"documents UpsertValMaps, UpdateDefaultValMap, DeleteValMaps and the reads through " +
+				"ValMapSchema(...)/ValMaps and DefaultValMaps.",
+			"Tenant probe of 2026-10-15 (PENDING #75) with IsConfigured=false: UpsertValMaps adds an entry " +
+				"(202, new GUID), which is at once in the design-time content and turns the artifact's " +
+				"version into Draft; the same source and target value again answer 400. A source value with " +
+				"a second target adds a second entry, and SAP makes the newest one the default. With ValMapId " +
+				"the upsert changes an entry in place; the specification does not list that parameter, so the " +
+				"change needs enable_unofficial. An unknown agency pair answers 404: pairs come only from the " +
+				"value mapping's content.",
+			"No request deletes a single entry (DELETE on ValMaps: 400 or 404). DeleteValMaps removes the " +
+				"whole agency pair for good, so the resource never calls it: destroying it leaves the entry in " +
+				"the value mapping, with a warning in the plan. That is why the feature is partial.",
+			"TestAccValueMappingEntry_basic passed on a tenant on 2026-10-15: an entry added, listed by the " +
+				"data source, deployed (the Draft, through redeploy_triggers), refused to change without " +
+				"enable_unofficial, changed in place with it, and imported.",
+			"An earlier check (2026-09-27) used IsConfigured=true: it switched the pair to State Configured " +
+				"and dropped the values of the design-time content. The provider always sends " +
+				"IsConfigured=false.",
+			"Entries set through the API compete with the value mapping's own content: a new content upload " +
+				"through sapintegrationsuite_value_mapping replaces the artifact and with it every entry. A " +
+				"changed entry takes effect at runtime only after the value mapping is deployed again.",
 		},
 	},
+
 	{
 		Key:    "cloud_integration.design_time_versioning",
 		Domain: "cloud_integration",

@@ -60,8 +60,9 @@ const (
 	// srcValueMappingProbe is the update probe of value mappings.
 	srcValueMappingProbe = "tenant-probe -ValueMappingTests on the development tenant (2026-10-06 20:00): PUT with content, name and both, SaveAsVersion up and down, delete, on a synthetic tfAccProbeVMUpd value mapping"
 	// srcVirtualHostProbe is the write path probe of classic virtual hosts.
-	srcVirtualHostProbe = "apim-probe -VirtualHostTests on the development tenant (2026-10-06 20:09) with an APIManagement.SelfService.Administrator key: create, update and delete of a tfaccprobe alias host, error answers, reads with both keys"
-	srcHubCISpec        = "Integration Content API specification (IntegrationContent 1.0.0, Swagger 2.0) from the Business Accelerator Hub, downloaded 2026-10-10: create, read, update, delete, $value and SaveAsVersion for data types, message types, fault message types and service interfaces, PUT for message mappings and script collections, SaveAsVersion for every versioned design-time type"
+	srcVirtualHostProbe       = "apim-probe -VirtualHostTests on the development tenant (2026-10-06 20:09) with an APIManagement.SelfService.Administrator key: create, update and delete of a tfaccprobe alias host, error answers, reads with both keys"
+	srcHubCISpec              = "Integration Content API specification (IntegrationContent 1.0.0, Swagger 2.0) from the Business Accelerator Hub, downloaded 2026-10-10: create, read, update, delete, $value and SaveAsVersion for data types, message types, fault message types and service interfaces, PUT for message mappings and script collections, SaveAsVersion for every versioned design-time type"
+	srcValueMappingEntryProbe = "tenant-probe -ValueMappingEntryTests on the development tenant (2026-10-15 21:38, PENDING #75): UpsertValMaps with and without ValMapId, UpdateDefaultValMap, DeleteValMaps and single-entry deletes on the synthetic value mapping tfAccProbeVMEnt"
 )
 
 const checked = "2026-09-26"
@@ -92,10 +93,10 @@ var Evidence = map[string]EvidenceRecord{
 		"Create, read, deploy and delete are verified on a tenant. SAP answers every PUT with 501 Not Implemented, so every change of content or name replaces the artifact; SaveAsVersion only relabels the single stored version, which the unofficial save_as_version offers in place.",
 		"None unless SAP implements an update. TestAccValueMapping_saveAsVersion passed (2026-10-07 22:09): create labeled 2.0.0, relabeled in place to 1.9.0, imported.",
 		srcHelp, srcMetaCI, srcTenant, srcValueMappingProbe),
-	"cloud_integration.value_mapping_entry": evOn("2026-09-27",
-		"On a synthetic value mapping, the first UpsertValMaps (IsConfigured=true) dropped the pair's design-time values, a second upsert of the same source value added a duplicate that SAP made the default, and DeleteValMaps answered 202 without removing anything. There is no safe update or destroy.",
-		"None within Terraform unless SAP documents an entry update and a delete that works; revisit when the Integration Content API reference changes.",
-		srcHelp, srcMetaCI, srcGapProbe),
+	"cloud_integration.value_mapping_entry": evOn("2026-10-15",
+		"With IsConfigured=false, UpsertValMaps adds entries cleanly and, with the $metadata-only ValMapId, changes them in place; the entries land in the design-time content and the artifact becomes a Draft. No request deletes a single entry, and DeleteValMaps removes the whole agency pair for good. The IsConfigured=true check of 2026-09-27 had dropped the design-time values.",
+		"TestAccValueMappingEntry_basic passed on 2026-10-15, so the resource is partial. It becomes supported only if SAP documents a request that deletes a single entry.",
+		srcHelp, srcMetaCI, srcHubCISpec, srcValueMappingEntryProbe),
 	"cloud_integration.design_time_versioning": ev(
 		"SaveAsVersion is documented for integration flows in SAP Help and, since the Integration Content specification of 2026-10-10, for every versioned design-time type; the provider uses it for flows, message mappings, script collections, data types, message types, fault message types and service interfaces.",
 		"Value mappings have no update (no PUT in the specification either), so their save_as_version only relabels the one stored version; see cloud_integration.value_mapping.",
