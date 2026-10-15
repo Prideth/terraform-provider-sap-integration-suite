@@ -80,7 +80,7 @@ resource "sapintegrationsuite_integration_assessment_technology_key_characterist
 `, name, s.suffix, s.description, s.isSingle, degree, second, rated)
 }
 
-// Custom key characteristics (experimental): a group of its own, a Multi key
+// Custom key characteristics: a group of its own, a Multi key
 // characteristic in it with two values, and a technology rated on one of
 // them; then names and descriptions changed in place; then the type
 // changed to Single with one value, which replaces the key characteristic
@@ -88,10 +88,11 @@ resource "sapintegrationsuite_integration_assessment_technology_key_characterist
 // type; then an import of the
 // group, the key characteristic and a value. Destroy deletes
 // the rating, the values, the key characteristic and the group in that
-// order. Passing makes the three resources supported.
+// order. It passed on 2026-10-15 with enable_experimental, which made the
+// three resources supported; it runs without the switch since.
 func TestAccIntegrationAssessment_keyCharacteristics(t *testing.T) {
 	accgate.Require(t, accgate.IntegrationAssessment)
-	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL", "true")
+	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_EXPERIMENTAL", "")
 	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "")
 	degree := testAccIATaxonomy(t).recommendationDegree
 	name := testAccName()

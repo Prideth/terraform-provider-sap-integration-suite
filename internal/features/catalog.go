@@ -2344,8 +2344,7 @@ var Catalog = []Feature{
 		Name:   "Integration Assessment Custom Key Characteristics",
 		Description: "Key characteristic groups, key characteristics and their values that a tenant " +
 			"maintains itself next to SAP's ISA-M entries, for technology ratings and questionnaires.",
-		SupportStatus:  StatusExperimental,
-		SupportReason:  ReasonPublicAPIIncomplete,
+		SupportStatus:  StatusSupported,
 		ContractSource: SourceAPISpecification,
 		ResourceTypes: []string{
 			"sapintegrationsuite_integration_assessment_key_characteristic_group",
@@ -2361,9 +2360,9 @@ var Catalog = []Feature{
 				"documents create (POST), read, update (PATCH) and delete for KeyCharacteristicGroup, " +
 				"KeyCharacteristic and KeyCharacteristicValue; the live $metadata has the same properties. " +
 				"SAP describes maintaining your own key characteristics in the Integration Assessment UI.",
-			"Not yet passed its acceptance test, so experimental. A first run (2026-10-15) created a group " +
-				"of its own, a key characteristic in it, two values and a technology rating on one of them, " +
-				"and deleted them again. SAP refused to update IsSingle (400 V101 \"The property IsSingle is " +
+			"TestAccIntegrationAssessment_keyCharacteristics passed on a tenant on 2026-10-15: a group of " +
+				"its own, a key characteristic in it, values and a technology rating on a custom value were " +
+				"created, changed in place, imported and deleted. SAP refused to update IsSingle (400 V101 \"The property IsSingle is " +
 				"not allowed to be updated\"), although the specification lists it in the update body; the " +
 				"update leaves it out, and changing the type replaces the key characteristic. A Single key " +
 				"characteristic takes exactly one value; SAP refuses a second (400 V170).",

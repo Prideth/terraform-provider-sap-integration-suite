@@ -19,8 +19,8 @@ import (
 // Key characteristics a tenant maintains itself: a group, a key
 // characteristic in a group, and a value of a key characteristic. SAP's
 // Entities API specification documents create, update and delete for all
-// three; none of them has passed an acceptance test yet, so they are
-// experimental.
+// three, and TestAccIntegrationAssessment_keyCharacteristics passed on a
+// tenant.
 
 const (
 	iaKeyCharacteristicGroupType = "sapintegrationsuite_integration_assessment_key_characteristic_group"

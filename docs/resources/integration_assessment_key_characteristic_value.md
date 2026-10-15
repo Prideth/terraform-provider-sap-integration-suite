@@ -11,15 +11,14 @@ The values of a key characteristic are the predefined answers of its question in
 questionnaire. A technology is rated on a value with
 [`sapintegrationsuite_integration_assessment_technology_key_characteristic`](integration_assessment_technology_key_characteristic.md).
 
-**Status:** experimental. Needs `enable_experimental = true` in the provider block. SAP's Entities API
-specification on the Business Accelerator Hub documents creating, updating and deleting this
-entity, but the resource has not passed an acceptance test on a tenant yet, so its behavior or
-schema may still change.
+**Status:** supported. SAP's Entities API specification on the Business Accelerator Hub
+documents creating, updating and deleting this entity, and the resource passed its acceptance
+test on a tenant. No opt-in switch is needed.
 
 ## Prerequisites
 
-- `enable_experimental = true` and the `integration_assessment` provider block, with the service
-  key of an *Integration Assessment APIs* service instance (plan `default`). The Cloud Integration
+- The `integration_assessment` provider block, with the service key of an
+  *Integration Assessment APIs* service instance (plan `default`). The Cloud Integration
   credentials do not work for this API.
 - An Integration Assessment subscription in the subaccount.
 - The key characteristic: [`sapintegrationsuite_integration_assessment_key_characteristic`](integration_assessment_key_characteristic.md).
@@ -37,7 +36,7 @@ schema may still change.
 ## Example Usage
 
 ```terraform
-# Experimental: needs enable_experimental = true and provider.integration_assessment.
+# Needs provider.integration_assessment.
 resource "sapintegrationsuite_integration_assessment_key_characteristic_value" "eu_only" {
   name                  = "EU only"
   description           = "Message data stays in EU data centers"
@@ -80,8 +79,6 @@ The ID is the UUID the service assigned. Everything is recovered from the servic
 - **SAP:** a key characteristic of type *Single* (`is_single = true`) has exactly one value. SAP
   refuses a second one with 400 V170 ("The key characteristic value cannot be created as the
   related key characteristic is of type single and already has a key characteristic value").
-- **Not yet tested on a tenant:** whether SAP accepts groups of its own next to its delivered
-  ones, what a delete does while values or technology ratings still refer to an entry.
 - **Provider:** only entries the configuration creates are managed. SAP's delivered entries are
   looked up with the data sources and never changed.
 

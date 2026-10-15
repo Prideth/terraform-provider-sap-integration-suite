@@ -233,9 +233,8 @@ instances, 50 technologies, 150 technology instances and 10,000 vendors per tena
 ## Key characteristics of your own
 
 Next to SAP's key characteristics, a tenant can maintain its own criteria, for example the
-rules of its integration guidelines, and rate technologies on them. Three experimental
-resources manage them; they need `enable_experimental = true` until their acceptance test has
-passed on a tenant:
+rules of its integration guidelines, and rate technologies on them. Three supported resources
+manage them:
 
 - [`integration_assessment_key_characteristic_group`](../resources/integration_assessment_key_characteristic_group.md): a group of your own.
 - [`integration_assessment_key_characteristic`](../resources/integration_assessment_key_characteristic.md): a key characteristic in a group, *Single* or *Multi*.

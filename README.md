@@ -202,7 +202,7 @@ Legend: ✅ Supported · 🟡 Partial · 👁️ Read-only · 🧪 Experimental 
 | Feature | Status | Terraform Support |
 |---|:---:|---|
 | Integration Assessment Requests and Assessment Workflow | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
-| Integration Assessment Custom Key Characteristics | 🧪 | Resource — see [feature-support.md](docs/feature-support.md#all-features) |
+| Integration Assessment Custom Key Characteristics | ✅ | Resource |
 | Integration Assessment Landscape Configuration | ✅ | Resource + Data Source |
 | Integration Assessment Master Data | ✅ | Data Source |
 
@@ -235,7 +235,7 @@ Legend: ✅ Supported · 🟡 Partial · 👁️ Read-only · 🧪 Experimental 
 | Trading Partner Management Partner Directory Generation | ❌ | Out of scope — see [feature-support.md](docs/feature-support.md#all-features) |
 | Trading Partner Management Partner Profile | ❌ | No suitable public API — see [feature-support.md](docs/feature-support.md#all-features) |
 
-26 supported · 11 partial · 3 read-only · 1 experimental · 4 unofficial · 4 research required · 49 unsupported · 2 separate provider, out of 100 evaluated Integration Suite features.
+27 supported · 11 partial · 3 read-only · 0 experimental · 4 unofficial · 4 research required · 49 unsupported · 2 separate provider, out of 100 evaluated Integration Suite features.
 
 <!-- END GENERATED FEATURE SUPPORT -->
 

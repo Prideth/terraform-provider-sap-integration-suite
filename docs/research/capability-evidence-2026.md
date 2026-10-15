@@ -19,7 +19,6 @@ And the provider never uses browser endpoints of SAP's UIs.
 |---|---:|
 | 🟡 Partial (`partial`) | 11 |
 | 👁️ Read-only (`read_only`) | 3 |
-| 🧪 Experimental (`experimental`) | 1 |
 | 🧭 Unofficial (`unofficial`) | 4 |
 | 🔬 Research required (`research_required`) | 4 |
 | ❌ Public API incomplete (`public_api_incomplete`) | 8 |
@@ -189,21 +188,6 @@ Available as a data source only; the provider never creates, changes or deletes 
 - **Sources:**
   - Cloud Integration $metadata snapshot testdata/api-metadata/cloud-integration.json (2026-09-26)
   - tenant probes and acceptance runs on a development tenant (September 2026)
-
-## 🧪 Experimental
-
-Implementation exists, but its lifecycle has not yet been sufficiently validated against a real SAP tenant.
-
-### Integration Assessment Custom Key Characteristics
-
-`integration_assessment.custom_key_characteristics` · checked 2026-10-15
-
-- **Finding:** The Entities API specification documents create, update and delete for key characteristic groups, key characteristics and key characteristic values, and the live $metadata matches it field by field. SAP describes creating your own key characteristics in the UI. sapintegrationsuite_integration_assessment_key_characteristic_group, _key_characteristic and _key_characteristic_value implement it.
-- **Next step:** TestAccIntegrationAssessment_keyCharacteristics passing on a tenant makes them supported; it also shows whether own groups are accepted and how a delete behaves with values.
-- **Sources:**
-  - SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)
-  - Integration Assessment Entities and Management $metadata, fetched live on 2026-09-27 (snapshots testdata/api-metadata/integration-assessment-*.json)
-  - Entities API specification (EntitiesAPI 1.0.0, OpenAPI 3) of Integration Assessment from the Business Accelerator Hub, downloaded 2026-10-10: create, read, update (PATCH) and delete for the landscape, the technology profile entries and the key characteristic groups, key characteristics and values
 
 ## 🧭 Unofficial
 

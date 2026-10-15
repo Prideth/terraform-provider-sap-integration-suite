@@ -1,4 +1,4 @@
-# Experimental: needs enable_experimental = true and provider.integration_assessment.
+# Needs provider.integration_assessment.
 resource "sapintegrationsuite_integration_assessment_key_characteristic" "data_residency" {
   name                        = "Data residency"
   description                 = "Where the integration technology processes and stores message data"

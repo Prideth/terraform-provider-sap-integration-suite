@@ -31,7 +31,7 @@ release branch, `release/<minor>.x`, and every release is a tag on it.
 |---|---|---|---|
 | 0.8.0 | Security Content completion | in progress on `feature/security-content`: certificate chains, PGP keys and OAuth2 custom parameters done (unofficial, acceptance tests passed) | — |
 | 0.9.0 | Classic API Management infrastructure, above all virtual hosts; the API proxy only if the official Transport API request passes its acceptance test | in progress on `feature/classic-virtual-hosts`: default domain virtual hosts with optional mutual TLS done (partial, acceptance tests passed) | releasing 0.8.0 first |
-| 0.10.0 | Integration Assessment key characteristics of a tenant's own | in progress on `feature/ia-key-characteristics`: groups, key characteristics and values implemented (experimental, Entities API specification) | their acceptance test on a tenant |
+| 0.10.0 | Integration Assessment key characteristics of a tenant's own | in progress on `feature/ia-key-characteristics`: groups, key characteristics and values done (supported: Entities API specification, acceptance test passed) | releasing 0.9.0 first |
 | 0.11.0 | Edge Integration Cell targeting | proposed | a tenant with an Edge Integration Cell (P1 item 3) |
 | 0.12.0 | Data Space Integration desired-state configuration | proposed | the DSIAPI specification (P2 item 7) |
 
@@ -59,7 +59,7 @@ These need no further research, only a run of the prepared tests:
    change in place stays unofficial, because the specification's update bodies list no links.
    Key characteristic groups, key characteristics and values of a tenant's own, which the
    specification also documents, are resources on `feature/ia-key-characteristics` (0.10.0),
-   experimental until `TestAccIntegrationAssessment_keyCharacteristics` passes on a tenant.
+   supported since `TestAccIntegrationAssessment_keyCharacteristics` passed on 2026-10-15.
    Requests and assessment results stay out of scope as workflow.
 2. **API Composition hardening.** A key user's token (password grant through the
    `configuration` client) reads the Configuration API; a client-credentials token got 403. The

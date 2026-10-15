@@ -12,15 +12,14 @@ A key characteristic is a criterion Integration Assessment rates technologies on
 its values. Its type decides the question: *Single* is answered with yes or no, *Multi* with one
 or more of the values.
 
-**Status:** experimental. Needs `enable_experimental = true` in the provider block. SAP's Entities API
-specification on the Business Accelerator Hub documents creating, updating and deleting this
-entity, but the resource has not passed an acceptance test on a tenant yet, so its behavior or
-schema may still change.
+**Status:** supported. SAP's Entities API specification on the Business Accelerator Hub
+documents creating, updating and deleting this entity, and the resource passed its acceptance
+test on a tenant. No opt-in switch is needed.
 
 ## Prerequisites
 
-- `enable_experimental = true` and the `integration_assessment` provider block, with the service
-  key of an *Integration Assessment APIs* service instance (plan `default`). The Cloud Integration
+- The `integration_assessment` provider block, with the service key of an
+  *Integration Assessment APIs* service instance (plan `default`). The Cloud Integration
   credentials do not work for this API.
 - An Integration Assessment subscription in the subaccount.
 - A group: [`sapintegrationsuite_integration_assessment_key_characteristic_group`](integration_assessment_key_characteristic_group.md) or one of SAP's groups from the [data source](../data-sources/integration_assessment_key_characteristic_group.md).
@@ -50,8 +49,6 @@ The ID is the UUID the service assigned. Everything is recovered from the servic
 ## Limitations
 
 - **SAP:** a *Single* key characteristic has exactly one value; SAP refuses a second (400 V170).
-- **Not yet tested on a tenant:** whether SAP accepts groups of its own next to its delivered
-  ones, what a delete does while values or technology ratings still refer to an entry.
 - **Provider:** only entries the configuration creates are managed. SAP's delivered entries are
   looked up with the data sources and never changed.
 

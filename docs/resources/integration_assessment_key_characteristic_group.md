@@ -12,15 +12,14 @@ in questionnaires. SAP groups its own into Connectivity, Integration Use Cases, 
 Management, Monitoring and Operations, and Transformations. This resource adds a group for
 criteria of your own, for example the rules of your integration guidelines.
 
-**Status:** experimental. Needs `enable_experimental = true` in the provider block. SAP's Entities API
-specification on the Business Accelerator Hub documents creating, updating and deleting this
-entity, but the resource has not passed an acceptance test on a tenant yet, so its behavior or
-schema may still change.
+**Status:** supported. SAP's Entities API specification on the Business Accelerator Hub
+documents creating, updating and deleting this entity, and the resource passed its acceptance
+test on a tenant. No opt-in switch is needed.
 
 ## Prerequisites
 
-- `enable_experimental = true` and the `integration_assessment` provider block, with the service
-  key of an *Integration Assessment APIs* service instance (plan `default`). The Cloud Integration
+- The `integration_assessment` provider block, with the service key of an
+  *Integration Assessment APIs* service instance (plan `default`). The Cloud Integration
   credentials do not work for this API.
 - An Integration Assessment subscription in the subaccount.
 
@@ -37,7 +36,7 @@ schema may still change.
 ## Example Usage
 
 ```terraform
-# Experimental: needs enable_experimental = true and provider.integration_assessment.
+# Needs provider.integration_assessment.
 resource "sapintegrationsuite_integration_assessment_key_characteristic_group" "compliance" {
   name        = "Compliance"
   description = "Criteria from the company's integration guidelines"
@@ -70,8 +69,6 @@ The ID is the UUID the service assigned. Everything is recovered from the servic
 
 ## Limitations
 
-- **Not yet tested on a tenant:** whether SAP accepts groups of its own next to its delivered
-  ones, what a delete does while values or technology ratings still refer to an entry.
 - **Provider:** only entries the configuration creates are managed. SAP's delivered entries are
   looked up with the data sources and never changed.
 

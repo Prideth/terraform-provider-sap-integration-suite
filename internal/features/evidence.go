@@ -62,8 +62,6 @@ const (
 	// srcVirtualHostProbe is the write path probe of classic virtual hosts.
 	srcVirtualHostProbe = "apim-probe -VirtualHostTests on the development tenant (2026-10-06 20:09) with an APIManagement.SelfService.Administrator key: create, update and delete of a tfaccprobe alias host, error answers, reads with both keys"
 	srcHubCISpec        = "Integration Content API specification (IntegrationContent 1.0.0, Swagger 2.0) from the Business Accelerator Hub, downloaded 2026-10-10: create, read, update, delete, $value and SaveAsVersion for data types, message types, fault message types and service interfaces, PUT for message mappings and script collections, SaveAsVersion for every versioned design-time type"
-	srcMetaIA           = "Integration Assessment Entities and Management $metadata, fetched live on 2026-09-27 (snapshots testdata/api-metadata/integration-assessment-*.json)"
-	srcHubIASpec        = "Entities API specification (EntitiesAPI 1.0.0, OpenAPI 3) of Integration Assessment from the Business Accelerator Hub, downloaded 2026-10-10: create, read, update (PATCH) and delete for the landscape, the technology profile entries and the key characteristic groups, key characteristics and values"
 )
 
 const checked = "2026-09-26"
@@ -376,10 +374,6 @@ var Evidence = map[string]EvidenceRecord{
 		"A general BTP messaging service with its own management APIs (Hub package modified 2026-09-18); a separate provider by design.",
 		"None for this provider.",
 		srcHubPackages, srcHelp),
-	"integration_assessment.custom_key_characteristics": evOn("2026-10-15",
-		"The Entities API specification documents create, update and delete for key characteristic groups, key characteristics and key characteristic values, and the live $metadata matches it field by field. SAP describes creating your own key characteristics in the UI. sapintegrationsuite_integration_assessment_key_characteristic_group, _key_characteristic and _key_characteristic_value implement it.",
-		"TestAccIntegrationAssessment_keyCharacteristics passing on a tenant makes them supported; it also shows whether own groups are accepted and how a delete behaves with values.",
-		srcHelp, srcMetaIA, srcHubIASpec),
 	"integration_assessment.assessment_workflow": ev(
 		"A request status machine; workflow state.",
 		"None; out of scope.",
