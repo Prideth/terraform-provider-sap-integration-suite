@@ -27,17 +27,17 @@ func TestCreateKeyCharacteristic_LinksTheGroupByID(t *testing.T) {
 	}
 }
 
-func TestUpdateKeyCharacteristic_SendsTheSpecificationsUpdateBody(t *testing.T) {
+func TestUpdateKeyCharacteristic_LeavesTheTypeOut(t *testing.T) {
 	c, got := fakeService(t, "")
-	if err := c.UpdateKeyCharacteristic(context.Background(), "kc-1", "Retries", nil, false); err != nil {
+	if err := c.UpdateKeyCharacteristic(context.Background(), "kc-1", "Retries", nil); err != nil {
 		t.Fatal(err)
 	}
 	r := (*got)[0]
 	if r.method != http.MethodPatch || r.path != "/intas/entities/v1/KeyCharacteristic('kc-1')" {
 		t.Errorf("request = %s %s", r.method, r.path)
 	}
-	if len(r.body) != 3 || r.body["Name"] != "Retries" || r.body["IsSingle"] != false {
-		t.Errorf("body = %v, want Name, Description and IsSingle only", r.body)
+	if _, present := r.body["IsSingle"]; present || len(r.body) != 2 || r.body["Name"] != "Retries" {
+		t.Errorf("body = %v, want Name and Description only: the tenant refuses IsSingle in an update", r.body)
 	}
 	if v, present := r.body["Description"]; !present || v != nil {
 		t.Errorf("body = %v, want Description: null to clear it", r.body)

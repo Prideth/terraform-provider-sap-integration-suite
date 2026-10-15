@@ -77,9 +77,11 @@ The ID is the UUID the service assigned. Everything is recovered from the servic
 
 ## Limitations
 
+- **SAP:** a key characteristic of type *Single* (`is_single = true`) has exactly one value. SAP
+  refuses a second one with 400 V170 ("The key characteristic value cannot be created as the
+  related key characteristic is of type single and already has a key characteristic value").
 - **Not yet tested on a tenant:** whether SAP accepts groups of its own next to its delivered
-  ones, what a delete does while values or technology ratings still refer to an entry, and
-  whether the type of a key characteristic can change once it has values.
+  ones, what a delete does while values or technology ratings still refer to an entry.
 - **Provider:** only entries the configuration creates are managed. SAP's delivered entries are
   looked up with the data sources and never changed.
 

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/testutil/accgate"
 )
@@ -18,9 +19,21 @@ type iaKeyCharacteristicStep struct {
 }
 
 // testAccIAKeyCharacteristicsConfig is a group of its own with a key
-// characteristic and two values, a technology rated on one of the values,
-// and the value looked up again through the data source.
+// characteristic and its values, a technology rated on a value, and the
+// first value looked up again through the data source. A Multi key
+// characteristic gets two values and the rating is on the second; a Single
+// one gets one value, because SAP refuses a second (400 V170), and the
+// rating is on it.
 func testAccIAKeyCharacteristicsConfig(name, degree string, s iaKeyCharacteristicStep) string {
+	second, rated := `
+resource "sapintegrationsuite_integration_assessment_key_characteristic_value" "second" {
+  name                  = "`+name+` value 2"
+  key_characteristic_id = sapintegrationsuite_integration_assessment_key_characteristic.test.id
+}
+`, "second"
+	if s.isSingle {
+		second, rated = "", "test"
+	}
 	return fmt.Sprintf(`
 resource "sapintegrationsuite_integration_assessment_key_characteristic_group" "test" {
   name        = "%[1]s group%[2]s"
@@ -40,11 +53,7 @@ resource "sapintegrationsuite_integration_assessment_key_characteristic_value" "
   key_characteristic_id = sapintegrationsuite_integration_assessment_key_characteristic.test.id
 }
 
-resource "sapintegrationsuite_integration_assessment_key_characteristic_value" "second" {
-  name                  = "%[1]s value 2"
-  key_characteristic_id = sapintegrationsuite_integration_assessment_key_characteristic.test.id
-}
-
+%[6]s
 data "sapintegrationsuite_integration_assessment_key_characteristic_value" "test" {
   key_characteristic = sapintegrationsuite_integration_assessment_key_characteristic.test.name
   name               = sapintegrationsuite_integration_assessment_key_characteristic_value.test.name
@@ -65,16 +74,19 @@ resource "sapintegrationsuite_integration_assessment_technology" "test" {
 
 resource "sapintegrationsuite_integration_assessment_technology_key_characteristic" "test" {
   technology_id               = sapintegrationsuite_integration_assessment_technology.test.id
-  key_characteristic_value_id = sapintegrationsuite_integration_assessment_key_characteristic_value.second.id
+  key_characteristic_value_id = sapintegrationsuite_integration_assessment_key_characteristic_value.%[7]s.id
   recommendation_degree_id    = data.sapintegrationsuite_integration_assessment_recommendation_degree.test.id
 }
-`, name, s.suffix, s.description, s.isSingle, degree)
+`, name, s.suffix, s.description, s.isSingle, degree, second, rated)
 }
 
 // Custom key characteristics (experimental): a group of its own, a Multi key
 // characteristic in it with two values, and a technology rated on one of
-// them; then names, descriptions and the type changed in place; then an
-// import of the group, the key characteristic and a value. Destroy deletes
+// them; then names and descriptions changed in place; then the type
+// changed to Single with one value, which replaces the key characteristic
+// and with it its value and the rating, because SAP refuses to update the
+// type; then an import of the
+// group, the key characteristic and a value. Destroy deletes
 // the rating, the values, the key characteristic and the group in that
 // order. Passing makes the three resources supported.
 func TestAccIntegrationAssessment_keyCharacteristics(t *testing.T) {
@@ -109,16 +121,24 @@ func TestAccIntegrationAssessment_keyCharacteristics(t *testing.T) {
 				),
 			},
 			{
-				Config:           config(iaKeyCharacteristicStep{suffix: " renamed", description: "updated", isSingle: true}),
+				Config:           config(iaKeyCharacteristicStep{suffix: " renamed", description: "updated"}),
 				ConfigPlanChecks: expectInPlace(group, kc, value),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(group, "name", name+" group renamed"),
 					resource.TestCheckResourceAttr(group, "description", "updated"),
 					resource.TestCheckResourceAttr(kc, "name", name+" characteristic renamed"),
-					resource.TestCheckResourceAttr(kc, "is_single", "true"),
 					resource.TestCheckResourceAttr(value, "name", name+" value renamed"),
 					resource.TestCheckResourceAttr(value, "description", "updated"),
 				),
+			},
+			{
+				Config: config(iaKeyCharacteristicStep{suffix: " renamed", description: "updated", isSingle: true}),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction(kc, plancheck.ResourceActionReplace),
+					plancheck.ExpectResourceAction(value, plancheck.ResourceActionReplace),
+					plancheck.ExpectResourceAction(group, plancheck.ResourceActionNoop),
+				}},
+				Check: resource.TestCheckResourceAttr(kc, "is_single", "true"),
 			},
 			importStep(group),
 			importStep(kc),

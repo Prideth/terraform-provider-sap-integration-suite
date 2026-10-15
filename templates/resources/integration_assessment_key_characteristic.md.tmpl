@@ -31,8 +31,8 @@ schema may still change.
 |---|---|
 | Create | Creates the key characteristic in the group given in `key_characteristic_group_id`. |
 | Read | Reads the name, the description, the type and the group. |
-| Update | `name`, `description` and `is_single` change in place (PATCH), as SAP's specification documents. |
-| Replacement | Changing `key_characteristic_group_id` creates a new key characteristic: the specification's update body has no group. |
+| Update | `name` and `description` change in place (PATCH). Removing `description` clears it. |
+| Replacement | Changing `key_characteristic_group_id` or `is_single` creates a new key characteristic, and with it new values. The specification's update body has no group, and SAP refuses to update the type (400 V101), although the specification lists it. |
 | Delete | Deletes the key characteristic. Values that refer to it are deleted first, because Terraform orders by the reference. |
 
 ## Example Usage
@@ -49,9 +49,9 @@ The ID is the UUID the service assigned. Everything is recovered from the servic
 
 ## Limitations
 
+- **SAP:** a *Single* key characteristic has exactly one value; SAP refuses a second (400 V170).
 - **Not yet tested on a tenant:** whether SAP accepts groups of its own next to its delivered
-  ones, what a delete does while values or technology ratings still refer to an entry, and
-  whether the type of a key characteristic can change once it has values.
+  ones, what a delete does while values or technology ratings still refer to an entry.
 - **Provider:** only entries the configuration creates are managed. SAP's delivered entries are
   looked up with the data sources and never changed.
 

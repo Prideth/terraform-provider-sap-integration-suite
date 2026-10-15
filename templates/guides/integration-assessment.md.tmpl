@@ -243,7 +243,8 @@ passed on a tenant:
 
 SAP's Entities API specification documents creating, updating and deleting all three. Moving a
 key characteristic to another group or a value to another key characteristic replaces it,
-because the specification's update bodies have no links.
+because the specification's update bodies have no links. Changing a key characteristic's type
+replaces it too: SAP refuses that update, although the specification lists the field.
 
 ## Importing existing objects
 

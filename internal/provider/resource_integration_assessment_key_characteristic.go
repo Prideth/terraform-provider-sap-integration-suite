@@ -8,6 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -198,11 +200,13 @@ func (r *iaKeyCharacteristicResource) Schema(_ context.Context, _ resource.Schem
 			"name":        iaNameAttribute("key characteristic"),
 			"description": iaDescriptionAttribute("key characteristic"),
 			"is_single": schema.BoolAttribute{
-				Optional: true,
-				Computed: true,
-				Default:  booldefault.StaticBool(false),
+				Optional:      true,
+				Computed:      true,
+				Default:       booldefault.StaticBool(false),
+				PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()},
 				Description: "The type the UI shows: true for Single, a question answered with yes or no; false " +
-					"(the default) for Multi, a question with several answers. Changes in place.",
+					"(the default) for Multi, a question with several answers. Changing it creates a new key " +
+					"characteristic: SAP refuses to update the type.",
 			},
 			"key_characteristic_group_id": iaReplacingLinkAttribute("Id of the group, from " +
 				"sapintegrationsuite_integration_assessment_key_characteristic_group (resource or data source). " +
@@ -272,7 +276,7 @@ func (r *iaKeyCharacteristicResource) Update(ctx context.Context, req resource.U
 		return
 	}
 	id := plan.ID.ValueString()
-	if err := r.client.UpdateKeyCharacteristic(ctx, id, plan.Name.ValueString(), optionalString(plan.Description), plan.IsSingle.ValueBool()); err != nil {
+	if err := r.client.UpdateKeyCharacteristic(ctx, id, plan.Name.ValueString(), optionalString(plan.Description)); err != nil {
 		resp.Diagnostics.AddError("Failed to update Integration Assessment key characteristic", diagnosticDetail(err))
 		return
 	}

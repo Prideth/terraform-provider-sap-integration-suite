@@ -7,7 +7,10 @@ import "context"
 // Entities API specification documents create (POST), update (PATCH) and
 // delete for each set, with the bodies below. A create links a key
 // characteristic to its group and a value to its key characteristic as
-// {"Id": ...}; the update bodies list no links.
+// {"Id": ...}; the update bodies list no links. The specification's
+// KeyCharacteristic update body also lists IsSingle, but a tenant refused it
+// (400 V101 "The property IsSingle is not allowed to be updated",
+// 2026-10-15), so the update leaves it out.
 
 type keyCharacteristicGroupWrite struct {
 	Name        string  `json:"Name"`
@@ -24,7 +27,6 @@ type keyCharacteristicCreate struct {
 type keyCharacteristicUpdate struct {
 	Name        string  `json:"Name"`
 	Description *string `json:"Description"`
-	IsSingle    bool    `json:"IsSingle"`
 }
 
 type keyCharacteristicValueCreate struct {
@@ -75,10 +77,10 @@ func (c *Client) CreateKeyCharacteristic(ctx context.Context, name string, descr
 	}, &k)
 }
 
-// UpdateKeyCharacteristic changes a key characteristic's name, description
-// and type.
-func (c *Client) UpdateKeyCharacteristic(ctx context.Context, id, name string, description *string, isSingle bool) error {
-	return c.patch(ctx, keyCharacteristicEntitySet, id, keyCharacteristicUpdate{Name: name, Description: description, IsSingle: isSingle})
+// UpdateKeyCharacteristic changes a key characteristic's name and
+// description. Its type cannot change.
+func (c *Client) UpdateKeyCharacteristic(ctx context.Context, id, name string, description *string) error {
+	return c.patch(ctx, keyCharacteristicEntitySet, id, keyCharacteristicUpdate{Name: name, Description: description})
 }
 
 // DeleteKeyCharacteristic deletes a key characteristic.

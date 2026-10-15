@@ -2361,9 +2361,12 @@ var Catalog = []Feature{
 				"documents create (POST), read, update (PATCH) and delete for KeyCharacteristicGroup, " +
 				"KeyCharacteristic and KeyCharacteristicValue; the live $metadata has the same properties. " +
 				"SAP describes maintaining your own key characteristics in the Integration Assessment UI.",
-			"Not yet tested on a tenant, so experimental: whether SAP accepts groups of its own next to its " +
-				"five delivered ones, what a delete does to a key characteristic that still has values or " +
-				"technology ratings, and whether the type (IsSingle) can change once values exist.",
+			"Not yet passed its acceptance test, so experimental. A first run (2026-10-15) created a group " +
+				"of its own, a key characteristic in it, two values and a technology rating on one of them, " +
+				"and deleted them again. SAP refused to update IsSingle (400 V101 \"The property IsSingle is " +
+				"not allowed to be updated\"), although the specification lists it in the update body; the " +
+				"update leaves it out, and changing the type replaces the key characteristic. A Single key " +
+				"characteristic takes exactly one value; SAP refuses a second (400 V170).",
 			"The update bodies list no links, so moving a key characteristic to another group or a value to " +
 				"another key characteristic replaces it.",
 			"Only entries the configuration creates are managed; SAP's delivered entries are read with the " +
