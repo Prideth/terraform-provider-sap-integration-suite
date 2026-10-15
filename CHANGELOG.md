@@ -69,14 +69,18 @@ longer need an opt-in switch.
   create, read, update (`PATCH`) and delete of vendors, applications,
   application instances, technologies, technology instances and technology
   profile entries, and the taxonomy. They were unofficial and needed
-  `enable_unofficial = true`; they are now supported.
+  `enable_unofficial = true`; they are now supported. The acceptance tests
+  `TestAccIntegrationAssessment_landscape`, `_technologyProfile` and
+  `_taxonomy` passed on a tenant without the switch.
 - **A link change in place stays unofficial.** The specification's update
   bodies list no links. Changing an application's vendor (set, changed or
   removed), an application instance's application or deployment model, a
   technology's vendor or a technology instance's deployment model in place
   still needs `enable_unofficial = true`; without it the plan fails and
   names the switch, and nothing is replaced. An update now sends a link
-  only when it changes, so a rename follows the specification exactly.
+  only when it changes, so a rename follows the specification exactly. The
+  landscape test checks that such a plan fails without the switch and
+  changes the links in place with it.
 - `sapintegrationsuite_key_pair` keeps `valid_not_before` and
   `valid_not_after` as generated once a CA-signed chain was uploaded. SAP
   then reports the signed certificate's validity, and a configuration that

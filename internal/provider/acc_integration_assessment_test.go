@@ -185,7 +185,7 @@ provider "sapintegrationsuite" {
 			{
 				Config:      config(iaLandscapeStep{suffix: " renamed", description: "updated", moved: true}),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`link change in place (PATCH with a link) is unofficial`),
+				ExpectError: regexp.MustCompile(`link change in place \(PATCH with a link\)\s+is\s+unofficial`),
 			},
 			{
 				Config:           linkChanges + config(iaLandscapeStep{suffix: " renamed", description: "updated", moved: true}),
