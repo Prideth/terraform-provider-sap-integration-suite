@@ -9,11 +9,66 @@ contain breaking schema or lifecycle changes; each one is listed under
 "Breaking changes" together with the steps it needs. Patch releases (0.2.1)
 only fix defects in their minor release.
 
-## Unreleased (planned as 0.7.0)
+## Unreleased (planned as 0.8.0)
 
-0.7.0 is planned to manage the ESR-style design-time types of Cloud
-Integration: data types, message types, fault message types and service
-interfaces. All four are supported: SAP's Integration Content API
+0.8.0 is planned to complete Security Content: CA-signed certificate chains
+for key pairs, PGP keys and the custom parameters of OAuth2 client
+credentials. All of them are unofficial: their requests are known only from
+the tenant `$metadata`, not from SAP's documentation, so they need
+`enable_unofficial = true`. Each passed an acceptance test on a tenant.
+
+### New resources
+
+- `sapintegrationsuite_key_pair_certificate_chain` (unofficial): gives a key
+  pair a certificate signed by a certificate authority, with the chain of
+  certificates that issued it. The resource uploads the PEM bundle (any
+  order, the root may be left out), reads the chain back, derives the
+  fingerprint and every certificate locally, refuses a private key pasted
+  into the chain, and imports by the key pair's alias. SAP has no request
+  that removes a chain, so destroying the resource leaves it on the key pair.
+  The acceptance test signed a key pair's CSR with a `hashicorp/tls` CA,
+  uploaded and imported the chain, and signed and uploaded again after the
+  key pair was regenerated.
+- `sapintegrationsuite_pgp_public_key` and `sapintegrationsuite_pgp_secret_key`
+  (unofficial): one PGP key each in the tenant's public or secret keyring,
+  for the PGP encryptor, decryptor, signer and verifier steps. A key is
+  added from an ASCII-armored block; the plan shows its key ID and
+  fingerprint, computed locally. The secret key and its passphrase are
+  write-only, and `secret_key_wo_version` replaces the key. A key ID that
+  exists already fails the create, because SAP answers "not imported" with
+  HTTP 200; import it instead. SAP deletes a key's public and secret part
+  together, so the public key resource leaves a key with a secret part in
+  place on destroy. Cloud runtime only; the acceptance test added, imported
+  and deleted keys that gpg generated.
+
+### New
+
+- `sapintegrationsuite_key_pair` has `certificate_signing_request`, the
+  PEM CSR to have signed. It is read only with `enable_unofficial = true`,
+  because the request is known only from the tenant `$metadata`. SAP signs
+  the CSR anew after a chain upload; the stored text is kept while subject
+  and public key stay the same.
+- `sapintegrationsuite_oauth2_client_credential` manages `custom_parameters`
+  (unofficial, needs `enable_unofficial`): key, value and whether SAP sends
+  the parameter in the body, as a header or in the URL. A tenant check showed
+  that SAP takes custom parameters only when the credential is created and
+  deletes them with every update, so with `custom_parameters` set every
+  change replaces the credential, a secret rotation included. Without the
+  attribute, the plan of an update warns when SAP holds parameters set in its
+  UI. An import reads the parameters SAP holds.
+
+### Changed
+
+- `sapintegrationsuite_key_pair` keeps `valid_not_before` and
+  `valid_not_after` as generated once a CA-signed chain was uploaded. SAP
+  then reports the signed certificate's validity, and a configuration that
+  set these attributes would otherwise have planned a replacement of the key
+  pair, which deletes the chain with the key.
+
+## 0.7.0 — 2026-10-15
+
+0.7.0 manages the ESR-style design-time types of Cloud Integration: data
+types, message types, fault message types and service interfaces. All four are supported: SAP's Integration Content API
 specification on the Business Accelerator Hub documents them, and each
 passed an acceptance test on a tenant. They need no opt-in switch.
 
@@ -82,50 +137,13 @@ passed an acceptance test on a tenant. They need no opt-in switch.
   type that a message type uses be deleted. Refer to the data type resource
   so that Terraform orders the deletion.
 
-### Planned for 0.8.0: Security Content
+### Upgrade notes
 
-These entries are on `feature/security-content`, which builds on 0.7.0; they
-become the 0.8.0 section once 0.7.0 is released.
-
-- `sapintegrationsuite_key_pair_certificate_chain` (unofficial): gives a key
-  pair a certificate signed by a certificate authority, with the chain of
-  certificates that issued it. The resource uploads the PEM bundle (any
-  order, the root may be left out), reads the chain back, derives the
-  fingerprint and every certificate locally, refuses a private key pasted
-  into the chain, and imports by the key pair's alias. SAP has no request
-  that removes a chain, so destroying the resource leaves it on the key pair.
-  The acceptance test signed a key pair's CSR with a `hashicorp/tls` CA,
-  uploaded and imported the chain, and signed and uploaded again after the
-  key pair was regenerated.
-- `sapintegrationsuite_key_pair` has `certificate_signing_request`, the
-  PEM CSR to have signed. It is read only with `enable_unofficial = true`,
-  because the request is known only from the tenant `$metadata`. SAP signs
-  the CSR anew after a chain upload; the stored text is kept while subject
-  and public key stay the same.
-- `sapintegrationsuite_key_pair` keeps `valid_not_before` and
-  `valid_not_after` as generated once a CA-signed chain was uploaded. SAP
-  then reports the signed certificate's validity, and a configuration that
-  set these attributes would otherwise have planned a replacement of the key
-  pair, which deletes the chain with the key.
-- `sapintegrationsuite_pgp_public_key` and `sapintegrationsuite_pgp_secret_key`
-  (unofficial): one PGP key each in the tenant's public or secret keyring,
-  for the PGP encryptor, decryptor, signer and verifier steps. A key is
-  added from an ASCII-armored block; the plan shows its key ID and
-  fingerprint, computed locally. The secret key and its passphrase are
-  write-only, and `secret_key_wo_version` replaces the key. A key ID that
-  exists already fails the create, because SAP answers "not imported" with
-  HTTP 200; import it instead. SAP deletes a key's public and secret part
-  together, so the public key resource leaves a key with a secret part in
-  place on destroy. Cloud runtime only; the acceptance test added, imported
-  and deleted keys that gpg generated.
-- `sapintegrationsuite_oauth2_client_credential` manages `custom_parameters`
-  (unofficial, needs `enable_unofficial`): key, value and whether SAP sends
-  the parameter in the body, as a header or in the URL. A tenant check showed
-  that SAP takes custom parameters only when the credential is created and
-  deletes them with every update, so with `custom_parameters` set every
-  change replaces the credential, a secret rotation included. Without the
-  attribute, the plan of an update warns when SAP holds parameters set in its
-  UI. An import reads the parameters SAP holds.
+No state migration and no breaking change. The feature data sources report
+data types, message types and service interfaces as `supported`; they used
+to report `research_required`. A configuration that sets
+`enable_unofficial = true` only to update message mappings or script
+collections can drop it.
 
 ## 0.6.0 — 2026-10-10
 

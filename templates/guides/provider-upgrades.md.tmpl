@@ -16,7 +16,7 @@ terraform {
   required_providers {
     sapintegrationsuite = {
       source  = "Prideth/sap-integration-suite"
-      version = "~> 0.6.0"
+      version = "~> 0.7.0"
     }
   }
 }
@@ -26,6 +26,19 @@ Upgrade one minor version at a time. Run `terraform init -upgrade`, then `terraf
 read the plan before applying: every change below that forces a replacement is marked. The
 complete list of changes is in the
 [CHANGELOG](https://github.com/Prideth/terraform-provider-sap-integration-suite/blob/master/CHANGELOG.md).
+
+## 0.6 to 0.7
+
+No state migration and no breaking change; 0.7 adds resources for data types, message types,
+fault message types and service interfaces.
+
+- The feature data sources report data types, message types and service interfaces as
+  `supported`; they used to report `research_required`. A configuration that lists gaps by
+  `support_status` shows them as available now.
+- Message mappings and script collections no longer need `enable_unofficial = true` to be
+  updated in place, and script collections no longer need it for `save_as_version`. A
+  configuration that sets the switch only for them can drop it.
+- `convert_ui_labels` is new and off by default; nothing changes unless you set it.
 
 ## 0.5 to 0.6
 
