@@ -160,7 +160,7 @@ func (r *iaProfileResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 			PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 		}
 	}
-	resp.Schema = schema.Schema{Description: iaUnofficialNote + r.description, Attributes: attrs}
+	resp.Schema = schema.Schema{Description: r.description, Attributes: attrs}
 }
 
 func (r *iaProfileResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

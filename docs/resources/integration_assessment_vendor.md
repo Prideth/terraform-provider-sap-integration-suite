@@ -10,15 +10,15 @@ description: |-
 A vendor is the supplier of applications and technologies in the landscape that Integration
 Assessment evaluates integration requests against. Applications and technologies link to it.
 
-**Status:** unofficial. Needs `enable_unofficial = true` in the provider block. SAP documents the
-Integration Assessment Entities API and this entity, but the field-level specification on the
-Business Accelerator Hub needs an SAP login. The requests follow the service's `$metadata` and
-were verified on a tenant in September 2026; SAP may change them without notice.
+**Status:** supported. SAP's Entities API specification on the Business Accelerator Hub
+documents this entity, and its requests were verified on a tenant. No opt-in switch is needed.
+A vendor has no links, so unlike an application or a technology it has no change that needs
+`enable_unofficial = true`.
 
 ## Prerequisites
 
-- `enable_unofficial = true` and the `integration_assessment` provider block, with the service key
-  of an *Integration Assessment APIs* service instance (plan `default`). The Cloud Integration
+- The `integration_assessment` provider block, with the service key of an
+  *Integration Assessment APIs* service instance (plan `default`). The Cloud Integration
   credentials do not work for this API.
 - An Integration Assessment subscription in the subaccount.
 
@@ -35,7 +35,7 @@ were verified on a tenant in September 2026; SAP may change them without notice.
 ## Example Usage
 
 ```terraform
-# Unofficial: needs enable_unofficial = true and provider.integration_assessment.
+# Needs provider.integration_assessment.
 resource "sapintegrationsuite_integration_assessment_vendor" "acme" {
   name = "ACME Logistics"
 }
@@ -65,8 +65,7 @@ The ID is the UUID the service assigned. Everything is recovered from the servic
 
 - **SAP:** the service documents limits per tenant: 20,000 applications, 20,000 application
   instances, 50 technologies, 150 technology instances and 10,000 vendors.
-- **Provider:** unofficial until the specification is available without a login or verified from
-  the Hub download. Ids are UUIDs the service assigns; configurations reference them through
+- **Provider:** Ids are UUIDs the service assigns; configurations reference them through
   other resources or the lookup data sources, never as literals.
 
 ## Related

@@ -10,15 +10,15 @@ description: |-
 An application is a business system of the landscape, for example an ERP or a warehouse
 management system. Where and how it runs is described by its application instances.
 
-**Status:** unofficial. Needs `enable_unofficial = true` in the provider block. SAP documents the
-Integration Assessment Entities API and this entity, but the field-level specification on the
-Business Accelerator Hub needs an SAP login. The requests follow the service's `$metadata` and
-were verified on a tenant in September 2026; SAP may change them without notice.
+**Status:** supported. SAP's Entities API specification on the Business Accelerator Hub
+documents this entity, and its requests were verified on a tenant. No opt-in switch is needed.
+Setting, changing or removing `vendor_id` in place is the exception: the specification's update body lists no
+links, so it needs `enable_unofficial = true`. A tenant accepted the change in a `PATCH`.
 
 ## Prerequisites
 
-- `enable_unofficial = true` and the `integration_assessment` provider block, with the service key
-  of an *Integration Assessment APIs* service instance (plan `default`). The Cloud Integration
+- The `integration_assessment` provider block, with the service key of an
+  *Integration Assessment APIs* service instance (plan `default`). The Cloud Integration
   credentials do not work for this API.
 - An Integration Assessment subscription in the subaccount.
 - A vendor to link, if any: [`sapintegrationsuite_integration_assessment_vendor`](integration_assessment_vendor.md) or the vendor data source.
@@ -29,14 +29,15 @@ were verified on a tenant in September 2026; SAP may change them without notice.
 |---|---|
 | Create | Creates the application, linked to `vendor_id` if set. |
 | Read | Reads the name and the linked vendor; a vendor linked or unlinked in the UI shows as drift. |
-| Update | `name` and `vendor_id` change in place (PATCH). Removing `vendor_id` removes the link. |
+| Update | `name` changes in place (PATCH). `vendor_id` changes in place with `enable_unofficial = true`; removing it removes the link. The update sends the vendor only when it changes. |
 | Replacement | None. |
 | Delete | Deletes the application. |
 
 ## Example Usage
 
 ```terraform
-# Unofficial: needs enable_unofficial = true and provider.integration_assessment.
+# Needs provider.integration_assessment. Changing a link in place also needs
+# enable_unofficial = true.
 resource "sapintegrationsuite_integration_assessment_application" "warehouse" {
   name      = "ACME Warehouse Management"
   vendor_id = sapintegrationsuite_integration_assessment_vendor.acme.id
@@ -52,7 +53,7 @@ resource "sapintegrationsuite_integration_assessment_application" "warehouse" {
 
 ### Optional
 
-- `vendor_id` (String) Id of the vendor, for example from sapintegrationsuite_integration_assessment_vendor. Setting, changing and removing it changes the application in place.
+- `vendor_id` (String) Id of the vendor, for example from sapintegrationsuite_integration_assessment_vendor. Setting, changing and removing it changes the application in place and needs enable_unofficial.
 
 ### Read-Only
 
@@ -71,8 +72,7 @@ The ID is the UUID the service assigned. Everything is recovered from the servic
 
 - **SAP:** the service documents limits per tenant: 20,000 applications, 20,000 application
   instances, 50 technologies, 150 technology instances and 10,000 vendors.
-- **Provider:** unofficial until the specification is available without a login or verified from
-  the Hub download. Ids are UUIDs the service assigns; configurations reference them through
+- **Provider:** Ids are UUIDs the service assigns; configurations reference them through
   other resources or the lookup data sources, never as literals.
 
 ## Related

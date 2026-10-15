@@ -23,6 +23,9 @@ func NewIntegrationAssessmentApplicationResource() resource.Resource {
 
 type iaApplicationResource struct {
 	client *integrationassessment.Client
+	// allowUnofficial is the provider's enable_unofficial: it allows a link
+	// change in place, which the specification does not document.
+	allowUnofficial bool
 }
 
 type iaApplicationModel struct {
@@ -37,9 +40,9 @@ func (r *iaApplicationResource) Metadata(_ context.Context, req resource.Metadat
 
 func (r *iaApplicationResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: iaUnofficialNote + "A business application in the Integration Assessment landscape, " +
+		Description: "A business application in the Integration Assessment landscape, " +
 			"optionally of a vendor. Application instances describe where it runs. Backed by the " +
-			"Application entity set of the Entities API.",
+			"Application entity set of the Entities API." + iaLinkChangeNote,
 		Attributes: map[string]schema.Attribute{
 			"id": iaIDAttribute("application"),
 			"name": schema.StringAttribute{
@@ -50,7 +53,7 @@ func (r *iaApplicationResource) Schema(_ context.Context, _ resource.SchemaReque
 			"vendor_id": schema.StringAttribute{
 				Optional: true,
 				Description: "Id of the vendor, for example from sapintegrationsuite_integration_assessment_vendor. " +
-					"Setting, changing and removing it changes the application in place.",
+					"Setting, changing and removing it changes the application in place and needs enable_unofficial.",
 				Validators: []validator.String{stringvalidator.LengthAtLeast(1)},
 			},
 		},
@@ -60,6 +63,7 @@ func (r *iaApplicationResource) Schema(_ context.Context, _ resource.SchemaReque
 func (r *iaApplicationResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if c := integrationAssessmentClient(req.ProviderData, iaApplicationType, "resource", &resp.Diagnostics); c != nil {
 		r.client = c
+		r.allowUnofficial = integrationAssessmentData(req.ProviderData, &resp.Diagnostics).EnableUnofficial
 	}
 }
 
@@ -116,14 +120,32 @@ func (r *iaApplicationResource) Read(ctx context.Context, req resource.ReadReque
 	resp.Diagnostics.Append(resp.State.Set(ctx, m)...)
 }
 
-func (r *iaApplicationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan iaApplicationModel
+// ModifyPlan stops a vendor change without enable_unofficial.
+func (r *iaApplicationResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if r.client == nil || !isInPlaceUpdate(req, resp) {
+		return
+	}
+	var state, plan iaApplicationModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	iaRequireLinkChange(r.allowUnofficial, iaApplicationType, &resp.Diagnostics, [2]types.String{state.VendorID, plan.VendorID})
+}
+
+func (r *iaApplicationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var state, plan iaApplicationModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if !iaRequireLinkChange(r.allowUnofficial, iaApplicationType, &resp.Diagnostics, [2]types.String{state.VendorID, plan.VendorID}) {
+		return
+	}
 	id := plan.ID.ValueString()
-	if err := r.client.UpdateApplication(ctx, id, plan.Name.ValueString(), stringOrEmpty(plan.VendorID)); err != nil {
+	if err := r.client.UpdateApplication(ctx, id, plan.Name.ValueString(), iaLinkChange(state.VendorID, plan.VendorID)); err != nil {
 		resp.Diagnostics.AddError("Failed to update Integration Assessment application", diagnosticDetail(err))
 		return
 	}

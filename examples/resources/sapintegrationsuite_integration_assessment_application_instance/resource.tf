@@ -1,4 +1,5 @@
-# Unofficial: needs enable_unofficial = true and provider.integration_assessment.
+# Needs provider.integration_assessment. Changing a link in place also needs
+# enable_unofficial = true.
 variable "deployment_model_name" {
   description = "Name of one of SAP's deployment models, as the Integration Assessment UI lists them."
   type        = string

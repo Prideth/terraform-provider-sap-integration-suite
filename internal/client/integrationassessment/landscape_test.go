@@ -70,9 +70,19 @@ func TestCreateApplication_WithoutVendorOmitsTheLink(t *testing.T) {
 	}
 }
 
+func TestUpdateApplication_LeavesAnUnchangedVendorOut(t *testing.T) {
+	c, got := fakeService(t, "")
+	if err := c.UpdateApplication(context.Background(), "app-1", "ERP 2", nil); err != nil {
+		t.Fatal(err)
+	}
+	if r := (*got)[0]; len(r.body) != 1 || r.body["Name"] != "ERP 2" {
+		t.Errorf("body = %v, want only Name, as in the specification's update body", r.body)
+	}
+}
+
 func TestUpdateApplication_RemovesTheVendorWithNull(t *testing.T) {
 	c, got := fakeService(t, "")
-	if err := c.UpdateApplication(context.Background(), "app-1", "ERP 2", ""); err != nil {
+	if err := c.UpdateApplication(context.Background(), "app-1", "ERP 2", &LinkChange{}); err != nil {
 		t.Fatal(err)
 	}
 	r := (*got)[0]
@@ -98,7 +108,7 @@ func linkID(body map[string]any, key string) string {
 func TestUpdateApplicationInstance_SendsBothLinks(t *testing.T) {
 	c, got := fakeService(t, "")
 	desc := "moved"
-	if err := c.UpdateApplicationInstance(context.Background(), "inst-1", "ERP PRD", &desc, "app-2", "dm-2"); err != nil {
+	if err := c.UpdateApplicationInstance(context.Background(), "inst-1", "ERP PRD", &desc, &LinkChange{To: "app-2"}, &LinkChange{To: "dm-2"}); err != nil {
 		t.Fatal(err)
 	}
 	r := (*got)[0]
@@ -112,7 +122,7 @@ func TestUpdateApplicationInstance_SendsBothLinks(t *testing.T) {
 
 func TestUpdateTechnology_SendsTheVendor(t *testing.T) {
 	c, got := fakeService(t, "")
-	if err := c.UpdateTechnology(context.Background(), "tech-1", "Kafka", "vendor-2"); err != nil {
+	if err := c.UpdateTechnology(context.Background(), "tech-1", "Kafka", &LinkChange{To: "vendor-2"}); err != nil {
 		t.Fatal(err)
 	}
 	if r := (*got)[0]; r.path != "/intas/entities/v1/Technology('tech-1')" || linkID(r.body, "Vendor") != "vendor-2" || r.body["Name"] != "Kafka" {
@@ -122,7 +132,7 @@ func TestUpdateTechnology_SendsTheVendor(t *testing.T) {
 
 func TestUpdateTechnologyInstance_LeavesTheTechnologyAlone(t *testing.T) {
 	c, got := fakeService(t, "")
-	if err := c.UpdateTechnologyInstance(context.Background(), "ti-1", "Kafka PRD", "dm-2"); err != nil {
+	if err := c.UpdateTechnologyInstance(context.Background(), "ti-1", "Kafka PRD", &LinkChange{To: "dm-2"}); err != nil {
 		t.Fatal(err)
 	}
 	r := (*got)[0]
@@ -131,6 +141,20 @@ func TestUpdateTechnologyInstance_LeavesTheTechnologyAlone(t *testing.T) {
 	}
 	if _, present := r.body["Technology"]; present || linkID(r.body, "DeploymentModel") != "dm-2" || r.body["Name"] != "Kafka PRD" {
 		t.Errorf("body = %v, want Name and DeploymentModel only", r.body)
+	}
+}
+
+func TestUpdateApplicationInstance_SendsOnlyTheChangedLink(t *testing.T) {
+	c, got := fakeService(t, "")
+	if err := c.UpdateApplicationInstance(context.Background(), "inst-1", "ERP PRD", nil, nil, &LinkChange{To: "dm-2"}); err != nil {
+		t.Fatal(err)
+	}
+	r := (*got)[0]
+	if _, present := r.body["Application"]; present || linkID(r.body, "DeploymentModel") != "dm-2" {
+		t.Errorf("body = %v, want DeploymentModel and no Application", r.body)
+	}
+	if v, present := r.body["Description"]; !present || v != nil {
+		t.Errorf("body = %v, want Description: null", r.body)
 	}
 }
 

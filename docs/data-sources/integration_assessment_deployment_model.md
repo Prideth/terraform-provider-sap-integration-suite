@@ -11,10 +11,8 @@ Returns the Id and description of a deployment model, for example to link applic
 technology instances to it. Deployment models belong to SAP's Integration Solution Advisory
 Methodology taxonomy; the Ids differ between tenants, the names do not.
 
-**Status:** unofficial. Needs `enable_unofficial = true` in the provider block. SAP documents the
-Integration Assessment Entities API and this entity, but the field-level specification on the
-Business Accelerator Hub needs an SAP login. The requests follow the service's `$metadata` and
-were verified on a tenant in September 2026; SAP may change them without notice.
+**Status:** supported. SAP's Entities API specification on the Business Accelerator Hub
+documents this entity, and its requests were verified on a tenant. No opt-in switch is needed.
 
 Names are compared exactly, including case. The plan fails when no entry or more than one entry
 has the name.
@@ -22,7 +20,7 @@ has the name.
 ## Example Usage
 
 ```terraform
-# Unofficial: needs enable_unofficial = true and provider.integration_assessment.
+# Needs provider.integration_assessment.
 variable "deployment_model_name" {
   description = "Name of one of SAP's deployment models, as the Integration Assessment UI lists them."
   type        = string

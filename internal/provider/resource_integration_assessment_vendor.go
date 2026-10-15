@@ -36,7 +36,7 @@ func (r *iaVendorResource) Metadata(_ context.Context, req resource.MetadataRequ
 
 func (r *iaVendorResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: iaUnofficialNote + "A vendor in the Integration Assessment landscape: the supplier of " +
+		Description: "A vendor in the Integration Assessment landscape: the supplier of " +
 			"applications and technologies. Backed by the Vendor entity set of the Entities API.",
 		Attributes: map[string]schema.Attribute{
 			"id": iaIDAttribute("vendor"),

@@ -53,10 +53,13 @@ These need no further research, only a run of the prepared tests:
 ## P1 — public contract, next implementation
 
 1. **Integration Assessment.** The landscape (0.4), the technology profiles and the complete
-   ISA-M taxonomy (0.5) exist, all unofficial. `TestAccIntegrationAssessment_technologyProfile`
-   and `TestAccIntegrationAssessment_taxonomy` passed on 2026-10-04. The Hub specification of
-   the Entities API would make them supported; it still needs an SAP login. Requests and
-   assessment results stay out of scope as workflow.
+   ISA-M taxonomy (0.5) are supported since 0.8: the Entities API specification from the Hub
+   (downloaded 2026-10-10) documents every entity set and request the provider uses. Only a link
+   change in place stays unofficial, because the specification's update bodies list no links.
+   The specification also documents create, update and delete for key characteristic groups,
+   key characteristics and key characteristic values, which the provider only reads; resources
+   for them are possible once a tenant test shows how custom entries behave next to SAP's.
+   Requests and assessment results stay out of scope as workflow.
 2. **API Composition hardening.** A key user's token (password grant through the
    `configuration` client) reads the Configuration API; a client-credentials token got 403. The
    provider has that login since `feature/api-composition-hardening`, `TestAccMetadata` passes

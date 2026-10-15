@@ -17,13 +17,17 @@ often kept in several places. Managing it with Terraform keeps it in one reviewe
 
 ## Status
 
-The resources and data sources of this capability are **unofficial** and need
-`enable_unofficial = true`. SAP documents the Integration Assessment APIs, their entities and
-their per-tenant limits, and lists the Entities API on the Business Accelerator Hub, but the
-field-level specification there needs an SAP login. The provider's requests follow the service's
+The resources and data sources of this capability are **supported** and need no opt-in switch.
+SAP documents the Integration Assessment APIs, their entities and their per-tenant limits, and
+the Entities API specification on the Business Accelerator Hub documents every entity set and
+request the provider uses. The provider also checks its requests against the service's
 `$metadata`, committed as a snapshot and compared with the live service by the API discovery,
-and every operation was verified on a tenant in September 2026. They become supported once the
-specification confirms them.
+and every operation was verified on a tenant.
+
+One operation is not in the specification: changing a link in place, for example moving an
+application instance to another application. The specification's update bodies list no links;
+a tenant accepted the change in a `PATCH`. It therefore needs `enable_unofficial = true`; see
+[What changes in place](#what-changes-in-place).
 
 ## Setup
 
@@ -36,8 +40,6 @@ Integration Assessment is its own BTP service with its own credentials:
 
 ```terraform
 provider "sapintegrationsuite" {
-  enable_unofficial = true
-
   integration_assessment {
     entities_url  = var.integration_assessment.entities
     token_url     = "${var.integration_assessment.url}/oauth/token"
@@ -198,10 +200,20 @@ found by that pair.
 
 ## What changes in place
 
-Almost everything changes in place: names, an application's vendor (set, changed or removed),
-an application instance's description, application and deployment model, a technology's vendor,
-and a technology instance's name and deployment model. Only moving a technology instance to
-another technology was not tested on a tenant, so it replaces the instance.
+Names and an application instance's description change in place without an opt-in switch, as
+the specification documents.
+
+Links change in place too, but only with `enable_unofficial = true`, because the
+specification's update bodies do not list them: an application's vendor (set, changed or
+removed), an application instance's application and deployment model, a technology's vendor and
+a technology instance's deployment model. A tenant accepted each of these changes. Without the
+switch, a plan that changes a link fails and names the switch; nothing is replaced. An update
+sends a link only when it changes, so a rename never depends on the switch.
+
+Moving a technology instance to another technology was not tested on a tenant, so it replaces
+the instance. The entries of a technology profile (domains, styles, key characteristics) are
+replaced on every change: the specification documents a `PATCH` for them, but its update bodies
+carry no link, and a tenant refused it for a key characteristic.
 The service's limits apply: 20,000 applications, 20,000 application
 instances, 50 technologies, 150 technology instances and 10,000 vendors per tenant.
 

@@ -18,6 +18,7 @@ import (
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/apicomposition"
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/cloudintegration"
 	sapthttp "github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/http"
+	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/client/integrationassessment"
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/features"
 )
 
@@ -106,6 +107,35 @@ func TestOperationGates_Plan(t *testing.T) {
 		}
 		return r
 	}
+	ia := integrationassessment.New(http.DefaultClient, "https://intas.example")
+	newIAApp := func(c, a bool) gated {
+		r := &iaApplicationResource{allowUnofficial: a}
+		if c {
+			r.client = ia
+		}
+		return r
+	}
+	newIAInstance := func(c, a bool) gated {
+		r := &iaApplicationInstanceResource{allowUnofficial: a}
+		if c {
+			r.client = ia
+		}
+		return r
+	}
+	newIATech := func(c, a bool) gated {
+		r := &iaTechnologyResource{allowUnofficial: a}
+		if c {
+			r.client = ia
+		}
+		return r
+	}
+	newIATechInstance := func(c, a bool) gated {
+		r := &iaTechnologyInstanceResource{allowUnofficial: a}
+		if c {
+			r.client = ia
+		}
+		return r
+	}
 	newNR := func(c, a bool) gated {
 		r := &numberRangeResource{allowUnofficial: a}
 		if c {
@@ -153,6 +183,68 @@ func TestOperationGates_Plan(t *testing.T) {
 			state:       map[string]tftypes.Value{"id": str("sap.graph.a")},
 			plan:        map[string]tftypes.Value{"id": str("sap.graph.b")},
 			replace:     true,
+			wantRefusal: true,
+		},
+		{
+			name:        "IA application rename",
+			newResource: newIAApp,
+			state:       map[string]tftypes.Value{"id": str("a"), "name": str("old"), "vendor_id": str("v1")},
+			plan:        map[string]tftypes.Value{"id": str("a"), "name": str("new"), "vendor_id": str("v1")},
+		},
+		{
+			name:        "IA application vendor removed",
+			newResource: newIAApp,
+			state:       map[string]tftypes.Value{"id": str("a"), "name": str("n"), "vendor_id": str("v1")},
+			plan:        map[string]tftypes.Value{"id": str("a"), "name": str("n")},
+			wantRefusal: true,
+		},
+		{
+			name:        "IA application vendor set to an unknown Id",
+			newResource: newIAApp,
+			state:       map[string]tftypes.Value{"id": str("a"), "name": str("n")},
+			plan: map[string]tftypes.Value{"id": str("a"), "name": str("n"),
+				"vendor_id": tftypes.NewValue(tftypes.String, tftypes.UnknownValue)},
+			wantRefusal: true,
+		},
+		{
+			name:        "IA application instance description",
+			newResource: newIAInstance,
+			state: map[string]tftypes.Value{"id": str("i"), "name": str("n"), "description": str("old"),
+				"application_id": str("a1"), "deployment_model_id": str("d1")},
+			plan: map[string]tftypes.Value{"id": str("i"), "name": str("n"), "description": str("new"),
+				"application_id": str("a1"), "deployment_model_id": str("d1")},
+		},
+		{
+			name:        "IA application instance moved to another application",
+			newResource: newIAInstance,
+			state: map[string]tftypes.Value{"id": str("i"), "name": str("n"),
+				"application_id": str("a1"), "deployment_model_id": str("d1")},
+			plan: map[string]tftypes.Value{"id": str("i"), "name": str("n"),
+				"application_id": str("a2"), "deployment_model_id": str("d1")},
+			wantRefusal: true,
+		},
+		{
+			name:        "IA technology moved to another vendor",
+			newResource: newIATech,
+			state:       map[string]tftypes.Value{"id": str("t"), "name": str("n"), "vendor_id": str("v1")},
+			plan:        map[string]tftypes.Value{"id": str("t"), "name": str("n"), "vendor_id": str("v2")},
+			wantRefusal: true,
+		},
+		{
+			name:        "IA technology instance rename",
+			newResource: newIATechInstance,
+			state: map[string]tftypes.Value{"id": str("ti"), "name": str("old"),
+				"technology_id": str("t"), "deployment_model_id": str("d1")},
+			plan: map[string]tftypes.Value{"id": str("ti"), "name": str("new"),
+				"technology_id": str("t"), "deployment_model_id": str("d1")},
+		},
+		{
+			name:        "IA technology instance moved to another deployment model",
+			newResource: newIATechInstance,
+			state: map[string]tftypes.Value{"id": str("ti"), "name": str("n"),
+				"technology_id": str("t"), "deployment_model_id": str("d1")},
+			plan: map[string]tftypes.Value{"id": str("ti"), "name": str("n"),
+				"technology_id": str("t"), "deployment_model_id": str("d2")},
 			wantRefusal: true,
 		},
 		{
@@ -210,14 +302,16 @@ func operationGatedTypes(t *testing.T) map[string]bool {
 	ctx := context.Background()
 	p := &sapIntegrationSuiteProvider{version: "test"}
 	data := &Data{
-		Host:                           "https://tenant.example",
-		HTTPClient:                     &sapthttp.Client{},
-		APIManagementClassicHost:       "https://apim.example",
-		APIManagementClassicHTTPClient: &sapthttp.Client{},
-		APICompositionHost:             "https://graph.example",
-		APICompositionHTTPClient:       &sapthttp.Client{},
-		EnableExperimental:             true,
-		EnableUnofficial:               true,
+		Host:                            "https://tenant.example",
+		HTTPClient:                      &sapthttp.Client{},
+		APIManagementClassicHost:        "https://apim.example",
+		APIManagementClassicHTTPClient:  &sapthttp.Client{},
+		APICompositionHost:              "https://graph.example",
+		APICompositionHTTPClient:        &sapthttp.Client{},
+		IntegrationAssessmentURL:        "https://intas.example",
+		IntegrationAssessmentHTTPClient: &sapthttp.Client{},
+		EnableExperimental:              true,
+		EnableUnofficial:                true,
 	}
 	gated := map[string]bool{}
 	for _, newResource := range p.Resources(ctx) {

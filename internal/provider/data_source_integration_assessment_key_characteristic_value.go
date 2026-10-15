@@ -41,7 +41,7 @@ func (d *iaKeyCharacteristicValueDataSource) Metadata(_ context.Context, req dat
 
 func (d *iaKeyCharacteristicValueDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: iaUnofficialNote + "Finds a value of one of the key characteristics that SAP's Integration " +
+		Description: "Finds a value of one of the key characteristics that SAP's Integration " +
 			"Solution Advisory Methodology rates technologies on, to rate a technology with " +
 			"sapintegrationsuite_integration_assessment_technology_key_characteristic.",
 		Attributes: map[string]schema.Attribute{

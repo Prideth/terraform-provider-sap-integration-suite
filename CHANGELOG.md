@@ -17,6 +17,10 @@ credentials. All of them are unofficial: their requests are known only from
 the tenant `$metadata`, not from SAP's documentation, so they need
 `enable_unofficial = true`. Each passed an acceptance test on a tenant.
 
+Integration Assessment becomes supported: SAP's Entities API specification
+documents the requests of its resources and data sources, so they no
+longer need an opt-in switch.
+
 ### New resources
 
 - `sapintegrationsuite_key_pair_certificate_chain` (unofficial): gives a key
@@ -59,6 +63,20 @@ the tenant `$metadata`, not from SAP's documentation, so they need
 
 ### Changed
 
+- **Integration Assessment needs no opt-in switch.** SAP's Entities API
+  specification on the Business Accelerator Hub documents every entity set
+  and request of the Integration Assessment resources and data sources:
+  create, read, update (`PATCH`) and delete of vendors, applications,
+  application instances, technologies, technology instances and technology
+  profile entries, and the taxonomy. They were unofficial and needed
+  `enable_unofficial = true`; they are now supported.
+- **A link change in place stays unofficial.** The specification's update
+  bodies list no links. Changing an application's vendor (set, changed or
+  removed), an application instance's application or deployment model, a
+  technology's vendor or a technology instance's deployment model in place
+  still needs `enable_unofficial = true`; without it the plan fails and
+  names the switch, and nothing is replaced. An update now sends a link
+  only when it changes, so a rename follows the specification exactly.
 - `sapintegrationsuite_key_pair` keeps `valid_not_before` and
   `valid_not_after` as generated once a CA-signed chain was uploaded. SAP
   then reports the signed certificate's validity, and a configuration that

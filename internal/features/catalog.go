@@ -2274,9 +2274,8 @@ var Catalog = []Feature{
 			"Style, Use Case Pattern, Integration Pattern, Key Characteristic (and its Group/Value/" +
 			"Recommendation), Deployment Model, Domain Determination — largely SAP-maintained " +
 			"reference content a tenant can review and adjust.",
-		SupportStatus:  StatusUnofficial,
-		SupportReason:  ReasonPublicAPIIncomplete,
-		ContractSource: SourceMetadataOnly,
+		SupportStatus:  StatusSupported,
+		ContractSource: SourceAPISpecification,
 		DataSourceTypes: []string{
 			"sapintegrationsuite_integration_assessment_deployment_model",
 			"sapintegrationsuite_integration_assessment_domain",
@@ -2292,20 +2291,23 @@ var Catalog = []Feature{
 		APIProtocol: "OData V2",
 		Operations:  Operations{Read: true},
 		Limitations: []string{
-			"SAP documents the Entities API and lists these entities with a description each; the " +
-				"field-level specification on the Business Accelerator Hub needs an SAP login. The " +
-				"contract comes from the live $metadata (snapshot testdata/api-metadata/integration-" +
-				"assessment-entities.json), and every entity set was read on a tenant in September 2026.",
+			"SAP's Entities API specification on the Business Accelerator Hub (package " +
+				"SAPIntegrationAssessment, downloaded 2026-10-10) documents every taxonomy entity set " +
+				"with its properties and links. The live $metadata (snapshot testdata/api-metadata/" +
+				"integration-assessment-entities.json) matches it, and every entity set was read on a " +
+				"tenant in September 2026.",
 			"The whole taxonomy has read-only data sources, looked up by exact name: deployment " +
 				"models, domains, styles, use case patterns, integration patterns, key characteristic " +
 				"groups, key characteristic values (by their key characteristic's name and their own, " +
 				"since value names repeat) and recommendation degrees. A domain determination has no " +
 				"name and is found by its source and target deployment models.",
-			"SAP Help's description of Domain Determination repeats the recommendation degree's text; " +
-				"its meaning (the domain that applies between two deployment models) comes from the " +
-				" only.",
+			"SAP Help's description of Domain Determination repeats the recommendation degree's text, " +
+				"and the specification describes it only as a list; its meaning (the domain that applies " +
+				"between a source and a target deployment model) comes from its links.",
 			"The taxonomy is SAP's reference content, adjusted in the UI if at all, so there are no " +
-				"resources for it.",
+				"resources for it. The specification also documents create, update and delete for key " +
+				"characteristic groups, key characteristics and key characteristic values; the provider " +
+				"does not offer them.",
 			"Needs provider.integration_assessment: the service key of an \"Integration Assessment " +
 				"APIs\" service instance; the other credential sets do not work there.",
 		},
@@ -2317,9 +2319,11 @@ var Catalog = []Feature{
 		Description: "Tenant-owned integration landscape inventory: Application, Application " +
 			"Instance, Technology, Technology Instance, Vendor, and their association entities " +
 			"(Technology Domain, Technology Style, Technology Key Characteristic).",
-		SupportStatus:  StatusUnofficial,
-		SupportReason:  ReasonPublicAPIIncomplete,
-		ContractSource: SourceMetadataOnly,
+		SupportStatus:  StatusSupported,
+		ContractSource: SourceAPISpecification,
+		UndocumentedOperations: []string{"link change in place (PATCH with a link, verified on a tenant): an " +
+			"application's vendor, an application instance's application and deployment model, a " +
+			"technology's vendor and a technology instance's deployment model"},
 		ResourceTypes: []string{
 			"sapintegrationsuite_integration_assessment_vendor",
 			"sapintegrationsuite_integration_assessment_application",
@@ -2338,21 +2342,28 @@ var Catalog = []Feature{
 		APIProtocol: "OData V2",
 		Operations:  Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
 		Limitations: []string{
-			"SAP documents the Entities API, these entities and their per-tenant limits (20,000 " +
-				"applications, 20,000 application instances, 50 technologies, 150 technology instances, " +
-				"10,000 vendors), but the field-level specification on the Business Accelerator Hub needs " +
-				"an SAP login. The requests follow the live $metadata and were verified on a tenant on " +
-				"2026-09-27: create (201 with a UUID Id), read, PATCH and PUT (204), delete (204) for all " +
-				"five objects, and links written as {\"Id\": ...}; the service rejects links written as " +
-				"__metadata URIs (V124) and a Content-Type with a charset parameter (V122).",
-			"Names, descriptions and links change in place (PATCH, verified on 2026-09-28): an " +
-				"application's vendor, an application instance's application and deployment model, a " +
-				"technology's vendor and a technology instance's deployment model. Only moving a technology " +
-				"instance to another technology was not tested, so it replaces the instance.",
+			"SAP's Entities API specification on the Business Accelerator Hub (package " +
+				"SAPIntegrationAssessment, downloaded 2026-10-10) documents create (POST), read, update " +
+				"(PATCH) and delete for vendors, applications, application instances, technologies and " +
+				"technology instances, with links written as {\"Id\": ...} in a create. SAP Help documents " +
+				"the per-tenant limits (20,000 applications, 20,000 application instances, 50 technologies, " +
+				"150 technology instances, 10,000 vendors). A tenant confirmed every request on 2026-09-27 " +
+				"and rejected links written as __metadata URIs (V124) and a Content-Type with a charset " +
+				"parameter (V122).",
+			"Names and descriptions change in place without an opt-in switch. The specification's " +
+				"update bodies list no links, so a link change in place needs enable_unofficial = true: an " +
+				"application's vendor (set, changed or removed), an application instance's application " +
+				"and deployment model, a technology's vendor and a technology instance's deployment " +
+				"model. A tenant accepted each of them in a PATCH (2026-09-28). An update sends a link only " +
+				"when it changes. Moving a technology instance to another technology was not tested, so it " +
+				"replaces the instance.",
+			"The specification wraps its PATCH body in {\"d\": ...}; the provider sends the properties " +
+				"unwrapped, as the tenant accepted them.",
 			"A technology's profile (TechnologyDomain, TechnologyStyle, TechnologyKeyCharacteristic) " +
 				"is managed as three association resources. Create, read and delete work on a tenant " +
-				"(2026-09-28); the service has no update for them (a key characteristic answered PATCH " +
-				"with 400 V101), so every attribute forces a new association.",
+				"(2026-09-28). The specification documents a PATCH for all three, but its update bodies " +
+				"carry nothing for a domain or style link, and a key characteristic's PATCH answered " +
+				"400 V101 on a tenant, so every attribute forces a new association.",
 			"Needs provider.integration_assessment: the service key of an \"Integration Assessment " +
 				"APIs\" service instance; the other credential sets do not work there.",
 		},

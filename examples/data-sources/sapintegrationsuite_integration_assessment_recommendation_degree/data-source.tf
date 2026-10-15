@@ -1,4 +1,4 @@
-# Unofficial: needs enable_unofficial = true and provider.integration_assessment.
+# Needs provider.integration_assessment.
 variable "recommendation_degree_name" {
   description = "Name of a recommendation degree, as the Integration Assessment UI lists it."
   type        = string

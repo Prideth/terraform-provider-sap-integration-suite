@@ -11,15 +11,15 @@ An application instance is one installation of an application, for example its p
 system, together with the deployment model it runs on. Integration requests in an assessment
 refer to instances, so this is the level the landscape is usually described at.
 
-**Status:** unofficial. Needs `enable_unofficial = true` in the provider block. SAP documents the
-Integration Assessment Entities API and this entity, but the field-level specification on the
-Business Accelerator Hub needs an SAP login. The requests follow the service's `$metadata` and
-were verified on a tenant in September 2026; SAP may change them without notice.
+**Status:** supported. SAP's Entities API specification on the Business Accelerator Hub
+documents this entity, and its requests were verified on a tenant. No opt-in switch is needed.
+Changing `application_id` or `deployment_model_id` in place is the exception: the specification's update body lists no
+links, so it needs `enable_unofficial = true`. A tenant accepted the change in a `PATCH`.
 
 ## Prerequisites
 
-- `enable_unofficial = true` and the `integration_assessment` provider block, with the service key
-  of an *Integration Assessment APIs* service instance (plan `default`). The Cloud Integration
+- The `integration_assessment` provider block, with the service key of an
+  *Integration Assessment APIs* service instance (plan `default`). The Cloud Integration
   credentials do not work for this API.
 - An Integration Assessment subscription in the subaccount.
 - The application, and a deployment model Id from the
@@ -31,14 +31,15 @@ were verified on a tenant in September 2026; SAP may change them without notice.
 |---|---|
 | Create | Creates the instance, linked to the application and the deployment model. |
 | Read | Reads name, description and both links. |
-| Update | `name`, `description`, `application_id` and `deployment_model_id` change in place (PATCH). Changing `application_id` moves the instance to the other application and keeps its Id. |
+| Update | `name` and `description` change in place (PATCH). `application_id` and `deployment_model_id` change in place with `enable_unofficial = true`; changing `application_id` moves the instance to the other application and keeps its Id. The update sends a link only when it changes. |
 | Replacement | None. |
 | Delete | Deletes the instance. |
 
 ## Example Usage
 
 ```terraform
-# Unofficial: needs enable_unofficial = true and provider.integration_assessment.
+# Needs provider.integration_assessment. Changing a link in place also needs
+# enable_unofficial = true.
 variable "deployment_model_name" {
   description = "Name of one of SAP's deployment models, as the Integration Assessment UI lists them."
   type        = string
@@ -61,8 +62,8 @@ resource "sapintegrationsuite_integration_assessment_application_instance" "ware
 
 ### Required
 
-- `application_id` (String) Id of the application this is an instance of, for example from sapintegrationsuite_integration_assessment_application. Changing it moves the instance to the other application in place.
-- `deployment_model_id` (String) Id of the deployment model, for example from the sapintegrationsuite_integration_assessment_deployment_model data source. Changes in place.
+- `application_id` (String) Id of the application this is an instance of, for example from sapintegrationsuite_integration_assessment_application. Changing it moves the instance to the other application in place and needs enable_unofficial.
+- `deployment_model_id` (String) Id of the deployment model, for example from the sapintegrationsuite_integration_assessment_deployment_model data source. Changes in place and needs enable_unofficial.
 - `name` (String) The instance's name. Changes in place.
 
 ### Optional
@@ -86,8 +87,7 @@ The ID is the UUID the service assigned. Everything is recovered from the servic
 
 - **SAP:** the service documents limits per tenant: 20,000 applications, 20,000 application
   instances, 50 technologies, 150 technology instances and 10,000 vendors.
-- **Provider:** unofficial until the specification is available without a login or verified from
-  the Hub download. Ids are UUIDs the service assigns; configurations reference them through
+- **Provider:** Ids are UUIDs the service assigns; configurations reference them through
   other resources or the lookup data sources, never as literals.
 
 ## Related

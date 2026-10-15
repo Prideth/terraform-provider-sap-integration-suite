@@ -1,4 +1,4 @@
-# Unofficial: needs enable_unofficial = true and provider.integration_assessment.
+# Needs provider.integration_assessment.
 variable "use_case_pattern_name" {
   description = "Name of a use case pattern, as the Integration Assessment UI lists it."
   type        = string

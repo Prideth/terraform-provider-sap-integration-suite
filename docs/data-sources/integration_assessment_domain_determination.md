@@ -18,10 +18,8 @@ SAP Help's description of Domain Determination repeats the text of the recommend
 what the entity is follows from the service's `$metadata`, which links it to a domain and to a
 source and a target deployment model.
 
-**Status:** unofficial. Needs `enable_unofficial = true` in the provider block. SAP documents the
-Integration Assessment Entities API and this entity, but the field-level specification on the
-Business Accelerator Hub needs an SAP login. The requests follow the service's `$metadata` and
-were verified on a tenant in September 2026; SAP may change them without notice.
+**Status:** supported. SAP's Entities API specification on the Business Accelerator Hub
+documents this entity, and its requests were verified on a tenant. No opt-in switch is needed.
 
 The order matters: source and target are not interchangeable. The plan fails unless exactly one
 domain determination goes from the source to the target deployment model.
@@ -29,7 +27,7 @@ domain determination goes from the source to the target deployment model.
 ## Example Usage
 
 ```terraform
-# Unofficial: needs enable_unofficial = true and provider.integration_assessment.
+# Needs provider.integration_assessment.
 variable "source_deployment_model_name" {
   description = "Deployment model the integration starts from, as the Integration Assessment UI lists it."
   type        = string

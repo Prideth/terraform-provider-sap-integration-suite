@@ -254,7 +254,7 @@ func (d *iaLookup) Schema(_ context.Context, _ datasource.SchemaRequest, resp *d
 	for _, e := range d.extras {
 		attrs[e.attr] = schema.StringAttribute{Computed: true, Description: e.description}
 	}
-	resp.Schema = schema.Schema{Description: iaUnofficialNote + d.description, Attributes: attrs}
+	resp.Schema = schema.Schema{Description: d.description, Attributes: attrs}
 }
 
 func (d *iaLookup) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {

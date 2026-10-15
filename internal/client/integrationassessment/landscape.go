@@ -86,11 +86,8 @@ type DeploymentModel struct {
 }
 
 // Write bodies. A create omits links that are not set. An update sends the
-// Vendor link always: null removes it, which a tenant accepted (204) and a
-// read afterwards confirmed. Changing a required link with PATCH (an
-// instance's application or deployment model, a technology's vendor, a
-// technology instance's deployment model) was confirmed the same way on
-// 2026-09-28.
+// properties of the specification's update body and a link only when it
+// changes (see LinkChange).
 type vendorWrite struct {
 	Name string `json:"Name"`
 }
@@ -101,8 +98,8 @@ type applicationCreate struct {
 }
 
 type applicationUpdate struct {
-	Name   string `json:"Name"`
-	Vendor *idRef `json:"Vendor"`
+	Name   string      `json:"Name"`
+	Vendor *LinkChange `json:"Vendor,omitempty"`
 }
 
 type applicationInstanceCreate struct {
@@ -113,10 +110,10 @@ type applicationInstanceCreate struct {
 }
 
 type applicationInstanceUpdate struct {
-	Name            string  `json:"Name"`
-	Description     *string `json:"Description"`
-	Application     *idRef  `json:"Application"`
-	DeploymentModel *idRef  `json:"DeploymentModel"`
+	Name            string      `json:"Name"`
+	Description     *string     `json:"Description"`
+	Application     *LinkChange `json:"Application,omitempty"`
+	DeploymentModel *LinkChange `json:"DeploymentModel,omitempty"`
 }
 
 type technologyCreate struct {
@@ -125,8 +122,8 @@ type technologyCreate struct {
 }
 
 type technologyUpdate struct {
-	Name   string `json:"Name"`
-	Vendor *idRef `json:"Vendor"`
+	Name   string      `json:"Name"`
+	Vendor *LinkChange `json:"Vendor,omitempty"`
 }
 
 type technologyInstanceCreate struct {
@@ -138,8 +135,8 @@ type technologyInstanceCreate struct {
 // The technology link of a technology instance is not sent: changing it was
 // not tested, so the resource replaces the instance instead.
 type technologyInstanceUpdate struct {
-	Name            string `json:"Name"`
-	DeploymentModel *idRef `json:"DeploymentModel"`
+	Name            string      `json:"Name"`
+	DeploymentModel *LinkChange `json:"DeploymentModel,omitempty"`
 }
 
 // get reads one entity with its links expanded.
@@ -225,9 +222,10 @@ func (c *Client) CreateApplication(ctx context.Context, name, vendorID string) (
 	return &a, c.create(ctx, applicationEntitySet, applicationCreate{Name: name, Vendor: ref(vendorID)}, &a)
 }
 
-// UpdateApplication renames an application and sets or removes its vendor.
-func (c *Client) UpdateApplication(ctx context.Context, id, name, vendorID string) error {
-	return c.patch(ctx, applicationEntitySet, id, applicationUpdate{Name: name, Vendor: ref(vendorID)})
+// UpdateApplication renames an application and, with a LinkChange, sets,
+// changes or removes its vendor.
+func (c *Client) UpdateApplication(ctx context.Context, id, name string, vendor *LinkChange) error {
+	return c.patch(ctx, applicationEntitySet, id, applicationUpdate{Name: name, Vendor: vendor})
 }
 
 // DeleteApplication deletes an application.
@@ -250,11 +248,11 @@ func (c *Client) CreateApplicationInstance(ctx context.Context, name string, des
 	}, &i)
 }
 
-// UpdateApplicationInstance changes an instance's name and description and
-// moves it to applicationID and deploymentModelID.
-func (c *Client) UpdateApplicationInstance(ctx context.Context, id, name string, description *string, applicationID, deploymentModelID string) error {
+// UpdateApplicationInstance changes an instance's name and description and,
+// with LinkChanges, moves it to another application or deployment model.
+func (c *Client) UpdateApplicationInstance(ctx context.Context, id, name string, description *string, application, deploymentModel *LinkChange) error {
 	return c.patch(ctx, applicationInstanceEntitySet, id, applicationInstanceUpdate{
-		Name: name, Description: description, Application: ref(applicationID), DeploymentModel: ref(deploymentModelID),
+		Name: name, Description: description, Application: application, DeploymentModel: deploymentModel,
 	})
 }
 
@@ -275,9 +273,10 @@ func (c *Client) CreateTechnology(ctx context.Context, name, vendorID string) (*
 	return &t, c.create(ctx, technologyEntitySet, technologyCreate{Name: name, Vendor: ref(vendorID)}, &t)
 }
 
-// UpdateTechnology renames a technology and moves it to vendorID.
-func (c *Client) UpdateTechnology(ctx context.Context, id, name, vendorID string) error {
-	return c.patch(ctx, technologyEntitySet, id, technologyUpdate{Name: name, Vendor: ref(vendorID)})
+// UpdateTechnology renames a technology and, with a LinkChange, moves it to
+// another vendor.
+func (c *Client) UpdateTechnology(ctx context.Context, id, name string, vendor *LinkChange) error {
+	return c.patch(ctx, technologyEntitySet, id, technologyUpdate{Name: name, Vendor: vendor})
 }
 
 // DeleteTechnology deletes a technology.
@@ -306,10 +305,10 @@ func (c *Client) CreateTechnologyInstance(ctx context.Context, name, technologyI
 	}, &i)
 }
 
-// UpdateTechnologyInstance renames a technology instance and moves it to
-// deploymentModelID.
-func (c *Client) UpdateTechnologyInstance(ctx context.Context, id, name, deploymentModelID string) error {
-	return c.patch(ctx, technologyInstanceEntitySet, id, technologyInstanceUpdate{Name: name, DeploymentModel: ref(deploymentModelID)})
+// UpdateTechnologyInstance renames a technology instance and, with a
+// LinkChange, moves it to another deployment model.
+func (c *Client) UpdateTechnologyInstance(ctx context.Context, id, name string, deploymentModel *LinkChange) error {
+	return c.patch(ctx, technologyInstanceEntitySet, id, technologyInstanceUpdate{Name: name, DeploymentModel: deploymentModel})
 }
 
 // DeleteTechnologyInstance deletes a technology instance.
