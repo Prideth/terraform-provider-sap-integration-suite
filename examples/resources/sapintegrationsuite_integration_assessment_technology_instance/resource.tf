@@ -1,4 +1,5 @@
-# Unofficial: needs enable_unofficial = true and provider.integration_assessment.
+# Needs provider.integration_assessment. Changing a link in place also needs
+# enable_unofficial = true.
 # name and deployment_model_id change in place; a new technology_id creates a new instance.
 resource "sapintegrationsuite_integration_assessment_technology_instance" "acme_esb_prd" {
   name                = "ACME ESB PRD"

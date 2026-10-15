@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -130,17 +131,24 @@ func expectInPlace(addresses ...string) resource.ConfigPlanChecks {
 
 // The landscape lifecycle: two vendors with an application each, an
 // application instance, a technology and a technology instance; then
-// renames, the application's vendor removed and the instance's description
-// changed in place; then the instance moved to the other application and
-// deployment model, the technology to the other vendor and the technology
-// instance to the other deployment model, all in place; then an import of
-// every object. Destroy deletes them in dependency order.
+// renames and the instance's description changed in place, all without
+// enable_unofficial, as the Entities API specification documents them. A
+// plan that removes the application's vendor and moves the instance to the
+// other application and deployment model, the technology to the other
+// vendor and the technology instance to the other deployment model fails
+// without the switch; with it, all of that happens in place. Then an import
+// of every object. Destroy deletes them in dependency order.
 func TestAccIntegrationAssessment_landscape(t *testing.T) {
 	accgate.Require(t, accgate.IntegrationAssessment)
-	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "true")
+	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "")
 	model, otherModel := testAccIADeploymentModels(t)
 	name := testAccName()
 	config := func(s iaLandscapeStep) string { return testAccIALandscapeConfig(name, model, otherModel, s) }
+	const linkChanges = `
+provider "sapintegrationsuite" {
+  enable_unofficial = true
+}
+`
 	const (
 		application  = "sapintegrationsuite_integration_assessment_application.test"
 		instance     = "sapintegrationsuite_integration_assessment_application_instance.test"
@@ -163,20 +171,27 @@ func TestAccIntegrationAssessment_landscape(t *testing.T) {
 				),
 			},
 			{
-				Config:           config(iaLandscapeStep{suffix: " renamed", description: "updated"}),
-				ConfigPlanChecks: expectInPlace(instance, technology, techInstance),
+				Config:           config(iaLandscapeStep{suffix: " renamed", description: "updated", withVendor: true}),
+				ConfigPlanChecks: expectInPlace(vendor, application, instance, technology, techInstance),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(vendor, "name", name+" vendor renamed"),
-					resource.TestCheckNoResourceAttr(application, "vendor_id"),
+					resource.TestCheckResourceAttr(application, "name", name+" application renamed"),
+					resource.TestCheckResourceAttrPair(application, "vendor_id", vendor, "id"),
 					resource.TestCheckResourceAttr(instance, "description", "updated"),
 					resource.TestCheckResourceAttr(technology, "name", name+" technology renamed"),
 					resource.TestCheckResourceAttr(techInstance, "name", name+" technology instance renamed"),
 				),
 			},
 			{
-				Config:           config(iaLandscapeStep{suffix: " renamed", description: "updated", moved: true}),
-				ConfigPlanChecks: expectInPlace(instance, technology),
+				Config:      config(iaLandscapeStep{suffix: " renamed", description: "updated", moved: true}),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`link change in place \(PATCH with a link\)\s+is\s+unofficial`),
+			},
+			{
+				Config:           linkChanges + config(iaLandscapeStep{suffix: " renamed", description: "updated", moved: true}),
+				ConfigPlanChecks: expectInPlace(application, instance, technology, techInstance),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr(application, "vendor_id"),
 					resource.TestCheckResourceAttrPair(instance, "application_id",
 						"sapintegrationsuite_integration_assessment_application.second", "id"),
 					resource.TestCheckResourceAttrPair(instance, "deployment_model_id",
@@ -300,10 +315,12 @@ func testAccIATaxonomy(t *testing.T) iaTaxonomyNames {
 // The technology profile: a technology linked to a domain and a style and
 // rated on a key characteristic value, all through the lookups. Changing the
 // rating's description replaces it, since the service has no update. Then
-// an import of every association.
+// an import of every association. It passed on 2026-10-04, when the
+// resources needed enable_unofficial; since the Entities API specification
+// documents them, it runs without it.
 func TestAccIntegrationAssessment_technologyProfile(t *testing.T) {
 	accgate.Require(t, accgate.IntegrationAssessment)
-	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "true")
+	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "")
 	tax := testAccIATaxonomy(t)
 	name := testAccName()
 	const (
@@ -461,10 +478,11 @@ func testAccIATaxonomyExpectations(t *testing.T) iaTaxonomyExpectations {
 
 // The read-only ISA-M taxonomy lookups: use case pattern, integration
 // pattern, key characteristic group and domain determination, compared with
-// what the client reads from the same tenant.
+// what the client reads from the same tenant. Runs without
+// enable_unofficial, since the Entities API specification documents them.
 func TestAccIntegrationAssessment_taxonomy(t *testing.T) {
 	accgate.Require(t, accgate.IntegrationAssessment)
-	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "true")
+	t.Setenv("SAP_INTEGRATION_SUITE_ENABLE_UNOFFICIAL", "")
 	e := testAccIATaxonomyExpectations(t)
 	const (
 		useCase       = "data.sapintegrationsuite_integration_assessment_use_case_pattern.test"

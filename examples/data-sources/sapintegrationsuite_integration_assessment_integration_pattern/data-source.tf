@@ -1,4 +1,4 @@
-# Unofficial: needs enable_unofficial = true and provider.integration_assessment.
+# Needs provider.integration_assessment.
 variable "integration_pattern_name" {
   description = "Name of an integration pattern, as the Integration Assessment UI lists it."
   type        = string

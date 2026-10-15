@@ -23,6 +23,9 @@ func NewIntegrationAssessmentTechnologyInstanceResource() resource.Resource {
 
 type iaTechnologyInstanceResource struct {
 	client *integrationassessment.Client
+	// allowUnofficial is the provider's enable_unofficial: it allows a link
+	// change in place, which the specification does not document.
+	allowUnofficial bool
 }
 
 type iaTechnologyInstanceModel struct {
@@ -38,10 +41,10 @@ func (r *iaTechnologyInstanceResource) Metadata(_ context.Context, req resource.
 
 func (r *iaTechnologyInstanceResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: iaUnofficialNote + "One installation of a technology in the Integration Assessment " +
+		Description: "One installation of a technology in the Integration Assessment " +
 			"landscape, SAP's or your own, with the deployment model it runs on. Assessments recommend " +
 			"technology instances for interfaces. Backed by the TechnologyInstance entity set of the " +
-			"Entities API.",
+			"Entities API." + iaLinkChangeNote,
 		Attributes: map[string]schema.Attribute{
 			"id": iaIDAttribute("technology instance"),
 			"name": schema.StringAttribute{
@@ -53,7 +56,8 @@ func (r *iaTechnologyInstanceResource) Schema(_ context.Context, _ resource.Sche
 				"or, for one of SAP's technologies, from the data source of the same name. Changing it creates a new " +
 				"instance: moving an instance to another technology in place was not tested."),
 			"deployment_model_id": iaLinkAttribute("Id of the deployment model, for example from the " +
-				"sapintegrationsuite_integration_assessment_deployment_model data source. Changes in place."),
+				"sapintegrationsuite_integration_assessment_deployment_model data source. Changes in place and needs " +
+				"enable_unofficial."),
 		},
 	}
 }
@@ -61,6 +65,7 @@ func (r *iaTechnologyInstanceResource) Schema(_ context.Context, _ resource.Sche
 func (r *iaTechnologyInstanceResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if c := integrationAssessmentClient(req.ProviderData, iaTechnologyInstanceType, "resource", &resp.Diagnostics); c != nil {
 		r.client = c
+		r.allowUnofficial = integrationAssessmentData(req.ProviderData, &resp.Diagnostics).EnableUnofficial
 	}
 }
 
@@ -116,14 +121,32 @@ func (r *iaTechnologyInstanceResource) Read(ctx context.Context, req resource.Re
 	resp.Diagnostics.Append(resp.State.Set(ctx, m)...)
 }
 
-func (r *iaTechnologyInstanceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan iaTechnologyInstanceModel
+// ModifyPlan stops a deployment model change without enable_unofficial.
+func (r *iaTechnologyInstanceResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if r.client == nil || !isInPlaceUpdate(req, resp) {
+		return
+	}
+	var state, plan iaTechnologyInstanceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	iaRequireLinkChange(r.allowUnofficial, iaTechnologyInstanceType, &resp.Diagnostics, [2]types.String{state.DeploymentModelID, plan.DeploymentModelID})
+}
+
+func (r *iaTechnologyInstanceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var state, plan iaTechnologyInstanceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if !iaRequireLinkChange(r.allowUnofficial, iaTechnologyInstanceType, &resp.Diagnostics, [2]types.String{state.DeploymentModelID, plan.DeploymentModelID}) {
+		return
+	}
 	id := plan.ID.ValueString()
-	if err := r.client.UpdateTechnologyInstance(ctx, id, plan.Name.ValueString(), plan.DeploymentModelID.ValueString()); err != nil {
+	if err := r.client.UpdateTechnologyInstance(ctx, id, plan.Name.ValueString(), iaLinkChange(state.DeploymentModelID, plan.DeploymentModelID)); err != nil {
 		resp.Diagnostics.AddError("Failed to update Integration Assessment technology instance", diagnosticDetail(err))
 		return
 	}

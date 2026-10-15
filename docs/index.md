@@ -27,7 +27,7 @@ deployed integration flow and its endpoint URL.
 | Classic API Management | API providers, API products, certificate store references, key value maps | `api_management` block |
 | Classic API Management virtual hosts | additional virtual hosts on the default domain | `api_management_self_service` block |
 | API Composition | business data graphs | `api_composition` block |
-| Integration Assessment | vendors, applications, application instances, technologies, technology instances, technology profiles (unofficial) | `integration_assessment` block |
+| Integration Assessment | vendors, applications, application instances, technologies, technology instances, technology profiles | `integration_assessment` block |
 
 Data sources exist for most of these, plus discovery data sources for deployed service
 endpoints, keystore entries, partners, and the provider's own feature catalog.
@@ -128,7 +128,7 @@ terraform {
   required_providers {
     sapintegrationsuite = {
       source  = "Prideth/sap-integration-suite"
-      version = "~> 0.6.0"
+      version = "~> 0.7.0"
     }
   }
 }
@@ -162,7 +162,7 @@ terraform {
       source = "Prideth/sap-integration-suite"
       # A 0.x minor release may contain breaking changes; pin the minor
       # version and read the upgrade notes before raising it.
-      version = "~> 0.6.0"
+      version = "~> 0.7.0"
     }
   }
 }

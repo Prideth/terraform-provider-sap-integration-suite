@@ -23,6 +23,9 @@ func NewIntegrationAssessmentApplicationInstanceResource() resource.Resource {
 
 type iaApplicationInstanceResource struct {
 	client *integrationassessment.Client
+	// allowUnofficial is the provider's enable_unofficial: it allows a link
+	// change in place, which the specification does not document.
+	allowUnofficial bool
 }
 
 type iaApplicationInstanceModel struct {
@@ -39,9 +42,9 @@ func (r *iaApplicationInstanceResource) Metadata(_ context.Context, req resource
 
 func (r *iaApplicationInstanceResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: iaUnofficialNote + "One installation of an application in the Integration Assessment " +
+		Description: "One installation of an application in the Integration Assessment " +
 			"landscape, for example the production system, with the deployment model it runs on. Backed " +
-			"by the ApplicationInstance entity set of the Entities API.",
+			"by the ApplicationInstance entity set of the Entities API." + iaLinkChangeNote,
 		Attributes: map[string]schema.Attribute{
 			"id": iaIDAttribute("application instance"),
 			"name": schema.StringAttribute{
@@ -55,9 +58,10 @@ func (r *iaApplicationInstanceResource) Schema(_ context.Context, _ resource.Sch
 			},
 			"application_id": iaLinkAttribute("Id of the application this is an instance of, for example from " +
 				"sapintegrationsuite_integration_assessment_application. Changing it moves the instance to the " +
-				"other application in place."),
+				"other application in place and needs enable_unofficial."),
 			"deployment_model_id": iaLinkAttribute("Id of the deployment model, for example from the " +
-				"sapintegrationsuite_integration_assessment_deployment_model data source. Changes in place."),
+				"sapintegrationsuite_integration_assessment_deployment_model data source. Changes in place and needs " +
+				"enable_unofficial."),
 		},
 	}
 }
@@ -65,6 +69,7 @@ func (r *iaApplicationInstanceResource) Schema(_ context.Context, _ resource.Sch
 func (r *iaApplicationInstanceResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if c := integrationAssessmentClient(req.ProviderData, iaApplicationInstanceType, "resource", &resp.Diagnostics); c != nil {
 		r.client = c
+		r.allowUnofficial = integrationAssessmentData(req.ProviderData, &resp.Diagnostics).EnableUnofficial
 	}
 }
 
@@ -122,15 +127,33 @@ func (r *iaApplicationInstanceResource) Read(ctx context.Context, req resource.R
 	resp.Diagnostics.Append(resp.State.Set(ctx, m)...)
 }
 
-func (r *iaApplicationInstanceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan iaApplicationInstanceModel
+// ModifyPlan stops a move to another application or deployment model without enable_unofficial.
+func (r *iaApplicationInstanceResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if r.client == nil || !isInPlaceUpdate(req, resp) {
+		return
+	}
+	var state, plan iaApplicationInstanceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	iaRequireLinkChange(r.allowUnofficial, iaApplicationInstanceType, &resp.Diagnostics, [2]types.String{state.ApplicationID, plan.ApplicationID}, [2]types.String{state.DeploymentModelID, plan.DeploymentModelID})
+}
+
+func (r *iaApplicationInstanceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var state, plan iaApplicationInstanceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if !iaRequireLinkChange(r.allowUnofficial, iaApplicationInstanceType, &resp.Diagnostics, [2]types.String{state.ApplicationID, plan.ApplicationID}, [2]types.String{state.DeploymentModelID, plan.DeploymentModelID}) {
+		return
+	}
 	id := plan.ID.ValueString()
 	if err := r.client.UpdateApplicationInstance(ctx, id, plan.Name.ValueString(), optionalString(plan.Description),
-		plan.ApplicationID.ValueString(), plan.DeploymentModelID.ValueString()); err != nil {
+		iaLinkChange(state.ApplicationID, plan.ApplicationID), iaLinkChange(state.DeploymentModelID, plan.DeploymentModelID)); err != nil {
 		resp.Diagnostics.AddError("Failed to update Integration Assessment application instance", diagnosticDetail(err))
 		return
 	}

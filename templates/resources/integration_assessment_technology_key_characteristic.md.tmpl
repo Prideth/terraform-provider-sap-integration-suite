@@ -12,15 +12,15 @@ SAP's Integration Solution Advisory Methodology, with a recommendation degree th
 strongly the technology meets it. The assessment compares these ratings when it recommends
 technologies for an interface.
 
-**Status:** unofficial. Needs `enable_unofficial = true` in the provider block. SAP documents the
-Integration Assessment Entities API and this entity, but the field-level specification on the
-Business Accelerator Hub needs an SAP login. The requests follow the service's `$metadata` and
-were verified on a tenant in September 2026; SAP may change them without notice.
+**Status:** supported. SAP's Entities API specification on the Business Accelerator Hub
+documents this entity, and its requests were verified on a tenant. No opt-in switch is needed.
+Every change replaces the entry, so unlike the links of the landscape objects nothing here
+needs `enable_unofficial = true`.
 
 ## Prerequisites
 
-- `enable_unofficial = true` and the `integration_assessment` provider block, with the service key
-  of an *Integration Assessment APIs* service instance (plan `default`). The Cloud Integration
+- The `integration_assessment` provider block, with the service key of an
+  *Integration Assessment APIs* service instance (plan `default`). The Cloud Integration
   credentials do not work for this API.
 - An Integration Assessment subscription in the subaccount.
 - The technology's Id, from [`sapintegrationsuite_integration_assessment_technology`](integration_assessment_technology.md) (resource or data source).
@@ -59,8 +59,8 @@ The ID is the UUID the service assigned. Everything is recovered from the servic
 - **SAP:** the service has no update for technology profile entries; a tenant answered a
   `PATCH` on a key characteristic rating with 400 V101 ("The operation for this entity is not
   allowed").
-- **Provider:** unofficial until the specification is available without a login or verified from
-  the Hub download.
+- **Provider:** the specification documents a `PATCH` with the description for this entity, but
+  the tenant refused it as described above, so every change replaces the entry.
 
 ## Related
 

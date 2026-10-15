@@ -1,4 +1,4 @@
-# Unofficial: needs enable_unofficial = true and provider.integration_assessment.
+# Needs provider.integration_assessment.
 # Every change creates a new rating; the service refuses to update one.
 resource "sapintegrationsuite_integration_assessment_technology_key_characteristic" "acme_esb" {
   technology_id               = sapintegrationsuite_integration_assessment_technology.acme_esb.id

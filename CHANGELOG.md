@@ -9,11 +9,139 @@ contain breaking schema or lifecycle changes; each one is listed under
 "Breaking changes" together with the steps it needs. Patch releases (0.2.1)
 only fix defects in their minor release.
 
-## Unreleased (planned as 0.7.0)
+## Unreleased (planned as 0.8.0)
 
-0.7.0 is planned to manage the ESR-style design-time types of Cloud
-Integration: data types, message types, fault message types and service
-interfaces. All four are supported: SAP's Integration Content API
+0.8.0 is planned to complete Security Content: CA-signed certificate chains
+for key pairs, PGP keys and the custom parameters of OAuth2 client
+credentials. All of them are unofficial: their requests are known only from
+the tenant `$metadata`, not from SAP's documentation, so they need
+`enable_unofficial = true`. Each passed an acceptance test on a tenant.
+
+Integration Assessment becomes supported: SAP's Entities API specification
+documents the requests of its resources and data sources, so they no
+longer need an opt-in switch.
+
+### New resources
+
+- `sapintegrationsuite_key_pair_certificate_chain` (unofficial): gives a key
+  pair a certificate signed by a certificate authority, with the chain of
+  certificates that issued it. The resource uploads the PEM bundle (any
+  order, the root may be left out), reads the chain back, derives the
+  fingerprint and every certificate locally, refuses a private key pasted
+  into the chain, and imports by the key pair's alias. SAP has no request
+  that removes a chain, so destroying the resource leaves it on the key pair.
+  The acceptance test signed a key pair's CSR with a `hashicorp/tls` CA,
+  uploaded and imported the chain, and signed and uploaded again after the
+  key pair was regenerated.
+- `sapintegrationsuite_pgp_public_key` and `sapintegrationsuite_pgp_secret_key`
+  (unofficial): one PGP key each in the tenant's public or secret keyring,
+  for the PGP encryptor, decryptor, signer and verifier steps. A key is
+  added from an ASCII-armored block; the plan shows its key ID and
+  fingerprint, computed locally. The secret key and its passphrase are
+  write-only, and `secret_key_wo_version` replaces the key. A key ID that
+  exists already fails the create, because SAP answers "not imported" with
+  HTTP 200; import it instead. SAP deletes a key's public and secret part
+  together, so the public key resource leaves a key with a secret part in
+  place on destroy. Cloud runtime only; the acceptance test added, imported
+  and deleted keys that gpg generated.
+
+### New
+
+- `sapintegrationsuite_key_pair` has `certificate_signing_request`, the
+  PEM CSR to have signed. It is read only with `enable_unofficial = true`,
+  because the request is known only from the tenant `$metadata`. SAP signs
+  the CSR anew after a chain upload; the stored text is kept while subject
+  and public key stay the same.
+- `sapintegrationsuite_oauth2_client_credential` manages `custom_parameters`
+  (unofficial, needs `enable_unofficial`): key, value and whether SAP sends
+  the parameter in the body, as a header or in the URL. A tenant check showed
+  that SAP takes custom parameters only when the credential is created and
+  deletes them with every update, so with `custom_parameters` set every
+  change replaces the credential, a secret rotation included. Without the
+  attribute, the plan of an update warns when SAP holds parameters set in its
+  UI. An import reads the parameters SAP holds.
+
+### Changed
+
+- **Integration Assessment needs no opt-in switch.** SAP's Entities API
+  specification on the Business Accelerator Hub documents every entity set
+  and request of the Integration Assessment resources and data sources:
+  create, read, update (`PATCH`) and delete of vendors, applications,
+  application instances, technologies, technology instances and technology
+  profile entries, and the taxonomy. They were unofficial and needed
+  `enable_unofficial = true`; they are now supported. The acceptance tests
+  `TestAccIntegrationAssessment_landscape`, `_technologyProfile` and
+  `_taxonomy` passed on a tenant without the switch.
+- **A link change in place stays unofficial.** The specification's update
+  bodies list no links. Changing an application's vendor (set, changed or
+  removed), an application instance's application or deployment model, a
+  technology's vendor or a technology instance's deployment model in place
+  still needs `enable_unofficial = true`; without it the plan fails and
+  names the switch, and nothing is replaced. An update now sends a link
+  only when it changes, so a rename follows the specification exactly. The
+  landscape test checks that such a plan fails without the switch and
+  changes the links in place with it.
+- `sapintegrationsuite_key_pair` keeps `valid_not_before` and
+  `valid_not_after` as generated once a CA-signed chain was uploaded. SAP
+  then reports the signed certificate's validity, and a configuration that
+  set these attributes would otherwise have planned a replacement of the key
+  pair, which deletes the chain with the key.
+
+### Planned for 0.9.0: Classic virtual hosts
+
+These entries are on `feature/classic-virtual-hosts`, which builds on 0.8.0;
+they become the 0.9.0 section once 0.8.0 is released.
+
+- `sapintegrationsuite_api_management_virtual_host` (partial): an
+  additional virtual host of Classic API Management on the tenant's default domain, `<alias>.<tenant domain>`. It
+  uses the requests SAP Help documents (`Configuration.svc/VirtualHostRequests`
+  with CREATE, UPDATE and DELETE) and reads the host from
+  `Management.svc/VirtualHosts`. A changed alias renames the host in place;
+  import takes the ID, the alias or the host name. Custom domains are not
+  managed yet; the resource refuses hosts that use them. The acceptance test
+  created, renamed, imported and deleted a host on a tenant.
+- Mutual TLS for that resource: `client_auth_enabled` and `trust_store` (a
+  truststore of the API portal or `ref://<certificate store reference>`)
+  make the host ask every caller for a client certificate, with the fields
+  SAP Help documents in *Configuring Mutual TLS for Default Domain Virtual
+  Host*. Switching it on or off changes the host in place; hosts without
+  mutual TLS still get the request without these fields. SAP Help shows no
+  body for switching off; `isClientAuthEnabled: false` did it on a tenant
+  and cleared the truststore. The acceptance test created a host with
+  mutual TLS, moved it to a certificate store reference, imported it and
+  switched client authentication off on a tenant.
+- `save_as_version` on `sapintegrationsuite_value_mapping`: gives the value
+  mapping a version number through
+  `ValueMappingDesigntimeArtifactSaveAsVersion`, which the Integration
+  Content API specification documents. SAP keeps one
+  version of a value mapping, so this relabels it, even to a lower number,
+  without touching the content; a changed value relabels in place instead of
+  replacing the value mapping. Content and name changes still replace the
+  value mapping, because SAP answers every update with 501 and the
+  specification has no update for value mappings either.
+- New provider block `api_management_self_service`: the key of a second
+  `apiportal-apiaccess` instance with the role
+  `APIManagement.SelfService.Administrator`, which SAP requires for virtual
+  hosts (the `api_management` key gets 403). `subaccount_subdomain` is taken
+  from the token URL unless set.
+
+### Planned for 0.7.1
+
+These fixes are on `release/0.7.x`; they become the 0.7.1 section once
+0.7.1 is released.
+
+- The provider is built with Go 1.27.2 and `golang.org/x/net` 0.60.0.
+  0.7.0 was built with Go 1.27.1 and `golang.org/x/net` 0.59.0, which have
+  known vulnerabilities in HTTP/2, `net/http`, `net/textproto` and
+  `crypto/tls` (GO-2026-6603, GO-2026-6605, GO-2026-6607, GO-2026-6608,
+  GO-2026-6610 to GO-2026-6613 and GO-2026-6617). `govulncheck` reports
+  calls to the affected code, for example from the plugin server that
+  Terraform talks to.
+
+## 0.7.0 — 2026-10-15
+
+0.7.0 manages the ESR-style design-time types of Cloud Integration: data
+types, message types, fault message types and service interfaces. All four are supported: SAP's Integration Content API
 specification on the Business Accelerator Hub documents them, and each
 passed an acceptance test on a tenant. They need no opt-in switch.
 
@@ -82,88 +210,13 @@ passed an acceptance test on a tenant. They need no opt-in switch.
   type that a message type uses be deleted. Refer to the data type resource
   so that Terraform orders the deletion.
 
-### Planned for 0.8.0: Security Content
+### Upgrade notes
 
-These entries are on `feature/security-content`, which builds on 0.7.0; they
-become the 0.8.0 section once 0.7.0 is released.
-
-- `sapintegrationsuite_key_pair_certificate_chain` (unofficial): gives a key
-  pair a certificate signed by a certificate authority, with the chain of
-  certificates that issued it. The resource uploads the PEM bundle (any
-  order, the root may be left out), reads the chain back, derives the
-  fingerprint and every certificate locally, refuses a private key pasted
-  into the chain, and imports by the key pair's alias. SAP has no request
-  that removes a chain, so destroying the resource leaves it on the key pair.
-  The acceptance test signed a key pair's CSR with a `hashicorp/tls` CA,
-  uploaded and imported the chain, and signed and uploaded again after the
-  key pair was regenerated.
-- `sapintegrationsuite_key_pair` has `certificate_signing_request`, the
-  PEM CSR to have signed. It is read only with `enable_unofficial = true`,
-  because the request is known only from the tenant `$metadata`. SAP signs
-  the CSR anew after a chain upload; the stored text is kept while subject
-  and public key stay the same.
-- `sapintegrationsuite_key_pair` keeps `valid_not_before` and
-  `valid_not_after` as generated once a CA-signed chain was uploaded. SAP
-  then reports the signed certificate's validity, and a configuration that
-  set these attributes would otherwise have planned a replacement of the key
-  pair, which deletes the chain with the key.
-- `sapintegrationsuite_pgp_public_key` and `sapintegrationsuite_pgp_secret_key`
-  (unofficial): one PGP key each in the tenant's public or secret keyring,
-  for the PGP encryptor, decryptor, signer and verifier steps. A key is
-  added from an ASCII-armored block; the plan shows its key ID and
-  fingerprint, computed locally. The secret key and its passphrase are
-  write-only, and `secret_key_wo_version` replaces the key. A key ID that
-  exists already fails the create, because SAP answers "not imported" with
-  HTTP 200; import it instead. SAP deletes a key's public and secret part
-  together, so the public key resource leaves a key with a secret part in
-  place on destroy. Cloud runtime only; the acceptance test added, imported
-  and deleted keys that gpg generated.
-- `sapintegrationsuite_oauth2_client_credential` manages `custom_parameters`
-  (unofficial, needs `enable_unofficial`): key, value and whether SAP sends
-  the parameter in the body, as a header or in the URL. A tenant check showed
-  that SAP takes custom parameters only when the credential is created and
-  deletes them with every update, so with `custom_parameters` set every
-  change replaces the credential, a secret rotation included. Without the
-  attribute, the plan of an update warns when SAP holds parameters set in its
-  UI. An import reads the parameters SAP holds.
-
-### Planned for 0.9.0: Classic virtual hosts
-
-These entries are on `feature/classic-virtual-hosts`, which builds on 0.8.0;
-they become the 0.9.0 section once 0.8.0 is released.
-
-- `sapintegrationsuite_api_management_virtual_host` (partial): an
-  additional virtual host of Classic API Management on the tenant's default domain, `<alias>.<tenant domain>`. It
-  uses the requests SAP Help documents (`Configuration.svc/VirtualHostRequests`
-  with CREATE, UPDATE and DELETE) and reads the host from
-  `Management.svc/VirtualHosts`. A changed alias renames the host in place;
-  import takes the ID, the alias or the host name. Custom domains are not
-  managed yet; the resource refuses hosts that use them. The acceptance test
-  created, renamed, imported and deleted a host on a tenant.
-- Mutual TLS for that resource: `client_auth_enabled` and `trust_store` (a
-  truststore of the API portal or `ref://<certificate store reference>`)
-  make the host ask every caller for a client certificate, with the fields
-  SAP Help documents in *Configuring Mutual TLS for Default Domain Virtual
-  Host*. Switching it on or off changes the host in place; hosts without
-  mutual TLS still get the request without these fields. SAP Help shows no
-  body for switching off; `isClientAuthEnabled: false` did it on a tenant
-  and cleared the truststore. The acceptance test created a host with
-  mutual TLS, moved it to a certificate store reference, imported it and
-  switched client authentication off on a tenant.
-- `save_as_version` on `sapintegrationsuite_value_mapping`: gives the value
-  mapping a version number through
-  `ValueMappingDesigntimeArtifactSaveAsVersion`, which the Integration
-  Content API specification documents. SAP keeps one
-  version of a value mapping, so this relabels it, even to a lower number,
-  without touching the content; a changed value relabels in place instead of
-  replacing the value mapping. Content and name changes still replace the
-  value mapping, because SAP answers every update with 501 and the
-  specification has no update for value mappings either.
-- New provider block `api_management_self_service`: the key of a second
-  `apiportal-apiaccess` instance with the role
-  `APIManagement.SelfService.Administrator`, which SAP requires for virtual
-  hosts (the `api_management` key gets 403). `subaccount_subdomain` is taken
-  from the token URL unless set.
+No state migration and no breaking change. The feature data sources report
+data types, message types and service interfaces as `supported`; they used
+to report `research_required`. A configuration that sets
+`enable_unofficial = true` only to update message mappings or script
+collections can drop it.
 
 ## 0.6.0 — 2026-10-10
 

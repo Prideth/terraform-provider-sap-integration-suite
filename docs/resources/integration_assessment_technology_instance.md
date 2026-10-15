@@ -10,15 +10,15 @@ description: |-
 A technology instance is one installation of a technology, SAP's or your own, with the
 deployment model it runs on. Assessments recommend technology instances for interfaces.
 
-**Status:** unofficial. Needs `enable_unofficial = true` in the provider block. SAP documents the
-Integration Assessment Entities API and this entity, but the field-level specification on the
-Business Accelerator Hub needs an SAP login. The requests follow the service's `$metadata` and
-were verified on a tenant in September 2026; SAP may change them without notice.
+**Status:** supported. SAP's Entities API specification on the Business Accelerator Hub
+documents this entity, and its requests were verified on a tenant. No opt-in switch is needed.
+Changing `deployment_model_id` in place is the exception: the specification's update body lists no
+links, so it needs `enable_unofficial = true`. A tenant accepted the change in a `PATCH`.
 
 ## Prerequisites
 
-- `enable_unofficial = true` and the `integration_assessment` provider block, with the service key
-  of an *Integration Assessment APIs* service instance (plan `default`). The Cloud Integration
+- The `integration_assessment` provider block, with the service key of an
+  *Integration Assessment APIs* service instance (plan `default`). The Cloud Integration
   credentials do not work for this API.
 - An Integration Assessment subscription in the subaccount.
 - The technology's Id, from [`sapintegrationsuite_integration_assessment_technology`](integration_assessment_technology.md) (resource or data source), and a deployment model Id.
@@ -29,14 +29,15 @@ were verified on a tenant in September 2026; SAP may change them without notice.
 |---|---|
 | Create | Creates the instance, linked to the technology and the deployment model. |
 | Read | Reads the name and both links. |
-| Update | `name` and `deployment_model_id` change in place (PATCH). |
+| Update | `name` changes in place (PATCH). `deployment_model_id` changes in place with `enable_unofficial = true`; the update sends it only when it changes. |
 | Replacement | Changing `technology_id` creates a new instance: moving an instance to another technology in place was not tested. |
 | Delete | Deletes the instance. |
 
 ## Example Usage
 
 ```terraform
-# Unofficial: needs enable_unofficial = true and provider.integration_assessment.
+# Needs provider.integration_assessment. Changing a link in place also needs
+# enable_unofficial = true.
 # name and deployment_model_id change in place; a new technology_id creates a new instance.
 resource "sapintegrationsuite_integration_assessment_technology_instance" "acme_esb_prd" {
   name                = "ACME ESB PRD"
@@ -50,7 +51,7 @@ resource "sapintegrationsuite_integration_assessment_technology_instance" "acme_
 
 ### Required
 
-- `deployment_model_id` (String) Id of the deployment model, for example from the sapintegrationsuite_integration_assessment_deployment_model data source. Changes in place.
+- `deployment_model_id` (String) Id of the deployment model, for example from the sapintegrationsuite_integration_assessment_deployment_model data source. Changes in place and needs enable_unofficial.
 - `name` (String) The instance's name. Changes in place.
 - `technology_id` (String) Id of the technology, from sapintegrationsuite_integration_assessment_technology or, for one of SAP's technologies, from the data source of the same name. Changing it creates a new instance: moving an instance to another technology in place was not tested.
 
@@ -71,8 +72,7 @@ The ID is the UUID the service assigned. Everything is recovered from the servic
 
 - **SAP:** the service documents limits per tenant: 20,000 applications, 20,000 application
   instances, 50 technologies, 150 technology instances and 10,000 vendors.
-- **Provider:** unofficial until the specification is available without a login or verified from
-  the Hub download. Ids are UUIDs the service assigns; configurations reference them through
+- **Provider:** Ids are UUIDs the service assigns; configurations reference them through
   other resources or the lookup data sources, never as literals.
 
 ## Related

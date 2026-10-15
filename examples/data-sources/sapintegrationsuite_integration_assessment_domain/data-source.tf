@@ -1,4 +1,4 @@
-# Unofficial: needs enable_unofficial = true and provider.integration_assessment.
+# Needs provider.integration_assessment.
 variable "domain_name" {
   description = "Name of an integration domain, as the Integration Assessment UI lists it."
   type        = string

@@ -1,4 +1,4 @@
-# Unofficial: needs enable_unofficial = true and provider.integration_assessment.
+# Needs provider.integration_assessment.
 variable "key_characteristic_name" {
   description = "Name of a key characteristic, as the Integration Assessment UI lists it."
   type        = string

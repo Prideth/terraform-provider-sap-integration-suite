@@ -41,7 +41,7 @@ func (d *iaDomainDeterminationDataSource) Metadata(_ context.Context, req dataso
 
 func (d *iaDomainDeterminationDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: iaUnofficialNote + "Finds the integration domain that SAP's Integration Solution Advisory " +
+		Description: "Finds the integration domain that SAP's Integration Solution Advisory " +
 			"Methodology assigns to an integration between two deployment models, for example between a public " +
 			"cloud application and an on-premise one. A domain determination has no name, so it is found by the " +
 			"Ids of its source and target deployment models.",

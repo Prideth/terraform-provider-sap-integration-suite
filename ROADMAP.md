@@ -22,14 +22,14 @@ Priorities:
 Each 0.x minor release has one theme. Released so far: 0.1.0 (the broad first provider), 0.2.0
 (the tenant-verified rework), 0.3.0 (contract sources, opt-in switches, Registry documentation)
 with the patches 0.3.1 and 0.3.2, 0.4.0 (the Integration Assessment landscape), 0.5.0
-(Integration Assessment technology profiles and the ISA-M taxonomy) with the patch 0.5.1, and
-0.6.0 (API Composition: business data graph hardening). Each minor line has one release branch,
-`release/<minor>.x`, and every release is a tag on it.
+(Integration Assessment technology profiles and the ISA-M taxonomy) with the patch 0.5.1,
+0.6.0 (API Composition: business data graph hardening) and 0.7.0 (Cloud Integration data
+types, message types, fault message types and service interfaces). Each minor line has one
+release branch, `release/<minor>.x`, and every release is a tag on it.
 
 | Version | Theme | State | Precondition |
 |---|---|---|---|
-| 0.7.0 | Cloud Integration data types, message types, fault message types, service interfaces | in progress on `feature/design-time-types`; data types, message types, fault message types and service interfaces done (supported: Integration Content specification, acceptance tests passed) | release preparation |
-| 0.8.0 | Security Content completion | in progress on `feature/security-content`: certificate chains, PGP keys and OAuth2 custom parameters done (unofficial, acceptance tests passed) | releasing 0.7.0 first |
+| 0.8.0 | Security Content completion | in progress on `feature/security-content`: certificate chains, PGP keys and OAuth2 custom parameters done (unofficial, acceptance tests passed) | — |
 | 0.9.0 | Classic API Management infrastructure, above all virtual hosts; the API proxy only if the official Transport API request passes its acceptance test | in progress on `feature/classic-virtual-hosts`: default domain virtual hosts with optional mutual TLS done (partial, acceptance tests passed) | releasing 0.8.0 first |
 | 0.10.0 | Edge Integration Cell targeting | proposed | a tenant with an Edge Integration Cell (P1 item 3) |
 | 0.11.0 | Data Space Integration desired-state configuration | proposed | the DSIAPI specification (P2 item 7) |
@@ -53,10 +53,13 @@ These need no further research, only a run of the prepared tests:
 ## P1 — public contract, next implementation
 
 1. **Integration Assessment.** The landscape (0.4), the technology profiles and the complete
-   ISA-M taxonomy (0.5) exist, all unofficial. `TestAccIntegrationAssessment_technologyProfile`
-   and `TestAccIntegrationAssessment_taxonomy` passed on 2026-10-04. The Hub specification of
-   the Entities API would make them supported; it still needs an SAP login. Requests and
-   assessment results stay out of scope as workflow.
+   ISA-M taxonomy (0.5) are supported since 0.8: the Entities API specification from the Hub
+   (downloaded 2026-10-10) documents every entity set and request the provider uses. Only a link
+   change in place stays unofficial, because the specification's update bodies list no links.
+   The specification also documents create, update and delete for key characteristic groups,
+   key characteristics and key characteristic values, which the provider only reads; resources
+   for them are possible once a tenant test shows how custom entries behave next to SAP's.
+   Requests and assessment results stay out of scope as workflow.
 2. **API Composition hardening.** A key user's token (password grant through the
    `configuration` client) reads the Configuration API; a client-credentials token got 403. The
    provider has that login since `feature/api-composition-hardening`, `TestAccMetadata` passes

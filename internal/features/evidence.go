@@ -35,7 +35,6 @@ const (
 	srcHubCI       = "Hub package CloudIntegrationAPI (Integration Content, Security Content, Partner Directory, Message Stores, MPL, Log Files, B2B Scenarios; modified 2026-08-07)"
 	srcHubAPIM     = "Hub package APIMgmt (API Portal, Developer Hub, Metering, Billing, Graph Configuration APIs; modified 2026-09-24)"
 	srcHubEIC      = "Hub package sap-int-eic-eic-operations (Jobs, Components, Partner Directory, Message Stores, MPL; created 2026-04-30, modified 2026-09-21)"
-	srcHubIA       = "Hub package SAPIntegrationAssessment (EntitiesAPI, ManagementAPI, OData; modified 2025-07-25)"
 	srcHubDSI      = "Hub package dataspaceintegration (DSIAPI 2.0.0, REST; modified 2026-07-16)"
 	srcHelp        = "SAP Help mirror SAP-docs/btp-integration-suite, commit 33f3395 (2026-09-18)"
 	srcWhatsNew    = "What's New for API Management, Cloud Foundry (entries up to 2026-09-20)"
@@ -47,20 +46,13 @@ const (
 	srcTenant      = "tenant probes and acceptance runs on a development tenant (September 2026)"
 	srcExport      = "a package export of the development tenant (2026-09-26): API artifacts and data types travel as package content"
 	srcCatalog     = "earlier catalog research, recorded in the feature's limitations"
-	srcMetaIA      = "Integration Assessment Entities and Management $metadata, fetched live on 2026-09-27 (snapshots testdata/api-metadata/integration-assessment-*.json)"
 	srcHubSearch   = "Business Accelerator Hub: the API artifacts of 173 Integration Suite, API Management, Edge, Graph and BTP packages (308 APIs) searched for API management, API artifact, Integration Cell, runtime profile, virtual host, MCP, API deployment, API policy, reusable API, proxy, transport and gateway (2026-09-27); the package list was unchanged since 2026-09-26"
 	srcSDKCheck    = "Maven Central metadata of apim-client-sdk (2026-09-27): latest version still 3.0.6"
 	srcSecProbe    = "tenant-probe -SecurityContentTests on the development tenant (2026-10-04, five runs), synthetic tf-acc-probe objects and throw-away test keys only"
 	srcGapProbe    = "tenant-probe -GapTests on a development tenant (2026-09-27), synthetic tfAccProbe* objects only"
-	srcIAProbe     = "ia-probe -LandscapeTests on the development tenant's Integration Assessment (2026-09-27 17:29), synthetic tfacc-probe objects only"
 	srcNavProbe    = "tenant-probe -GapTests on the development tenant (2026-09-29 07:51): IntegrationPackages('<id>')/IntegrationDesigntimeArtifacts for a package with an integration flow, an API artifact and an MCP server returned only the integration flow"
 	srcBundles     = "artifact bundles downloaded from the development tenant (2026-09-27): an API artifact is a RESTAPI bundle and an MCP server an MCPSERVER bundle, both for runtime profile integrationcell; the MCP server requires the capability of its source API artifact"
 	srcAccRun      = "acceptance run of 2026-09-27 17:29 on the development tenant"
-	srcIAProbe2    = "ia-probe -LandscapeTests on the development tenant (2026-09-27 19:33), synthetic tfacc-probe objects only"
-	srcIAProbe3    = "ia-probe -LandscapeTests, extended, on the development tenant (2026-09-28 07:54): link changes with PATCH and the technology association sets, synthetic tfacc-probe objects only"
-	srcHelpIA2     = "SAP Help, Integration Assessment APIs (docs/ISuite_Integration_Assessment/integration-assessment-apis-47847b5.md in SAP-docs/btp-integration-suite, last changed 2026-07-02), read 2026-09-29, and the Hub catalog of package SAPIntegrationAssessment (EntitiesAPI 1.0.0, specification behind a login)"
-	srcAccRun3     = "acceptance run of 2026-09-29 14:35 on the development tenant, including TestAccIntegrationAssessment_landscape with the in-place moves"
-	srcAccRun05    = "0.5.0 tenant gate of 2026-10-04 17:21 on release/0.5.x: TestAccIntegrationAssessment_landscape, _technologyProfile and _taxonomy passed"
 	// srcVirtualHostAcc is the first acceptance run of the virtual host resource.
 	srcVirtualHostAcc = "acceptance run of 2026-10-06 21:29 on feature/classic-virtual-hosts: TestAccAPIManagementVirtualHost_basic passed (create, rename, import by alias, delete)"
 	// srcVirtualHostMtls is the mutual TLS probe and acceptance run of virtual hosts.
@@ -69,7 +61,6 @@ const (
 	srcValueMappingProbe = "tenant-probe -ValueMappingTests on the development tenant (2026-10-06 20:00): PUT with content, name and both, SaveAsVersion up and down, delete, on a synthetic tfAccProbeVMUpd value mapping"
 	// srcVirtualHostProbe is the write path probe of classic virtual hosts.
 	srcVirtualHostProbe = "apim-probe -VirtualHostTests on the development tenant (2026-10-06 20:09) with an APIManagement.SelfService.Administrator key: create, update and delete of a tfaccprobe alias host, error answers, reads with both keys"
-	srcAccRun2          = "acceptance run of 2026-09-27 21:30 on the development tenant, including TestAccIntegrationAssessment_landscape"
 	srcHubCISpec        = "Integration Content API specification (IntegrationContent 1.0.0, Swagger 2.0) from the Business Accelerator Hub, downloaded 2026-10-10: create, read, update, delete, $value and SaveAsVersion for data types, message types, fault message types and service interfaces, PUT for message mappings and script collections, SaveAsVersion for every versioned design-time type"
 )
 
@@ -383,14 +374,6 @@ var Evidence = map[string]EvidenceRecord{
 		"A general BTP messaging service with its own management APIs (Hub package modified 2026-09-18); a separate provider by design.",
 		"None for this provider.",
 		srcHubPackages, srcHelp),
-	"integration_assessment.master_data": evOn("2026-10-04",
-		"The live Entities $metadata (27 entity sets) confirms the ISA-M taxonomy entities field by field, and every set was read on a tenant (7 domains, 6 styles, 24 use case patterns, 12 integration patterns, 14 key characteristics in 5 groups with 29 values, 4 recommendation degrees, 9 domain determinations). SAP Help's entity list (last changed 2026-07-02) describes each entity; its text for Domain Determination repeats the recommendation degree's, so that entity's meaning comes from the $metadata (a domain between a source and a target deployment model). The Hub's EntitiesAPI specification still ends at a login page (2026-10-04).",
-		"Every taxonomy entity has a read-only data source; TestAccIntegrationAssessment_taxonomy and _technologyProfile passed on 2026-10-04. SAP publishing the Entities API specification without a login, or its download from the Hub into .specs/specs, would make the contract official.",
-		srcHubIA, srcHelp, srcMetaIA, srcIAProbe, srcHelpIA2, srcAccRun05),
-	"integration_assessment.landscape_configuration": evOn("2026-09-28",
-		"A second landscape probe (2026-09-27 19:33) verified create (201 with a UUID Id), read, PATCH and PUT (204) and delete (204, then 404) for vendors, applications, application instances, technologies and technology instances, with links written as {\"Id\": ...}; setting, removing and resetting an application's vendor worked. The first probe had failed only on its own request format (charset parameter, __metadata links). TestAccIntegrationAssessment_landscape passed on 2026-09-27 21:30. A third probe (2026-09-28) changed an instance's application and deployment model, a technology's vendor and a technology instance's name and deployment model with PATCH, each confirmed by a read; TechnologyDomain, TechnologyStyle and TechnologyKeyCharacteristic were created, read and deleted, and a key characteristic's PATCH was refused (400 V101).",
-		"TestAccIntegrationAssessment_landscape with the in-place moves passed on 2026-09-29 and again on 2026-10-04; TestAccIntegrationAssessment_technologyProfile confirms the technology profile resources and lookups. The Hub specification (EntitiesAPI) would make the contract official and allow the status supported.",
-		srcHubIA, srcHelp, srcMetaIA, srcIAProbe, srcIAProbe2, srcIAProbe3, srcAccRun2, srcAccRun3, srcAccRun05),
 	"integration_assessment.assessment_workflow": ev(
 		"A request status machine; workflow state.",
 		"None; out of scope.",

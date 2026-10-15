@@ -5,11 +5,14 @@
 // instances) and its reference taxonomy (deployment models and others).
 //
 // SAP documents the service, its entity inventory and per-tenant limits in
-// SAP Help, and lists it as EntitiesAPI in the Business Accelerator Hub
-// package SAPIntegrationAssessment. The field-level specification on the
-// Hub needs an SAP login; the wire structs here follow the service's live
-// $metadata (testdata/api-metadata/integration-assessment-entities.json),
-// and every request was verified on a tenant in September 2026.
+// SAP Help, and its specification (EntitiesAPI in the Business Accelerator
+// Hub package SAPIntegrationAssessment, downloaded 2026-10-10) documents the
+// entity sets and the create, update and delete bodies used here. The wire
+// structs are also checked against the service's live $metadata
+// (testdata/api-metadata/integration-assessment-entities.json), and every
+// request was verified on a tenant in September 2026. The one request the
+// specification does not document is a link change in an update; see
+// LinkChange.
 package integrationassessment
 
 import (
@@ -51,6 +54,25 @@ func ref(id string) *idRef {
 		return nil
 	}
 	return &idRef{ID: id}
+}
+
+// LinkChange changes a link in an update: To is the Id of the new target,
+// and an empty To removes the link. The specification's update bodies list
+// no links, so an update leaves them out unless a LinkChange is given. A
+// tenant accepted the change in a PATCH, confirmed by a read (2026-09-28):
+// an application's vendor set, changed and removed, an application
+// instance's application and deployment model, a technology's vendor and a
+// technology instance's deployment model.
+type LinkChange struct {
+	To string
+}
+
+// MarshalJSON writes the new link as {"Id": ...}, or null to remove it.
+func (l LinkChange) MarshalJSON() ([]byte, error) {
+	if l.To == "" {
+		return []byte("null"), nil
+	}
+	return json.Marshal(idRef{ID: l.To})
 }
 
 // linkedEntity decodes a single-valued navigation property in a read: the

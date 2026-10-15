@@ -1,4 +1,4 @@
-# Unofficial: needs enable_unofficial = true and provider.integration_assessment.
+# Needs provider.integration_assessment.
 variable "source_deployment_model_name" {
   description = "Deployment model the integration starts from, as the Integration Assessment UI lists it."
   type        = string

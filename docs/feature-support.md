@@ -119,8 +119,8 @@ Do not conflate these: a feature can be fully supported by this provider and sti
 | `integration_advisor.design_time_content` | other_capability | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
 | `integration_advisor.runtime_artifact_injection` | other_capability | unsupported (out_of_scope) | — | No | — | — | — | — | — | — | — |
 | `integration_assessment.assessment_workflow` | integration_assessment | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |
-| `integration_assessment.landscape_configuration` | integration_assessment | unofficial (public_api_incomplete) | metadata_only | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
-| `integration_assessment.master_data` | integration_assessment | unofficial (public_api_incomplete) | metadata_only | Yes | — | Yes | — | — | — | — | Data Source |
+| `integration_assessment.landscape_configuration` | integration_assessment | supported | api_specification (some operations unofficial) | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
+| `integration_assessment.master_data` | integration_assessment | supported | api_specification | Yes | — | Yes | — | — | — | — | Data Source |
 | `integration_cell.runtime` | integration_cell | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
 | `integration_cell.virtual_host` | integration_cell | unsupported (no_public_api) | — | No | — | — | — | — | — | — | — |
 | `migration_assessment.extraction_and_evaluation` | other_capability | unsupported (out_of_scope) | — | No | — | — | — | — | — | — | — |
@@ -180,23 +180,6 @@ provider "sapintegrationsuite" {
 | Type | Status | Switch |
 |---|---|---|
 | `sapintegrationsuite_access_policy_runtime_assignments` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_integration_assessment_application_instance` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_integration_assessment_application` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_integration_assessment_deployment_model` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_integration_assessment_domain_determination` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_integration_assessment_domain` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_integration_assessment_integration_pattern` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_integration_assessment_key_characteristic_group` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_integration_assessment_key_characteristic_value` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_integration_assessment_recommendation_degree` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_integration_assessment_style` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_integration_assessment_technology_domain` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_integration_assessment_technology_instance` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_integration_assessment_technology_key_characteristic` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_integration_assessment_technology_style` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_integration_assessment_technology` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_integration_assessment_use_case_pattern` | unofficial | `enable_unofficial` |
-| `sapintegrationsuite_integration_assessment_vendor` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_key_pair_certificate_chain` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_pgp_public_key` | unofficial | `enable_unofficial` |
 | `sapintegrationsuite_pgp_secret_key` | unofficial | `enable_unofficial` |
@@ -212,6 +195,7 @@ Individual operations of an otherwise documented feature can be unofficial too. 
 | `cloud_integration.number_range` | read by name |
 | `cloud_integration.number_range` | delete |
 | `cloud_integration.number_range` | import |
+| `integration_assessment.landscape_configuration` | link change in place (PATCH with a link, verified on a tenant): an application's vendor, an application instance's application and deployment model, a technology's vendor and a technology instance's deployment model |
 | `security.access_policy` | description update (PATCH, verified on a tenant) |
 | `security.access_policy_reference` | create a reference to an artifact type SAP does not document for access policies (eight types SAP's API lists, verified on a tenant) |
 | `security.key_pair` | read of the certificate signing request (KeystoreEntries('<hexalias>')/SigningRequest/$value is only in $metadata) |
@@ -278,17 +262,6 @@ Grouped by why, not just that. A feature can be `partial` and reachable via one 
 - **`edge_integration_cell.deployment_target`** — Addressing an Edge Integration Cell instead of the cloud runtime: deploying content to it and managing its security material, selected with runtime_location_id. (🔬 Research required)
   - Not supported yet. SAP Help's Integration Content, Security Content, Partner Directory, message processing log, message store and number range pages (mirror of 2026-09-18) document https://<host>/location/<runtime location id>/api/v1/<path> for calling the same APIs against an Edge Integration Cell, once for all operations and without per-operation examples, and SAP's own CI/CD tooling still called the path unpublished in May 2026. It has not been verified against a tenant with an Edge Integration Cell.
   - The deployment, credential, certificate, key pair and Partner Directory resources and their data sources carry an optional runtime_location_id that sends requests to that path, and import IDs accept a location:<id>/ prefix. TestAccEdgeIntegrationCell_securityAndPartnerDirectory (gate SAP_INTEGRATION_SUITE_ACC_EDGE_INTEGRATION_CELL) checks both; until it passes on a tenant, leave runtime_location_id unset.
-- **`integration_assessment.landscape_configuration`** — Tenant-owned integration landscape inventory: Application, Application Instance, Technology, Technology Instance, Vendor, and their association entities (Technology Domain, Technology Style, Technology Key Characteristic). (🧭 Unofficial)
-  - SAP documents the Entities API, these entities and their per-tenant limits (20,000 applications, 20,000 application instances, 50 technologies, 150 technology instances, 10,000 vendors), but the field-level specification on the Business Accelerator Hub needs an SAP login. The requests follow the live $metadata and were verified on a tenant on 2026-09-27: create (201 with a UUID Id), read, PATCH and PUT (204), delete (204) for all five objects, and links written as {"Id": ...}; the service rejects links written as __metadata URIs (V124) and a Content-Type with a charset parameter (V122).
-  - Names, descriptions and links change in place (PATCH, verified on 2026-09-28): an application's vendor, an application instance's application and deployment model, a technology's vendor and a technology instance's deployment model. Only moving a technology instance to another technology was not tested, so it replaces the instance.
-  - A technology's profile (TechnologyDomain, TechnologyStyle, TechnologyKeyCharacteristic) is managed as three association resources. Create, read and delete work on a tenant (2026-09-28); the service has no update for them (a key characteristic answered PATCH with 400 V101), so every attribute forces a new association.
-  - Needs provider.integration_assessment: the service key of an "Integration Assessment APIs" service instance; the other credential sets do not work there.
-- **`integration_assessment.master_data`** — SAP Integration Solution Advisory Methodology (ISA-M) taxonomy: Domain, Style, Use Case Pattern, Integration Pattern, Key Characteristic (and its Group/Value/Recommendation), Deployment Model, Domain Determination — largely SAP-maintained reference content a tenant can review and adjust. (🧭 Unofficial)
-  - SAP documents the Entities API and lists these entities with a description each; the field-level specification on the Business Accelerator Hub needs an SAP login. The contract comes from the live $metadata (snapshot testdata/api-metadata/integration-assessment-entities.json), and every entity set was read on a tenant in September 2026.
-  - The whole taxonomy has read-only data sources, looked up by exact name: deployment models, domains, styles, use case patterns, integration patterns, key characteristic groups, key characteristic values (by their key characteristic's name and their own, since value names repeat) and recommendation degrees. A domain determination has no name and is found by its source and target deployment models.
-  - SAP Help's description of Domain Determination repeats the recommendation degree's text; its meaning (the domain that applies between two deployment models) comes from the  only.
-  - The taxonomy is SAP's reference content, adjusted in the UI if at all, so there are no resources for it.
-  - Needs provider.integration_assessment: the service key of an "Integration Assessment APIs" service instance; the other credential sets do not work there.
 - **`security.certificate_chain`** — A certificate chain associated with a key pair. (🧭 Unofficial)
   - SAP Help names importing and exporting a key pair's certificate chain and creating a certificate signing request as capabilities of the Key Pair API; the requests are documented only in the API specification on the Business Accelerator Hub, which needs a login. The provider uses what the tenant $metadata declares and a tenant probe verified on 2026-10-04: the CSR through KeystoreEntries('<hexalias>')/SigningRequest/$value (sapintegrationsuite_key_pair.certificate_signing_request), the upload as PUT CertificateChainResources('<hexalias>')/$value with fingerprintVerified=true, and the export through KeystoreEntries('<hexalias>')/ChainResource/$value, a PKCS#7 bundle.
   - SAP accepted PEM in any order, without the root and the leaf alone; it refuses a certificate issued for another key (400 "The public key of the CA Reply is different"). After the upload the key pair reports the signed certificate's issuer and validity; sapintegrationsuite_key_pair keeps the validity it was generated with.

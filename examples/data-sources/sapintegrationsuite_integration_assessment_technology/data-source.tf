@@ -1,4 +1,4 @@
-# Unofficial: needs enable_unofficial = true and provider.integration_assessment.
+# Needs provider.integration_assessment.
 variable "technology_name" {
   description = "Exact name of one of the technologies the tenant lists."
   type        = string

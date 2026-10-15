@@ -12,10 +12,8 @@ Ids of the domain and the style it combines. SAP describes integration patterns 
 combination of an integration domain and an integration style from which integration guidelines
 are derived. The Ids differ between tenants, the names do not.
 
-**Status:** unofficial. Needs `enable_unofficial = true` in the provider block. SAP documents the
-Integration Assessment Entities API and this entity, but the field-level specification on the
-Business Accelerator Hub needs an SAP login. The requests follow the service's `$metadata` and
-were verified on a tenant in September 2026; SAP may change them without notice.
+**Status:** supported. SAP's Entities API specification on the Business Accelerator Hub
+documents this entity, and its requests were verified on a tenant. No opt-in switch is needed.
 
 Names are compared exactly, including case. The plan fails when no entry or more than one entry
 has the name.
@@ -23,7 +21,7 @@ has the name.
 ## Example Usage
 
 ```terraform
-# Unofficial: needs enable_unofficial = true and provider.integration_assessment.
+# Needs provider.integration_assessment.
 variable "integration_pattern_name" {
   description = "Name of an integration pattern, as the Integration Assessment UI lists it."
   type        = string
