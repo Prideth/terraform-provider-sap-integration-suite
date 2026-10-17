@@ -22,13 +22,18 @@ type MessageTypeKind struct {
 	entitySet     string
 	saveAsVersion string
 	DisplayName   string
+	// NamespaceUpdatable is whether an update may change the namespace: the
+	// specification lists Namespace in the message type update body only, and
+	// a fault message type answered 400 "Update of Namespace are not allowed"
+	// (probe #74, 2026-10-17).
+	NamespaceUpdatable bool
 }
 
 var (
 	// KindMessageType is MessageTypeDesigntimeArtifacts.
-	KindMessageType = MessageTypeKind{messageTypeDesigntimeArtifactsEntitySet, "MessageTypeDesigntimeArtifactSaveAsVersion", "message type"}
+	KindMessageType = MessageTypeKind{messageTypeDesigntimeArtifactsEntitySet, "MessageTypeDesigntimeArtifactSaveAsVersion", "message type", true}
 	// KindFaultMessageType is FaultMessageTypeDesigntimeArtifacts.
-	KindFaultMessageType = MessageTypeKind{faultMessageTypeDesigntimeArtifactsEntitySet, "FaultMessageTypeDesigntimeArtifactSaveAsVersion", "fault message type"}
+	KindFaultMessageType = MessageTypeKind{faultMessageTypeDesigntimeArtifactsEntitySet, "FaultMessageTypeDesigntimeArtifactSaveAsVersion", "fault message type", false}
 )
 
 // MessageType is the wire representation of a message type or a fault
@@ -62,9 +67,12 @@ type messageTypeCreate struct {
 // messageTypeUpdate is the update body. Name is not part of it: a tenant
 // answered a PUT with Name with 400 "Update of Name are not allowed", the
 // same PUT without it with 200 and regenerated content (2026-10-03).
+// Namespace is sent for message types only (see NamespaceUpdatable); SAP
+// then regenerates the schema in the new namespace (probe #74).
 type messageTypeUpdate struct {
 	Description  string `json:"Description"`
 	DataTypeUsed string `json:"DataTypeUsed,omitempty"`
+	Namespace    string `json:"Namespace,omitempty"`
 }
 
 func messageTypePath(kind MessageTypeKind, id string) (string, error) {
@@ -157,14 +165,18 @@ func (c *Client) CreateMessageType(ctx context.Context, kind MessageTypeKind, mt
 	return c.GetMessageType(ctx, kind, mt.ID)
 }
 
-// UpdateMessageType changes the description and the data type used, and
-// reads the message type back.
-func (c *Client) UpdateMessageType(ctx context.Context, kind MessageTypeKind, id, description, dataTypeUsed string) (*MessageType, error) {
+// UpdateMessageType changes the description, the data type used and, for a
+// message type, the namespace, and reads the message type back. A namespace
+// for a kind that cannot change it is an error, not silently dropped.
+func (c *Client) UpdateMessageType(ctx context.Context, kind MessageTypeKind, id, description, dataTypeUsed, namespace string) (*MessageType, error) {
+	if namespace != "" && !kind.NamespaceUpdatable {
+		return nil, fmt.Errorf("cloudintegration: SAP does not update the namespace of a %s", kind.DisplayName)
+	}
 	path, err := messageTypePath(kind, id)
 	if err != nil {
 		return nil, err
 	}
-	payload, err := json.Marshal(messageTypeUpdate{Description: description, DataTypeUsed: dataTypeUsed})
+	payload, err := json.Marshal(messageTypeUpdate{Description: description, DataTypeUsed: dataTypeUsed, Namespace: namespace})
 	if err != nil {
 		return nil, fmt.Errorf("cloudintegration: encoding %s update: %w", kind.DisplayName, err)
 	}

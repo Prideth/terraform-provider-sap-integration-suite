@@ -182,6 +182,11 @@ These changes are on `feature/package-custom-tags`, which builds on
   imported and cleared a tag.
 - `sapintegrationsuite_integration_package_custom_tags` (data source):
   every custom tag of a package with its values.
+- `sapintegrationsuite_message_type` changes `namespace` in place instead
+  of replacing the message type: SAP's specification lists the namespace
+  in the update body, and a tenant probe (PENDING #74) showed that SAP
+  generates the schema again in the new namespace. A fault message type
+  still replaces, because SAP refuses to update its namespace.
 
 ### Planned for 0.7.1
 

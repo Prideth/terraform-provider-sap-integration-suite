@@ -30,7 +30,7 @@ changed, imported and versioned a fault message type on a tenant (October 2026).
 | Create | Creates the fault message type without content; SAP generates the schema. With `save_as_version`, saves it under that version. |
 | Read | Reads name, namespace, description and version, and the data type from SAP's generated bundle. |
 | Update | A change of `description` or `data_type_id` updates the fault message type in place; SAP regenerates the schema. |
-| Replacement | Changing `fault_message_type_id`, `package_id`, `name` or `namespace`, or removing `description` or `data_type_id`, creates a new fault message type. SAP refuses to update the name. |
+| Replacement | Changing `fault_message_type_id`, `package_id`, `name` or `namespace`, or removing `description` or `data_type_id`, creates a new fault message type. SAP refuses to update the name and the namespace (`400 Update of Namespace are not allowed`, tenant probe, October 2026); unlike a message type's, the specification's fault message type update body has no namespace. |
 | Delete | Deletes the fault message type. |
 
 **The data type reference.** SAP's read returns `DataTypeUsed` empty even when it took effect, so
@@ -58,7 +58,7 @@ resource "sapintegrationsuite_fault_message_type" "order_rejected" {
 
 - `fault_message_type_id` (String) Technical ID of the fault message type. Changing it replaces the fault message type.
 - `name` (String) Name of the fault message type, also the name of its root element. Changing it replaces the fault message type: SAP refuses to update the name.
-- `namespace` (String) XML namespace of the fault message type. Changing it replaces the fault message type, because an in-place namespace change was not tested.
+- `namespace` (String) XML namespace of the fault message type. Changing it replaces the fault message type: SAP refuses to update the namespace.
 - `package_id` (String) ID of the integration package the fault message type belongs to. Changing it replaces the fault message type.
 
 ### Optional

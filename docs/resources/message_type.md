@@ -28,8 +28,8 @@ and versioned a message type on a tenant (October 2026).
 |---|---|
 | Create | Creates the message type without content; SAP generates the schema. With `save_as_version`, saves it under that version. |
 | Read | Reads name, namespace, description and version, and the data type from SAP's generated bundle. |
-| Update | A change of `description` or `data_type_id` updates the message type in place; SAP regenerates the schema. |
-| Replacement | Changing `message_type_id`, `package_id`, `name` or `namespace`, or removing `description` or `data_type_id`, creates a new message type. SAP refuses to update the name. |
+| Update | A change of `description`, `data_type_id` or `namespace` updates the message type in place; SAP regenerates the schema. The namespace is sent only when it changed, as the specification's update body allows (tenant probe, October 2026). |
+| Replacement | Changing `message_type_id`, `package_id` or `name`, or removing `description` or `data_type_id`, creates a new message type. SAP refuses to update the name. |
 | Delete | Deletes the message type. |
 
 **The data type reference.** SAP's read returns `DataTypeUsed` empty even when it took effect, so
@@ -57,7 +57,7 @@ resource "sapintegrationsuite_message_type" "order" {
 
 - `message_type_id` (String) Technical ID of the message type. Changing it replaces the message type.
 - `name` (String) Name of the message type, also the name of its root element. Changing it replaces the message type: SAP refuses to update the name.
-- `namespace` (String) XML namespace of the message type. Changing it replaces the message type, because an in-place namespace change was not tested.
+- `namespace` (String) XML namespace of the message type. Changes in place: SAP generates the schema again in the new namespace.
 - `package_id` (String) ID of the integration package the message type belongs to. Changing it replaces the message type.
 
 ### Optional

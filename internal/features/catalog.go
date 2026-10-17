@@ -332,8 +332,12 @@ var Catalog = []Feature{
 				"FaultMessageTypeDesigntimeArtifacts: create, read, update, delete, the $value download " +
 				"and SaveAsVersion. Its update bodies leave out Name, which matches SAP refusing a name " +
 				"change. SAP Help still documents only the UI for both.",
-			"The specification lists Namespace in the message type's update body. The provider still " +
-				"replaces a message type whose namespace changes, because an in-place change is not probed.",
+			"The specification lists Namespace in the message type's update body, not in the fault " +
+				"message type's. A probe (2026-10-17, PENDING #74) confirmed both: a message type took a new " +
+				"namespace (200, schema regenerated in it), a fault message type answered 400 \"Update of " +
+				"Namespace are not allowed\". The namespace of a message type therefore changes in place, " +
+				"that of a fault message type replaces it. TestAccMessageType_basic passed with the in-place " +
+				"change on 2026-10-17.",
 			"ESR probes on a tenant (2026-10-03): a create without content works, and SAP generates " +
 				"the schema from DataTypeUsed (an element of that data type; a fault message type adds " +
 				"ExchangeFaultData). An update changes Description and DataTypeUsed and regenerates the " +

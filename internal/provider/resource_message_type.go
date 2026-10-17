@@ -133,13 +133,7 @@ func (r *messageTypeResource) Schema(_ context.Context, _ resource.SchemaRequest
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 				Validators:    []validator.String{stringvalidator.LengthAtLeast(1)},
 			},
-			"namespace": schema.StringAttribute{
-				Required: true,
-				Description: fmt.Sprintf("XML namespace of the %s. Changing it replaces the %s, because an "+
-					"in-place namespace change was not tested.", what, what),
-				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-				Validators:    []validator.String{stringvalidator.LengthAtLeast(1)},
-			},
+			"namespace": r.namespaceAttribute(),
 			"description": schema.StringAttribute{
 				Optional: true,
 				Description: "Description. Changes in place; removing it replaces the " + what +
@@ -267,7 +261,13 @@ func (r *messageTypeResource) Update(ctx context.Context, req resource.UpdateReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	mt, err := r.client.UpdateMessageType(ctx, r.kind, id, plan.Description.ValueString(), plan.DataTypeID.ValueString())
+	// The namespace goes along only when it changed; a fault message type
+	// replaces instead (schema).
+	namespace := ""
+	if !plan.Namespace.Equal(prior.Namespace) {
+		namespace = plan.Namespace.ValueString()
+	}
+	mt, err := r.client.UpdateMessageType(ctx, r.kind, id, plan.Description.ValueString(), plan.DataTypeID.ValueString(), namespace)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to update SAP Integration Suite "+r.kind.DisplayName, diagnosticDetail(err))
 		return
@@ -306,4 +306,25 @@ func (r *messageTypeResource) ImportState(ctx context.Context, req resource.Impo
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("package_id"), packageID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(r.idAttr), id)...)
+}
+
+// namespaceAttribute changes a message type's namespace in place, which the
+// specification documents and SAP answers by regenerating the schema; a
+// fault message type's namespace replaces it, because SAP refuses the
+// change with 400 "Update of Namespace are not allowed" (probe #74).
+func (r *messageTypeResource) namespaceAttribute() schema.StringAttribute {
+	what := r.kind.DisplayName
+	attr := schema.StringAttribute{
+		Required:   true,
+		Validators: []validator.String{stringvalidator.LengthAtLeast(1)},
+	}
+	if r.kind.NamespaceUpdatable {
+		attr.Description = fmt.Sprintf("XML namespace of the %s. Changes in place: SAP generates the schema "+
+			"again in the new namespace.", what)
+		return attr
+	}
+	attr.Description = fmt.Sprintf("XML namespace of the %s. Changing it replaces the %s: SAP refuses to "+
+		"update the namespace.", what, what)
+	attr.PlanModifiers = []planmodifier.String{stringplanmodifier.RequiresReplace()}
+	return attr
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/testutil/accgate"
 )
 
-func testAccMessageTypeConfig(pkg, dt1, dt2, mt, fmt2, useDT, description, saveAs string) string {
+func testAccMessageTypeConfig(pkg, dt1, dt2, mt, fmt2, useDT, mtNamespace, description, saveAs string) string {
 	save := ""
 	if saveAs != "" {
 		save = fmt.Sprintf("  save_as_version = %q\n", saveAs)
@@ -35,7 +35,7 @@ resource "sapintegrationsuite_message_type" "test" {
   package_id      = sapintegrationsuite_integration_package.test.id
   message_type_id = %[3]q
   name            = %[3]q
-  namespace       = "urn:tfacc:mt"
+  namespace       = %[10]q
   description     = %[8]q
   data_type_id    = sapintegrationsuite_data_type.%[5]s.data_type_id
 %[9]s}
@@ -48,7 +48,7 @@ resource "sapintegrationsuite_fault_message_type" "test" {
   description           = %[8]q
   data_type_id          = sapintegrationsuite_data_type.%[5]s.data_type_id
 }
-`, dt1, dt2, mt, fmt2, useDT, testAccTypeXSD(dt1), testAccTypeXSD(dt2), description, save)
+`, dt1, dt2, mt, fmt2, useDT, testAccTypeXSD(dt1), testAccTypeXSD(dt2), description, save, mtNamespace)
 }
 
 func testAccTypeXSD(name string) string {
@@ -58,7 +58,8 @@ func testAccTypeXSD(name string) string {
 }
 
 // Message types and fault message types on data types: create, switch the
-// data type and the description in place, import, save a version. It
+// data type and the description in place, import, save a version, change the
+// message type's namespace in place. It
 // passed on 2026-10-03, when both needed enable_unofficial; since SAP's
 // Integration Content API specification documents them, it runs without it.
 func TestAccMessageType_basic(t *testing.T) {
@@ -70,7 +71,7 @@ func TestAccMessageType_basic(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccMessageTypeConfig(pkg, dt1, dt2, mt, fm, "one", "tf-acc message", ""),
+				Config: testAccMessageTypeConfig(pkg, dt1, dt2, mt, fm, "one", "urn:tfacc:mt", "tf-acc message", ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(mtName, "data_type_id", dt1),
 					resource.TestCheckResourceAttr(mtName, "description", "tf-acc message"),
@@ -79,7 +80,7 @@ func TestAccMessageType_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccMessageTypeConfig(pkg, dt1, dt2, mt, fm, "two", "tf-acc message changed", ""),
+				Config: testAccMessageTypeConfig(pkg, dt1, dt2, mt, fm, "two", "urn:tfacc:mt", "tf-acc message changed", ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(mtName, "data_type_id", dt2),
 					resource.TestCheckResourceAttr(mtName, "description", "tf-acc message changed"),
@@ -102,8 +103,14 @@ func TestAccMessageType_basic(t *testing.T) {
 				ImportStateVerifyIgnore: []string{"save_as_version"},
 			},
 			{
-				Config: testAccMessageTypeConfig(pkg, dt1, dt2, mt, fm, "two", "tf-acc message changed", "1.0.3"),
+				Config: testAccMessageTypeConfig(pkg, dt1, dt2, mt, fm, "two", "urn:tfacc:mt", "tf-acc message changed", "1.0.3"),
 				Check:  resource.TestCheckResourceAttr(mtName, "version", "1.0.3"),
+			},
+			{
+				// The namespace of a message type changes in place (probe #74).
+				Config:           testAccMessageTypeConfig(pkg, dt1, dt2, mt, fm, "two", "urn:tfacc:mt2", "tf-acc message changed", "1.0.3"),
+				ConfigPlanChecks: expectInPlace(mtName),
+				Check:            resource.TestCheckResourceAttr(mtName, "namespace", "urn:tfacc:mt2"),
 			},
 		},
 	})
