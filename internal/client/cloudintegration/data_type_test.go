@@ -120,7 +120,7 @@ func keys(m map[string]string) []string {
 
 func TestClient_DataTypeLifecycleRequests(t *testing.T) {
 	var requests []string
-	var created map[string]string
+	var created, updated map[string]string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requests = append(requests, r.Method+" "+r.URL.Path+"?"+r.URL.RawQuery)
 		w.Header().Set("Content-Type", "application/json")
@@ -131,6 +131,8 @@ func TestClient_DataTypeLifecycleRequests(t *testing.T) {
 			w.WriteHeader(http.StatusCreated)
 			_, _ = w.Write([]byte(`{"d":{"Id":"Order","Name":"Order","PackageId":"Sales","Version":"1.0.0","Namespace":"urn:example:orders","IsSimpleType":false}}`))
 		case r.Method == http.MethodPut:
+			body, _ := io.ReadAll(r.Body)
+			_ = json.Unmarshal(body, &updated)
 			w.WriteHeader(http.StatusOK)
 		case r.Method == http.MethodPost:
 			w.WriteHeader(http.StatusAccepted)
@@ -154,6 +156,10 @@ func TestClient_DataTypeLifecycleRequests(t *testing.T) {
 	}
 	if dt, err := c.UpdateDataType(ctx, b, []byte("bundle2")); err != nil || dt.Version != "1.0.1" {
 		t.Fatalf("UpdateDataType = %+v, %v", dt, err)
+	}
+	// The specification's update body: no Name (probe #73).
+	if len(updated) != 2 || updated["Description"] != "Sales order" || updated["ArtifactContent"] != base64.StdEncoding.EncodeToString([]byte("bundle2")) {
+		t.Errorf("update body = %v, want exactly Description and ArtifactContent", updated)
 	}
 	if _, err := c.SaveDataTypeAsVersion(ctx, "Order", "1.0.2"); err != nil {
 		t.Fatalf("SaveDataTypeAsVersion: %v", err)

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 
 	"github.com/Prideth/terraform-provider-sap-integration-suite/internal/testutil/accgate"
 )
@@ -23,7 +24,7 @@ func testAccDataTypeXSD(id string, extraElement bool) string {
 </xsd:schema>`, id, extra)
 }
 
-func testAccDataTypeConfig(pkg, id, description, xsd, saveAs string) string {
+func testAccDataTypeConfig(pkg, id, name, description, xsd, saveAs string) string {
 	save := ""
 	if saveAs != "" {
 		save = fmt.Sprintf("  save_as_version = %q\n", saveAs)
@@ -32,16 +33,17 @@ func testAccDataTypeConfig(pkg, id, description, xsd, saveAs string) string {
 resource "sapintegrationsuite_data_type" "test" {
   package_id   = sapintegrationsuite_integration_package.test.id
   data_type_id = %[1]q
-  name         = %[1]q
+  name         = %[2]q
   namespace    = "urn:tfacc:datatype"
-  description  = %[2]q
-  xsd          = %[3]q
-%[4]s}
-`, id, description, xsd, save)
+  description  = %[3]q
+  xsd          = %[4]q
+%[5]s}
+`, id, name, description, xsd, save)
 }
 
 // The whole lifecycle of a data type: create, change the schema and the
-// description in place, import, save a version. It passed on 2026-10-03,
+// description in place, import, save a version, rename (a replacement:
+// SAP ignores a name in the update, probe #73). It passed on 2026-10-03,
 // when the resource needed enable_unofficial; since SAP's Integration
 // Content API specification documents data types, it runs without it.
 func TestAccDataType_basic(t *testing.T) {
@@ -53,7 +55,7 @@ func TestAccDataType_basic(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataTypeConfig(pkg, id, "tf-acc data type", testAccDataTypeXSD(id, false), ""),
+				Config: testAccDataTypeConfig(pkg, id, id, "tf-acc data type", testAccDataTypeXSD(id, false), ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "id", pkg+"/"+id),
 					resource.TestCheckResourceAttr(name, "namespace", "urn:tfacc:datatype"),
@@ -62,7 +64,7 @@ func TestAccDataType_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccDataTypeConfig(pkg, id, "tf-acc data type changed", testAccDataTypeXSD(id, true), ""),
+				Config: testAccDataTypeConfig(pkg, id, id, "tf-acc data type changed", testAccDataTypeXSD(id, true), ""),
 				Check:  resource.TestCheckResourceAttr(name, "description", "tf-acc data type changed"),
 			},
 			{
@@ -73,8 +75,15 @@ func TestAccDataType_basic(t *testing.T) {
 				ImportStateVerifyIgnore: []string{"xsd", "save_as_version"},
 			},
 			{
-				Config: testAccDataTypeConfig(pkg, id, "tf-acc data type changed", testAccDataTypeXSD(id, true), "1.0.5"),
+				Config: testAccDataTypeConfig(pkg, id, id, "tf-acc data type changed", testAccDataTypeXSD(id, true), "1.0.5"),
 				Check:  resource.TestCheckResourceAttr(name, "version", "1.0.5"),
+			},
+			{
+				Config: testAccDataTypeConfig(pkg, id, id+"Renamed", "tf-acc data type changed", testAccDataTypeXSD(id+"Renamed", true), "1.0.5"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction(name, plancheck.ResourceActionReplace),
+				}},
+				Check: resource.TestCheckResourceAttr(name, "name", id+"Renamed"),
 			},
 		},
 	})
