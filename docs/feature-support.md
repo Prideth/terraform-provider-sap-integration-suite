@@ -94,6 +94,7 @@ Do not conflate these: a feature can be fully supported by this provider and sti
 | `cloud_integration.integration_flow_configuration` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | — | Yes | — | Resource |
 | `cloud_integration.integration_flow_deployment` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Resource |
 | `cloud_integration.integration_package` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
+| `cloud_integration.integration_package_custom_tag` | cloud_integration | supported | api_specification | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
 | `cloud_integration.message_mapping` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | — | Resource + Data Source |
 | `cloud_integration.message_mapping_deployment` | cloud_integration | supported | sap_documentation | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Resource |
 | `cloud_integration.message_processing_logs` | cloud_integration | unsupported (out_of_scope) | — | Yes | — | — | — | — | — | — | — |

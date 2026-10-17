@@ -220,7 +220,6 @@ var cloudIntegrationClassification = concat(
 		candidate("ValueMappingDesigntimeArtifactSaveAsVersion", "cloud_integration.design_time_versioning", "The value mapping resource does not save versions yet."),
 		candidate("UpdateDefaultValMap", "cloud_integration.value_mapping_entry", ""),
 		candidate("DeleteValMaps", "cloud_integration.value_mapping_entry", ""),
-		candidate("CustomTags", "cloud_integration.custom_tag_configuration", "Custom tag values of an integration package (IntegrationPackages/CustomTags)."),
 		excluded("Resources", "Single files inside design-time artifacts; the content resources manage the artifact as a whole ZIP, and editing files one by one would fight it."),
 		excluded("CopyIntegrationPackage", "Copies an SAP-provided package from the Discover catalog; a one-off action. A resource for copied standard packages is possible later."),
 		excluded("IntegrationDesigntimeLocks", reasonLocks),

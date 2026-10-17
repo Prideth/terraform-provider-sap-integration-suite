@@ -579,6 +579,35 @@ var Catalog = []Feature{
 		Operations: Operations{Create: true, Read: true, Update: true, Delete: false, Import: true},
 	},
 	{
+		Key:    "cloud_integration.integration_package_custom_tag",
+		Domain: "cloud_integration",
+		Name:   "Integration Package Custom Tag",
+		Description: "The values of a custom tag on one integration package, for the tags the tenant's " +
+			"custom tag configuration defines.",
+		SupportStatus:   StatusSupported,
+		ContractSource:  SourceAPISpecification,
+		ResourceTypes:   []string{"sapintegrationsuite_integration_package_custom_tag"},
+		DataSourceTypes: []string{"sapintegrationsuite_integration_package_custom_tags"},
+		PublicAPI:       true,
+		APIProtocol:     "OData V2",
+		Limitations: []string{
+			"SAP's Integration Content API specification (Business Accelerator Hub, downloaded 2026-10-10) " +
+				"documents GET IntegrationPackages('<id>')/CustomTags and PUT " +
+				"IntegrationPackages('<id>')/$links/CustomTags('<name>') with {\"Value\": ...}; values are " +
+				"separated by \"|\".",
+			"Tenant probe of 2026-10-17 (PENDING #76): a package lists every configured tag, an unset one " +
+				"with an empty value; a tag the configuration does not have answers 400, and names are " +
+				"case-sensitive. SAP trims values, drops duplicates, keeps the order and stores them joined with " +
+				"\" | \", so the provider refuses \"|\", surrounding blanks and duplicates at plan time. An empty " +
+				"value clears the tag, which is what destroying the resource does. A package update keeps the " +
+				"tag values.",
+			"Tags come from the tenant-wide custom tag configuration (sapintegrationsuite_custom_tag_configuration). " +
+				"Whether SAP checks permitted values, and whether it refuses to clear a mandatory tag, through the " +
+				"API was not tested: the tenant had neither.",
+		},
+		Operations: Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
+	},
+	{
 		Key:           "cloud_integration.message_processing_logs",
 		Domain:        "cloud_integration",
 		Name:          "Message Processing Logs",

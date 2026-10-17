@@ -18,6 +18,7 @@ var Contract = apimeta.Contract{
 		{EntitySet: artifactReferencesEntitySet, Value: AccessPolicyReference{}},
 		{EntitySet: accessPolicyRuntimeAssignmentsEntitySet, Value: AccessPolicyRuntimeAssignment{}},
 		{EntitySet: customTagConfigurationsEntitySet, Value: customTagConfigurationWriteRequest{}},
+		{EntitySet: customTagsEntitySet, Value: customTag{}},
 		{EntitySet: integrationAdapterDesigntimeArtifactsEntitySet, Value: IntegrationAdapter{}},
 		{EntitySet: integrationDesigntimeArtifactsEntitySet, Value: IntegrationFlow{}},
 		{EntitySet: messageMappingDesigntimeArtifactsEntitySet, Value: MessageMapping{}},
@@ -56,6 +57,8 @@ var Contract = apimeta.Contract{
 		{EntitySet: serviceInterfaceDesigntimeArtifactsEntitySet, Value: serviceInterfaceCreate{}},
 		{EntitySet: serviceInterfaceDesigntimeArtifactsEntitySet, Value: serviceInterfaceUpdate{}},
 		{EntitySet: scriptCollectionDesigntimeArtifactsEntitySet, Value: designtimeUpdateRequest{}},
+		// Value of one custom tag of a package (PUT .../$links/CustomTags).
+		{EntitySet: customTagsEntitySet, Value: customTagWrite{}},
 		// Create body that links the policy (deep link); never decoded.
 		{EntitySet: artifactReferencesEntitySet, Value: accessPolicyReferenceCreate{}},
 	},
@@ -77,6 +80,7 @@ var Contract = apimeta.Contract{
 		apimeta.Key(buildAndDeployStatusEntitySet, "TaskId", "Edm.String"),
 		apimeta.Key(numberRangesEntitySet, "Name", "Edm.String"),
 		apimeta.Key(customTagConfigurationsEntitySet, "Id", "Edm.String"),
+		apimeta.Key(customTagsEntitySet, "Name", "Edm.String"),
 		apimeta.Key(integrationFlowConfigurationsEntitySet, "ParameterKey", "Edm.String"),
 		apimeta.Key(valMapSchemaNavigation, "SrcAgency", "Edm.String", "SrcId", "Edm.String", "TgtAgency", "Edm.String", "TgtId", "Edm.String"),
 		apimeta.Key("ValMaps", "Id", "Edm.String"),
@@ -84,6 +88,7 @@ var Contract = apimeta.Contract{
 	Navigations: []apimeta.NavigationUse{
 		{EntitySet: accessPoliciesEntitySet, Property: accessPolicyRuntimeAssignmentsEntitySet},
 		{EntitySet: integrationDesigntimeArtifactsEntitySet, Property: "Configurations"},
+		{EntitySet: integrationPackagesEntitySet, Property: customTagsEntitySet},
 		{EntitySet: runtimeArtifactsEntitySet, Property: "ErrorInformation"},
 		{EntitySet: valueMappingDesigntimeArtifactsEntitySet, Property: valMapSchemaNavigation},
 		{EntitySet: valMapSchemaNavigation, Property: "ValMaps"},

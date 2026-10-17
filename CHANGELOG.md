@@ -164,6 +164,25 @@ These entries are on `feature/value-mapping-entries`, which builds on
 - `sapintegrationsuite_value_mapping_entries` (data source): the entries
   of one agency pair, with their IDs and whether SAP uses them by default.
 
+### Planned for 0.12.0: Package custom tags
+
+These changes are on `feature/package-custom-tags`, which builds on
+0.11.0; they become the 0.12.0 section once 0.11.0 is released.
+
+- `sapintegrationsuite_integration_package_custom_tag` (supported): the
+  values of one custom tag on an integration package, set through
+  `IntegrationPackages('<id>')/$links/CustomTags('<name>')`, which SAP's
+  Integration Content API specification documents. The tag must exist in
+  the tenant's custom tag configuration; the package need not be managed
+  by Terraform. Values change in place, and destroying the resource clears
+  the tag. SAP keeps a tag's values in one string separated by `|`, trims
+  them and drops duplicates, so the provider refuses `|`, surrounding
+  blanks and duplicates at plan time. A tenant probe settled how SAP
+  stores the values (PENDING #76), and an acceptance test set, changed,
+  imported and cleared a tag.
+- `sapintegrationsuite_integration_package_custom_tags` (data source):
+  every custom tag of a package with its values.
+
 ### Planned for 0.7.1
 
 These fixes are on `release/0.7.x`; they become the 0.7.1 section once

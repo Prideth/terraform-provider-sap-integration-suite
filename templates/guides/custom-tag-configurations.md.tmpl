@@ -26,6 +26,32 @@ resource** — declare it once per tenant (or import the tenant's existing confi
 and manage the tenant's complete tag list from that one resource block, the same way you would
 manage any other tenant-wide setting.
 
+## Tag values on packages
+
+The configuration only defines which tags exist. The values a package has for them are a
+separate, per-package setting:
+[`sapintegrationsuite_integration_package_custom_tag`](../resources/integration_package_custom_tag.md)
+sets the values of one tag on one package, and
+[`data.sapintegrationsuite_integration_package_custom_tags`](../data-sources/integration_package_custom_tags.md)
+lists every tag of a package with its values. A typical split is that the tenant administrator
+owns the configuration, and each team sets the tags of its own packages:
+
+```terraform
+resource "sapintegrationsuite_integration_package_custom_tag" "owner" {
+  package_id = sapintegrationsuite_integration_package.orders.id
+  name       = "Owner"
+  values     = ["Finance"]
+
+  depends_on = [sapintegrationsuite_custom_tag_configuration.governance]
+}
+```
+
+A tenant probe (October 2026) showed how the two interact: every package lists every configured
+tag, a tag without a value with an empty one, and a value for a tag the configuration does not
+have is refused with `400`, which is why the `depends_on` above makes Terraform define a new tag
+before it sets values for it. Removing a tag from the configuration removes its values from all
+packages; a package tag resource for it then disappears from the state on the next refresh.
+
 ## Confirmed API contract
 
 Everything below is confirmed directly from SAP's own "Create New Custom Tags Configuration" and

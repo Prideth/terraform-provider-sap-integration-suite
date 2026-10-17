@@ -439,6 +439,28 @@ elsewhere, it confirms names, keys and types but not which operations SAP accept
   required — a narrower custom role collection granting just that template should work equally
   well, and this provider does not claim the full `PI_Administrator` collection is mandatory.
 
+## `sapintegrationsuite_integration_package_custom_tag` / `data.sapintegrationsuite_integration_package_custom_tags`
+
+- **SAP product area**: Integration Suite / Cloud Integration — the custom tag values of one
+  integration package
+- **Official API**: Integration Content API specification (`IntegrationContent`, Swagger 2.0,
+  Business Accelerator Hub, downloaded 2026-10-10): `GET IntegrationPackages('{Id}')/CustomTags`
+  ("Get Custom Tags of a package") and `PUT IntegrationPackages('{Id}')/$links/CustomTags('{Name}')`
+  ("Update a Custom Tag", body `com.sap.hci.api.CustomTags-Update` = `{"Value": "..."}`, answer
+  `202`). The specification gives `Fred|John` as the example of several values. Entity type
+  `CustomTag` (key `Name`, property `Value`) and the navigation `IntegrationPackage/CustomTags`
+  are in the `$metadata`.
+- **Tenant probe** (2026-10-17, `.specs/PENDING-TESTS.md` #76, synthetic package
+  `tfAccProbeTags`): a new package lists every configured tag with `Value` `""`. A tag the
+  configuration does not have answers `400 CustomTag '<name>' doesn't exist. Enter a valid
+  CustomTag.`; names are case-sensitive. `b|a` is stored as `b | a`, `a|a` as `a`,
+  ` a | b ` as `a | b`; commas, blanks inside a value and quotes are kept. `""` and `null` both
+  clear the tag. The package `PUT` the provider sends keeps the values. `$expand=CustomTags` on
+  the package answers `501`, and `$filter` on the list is ignored, so the provider always reads
+  the whole list.
+- **Not tested**: whether SAP checks the configuration's permitted values, and whether it lets
+  the API clear a mandatory tag (the tenant had neither).
+
 ## `data.sapintegrationsuite_service_endpoints`
 
 - **SAP product area**: Integration Suite / Cloud Integration — runtime discovery of deployed

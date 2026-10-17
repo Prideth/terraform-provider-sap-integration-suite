@@ -33,8 +33,9 @@ release branch, `release/<minor>.x`, and every release is a tag on it.
 | 0.9.0 | Classic API Management infrastructure, above all virtual hosts; the API proxy only if the official Transport API request passes its acceptance test | in progress on `feature/classic-virtual-hosts`: default domain virtual hosts with optional mutual TLS done (partial, acceptance tests passed) | releasing 0.8.0 first |
 | 0.10.0 | Integration Assessment key characteristics of a tenant's own | in progress on `feature/ia-key-characteristics`: groups, key characteristics and values done (supported: Entities API specification, acceptance test passed) | releasing 0.9.0 first |
 | 0.11.0 | Cloud Integration value mapping entries | in progress on `feature/value-mapping-entries`: `sapintegrationsuite_value_mapping_entry` and the entries data source done (partial: no single-entry delete; acceptance test passed) | releasing 0.10.0 first |
-| 0.12.0 | Edge Integration Cell targeting | proposed | a tenant with an Edge Integration Cell (P1 item 3) |
-| 0.13.0 | Data Space Integration desired-state configuration | proposed | the DSIAPI specification (P2 item 7) |
+| 0.12.0 | Cloud Integration package custom tags | in progress on `feature/package-custom-tags`: `sapintegrationsuite_integration_package_custom_tag` and the package tags data source done (supported: Integration Content API specification, acceptance test passed) | releasing 0.11.0 first |
+| 0.13.0 | Edge Integration Cell targeting | proposed | a tenant with an Edge Integration Cell (P1 item 3) |
+| 0.14.0 | Data Space Integration desired-state configuration | proposed | the DSIAPI specification (P2 item 7) |
 
 The order follows what is closest to a tenant-verified result, not importance, and changes when a
 precondition is met earlier. Current API Management (API artifacts, MCP servers, runtime
