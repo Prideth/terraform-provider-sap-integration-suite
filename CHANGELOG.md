@@ -146,6 +146,12 @@ These fixes are on `release/0.7.x`; they become the 0.7.1 section once
   apply" (`mapping_version` was "Draft", but now "1.0.1"). A
   `mapping_version` of `Draft` or `active` is now kept as configured; a
   redeploy of such a version outside Terraform is not detected as drift.
+- Changing `name` of `sapintegrationsuite_data_type` replaces the data
+  type. 0.7.0 tried to rename it in place, but SAP ignores the name in an
+  update (it answers 200 and keeps the old one, tenant probe PENDING #73),
+  so the apply failed with "Provider produced inconsistent result after
+  apply". The update body is now the one SAP's specification documents:
+  description and content, without the name.
 
 ## 0.7.0 — 2026-10-15
 
