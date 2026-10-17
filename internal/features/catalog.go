@@ -278,14 +278,17 @@ var Catalog = []Feature{
 				"2026-10-10) documents DataTypeDesigntimeArtifacts: create, read, update (PUT with " +
 				"Description and ArtifactContent), delete, the $value download and " +
 				"DataTypeDesigntimeArtifactSaveAsVersion. SAP Help still documents only the UI.",
-			"The update also sends Name, as the probes that found the update did; the specification's " +
-				"update body does not list it. Whether SAP needs it is not probed.",
+			"The update body is the specification's, Description and ArtifactContent. A probe " +
+				"(2026-10-17, PENDING #73) showed that SAP ignores Name in the update: a PUT with another " +
+				"name answered 200 and kept the old one. Changing the name therefore replaces the data type; " +
+				"before 0.7.1 the provider tried it in place and the apply failed with the old name read back. " +
+				"TestAccDataType_basic passed with the replacement on 2026-10-17.",
 			"The specification describes the content only as a base64 ZIP archive. The bundle the " +
 				"provider builds follows the layout SAP itself stores for a data type, not a documented format.",
 			"Gap probes on a tenant (September and October 2026): a create needs the bundle as SAP " +
 				"stores it, with additionalAttributes.json and metainfo.prop next to the XSD; a package " +
 				"export's bundle lacks both and fails with 500 \"map is null\". With them, create, " +
-				"update (PUT with Name and ArtifactContent), SaveAsVersion and delete work, and an " +
+				"update (PUT with ArtifactContent), SaveAsVersion and delete work, and an " +
 				"element added on create or update is kept. The provider builds that bundle from xsd, " +
 				"namespace and description. SAP takes the description and the namespace from the " +
 				"entity, not from the bundle, so the provider sends them in the create and update " +

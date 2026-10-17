@@ -29,8 +29,8 @@ specification describes the content only as a ZIP archive; the bundle the provid
 |---|---|
 | Create | Builds the artifact bundle from `xsd`, `namespace` and `description` and uploads it; with `save_as_version`, saves it under that version. |
 | Read | Reads name, namespace, description and version. `xsd` keeps the value of the last apply. |
-| Update | A change of `xsd`, `name` or `description` uploads a new bundle with `PUT`. A changed `save_as_version` saves a new version. |
-| Replacement | Changing `data_type_id`, `package_id` or `namespace` creates a new data type. |
+| Update | A change of `xsd` or `description` uploads a new bundle with `PUT`, whose body is the specification's: description and content. A changed `save_as_version` saves a new version. |
+| Replacement | Changing `data_type_id`, `package_id`, `name` or `namespace` creates a new data type. SAP ignores a name in the update: a probe in October 2026 got `200` for a `PUT` with another name, and the old name stayed. |
 | Delete | Deletes the data type. |
 
 **The bundle.** SAP stores a data type as a bundle with the schema, a manifest and two attribute
@@ -75,7 +75,7 @@ resource "sapintegrationsuite_data_type" "order" {
 ### Required
 
 - `data_type_id` (String) Technical ID of the data type. Changing it replaces the data type.
-- `name` (String) Display name of the data type. SAP stores the schema's complex type under this name.
+- `name` (String) Display name of the data type. SAP stores the schema's complex type under this name. Changing it replaces the data type: SAP ignores a name in the update.
 - `namespace` (String) XML namespace of the data type, for example "urn:example:orders". It must equal the targetNamespace of xsd. Changing it replaces the data type, because an in-place namespace change was not tested.
 - `package_id` (String) ID of the integration package the data type belongs to. Changing it replaces the data type.
 - `xsd` (String) The XML schema of the data type, for example file("${path.module}/order.xsd"): an xsd:schema with exactly one top-level complexType and the targetNamespace given in namespace. A change uploads the new schema in place.

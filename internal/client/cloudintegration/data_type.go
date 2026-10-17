@@ -45,14 +45,14 @@ type dataTypeCreate struct {
 	Content     string `json:"ArtifactContent"`
 }
 
-// dataTypeUpdate is the update body: the name, the description and the
-// content. The specification's update body lists only Description and
-// ArtifactContent; Name stays because the probes that found the update sent
-// it, and an update without it was not tried. Id and PackageId are left out,
-// as for the other design-time artifacts, whose updates SAP rejects when they
-// carry them.
+// dataTypeUpdate is the update body of the specification: the description
+// and the content. The provider sent Name as well until a probe (#73,
+// 2026-10-17) showed that SAP takes the update without it (200, description
+// changed). SAP ignores Name in the update: a PUT with another name answered
+// 200 and kept the old one, so the resource replaces on a rename. Id and
+// PackageId are left out, as for the other design-time artifacts, whose
+// updates SAP rejects when they carry them.
 type dataTypeUpdate struct {
-	Name        string `json:"Name"`
 	Description string `json:"Description,omitempty"`
 	Content     string `json:"ArtifactContent"`
 }
@@ -235,7 +235,7 @@ func (c *Client) CreateDataType(ctx context.Context, packageID string, b DataTyp
 // element (2026-10-03).
 func (c *Client) UpdateDataType(ctx context.Context, b DataTypeBundle, bundle []byte) (*DataType, error) {
 	payload, err := json.Marshal(dataTypeUpdate{
-		Name: b.Name, Description: b.Description, Content: base64.StdEncoding.EncodeToString(bundle),
+		Description: b.Description, Content: base64.StdEncoding.EncodeToString(bundle),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("cloudintegration: encoding data type update: %w", err)
