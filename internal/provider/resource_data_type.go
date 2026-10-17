@@ -86,8 +86,9 @@ func (r *dataTypeResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 			"name": schema.StringAttribute{
 				Required: true,
 				Description: "Display name of the data type. SAP stores the schema's complex type under " +
-					"this name.",
-				Validators: []validator.String{stringvalidator.LengthAtLeast(1)},
+					"this name. Changing it replaces the data type: SAP ignores a name in the update.",
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+				Validators:    []validator.String{stringvalidator.LengthAtLeast(1)},
 			},
 			"namespace": schema.StringAttribute{
 				Required: true,
