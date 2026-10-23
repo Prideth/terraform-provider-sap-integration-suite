@@ -24,18 +24,15 @@ Each 0.x minor release has one theme. Released so far: 0.1.0 (the broad first pr
 with the patches 0.3.1 and 0.3.2, 0.4.0 (the Integration Assessment landscape), 0.5.0
 (Integration Assessment technology profiles and the ISA-M taxonomy) with the patch 0.5.1,
 0.6.0 (API Composition: business data graph hardening) and 0.7.0 (Cloud Integration data
-types, message types, fault message types and service interfaces). Each minor line has one
+types, message types, fault message types and service interfaces) with the patch 0.7.1. Each minor line has one
 release branch, `release/<minor>.x`, and every release is a tag on it.
 
 | Version | Theme | State | Precondition |
 |---|---|---|---|
-| 0.8.0 | Security Content completion | in progress on `feature/security-content`: certificate chains, PGP keys and OAuth2 custom parameters done (unofficial, acceptance tests passed) | — |
-| 0.9.0 | Classic API Management infrastructure, above all virtual hosts; the API proxy only if the official Transport API request passes its acceptance test | in progress on `feature/classic-virtual-hosts`: default domain virtual hosts with optional mutual TLS done (partial, acceptance tests passed) | releasing 0.8.0 first |
-| 0.10.0 | Integration Assessment key characteristics of a tenant's own | in progress on `feature/ia-key-characteristics`: groups, key characteristics and values done (supported: Entities API specification, acceptance test passed) | releasing 0.9.0 first |
-| 0.11.0 | Cloud Integration value mapping entries | in progress on `feature/value-mapping-entries`: `sapintegrationsuite_value_mapping_entry` and the entries data source done (partial: no single-entry delete; acceptance test passed) | releasing 0.10.0 first |
-| 0.12.0 | Cloud Integration package custom tags | in progress on `feature/package-custom-tags`: `sapintegrationsuite_integration_package_custom_tag` and the package tags data source done (supported: Integration Content API specification, acceptance test passed) | releasing 0.11.0 first |
-| 0.13.0 | Edge Integration Cell targeting | proposed | a tenant with an Edge Integration Cell (P1 item 3) |
-| 0.14.0 | Data Space Integration desired-state configuration | proposed | the DSIAPI specification (P2 item 7) |
+| 0.8.0 | Security Content completion | proposed | the upload formats in P2 item 5 |
+| 0.9.0 | Classic API Management infrastructure, above all virtual hosts; the API proxy only if the official Transport API request passes its acceptance test | proposed | P2 item 6 and the Transport API specification |
+| 0.10.0 | Edge Integration Cell targeting | proposed | a tenant with an Edge Integration Cell (P1 item 3) |
+| 0.11.0 | Data Space Integration desired-state configuration | proposed | the DSIAPI specification (P2 item 7) |
 
 The order follows what is closest to a tenant-verified result, not importance, and changes when a
 precondition is met earlier. Current API Management (API artifacts, MCP servers, runtime
@@ -56,13 +53,10 @@ These need no further research, only a run of the prepared tests:
 ## P1 — public contract, next implementation
 
 1. **Integration Assessment.** The landscape (0.4), the technology profiles and the complete
-   ISA-M taxonomy (0.5) are supported since 0.8: the Entities API specification from the Hub
-   (downloaded 2026-10-10) documents every entity set and request the provider uses. Only a link
-   change in place stays unofficial, because the specification's update bodies list no links.
-   Key characteristic groups, key characteristics and values of a tenant's own, which the
-   specification also documents, are resources on `feature/ia-key-characteristics` (0.10.0),
-   supported since `TestAccIntegrationAssessment_keyCharacteristics` passed on 2026-10-15.
-   Requests and assessment results stay out of scope as workflow.
+   ISA-M taxonomy (0.5) exist, all unofficial. `TestAccIntegrationAssessment_technologyProfile`
+   and `TestAccIntegrationAssessment_taxonomy` passed on 2026-10-04. The Hub specification of
+   the Entities API would make them supported; it still needs an SAP login. Requests and
+   assessment results stay out of scope as workflow.
 2. **API Composition hardening.** A key user's token (password grant through the
    `configuration` client) reads the Configuration API; a client-credentials token got 403. The
    provider has that login since `feature/api-composition-hardening`, `TestAccMetadata` passes
@@ -89,20 +83,16 @@ These need no further research, only a run of the prepared tests:
 
 ## P2 — partly confirmed, more evidence first
 
-5. **Security Content.** Settled by tenant probes on 2026-10-04 and implemented for 0.8.0:
-   certificate chains (PEM upload with the fingerprint confirmation, CSR on the key pair), PGP
-   keys (one resource per key, secret keys write-only with the passphrase header) and OAuth2
-   custom parameters (create-only, so a change replaces the credential), all unofficial. The
-   OAuth2 password and SAML bearer artifacts are no user credential kinds (SAP accepts only
-   `default`, `successfactors` and `openconnectors`) and stay without an API. Access policy string limits are settled: a probe found that SAP
+5. **Security Content.** Certificate chains (upload media type), PGP keyrings (upload format;
+   secret keyrings write-only) and OAuth2 client credential custom parameters (write path). The
+   OAuth2 password and SAML bearer artifacts become user credential kinds if a probe finds them
+   among `UserCredentials`. Access policy string limits are settled: a probe found that SAP
    shortens the role name and descriptions to 200, a reference name to 50 and a reference value
    to 150 characters, and 0.3.2 checks all of them at plan time.
-6. **Classic virtual hosts.** Default domain hosts are implemented for 0.9.0 on the documented
-   `Configuration.svc/VirtualHostRequests`, after a tenant probe with an
-   `APIManagement.SelfService.Administrator` key (2026-10-06); the acceptance test passed. Mutual
-   TLS on the default domain needs no DNS, only a truststore created in the UI; it followed on
-   2026-10-07 and passed its probe and acceptance test. Next: custom domains, which need DNS and a
-   server certificate for their own tenant test.
+6. **Classic virtual hosts.** The write API (`Configuration.svc/VirtualHostRequests`) is
+   documented and the read schema confirmed; needs a key with
+   `APIManagement.SelfService.Administrator` and a destructive-gated tenant test, since virtual
+   hosts are tenant-wide.
 7. **Data Space Integration.** Parse the DSIAPI OpenAPI document (`cmd/apidiscovery -spec-dir`)
    once it is available, then model only desired-state configuration (assets, policies,
    contract definitions); negotiations, agreements and transfers stay out of scope.
@@ -114,10 +104,7 @@ These need no further research, only a run of the prepared tests:
 
 ## P3 — later
 
-9. **Value mapping update — settled.** A tenant probe (2026-10-06) got 501 for every `PUT`, and
-   `SaveAsVersion` only relabels the single stored version; value mappings stay replace-on-change.
-   The relabel is offered as the unofficial `save_as_version`; `TestAccValueMapping_saveAsVersion`
-   passed on 2026-10-07.
+9. Value mapping in-place update and `save_as_version` (needs a verified PUT).
 10. Integration adapters tested with real adapter content (create and read are not documented
     by an example).
 11. Classic certificate stores, applications, cache resources, rate plans, policy templates and
@@ -132,6 +119,8 @@ These need no further research, only a run of the prepared tests:
   virtual hosts. Channels: the Hub's API Management and Cloud Integration packages, the Client
   SDK on Maven Central, What's New for Integrations and APIs. The design for an API artifact
   resource is in `docs/guides/current-api-management.md`.
+- Value mapping entries: SAP's entry functions dropped values and deleted nothing in tenant
+  tests (2026-09-27). Revisit when SAP documents an update and a delete that work.
 - Capability activation for every Integration Suite capability.
 - Known hosts, certificate-to-user mapping (Neo only today), where-used lists.
 - OData Provisioning, Integration Advisor, Trading Partner Management configuration, Migration
