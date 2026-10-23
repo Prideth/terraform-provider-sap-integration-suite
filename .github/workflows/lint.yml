@@ -23,7 +23,7 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v9
         with:
-          version: v2.13.2
+          version: v2.15.0
 
   govulncheck:
     name: govulncheck
@@ -52,7 +52,7 @@ jobs:
         # Requirements section) and the current stable release, so a
         # regression against either floor is caught here rather than only
         # discovered by a practitioner running an older or newer Terraform.
-        terraform_version: ["1.11.0", "1.16.3"]
+        terraform_version: ["1.11.0", "1.17.0"]
     steps:
       - uses: actions/checkout@v7
 
