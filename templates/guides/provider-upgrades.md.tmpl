@@ -33,8 +33,8 @@ complete list of changes is in the
 vulnerabilities, and lets `sapintegrationsuite_value_mapping_deployment` deploy a value mapping
 that is a draft (`mapping_version = "Draft"`); that apply used to fail with an inconsistent
 result. Renaming a `sapintegrationsuite_data_type` now replaces it: SAP ignores a new name in an
-update, and the in-place rename of 0.7.0 failed. Nothing is renamed and no state is migrated. Run `terraform init -upgrade`; a
-constraint of `~> 0.7.0` already allows 0.7.1.
+update, and the in-place rename of 0.7.0 failed. Nothing is renamed and no state is migrated.
+Run `terraform init -upgrade`; a constraint of `~> 0.7.0` already allows 0.7.1.
 
 ## 0.6 to 0.7
 

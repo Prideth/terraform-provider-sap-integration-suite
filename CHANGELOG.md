@@ -125,10 +125,9 @@ they become the 0.9.0 section once 0.8.0 is released.
   hosts (the `api_management` key gets 403). `subaccount_subdomain` is taken
   from the token URL unless set.
 
-### Planned for 0.7.1
+## 0.7.1 — 2026-10-23
 
-These fixes are on `release/0.7.x`; they become the 0.7.1 section once
-0.7.1 is released.
+### Fixed
 
 - The provider is built with Go 1.27.2 and `golang.org/x/net` 0.60.0.
   0.7.0 was built with Go 1.27.1 and `golang.org/x/net` 0.59.0, which have
@@ -152,6 +151,11 @@ These fixes are on `release/0.7.x`; they become the 0.7.1 section once
   so the apply failed with "Provider produced inconsistent result after
   apply". The update body is now the one SAP's specification documents:
   description and content, without the name.
+
+### Upgrade notes
+
+Nothing to change: no state change. A plan that renames a data type now
+shows a replacement instead of an update.
 
 ## 0.7.0 — 2026-10-15
 
