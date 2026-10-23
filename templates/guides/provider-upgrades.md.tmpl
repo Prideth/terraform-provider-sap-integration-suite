@@ -27,6 +27,12 @@ read the plan before applying: every change below that forces a replacement is m
 complete list of changes is in the
 [CHANGELOG](https://github.com/Prideth/terraform-provider-sap-integration-suite/blob/master/CHANGELOG.md).
 
+## 0.7.1 to 0.7.2
+
+0.7.2 rebuilds the provider with Go 1.27.3, which refuses intermediate certificates that are no
+longer trustworthy (GO-2026-6809). Nothing else changes: no schema change and no state
+migration. Run `terraform init -upgrade`; a constraint of `~> 0.7.0` already allows 0.7.2.
+
 ## 0.7.0 to 0.7.1
 
 0.7.1 rebuilds the provider with Go 1.27.2 and `golang.org/x/net` 0.60.0, which fix known

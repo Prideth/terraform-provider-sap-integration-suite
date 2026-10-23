@@ -188,6 +188,28 @@ These changes are on `feature/package-custom-tags`, which builds on
   generates the schema again in the new namespace. A fault message type
   still replaces, because SAP refuses to update its namespace.
 
+## 0.7.2 — 2026-10-24
+
+### Fixed
+
+- The provider is built with Go 1.27.3. 0.7.1 was built with Go 1.27.2,
+  whose `crypto/x509` still accepts a set of intermediate certificates that
+  are no longer considered trustworthy (GO-2026-6809, CVE-2026-111943,
+  published 2026-10-21, two days before 0.7.1). Go 1.27.3 refuses them in
+  `Certificate.Verify`, which every TLS connection of the provider to SAP
+  goes through. On most systems the operating system's trust store already
+  excludes these certificates; the fix matters where it does not.
+
+### Changed
+
+- The examples are checked with Terraform 1.11.0, the oldest version the
+  provider supports with write-only attributes, and with Terraform 1.17.0,
+  the current release (was 1.16.3).
+
+### Upgrade notes
+
+Nothing to change: no schema or state change.
+
 ## 0.7.1 — 2026-10-23
 
 ### Fixed
