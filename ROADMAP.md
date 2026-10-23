@@ -24,12 +24,12 @@ Each 0.x minor release has one theme. Released so far: 0.1.0 (the broad first pr
 with the patches 0.3.1 and 0.3.2, 0.4.0 (the Integration Assessment landscape), 0.5.0
 (Integration Assessment technology profiles and the ISA-M taxonomy) with the patch 0.5.1,
 0.6.0 (API Composition: business data graph hardening) and 0.7.0 (Cloud Integration data
-types, message types, fault message types and service interfaces). Each minor line has one
+types, message types, fault message types and service interfaces) with the patch 0.7.1. Each minor line has one
 release branch, `release/<minor>.x`, and every release is a tag on it.
 
 | Version | Theme | State | Precondition |
 |---|---|---|---|
-| 0.8.0 | Security Content completion | in progress on `feature/security-content`: certificate chains, PGP keys and OAuth2 custom parameters done (unofficial, acceptance tests passed) | — |
+| 0.8.0 | Security Content completion | proposed | the upload formats in P2 item 5 |
 | 0.9.0 | Classic API Management infrastructure, above all virtual hosts; the API proxy only if the official Transport API request passes its acceptance test | proposed | P2 item 6 and the Transport API specification |
 | 0.10.0 | Edge Integration Cell targeting | proposed | a tenant with an Edge Integration Cell (P1 item 3) |
 | 0.11.0 | Data Space Integration desired-state configuration | proposed | the DSIAPI specification (P2 item 7) |
@@ -53,13 +53,10 @@ These need no further research, only a run of the prepared tests:
 ## P1 — public contract, next implementation
 
 1. **Integration Assessment.** The landscape (0.4), the technology profiles and the complete
-   ISA-M taxonomy (0.5) are supported since 0.8: the Entities API specification from the Hub
-   (downloaded 2026-10-10) documents every entity set and request the provider uses. Only a link
-   change in place stays unofficial, because the specification's update bodies list no links.
-   The specification also documents create, update and delete for key characteristic groups,
-   key characteristics and key characteristic values, which the provider only reads; resources
-   for them are possible once a tenant test shows how custom entries behave next to SAP's.
-   Requests and assessment results stay out of scope as workflow.
+   ISA-M taxonomy (0.5) exist, all unofficial. `TestAccIntegrationAssessment_technologyProfile`
+   and `TestAccIntegrationAssessment_taxonomy` passed on 2026-10-04. The Hub specification of
+   the Entities API would make them supported; it still needs an SAP login. Requests and
+   assessment results stay out of scope as workflow.
 2. **API Composition hardening.** A key user's token (password grant through the
    `configuration` client) reads the Configuration API; a client-credentials token got 403. The
    provider has that login since `feature/api-composition-hardening`, `TestAccMetadata` passes
@@ -86,12 +83,10 @@ These need no further research, only a run of the prepared tests:
 
 ## P2 — partly confirmed, more evidence first
 
-5. **Security Content.** Settled by tenant probes on 2026-10-04 and implemented for 0.8.0:
-   certificate chains (PEM upload with the fingerprint confirmation, CSR on the key pair), PGP
-   keys (one resource per key, secret keys write-only with the passphrase header) and OAuth2
-   custom parameters (create-only, so a change replaces the credential), all unofficial. The
-   OAuth2 password and SAML bearer artifacts are no user credential kinds (SAP accepts only
-   `default`, `successfactors` and `openconnectors`) and stay without an API. Access policy string limits are settled: a probe found that SAP
+5. **Security Content.** Certificate chains (upload media type), PGP keyrings (upload format;
+   secret keyrings write-only) and OAuth2 client credential custom parameters (write path). The
+   OAuth2 password and SAML bearer artifacts become user credential kinds if a probe finds them
+   among `UserCredentials`. Access policy string limits are settled: a probe found that SAP
    shortens the role name and descriptions to 200, a reference name to 50 and a reference value
    to 150 characters, and 0.3.2 checks all of them at plan time.
 6. **Classic virtual hosts.** The write API (`Configuration.svc/VirtualHostRequests`) is
