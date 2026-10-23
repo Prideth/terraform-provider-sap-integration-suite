@@ -9,7 +9,7 @@ contain breaking schema or lifecycle changes; each one is listed under
 "Breaking changes" together with the steps it needs. Patch releases (0.2.1)
 only fix defects in their minor release.
 
-## Unreleased (planned as 0.7.1)
+## 0.7.1 — 2026-10-23
 
 ### Fixed
 

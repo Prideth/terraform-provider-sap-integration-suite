@@ -22,9 +22,9 @@ Priorities:
 Each 0.x minor release has one theme. Released so far: 0.1.0 (the broad first provider), 0.2.0
 (the tenant-verified rework), 0.3.0 (contract sources, opt-in switches, Registry documentation)
 with the patches 0.3.1 and 0.3.2, 0.4.0 (the Integration Assessment landscape), 0.5.0
-(Integration Assessment technology profiles and the ISA-M taxonomy) with the patch 0.5.1, and
-0.6.0 (API Composition: business data graph hardening), and 0.7.0 (Cloud Integration data
-types, message types, fault message types and service interfaces). Each minor line has one
+(Integration Assessment technology profiles and the ISA-M taxonomy) with the patch 0.5.1,
+0.6.0 (API Composition: business data graph hardening) and 0.7.0 (Cloud Integration data
+types, message types, fault message types and service interfaces) with the patch 0.7.1. Each minor line has one
 release branch, `release/<minor>.x`, and every release is a tag on it.
 
 | Version | Theme | State | Precondition |
