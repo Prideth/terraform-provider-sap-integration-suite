@@ -86,6 +86,11 @@ longer need an opt-in switch.
   then reports the signed certificate's validity, and a configuration that
   set these attributes would otherwise have planned a replacement of the key
   pair, which deletes the chain with the key.
+- The provider is built with current releases of its libraries, among them
+  `hashicorp/hcl/v2` 2.25.0, `hashicorp/go-plugin` 1.8.0, `grpc` 1.84.0,
+  `zclconf/go-cty` 1.19.0 and `golang.org/x/net` 0.61.0. None of them
+  changes what the provider does; `govulncheck` reported nothing before or
+  after.
 
 ### Planned for 0.9.0: Classic virtual hosts
 
