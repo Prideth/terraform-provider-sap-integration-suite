@@ -5,8 +5,10 @@ import (
 	"bytes"
 	"crypto/sha1" // #nosec G505 -- the OpenPGP v4 fingerprint is defined as SHA-1 (RFC 4880, 12.2); it identifies a key, it secures nothing
 	"encoding/base64"
+	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"math"
 	"strings"
 )
 
@@ -54,8 +56,17 @@ func ParsePGPKey(armored []byte) (*PGPKeyInfo, error) {
 		if err != nil {
 			return nil, err
 		}
+		// The v4 fingerprint hashes 0x99, the two-octet length of the public
+		// key part and the part itself (RFC 4880, 12.2); a longer part is no
+		// v4 key.
+		size := len(pub)
+		if size > math.MaxUint16 {
+			return nil, fmt.Errorf("securitycontent: the PGP public key part is %d bytes, more than a v4 key can have", size)
+		}
+		header := []byte{0x99, 0, 0}
+		binary.BigEndian.PutUint16(header[1:], uint16(size))
 		h := sha1.New() // #nosec G401 -- see the import
-		h.Write([]byte{0x99, byte(len(pub) >> 8), byte(len(pub))})
+		h.Write(header)
 		h.Write(pub)
 		fp := strings.ToUpper(hex.EncodeToString(h.Sum(nil)))
 		info = &PGPKeyInfo{Fingerprint: fp, KeyID: fp[len(fp)-16:], Secret: tag == pgpTagSecretKey}
