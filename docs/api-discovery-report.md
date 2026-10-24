@@ -22,7 +22,7 @@ SAP documentation, official SAP tooling, or a safe verification on a tenant
 
 | Service | Protocol | Snapshot | Entity sets | Operations | REST operations | Used | Candidates | Excluded |
 |---|---|---|---:|---:|---:|---:|---:|---:|
-| [cloud-integration](#cloud-integration) | OData V2 | 2026-10-03 | 131 | 35 | 0 | 57 | 17 | 92 |
+| [cloud-integration](#cloud-integration) | OData V2 | 2026-10-03 | 131 | 35 | 0 | 58 | 17 | 91 |
 | [classic-api-management](#classic-api-management) | OData V2 | 2026-09-27 | 61 | 1 | 0 | 8 | 18 | 36 |
 | [classic-api-management-transport](#classic-api-management-transport) | OpenAPI | none yet | | | | | | |
 | [classic-api-management-content-archive](#classic-api-management-content-archive) | OpenAPI | none yet | | | | | | |
@@ -46,7 +46,7 @@ Cloud Integration (Integration Content, Security Content, Partner Directory, mes
 
 The service document lists 25 of the 131 entity sets. The other 106 are declared in `$metadata` only. The list does not decide whether a set can be addressed: the provider reads and writes several of them on a tenant (for example UserCredentials and StringParameters), while others answered 404 (PgpKeyrings). Only a tenant check settles it: APIDefinitions, AlternativePartners, AuthorizedUsers, B2BArchivingConfigurations, B2BArchivingKeyPerformanceIndicators, BinaryParameters, BuildAndDeployStatus, BusinessDocumentExtFields, BusinessDocumentNotes, BusinessDocumentPayloads, BusinessDocumentProcessingEvents, BusinessDocumentProtocolHeaders, BusinessDocumentRelations, BusinessDocuments, CertificateChainResources, CertificateResources, CertificateSigningRequests, ChainCertificates, CommunicationProtocolHeaders, Configurations, CustomObjects, CustomParameters, CustomTagConfigurations, CustomTags, DataStoreEntries, DataStores, DataTypeDesigntimeArtifacts, DefaultValMaps, DesignGuidelineExecutionResults, DesignGuidelines, EntryPoints, ErrorDetails, ExtendedFieldsConfigs, FaultMessageTypeDesigntimeArtifacts, FunctionalAcknowledgements, GenericIdempotentRepositoryEntries, HistoryKeystoreEntries, IdMapFromId2s, IdMapFromIds, IdMapToIds, IdempotentRepositoryEntries, IntegrationAdapterDesigntimeArtifacts, IntegrationConnections, IntegrationDesigntimeArtifacts, IntegrationDesigntimeLocks, IntegrationFlows, IntegrationPackages, IntegrationRuntimeArtifacts, JmsArtifacts, JmsBrokers, JmsMessages, JmsQueues, KeyPairGenerationRequests, KeyPairResources, KeyringRuntimeAssignment, KeystoreEntries, KeystoreResources, Keystores, Locks, MDIDeltaToken, MessageMappingDesigntimeArtifacts, MessageTypeDesigntimeArtifacts, MessagingMessages, MessagingQueues, NodeProfiles, NumberRanges, OAuth2AuthorizationCodes, OAuth2ClientCredentials, OrphanedInterchanges, Partners, PgpKeyEntries, PgpKeyEntryImportResults, PgpKeyPublicResources, PgpKeySecretResources, PgpKeyringPublicResources, PgpKeyringSecretResources, PgpKeyrings, PgpPublicKeyrings, PgpSecretKeyrings, PgpSubKeys, PgpUserIds, QueueStates, Queues, RSAKeyGenerationRequests, Resources, Roles, RuntimeArtifactErrorInformations, RuntimeSyncInfos, SSHKeyGenerationRequests, SSHKeyResources, ScriptCollectionDesigntimeArtifacts, SecureParameters, SecurityArtifacts, ServiceEndpoints, ServiceInterfaceDesigntimeArtifacts, StringParameters, TechnicalAcknowledgements, UserCredentialParameters, UserCredentials, ValMapSchema, ValMaps, ValueMappingDesigntimeArtifacts, Variables, WNNodes, XiDataStoreArtifacts, XiDataStores.
 
-### Used by the provider (57)
+### Used by the provider (58)
 
 | Name | Kind | Type or method | Client packages |
 |---|---|---|---|
@@ -94,6 +94,7 @@ The service document lists 25 of the 131 entity sets. The other 106 are declared
 | ValMapSchema | entity set | ValMapSchema | `cloudintegration` |
 | ValMaps | entity set | ValMap | `cloudintegration` |
 | ValueMappingDesigntimeArtifacts | entity set | ValueMappingDesigntimeArtifact | `cloudintegration` |
+| CopyIntegrationPackage | operation | POST | `cloudintegration` |
 | DataTypeDesigntimeArtifactSaveAsVersion | operation | POST | `cloudintegration` |
 | DeployIntegrationAdapterDesigntimeArtifact | operation | POST | `cloudintegration` |
 | DeployIntegrationDesigntimeArtifact | operation | POST | `cloudintegration` |
@@ -130,7 +131,7 @@ The service document lists 25 of the 131 entity sets. The other 106 are declared
 | PgpSubKeys | entity set | `security.pgp_keyring` | unofficial |  |
 | PgpUserIds | entity set | `security.pgp_keyring` | unofficial |  |
 
-### Excluded (92)
+### Excluded (91)
 
 | Names | Reason | Catalog entry |
 |---|---|---|
@@ -164,7 +165,6 @@ The service document lists 25 of the 131 entity sets. The other 106 are declared
 | Variables | Written by a flow's Write Variables step; runtime data. | `cloud_integration.variable` |
 | XiDataStoreArtifacts, XiDataStores | Temporary storage of the XI adapter; runtime data. | `cloud_integration.data_store` |
 | CancelMessageProcessingLog | Runtime data of message processing (logs, attachments, run steps); monitoring, not configuration. |  |
-| CopyIntegrationPackage | Copies an SAP-provided package from the Discover catalog; a one-off action. A resource for copied standard packages is possible later. |  |
 | MoveMessagingMessages, RetryMessagingMessages, activateQueue, deactivateQueue | Runtime messages and queues filled by deployed integration flows; operations on them are support actions, not desired state. |  |
 | activateExternalLogging, deactivateExternalLogging | Tenant-wide switch for external logging (see ExternalLoggingActivationStatus). |  |
 

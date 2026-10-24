@@ -169,7 +169,7 @@ These entries are on `feature/value-mapping-entries`, which builds on
 - `sapintegrationsuite_value_mapping_entries` (data source): the entries
   of one agency pair, with their IDs and whether SAP uses them by default.
 
-### Planned for 0.12.0: Package custom tags
+### Planned for 0.12.0: Integration packages: custom tags and standard package copies
 
 These changes are on `feature/package-custom-tags`, which builds on
 0.11.0; they become the 0.12.0 section once 0.11.0 is released.
@@ -192,6 +192,18 @@ These changes are on `feature/package-custom-tags`, which builds on
   in the update body, and a tenant probe (PENDING #74) showed that SAP
   generates the schema again in the new namespace. A fault message type
   still replaces, because SAP refuses to update its namespace.
+- `sapintegrationsuite_integration_package_copy` (supported): a copy of an
+  SAP standard package from the Discover catalog in Design, through
+  `CopyIntegrationPackage`, which SAP's Integration Content API
+  specification documents. A changed `upgrade_trigger` copies the package
+  again over the copy with `OVERWRITE_MERGE`, which keeps the parameters
+  set on its flows (or `OVERWRITE` with `keep_configuration = false`).
+  `suffix` makes an additional copy next to the original; SAP cannot
+  overwrite such a copy, so its upgrade replaces it. `integration_flows`
+  lists the copied flows for the configuration and deployment resources.
+  A tenant probe settled the import modes (PENDING #77), and an acceptance
+  test copied a package, upgraded it with a configured parameter kept,
+  imported it, and made, replaced and imported an additional copy.
 
 ## 0.7.2 — 2026-10-24
 

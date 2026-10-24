@@ -1,0 +1,154 @@
+---
+page_title: "sapintegrationsuite_integration_package_copy Resource - sapintegrationsuite"
+subcategory: "Cloud Integration"
+description: |-
+  A copy of an SAP standard integration package from the Discover catalog in Design, kept on SAP's current version.
+---
+
+# sapintegrationsuite_integration_package_copy (Resource)
+
+SAP publishes prebuilt integration content as standard packages in the Discover catalog of Cloud
+Integration, for example the replication of cost centers from SAP S/4HANA to SAP SuccessFactors.
+To use such a package, it is copied into Design, its flows are configured with the endpoints and
+credentials of the landscape, and then deployed. This resource is the copy: it brings the package
+into Design, keeps it there, and brings it to SAP's current version when you ask for it, without
+losing the configuration of its flows. Configuring and deploying the flows stays with
+[`sapintegrationsuite_integration_flow_configuration`](integration_flow_configuration.md) and
+[`sapintegrationsuite_integration_flow_deployment`](integration_flow_deployment.md).
+
+**Status:** supported. SAP's Integration Content API specification documents
+`CopyIntegrationPackage`, and a tenant probe settled how SAP treats copies (see below).
+
+## Prerequisites
+
+- The package's ID in the Discover catalog. It is the last part of the package's URL in Discover,
+  and the technical name of the package on the SAP Business Accelerator Hub.
+- Design must not hold the package yet, unless you use `suffix`. A copy made earlier, in SAP's UI
+  for example, is imported instead (see below); the resource never overwrites a copy it does not
+  manage.
+
+## Lifecycle
+
+| Operation | What happens |
+|---|---|
+| Create | Copies the package into Design (`POST CopyIntegrationPackage?Id='<id>'`). With `suffix`, makes an additional copy (`ImportMode='CREATE_COPY'`), whether or not Design holds the original. A package that is in Design already fails the apply with the import ID to use. |
+| Read | Reads the copy and its integration flows. A copy that was deleted outside Terraform is removed from the state. |
+| Update | A changed `upgrade_trigger` copies the package again over the copy: `ImportMode='OVERWRITE_MERGE'`, which keeps the externalized parameters set on its flows, or `OVERWRITE` with `keep_configuration = false`, which resets them to SAP's defaults. |
+| Replacement | Changing `source_package_id` or `suffix` replaces the copy. So does a changed `upgrade_trigger` on a copy with a suffix (see below). |
+| Delete | Deletes the copy from Design. |
+
+## Keeping a copy on SAP's current version
+
+The API does not say when SAP publishes a new version of a standard package, so the resource
+does not upgrade on its own: it copies again when `upgrade_trigger` changes. A natural value is
+the version Discover shows; raising it to the new version brings the copy along. A tenant probe
+(October 2026) confirmed what the specification promises for `OVERWRITE_MERGE`: a parameter set
+on a copied flow kept its value, while `OVERWRITE` reset it to the default.
+
+Deployed flows keep running the content they were deployed with. Redeploy them after an upgrade,
+for example with `redeploy_triggers` of the deployment resource set to the copy's `version`.
+
+## Additional copies with a suffix
+
+`suffix` makes a second copy next to the original: SAP appends `.<suffix>` to the package ID, the
+package name and the IDs of the flows, so `ERPtoSuccessFactorsEmployeeCentralCostCenter` with
+suffix `test` becomes `ERPtoSuccessFactorsEmployeeCentralCostCenter.test`. The provider allows
+letters, digits and underscores, which keeps the IDs usable everywhere.
+
+SAP cannot bring such a copy to the current version in place: `OVERWRITE_MERGE` with the suffixed
+ID answers `404`, and with the `Suffix` parameter SAP overwrites the original package instead
+(tenant probe, October 2026). A changed `upgrade_trigger` therefore replaces a copy with a suffix:
+it is deleted and copied again, and the configuration of its flows starts from SAP's defaults.
+The plan shows the replacement.
+
+## What a copy allows
+
+A copy is configure-only (`mode` is `READ_ONLY`): its flows can be configured and deployed, but
+its content and metadata come from SAP, and SAP refuses to change them (`403`). Custom tags can
+still be set with
+[`sapintegrationsuite_integration_package_custom_tag`](integration_package_custom_tag.md).
+
+## Example Usage
+
+```terraform
+# A standard package from the Discover catalog, copied into Design. Raise
+# upgrade_trigger, for example to the version Discover shows, to bring the
+# copy to SAP's current content; the flows keep their configuration.
+resource "sapintegrationsuite_integration_package_copy" "cost_center" {
+  source_package_id = "ERPtoSuccessFactorsEmployeeCentralCostCenter"
+  upgrade_trigger   = "11.0.0"
+}
+
+# The copied flows are configured and deployed like any other flow.
+resource "sapintegrationsuite_integration_flow_configuration" "cost_center" {
+  flow_id      = sapintegrationsuite_integration_package_copy.cost_center.integration_flows[0].id
+  flow_version = "active"
+  parameters = {
+    SFSF_EC_Logon_Credentials_Name = "SFSF_EC_CREDENTIALS"
+  }
+}
+
+# An additional copy next to the original, for example to try a variant.
+# SAP appends ".<suffix>" to the package ID, its name and the flow IDs.
+resource "sapintegrationsuite_integration_package_copy" "cost_center_test" {
+  source_package_id = "ERPtoSuccessFactorsEmployeeCentralCostCenter"
+  suffix            = "test"
+}
+```
+
+<!-- schema generated by tfplugindocs -->
+## Schema
+
+### Required
+
+- `source_package_id` (String) ID of the package in the Discover catalog, as in its URL, for example "ERPtoSuccessFactorsEmployeeCentralCostCenter". Changing it replaces the copy.
+
+### Optional
+
+- `keep_configuration` (Boolean) Whether an upgrade keeps the externalized parameters set on the copy's flows (OVERWRITE_MERGE, the default) or resets them to SAP's defaults (OVERWRITE).
+- `suffix` (String) Makes an additional copy (ImportMode CREATE_COPY): SAP appends ".<suffix>" to the package ID, the name and the IDs of the flows, so that the copy can live next to the original. Letters, digits and underscores. Changing it replaces the copy.
+- `upgrade_trigger` (String) Any value, for example the package version from the Discover catalog. Changing it copies the package again over the existing copy, which brings it to SAP's current version (ImportMode OVERWRITE_MERGE, or OVERWRITE with keep_configuration = false). A copy with a suffix cannot be overwritten (SAP overwrites the original instead), so for it a change replaces the copy and its configuration is lost.
+
+### Read-Only
+
+- `id` (String) The ID of the copy in Design, the same as package_id.
+- `integration_flows` (Attributes List) The integration flows of the copy, in the order SAP returns them, for the configuration and deployment resources. (see [below for nested schema](#nestedatt--integration_flows))
+- `mode` (String) The package mode; READ_ONLY (configure-only) for a copy.
+- `name` (String) The package's name, as SAP gives it (with ".<suffix>" for an additional copy).
+- `package_id` (String) The ID of the copy in Design: source_package_id, followed by ".<suffix>" with a suffix.
+- `vendor` (String) The vendor, SAP for standard packages.
+- `version` (String) The package version SAP copied.
+
+<a id="nestedatt--integration_flows"></a>
+### Nested Schema for `integration_flows`
+
+Read-Only:
+
+- `id` (String) ID of the flow.
+- `name` (String) Name of the flow.
+- `version` (String) Design-time version of the flow.
+
+## Import
+
+```shell
+# <source_package_id> for a copy, <source_package_id>/<suffix> for an additional copy.
+terraform import sapintegrationsuite_integration_package_copy.cost_center ERPtoSuccessFactorsEmployeeCentralCostCenter
+terraform import sapintegrationsuite_integration_package_copy.cost_center_test ERPtoSuccessFactorsEmployeeCentralCostCenter/test
+```
+
+After an import, `upgrade_trigger` is empty in the state. If the configuration sets it, the first
+apply after the import upgrades the copy once (with `OVERWRITE_MERGE` by default, which keeps the
+configuration of its flows).
+
+## Limitations
+
+- **Upgrades on request only:** the API does not report the catalog's current version, so the
+  provider cannot show that a newer version exists.
+- **Deployed flows:** deleting a copy does not undeploy its flows. Manage the deployments in the
+  same configuration, so that Terraform undeploys them before it deletes the copy.
+
+## Related
+
+- [`sapintegrationsuite_integration_flow_configuration`](integration_flow_configuration.md)
+- [`sapintegrationsuite_integration_flow_deployment`](integration_flow_deployment.md)
+- [`sapintegrationsuite_integration_package`](integration_package.md): packages of your own.

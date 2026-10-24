@@ -221,7 +221,6 @@ var cloudIntegrationClassification = concat(
 		candidate("UpdateDefaultValMap", "cloud_integration.value_mapping_entry", ""),
 		candidate("DeleteValMaps", "cloud_integration.value_mapping_entry", ""),
 		excluded("Resources", "Single files inside design-time artifacts; the content resources manage the artifact as a whole ZIP, and editing files one by one would fight it."),
-		excluded("CopyIntegrationPackage", "Copies an SAP-provided package from the Discover catalog; a one-off action. A resource for copied standard packages is possible later."),
 		excluded("IntegrationDesigntimeLocks", reasonLocks),
 		excluded("Locks", reasonLocks),
 		excluded("DesignGuidelines", reasonGuidelines),

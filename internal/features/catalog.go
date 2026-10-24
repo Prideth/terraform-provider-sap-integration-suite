@@ -615,6 +615,34 @@ var Catalog = []Feature{
 		Operations: Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
 	},
 	{
+		Key:    "cloud_integration.integration_package_copy",
+		Domain: "cloud_integration",
+		Name:   "Integration Package Copy",
+		Description: "A copy of an SAP standard integration package from the Discover catalog in Design, " +
+			"kept on SAP's current version.",
+		SupportStatus:  StatusSupported,
+		ContractSource: SourceAPISpecification,
+		ResourceTypes:  []string{"sapintegrationsuite_integration_package_copy"},
+		PublicAPI:      true,
+		APIProtocol:    "OData V2 (function import)",
+		Limitations: []string{
+			"SAP's Integration Content API specification (Business Accelerator Hub, downloaded 2026-10-10) " +
+				"documents POST CopyIntegrationPackage with Id, ImportMode (CREATE_COPY, OVERWRITE, " +
+				"OVERWRITE_MERGE) and Suffix; the package is then an ordinary IntegrationPackages entity.",
+			"Tenant probe of 2026-10-24 (PENDING #77): a copy answers 201 and is configure-only (Mode " +
+				"READ_ONLY; a metadata PUT answers 403), copying again answers 409, an unknown ID 404. " +
+				"OVERWRITE_MERGE keeps an externalized parameter set on a copied flow, OVERWRITE resets it. " +
+				"CREATE_COPY needs a suffix and appends \".<suffix>\" to the package ID, the name and the flow " +
+				"IDs, also when Design does not hold the original.",
+			"A copy with a suffix cannot be brought to SAP's current version in place: OVERWRITE_MERGE with " +
+				"the suffixed ID answers 404, and with the Suffix parameter SAP overwrites the original " +
+				"instead. Changing upgrade_trigger therefore replaces such a copy, and its configuration is lost.",
+			"The API does not report the catalog's current version, so an upgrade happens when " +
+				"upgrade_trigger changes, not when SAP publishes a new version.",
+		},
+		Operations: Operations{Create: true, Read: true, Update: true, Delete: true, Import: true},
+	},
+	{
 		Key:           "cloud_integration.message_processing_logs",
 		Domain:        "cloud_integration",
 		Name:          "Message Processing Logs",

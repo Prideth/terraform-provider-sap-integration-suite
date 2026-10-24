@@ -461,6 +461,29 @@ elsewhere, it confirms names, keys and types but not which operations SAP accept
 - **Not tested**: whether SAP checks the configuration's permitted values, and whether it lets
   the API clear a mandatory tag (the tenant had neither).
 
+## `sapintegrationsuite_integration_package_copy`
+
+- **SAP product area**: Integration Suite / Cloud Integration — copying SAP standard packages
+  from the Discover catalog into Design
+- **Official API**: Integration Content API specification (`IntegrationContent`, Business
+  Accelerator Hub, downloaded 2026-10-10): `POST CopyIntegrationPackage` ("Copy an integration
+  package", tag "Integration Package - Discover") with `Id`, `ImportMode` (`'CREATE_COPY'`,
+  `'OVERWRITE'`, `'OVERWRITE_MERGE'`) and `Suffix`, all enclosed in single quotes; `201` with the
+  package, `409` when it exists. The function import is in the tenant `$metadata` (snapshot of
+  2026-10-03) with the same parameters and returns an `IntegrationPackage`. The copy is then read
+  and deleted as an ordinary `IntegrationPackages` entity, its flows through the
+  `IntegrationDesigntimeArtifacts` navigation.
+- **Tenant probe** (2026-10-24, `.specs/PENDING-TESTS.md` #77, a small standard package that the
+  tenant did not hold): the copy answered `201` with Vendor `SAP` and Mode `READ_ONLY`; a metadata
+  `PUT` answered `403` "Entity with the specified integration package id is Configure-Only". A
+  second copy without `ImportMode` answered `409`, an unknown ID `404`. A parameter set on the
+  copied flow kept its value through `OVERWRITE_MERGE` and was reset by `OVERWRITE`.
+  `CREATE_COPY` without `Suffix` answered `409`; with `Suffix='tfacc'` it created
+  `<id>.tfacc` with the suffix also on the name and the flow IDs, whether or not Design held the
+  original. `OVERWRITE_MERGE` with the suffixed ID answered `404`, and with `Suffix` it overwrote
+  (or created) the original instead, so a suffixed copy cannot be upgraded in place.
+- **Not available**: the catalog's current version of a package; upgrades happen on request.
+
 ## `data.sapintegrationsuite_service_endpoints`
 
 - **SAP product area**: Integration Suite / Cloud Integration — runtime discovery of deployed

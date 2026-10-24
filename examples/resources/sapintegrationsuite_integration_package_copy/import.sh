@@ -1,0 +1,3 @@
+# <source_package_id> for a copy, <source_package_id>/<suffix> for an additional copy.
+terraform import sapintegrationsuite_integration_package_copy.cost_center ERPtoSuccessFactorsEmployeeCentralCostCenter
+terraform import sapintegrationsuite_integration_package_copy.cost_center_test ERPtoSuccessFactorsEmployeeCentralCostCenter/test
