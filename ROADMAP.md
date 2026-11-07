@@ -23,13 +23,13 @@ Each 0.x minor release has one theme. Released so far: 0.1.0 (the broad first pr
 (the tenant-verified rework), 0.3.0 (contract sources, opt-in switches, Registry documentation)
 with the patches 0.3.1 and 0.3.2, 0.4.0 (the Integration Assessment landscape), 0.5.0
 (Integration Assessment technology profiles and the ISA-M taxonomy) with the patch 0.5.1,
-0.6.0 (API Composition: business data graph hardening) and 0.7.0 (Cloud Integration data
-types, message types, fault message types and service interfaces) with the patches 0.7.1 and 0.7.2. Each
-minor line has one release branch, `release/<minor>.x`, and every release is a tag on it.
+0.6.0 (API Composition: business data graph hardening), 0.7.0 (Cloud Integration data
+types, message types, fault message types and service interfaces) with the patches 0.7.1 and 0.7.2,
+and 0.8.0 (Security Content completion: certificate chains, PGP keys and OAuth2 custom parameters).
+Each minor line has one release branch, `release/<minor>.x`, and every release is a tag on it.
 
 | Version | Theme | State | Precondition |
 |---|---|---|---|
-| 0.8.0 | Security Content completion | in progress on `feature/security-content`: certificate chains, PGP keys and OAuth2 custom parameters done (unofficial, acceptance tests passed) | — |
 | 0.9.0 | Classic API Management infrastructure, above all virtual hosts; the API proxy only if the official Transport API request passes its acceptance test | in progress on `feature/classic-virtual-hosts`: default domain virtual hosts with optional mutual TLS done (partial, acceptance tests passed) | releasing 0.8.0 first |
 | 0.10.0 | Integration Assessment key characteristics of a tenant's own | in progress on `feature/ia-key-characteristics`: groups, key characteristics and values done (supported: Entities API specification, acceptance test passed) | releasing 0.9.0 first |
 | 0.11.0 | Edge Integration Cell targeting | proposed | a tenant with an Edge Integration Cell (P1 item 3) |
@@ -129,7 +129,9 @@ These need no further research, only a run of the prepared tests:
   policies, MCP servers and the MCP Gateway, runtime profiles; Integration Cell runtime and
   virtual hosts. Channels: the Hub's API Management and Cloud Integration packages, the Client
   SDK on Maven Central, What's New for Integrations and APIs. The design for an API artifact
-  resource is in `docs/guides/current-api-management.md`.
+  resource is in `docs/guides/current-api-management.md`. Since November 2026 a tenant's
+  `$metadata` declares `APIDesigntimeArtifacts` with save, validate and deploy operations, not
+  documented so far; a package's API artifacts can be read through it, writes are untested.
 - Value mapping entries: SAP's entry functions dropped values and deleted nothing in tenant
   tests (2026-09-27). Revisit when SAP documents an update and a delete that work.
 - Capability activation for every Integration Suite capability.
