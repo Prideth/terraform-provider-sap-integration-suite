@@ -23,13 +23,13 @@ Each 0.x minor release has one theme. Released so far: 0.1.0 (the broad first pr
 (the tenant-verified rework), 0.3.0 (contract sources, opt-in switches, Registry documentation)
 with the patches 0.3.1 and 0.3.2, 0.4.0 (the Integration Assessment landscape), 0.5.0
 (Integration Assessment technology profiles and the ISA-M taxonomy) with the patch 0.5.1,
-0.6.0 (API Composition: business data graph hardening) and 0.7.0 (Cloud Integration data
-types, message types, fault message types and service interfaces) with the patches 0.7.1 and 0.7.2. Each
-minor line has one release branch, `release/<minor>.x`, and every release is a tag on it.
+0.6.0 (API Composition: business data graph hardening), 0.7.0 (Cloud Integration data
+types, message types, fault message types and service interfaces) with the patches 0.7.1 and 0.7.2,
+and 0.8.0 (Security Content completion: certificate chains, PGP keys and OAuth2 custom parameters).
+Each minor line has one release branch, `release/<minor>.x`, and every release is a tag on it.
 
 | Version | Theme | State | Precondition |
 |---|---|---|---|
-| 0.8.0 | Security Content completion | in progress on `feature/security-content`: certificate chains, PGP keys and OAuth2 custom parameters done (unofficial, acceptance tests passed) | — |
 | 0.9.0 | Classic API Management infrastructure, above all virtual hosts; the API proxy only if the official Transport API request passes its acceptance test | in progress on `feature/classic-virtual-hosts`: default domain virtual hosts with optional mutual TLS done (partial, acceptance tests passed) | releasing 0.8.0 first |
 | 0.10.0 | Integration Assessment key characteristics of a tenant's own | in progress on `feature/ia-key-characteristics`: groups, key characteristics and values done (supported: Entities API specification, acceptance test passed) | releasing 0.9.0 first |
 | 0.11.0 | Cloud Integration value mapping entries | in progress on `feature/value-mapping-entries`: `sapintegrationsuite_value_mapping_entry` and the entries data source done (partial: no single-entry delete; acceptance test passed) | releasing 0.10.0 first |

@@ -9,93 +9,10 @@ contain breaking schema or lifecycle changes; each one is listed under
 "Breaking changes" together with the steps it needs. Patch releases (0.2.1)
 only fix defects in their minor release.
 
-## Unreleased (planned as 0.8.0)
+## Unreleased (planned as 0.9.0)
 
-0.8.0 is planned to complete Security Content: CA-signed certificate chains
-for key pairs, PGP keys and the custom parameters of OAuth2 client
-credentials. All of them are unofficial: their requests are known only from
-the tenant `$metadata`, not from SAP's documentation, so they need
-`enable_unofficial = true`. Each passed an acceptance test on a tenant.
-
-Integration Assessment becomes supported: SAP's Entities API specification
-documents the requests of its resources and data sources, so they no
-longer need an opt-in switch.
-
-### New resources
-
-- `sapintegrationsuite_key_pair_certificate_chain` (unofficial): gives a key
-  pair a certificate signed by a certificate authority, with the chain of
-  certificates that issued it. The resource uploads the PEM bundle (any
-  order, the root may be left out), reads the chain back, derives the
-  fingerprint and every certificate locally, refuses a private key pasted
-  into the chain, and imports by the key pair's alias. SAP has no request
-  that removes a chain, so destroying the resource leaves it on the key pair.
-  The acceptance test signed a key pair's CSR with a `hashicorp/tls` CA,
-  uploaded and imported the chain, and signed and uploaded again after the
-  key pair was regenerated.
-- `sapintegrationsuite_pgp_public_key` and `sapintegrationsuite_pgp_secret_key`
-  (unofficial): one PGP key each in the tenant's public or secret keyring,
-  for the PGP encryptor, decryptor, signer and verifier steps. A key is
-  added from an ASCII-armored block; the plan shows its key ID and
-  fingerprint, computed locally. The secret key and its passphrase are
-  write-only, and `secret_key_wo_version` replaces the key. A key ID that
-  exists already fails the create, because SAP answers "not imported" with
-  HTTP 200; import it instead. SAP deletes a key's public and secret part
-  together, so the public key resource leaves a key with a secret part in
-  place on destroy. Cloud runtime only; the acceptance test added, imported
-  and deleted keys that gpg generated.
-
-### New
-
-- `sapintegrationsuite_key_pair` has `certificate_signing_request`, the
-  PEM CSR to have signed. It is read only with `enable_unofficial = true`,
-  because the request is known only from the tenant `$metadata`. SAP signs
-  the CSR anew after a chain upload; the stored text is kept while subject
-  and public key stay the same.
-- `sapintegrationsuite_oauth2_client_credential` manages `custom_parameters`
-  (unofficial, needs `enable_unofficial`): key, value and whether SAP sends
-  the parameter in the body, as a header or in the URL. A tenant check showed
-  that SAP takes custom parameters only when the credential is created and
-  deletes them with every update, so with `custom_parameters` set every
-  change replaces the credential, a secret rotation included. Without the
-  attribute, the plan of an update warns when SAP holds parameters set in its
-  UI. An import reads the parameters SAP holds.
-
-### Changed
-
-- **Integration Assessment needs no opt-in switch.** SAP's Entities API
-  specification on the Business Accelerator Hub documents every entity set
-  and request of the Integration Assessment resources and data sources:
-  create, read, update (`PATCH`) and delete of vendors, applications,
-  application instances, technologies, technology instances and technology
-  profile entries, and the taxonomy. They were unofficial and needed
-  `enable_unofficial = true`; they are now supported. The acceptance tests
-  `TestAccIntegrationAssessment_landscape`, `_technologyProfile` and
-  `_taxonomy` passed on a tenant without the switch.
-- **A link change in place stays unofficial.** The specification's update
-  bodies list no links. Changing an application's vendor (set, changed or
-  removed), an application instance's application or deployment model, a
-  technology's vendor or a technology instance's deployment model in place
-  still needs `enable_unofficial = true`; without it the plan fails and
-  names the switch, and nothing is replaced. An update now sends a link
-  only when it changes, so a rename follows the specification exactly. The
-  landscape test checks that such a plan fails without the switch and
-  changes the links in place with it.
-- `sapintegrationsuite_key_pair` keeps `valid_not_before` and
-  `valid_not_after` as generated once a CA-signed chain was uploaded. SAP
-  then reports the signed certificate's validity, and a configuration that
-  set these attributes would otherwise have planned a replacement of the key
-  pair, which deletes the chain with the key.
-- The provider is built with current releases of its libraries, among them
-  `hashicorp/hcl/v2` 2.25.0, `hashicorp/go-plugin` 1.8.0, `grpc` 1.84.0,
-  `zclconf/go-cty` 1.19.0 and `golang.org/x/net` 0.61.0. None of them
-  changes what the provider does; `govulncheck` reported nothing before or
-  after.
-
-### Planned for 0.9.0: Classic virtual hosts
-
-These entries are on `feature/classic-virtual-hosts`, which builds on 0.8.0;
-they become the 0.9.0 section once 0.8.0 is released.
+0.9.0 is planned to manage the additional virtual hosts of Classic API
+Management.
 
 - `sapintegrationsuite_api_management_virtual_host` (partial): an
   additional virtual host of Classic API Management on the tenant's default domain, `<alias>.<tenant domain>`. It
@@ -204,6 +121,127 @@ These changes are on `feature/package-custom-tags`, which builds on
   A tenant probe settled the import modes (PENDING #77), and an acceptance
   test copied a package, upgraded it with a configured parameter kept,
   imported it, and made, replaced and imported an additional copy.
+
+## 0.8.0 — 2026-11-07
+
+0.8.0 completes Security Content: CA-signed certificate chains for key pairs, PGP keys and the custom parameters of OAuth2 client
+credentials. All of them are unofficial: their requests are known only from
+the tenant `$metadata`, not from SAP's documentation, so they need
+`enable_unofficial = true`. Each passed an acceptance test on a tenant.
+
+Integration Assessment becomes supported: SAP's Entities API specification
+documents the requests of its resources and data sources, so they no
+longer need an opt-in switch.
+
+### New resources
+
+- `sapintegrationsuite_key_pair_certificate_chain` (unofficial): gives a key
+  pair a certificate signed by a certificate authority, with the chain of
+  certificates that issued it. The resource uploads the PEM bundle (any
+  order, the root may be left out), reads the chain back, derives the
+  fingerprint and every certificate locally, refuses a private key pasted
+  into the chain, and imports by the key pair's alias. SAP has no request
+  that removes a chain, so destroying the resource leaves it on the key pair.
+  The acceptance test signed a key pair's CSR with a `hashicorp/tls` CA,
+  uploaded and imported the chain, and signed and uploaded again after the
+  key pair was regenerated.
+- `sapintegrationsuite_pgp_public_key` and `sapintegrationsuite_pgp_secret_key`
+  (unofficial): one PGP key each in the tenant's public or secret keyring,
+  for the PGP encryptor, decryptor, signer and verifier steps. A key is
+  added from an ASCII-armored block; the plan shows its key ID and
+  fingerprint, computed locally. The secret key and its passphrase are
+  write-only, and `secret_key_wo_version` replaces the key. A key ID that
+  exists already fails the create, because SAP answers "not imported" with
+  HTTP 200; import it instead. SAP deletes a key's public and secret part
+  together, so the public key resource leaves a key with a secret part in
+  place on destroy. Cloud runtime only; the acceptance test added, imported
+  and deleted keys that gpg generated.
+
+### New
+
+- `sapintegrationsuite_key_pair` has `certificate_signing_request`, the
+  PEM CSR to have signed. It is read only with `enable_unofficial = true`,
+  because the request is known only from the tenant `$metadata`. SAP signs
+  the CSR anew after a chain upload; the stored text is kept while subject
+  and public key stay the same.
+- `sapintegrationsuite_oauth2_client_credential` manages `custom_parameters`
+  (unofficial, needs `enable_unofficial`): key, value and whether SAP sends
+  the parameter in the body, as a header or in the URL. A tenant check showed
+  that SAP takes custom parameters only when the credential is created and
+  deletes them with every update, so with `custom_parameters` set every
+  change replaces the credential, a secret rotation included. Without the
+  attribute, the plan of an update warns when SAP holds parameters set in its
+  UI. An import reads the parameters SAP holds.
+
+### Changed
+
+- **Integration Assessment needs no opt-in switch.** SAP's Entities API
+  specification on the Business Accelerator Hub documents every entity set
+  and request of the Integration Assessment resources and data sources:
+  create, read, update (`PATCH`) and delete of vendors, applications,
+  application instances, technologies, technology instances and technology
+  profile entries, and the taxonomy. They were unofficial and needed
+  `enable_unofficial = true`; they are now supported. The acceptance tests
+  `TestAccIntegrationAssessment_landscape`, `_technologyProfile` and
+  `_taxonomy` passed on a tenant without the switch.
+- **A link change in place stays unofficial.** The specification's update
+  bodies list no links. Changing an application's vendor (set, changed or
+  removed), an application instance's application or deployment model, a
+  technology's vendor or a technology instance's deployment model in place
+  still needs `enable_unofficial = true`; without it the plan fails and
+  names the switch, and nothing is replaced. An update now sends a link
+  only when it changes, so a rename follows the specification exactly. The
+  landscape test checks that such a plan fails without the switch and
+  changes the links in place with it.
+- `sapintegrationsuite_key_pair` keeps `valid_not_before` and
+  `valid_not_after` as generated once a CA-signed chain was uploaded. SAP
+  then reports the signed certificate's validity, and a configuration that
+  set these attributes would otherwise have planned a replacement of the key
+  pair, which deletes the chain with the key.
+- The provider is built with current releases of its libraries, among them
+  `hashicorp/hcl/v2` 2.25.0, `hashicorp/go-plugin` 1.8.0, `grpc` 1.84.0,
+  `zclconf/go-cty` 1.19.0 and `golang.org/x/net` 0.62.0. None of them
+  changes what the provider does. `golang.org/x/net` 0.62.0 fixes GO-2026-6860
+  and GO-2026-6866 in 0.61.0, which `govulncheck` reports as not called by the
+  provider.
+- The examples are checked with Terraform 1.17.1, the current release (was
+  1.17.0), next to Terraform 1.11.0.
+- The feature catalog and the Current API Management guide record what a
+  tenant's `$metadata` declares since November 2026: `APIDesigntimeArtifacts`
+  with `APIDesigntimeArtifactSaveAsVersion`, `ValidateAPIDesigntimeArtifact`
+  and `DeployAPIDesigntimeArtifact`. SAP's documentation does not name them.
+  A read of the list answered 501, and a package's API artifacts could be
+  listed through `IntegrationPackages('<id>')/APIDesigntimeArtifacts`. Writes
+  were not tested, so the provider has no resource for them, and API artifacts
+  stay `unsupported`. `Connectors` and `ConnectorInstances` are new as well
+  and answered 404 on a tenant without connector configuration.
+
+### Known limitations
+
+- SAP has no request that removes a certificate chain from a key pair, so
+  destroying `sapintegrationsuite_key_pair_certificate_chain` leaves the chain
+  in place.
+- SAP takes OAuth2 custom parameters only when a credential is created. With
+  `custom_parameters` set, every change replaces the credential.
+- `sapintegrationsuite_pgp_public_key` and
+  `sapintegrationsuite_pgp_secret_key` cover the Cloud runtime only. Destroying
+  a public key leaves a key that has a secret part in place, because SAP
+  deletes both parts together.
+
+### Upgrade notes
+
+No state migration and no breaking change.
+
+- A configuration that sets `enable_unofficial = true` only for Integration
+  Assessment can drop it, unless it changes a link in place: changing an
+  application's vendor, an application instance's application or deployment
+  model, a technology's vendor or a technology instance's deployment model
+  still needs the switch, and the plan fails and names it otherwise.
+- `certificate_signing_request` of `sapintegrationsuite_key_pair` is read only
+  with `enable_unofficial = true`. Without the switch it stays empty.
+- `sapintegrationsuite_oauth2_client_credential` warns in the plan of an update
+  when SAP holds custom parameters set in its UI, because such an update deletes
+  them. Replace the credential with `custom_parameters` set to keep them.
 
 ## 0.7.2 — 2026-10-24
 
