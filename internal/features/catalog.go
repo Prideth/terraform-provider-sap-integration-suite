@@ -1717,6 +1717,11 @@ var Catalog = []Feature{
 				"integration flow, an API artifact and an MCP server, " +
 				"IntegrationPackages('<id>')/IntegrationDesigntimeArtifacts listed only the integration " +
 				"flow (2026-09-29).",
+			"Since November 2026 a tenant's $metadata declares APIDesigntimeArtifacts with " +
+				"SaveAsVersion, Validate and Deploy operations; SAP's documentation does not name them. " +
+				"On 2026-11-07 the list answered 501 and IntegrationPackages('<id>')/APIDesigntimeArtifacts " +
+				"listed a package's API artifact. Writes were not tested. Without a documented contract " +
+				"this could at most become unofficial.",
 		},
 	},
 	{
@@ -1730,8 +1735,9 @@ var Catalog = []Feature{
 		PublicAPI:     false,
 		Planned:       true,
 		Limitations: []string{
-			"SAP documents deployment only as a UI action; no deploy, undeploy or status API " +
-				"exists for API artifacts or MCP servers.",
+			"SAP documents deployment only as a UI action; no documented deploy, undeploy or status " +
+				"API exists for API artifacts or MCP servers. Since November 2026 a tenant's $metadata " +
+				"declares DeployAPIDesigntimeArtifact (Id, Version, VirtualHost); it was not tested.",
 			"Semantics to preserve if an API appears: the runtime profile is fixed once the " +
 				"artifact exists (except for choosing the target Edge Integration Cell), and the " +
 				"deployment-time virtual host may differ from the design-time one, with the deployed " +

@@ -1,7 +1,7 @@
 {
   "id": "cloud-integration",
   "protocol": "odata-v2",
-  "capturedAt": "2026-10-03",
+  "capturedAt": "2026-11-07",
   "source": "live /$metadata",
   "namespaces": [
     "com.sap.hci.api"
@@ -10,6 +10,10 @@
     {
       "name": "APIDefinitions",
       "entityType": "com.sap.hci.api.Definition"
+    },
+    {
+      "name": "APIDesigntimeArtifacts",
+      "entityType": "com.sap.hci.api.APIDesigntimeArtifact"
     },
     {
       "name": "AccessPolicies",
@@ -110,6 +114,14 @@
     {
       "name": "Configurations",
       "entityType": "com.sap.hci.api.Configuration"
+    },
+    {
+      "name": "ConnectorInstances",
+      "entityType": "com.sap.hci.api.ConnectorInstance"
+    },
+    {
+      "name": "Connectors",
+      "entityType": "com.sap.hci.api.Connector"
     },
     {
       "name": "CustomObjects",
@@ -530,9 +542,128 @@
     {
       "name": "XiDataStores",
       "entityType": "com.sap.hci.api.XiDataStore"
+    },
+    {
+      "name": "specification",
+      "entityType": "com.sap.hci.api.ConnectorInstanceSpecification"
     }
   ],
   "entityTypes": [
+    {
+      "name": "com.sap.hci.api.APIDesigntimeArtifact",
+      "hasStream": true,
+      "key": [
+        "Id",
+        "Version"
+      ],
+      "properties": [
+        {
+          "name": "ApiBasePath",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ApiProvider",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ApiState",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ApiVersion",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ArtifactContent",
+          "type": "Edm.Binary",
+          "nullable": true
+        },
+        {
+          "name": "CreatedAt",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "CreatedBy",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "Description",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": false
+        },
+        {
+          "name": "IsReusableAPI",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "LocationId",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ModifiedAt",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ModifiedBy",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "Name",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "PackageId",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "RelativeUrl",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ServiceType",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ShortText",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "Url",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "Version",
+          "type": "Edm.String",
+          "nullable": false
+        },
+        {
+          "name": "VirtualHost",
+          "type": "Edm.String",
+          "nullable": true
+        }
+      ]
+    },
     {
       "name": "com.sap.hci.api.AccessPolicy",
       "key": [
@@ -1426,6 +1557,16 @@
           "nullable": true
         },
         {
+          "name": "B2bArchivingFolderPattern",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "B2bArchivingFolderPatternHyperlink",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
           "name": "Id",
           "type": "Edm.String",
           "nullable": false
@@ -1507,6 +1648,13 @@
           "relationship": "com.sap.hci.api.r_BusinessDocumentNotes_2_r_BusinessDocumentProcessingEvent",
           "fromRole": "r_BusinessDocumentNotes",
           "toRole": "r_BusinessDocumentProcessingEvent"
+        },
+        {
+          "name": "OrphanedInterchange",
+          "target": "com.sap.hci.api.OrphanedInterchange",
+          "relationship": "com.sap.hci.api.r_BusinessDocumentNotes_2_r_OrphanedInterchange",
+          "fromRole": "r_BusinessDocumentNotes",
+          "toRole": "r_OrphanedInterchange"
         }
       ]
     },
@@ -1933,6 +2081,114 @@
           "name": "ParameterValue",
           "type": "Edm.String",
           "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "com.sap.hci.api.Connector",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "Description",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": false
+        },
+        {
+          "name": "Name",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "Version",
+          "type": "Edm.String",
+          "nullable": true
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "ConnectorInstances",
+          "target": "com.sap.hci.api.ConnectorInstance",
+          "collection": true,
+          "relationship": "com.sap.hci.api.Connector_2_r_ConnectorInstances",
+          "fromRole": "Connector",
+          "toRole": "r_ConnectorInstances"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.hci.api.ConnectorInstance",
+      "key": [
+        "Id"
+      ],
+      "properties": [
+        {
+          "name": "ConnectorId",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ConnectorName",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "ConnectorVersion",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "Description",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": false
+        },
+        {
+          "name": "Name",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
+          "name": "PassThrough",
+          "type": "Edm.Boolean",
+          "nullable": true
+        },
+        {
+          "name": "RuntimeProfile",
+          "type": "Edm.String",
+          "nullable": true
+        }
+      ],
+      "navigationProperties": [
+        {
+          "name": "specification",
+          "target": "com.sap.hci.api.ConnectorInstanceSpecification",
+          "relationship": "com.sap.hci.api.ConnectorInstance_2_r_Specification",
+          "fromRole": "ConnectorInstance",
+          "toRole": "r_Specification"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.hci.api.ConnectorInstanceSpecification",
+      "key": [
+        "Specification"
+      ],
+      "properties": [
+        {
+          "name": "Specification",
+          "type": "Edm.String",
+          "nullable": false
         }
       ]
     },
@@ -3337,6 +3593,14 @@
         }
       ],
       "navigationProperties": [
+        {
+          "name": "APIDesigntimeArtifacts",
+          "target": "com.sap.hci.api.APIDesigntimeArtifact",
+          "collection": true,
+          "relationship": "com.sap.hci.api.IntegrationPackage_2_r_ApiDesigntimeArtifacts",
+          "fromRole": "IntegrationPackage",
+          "toRole": "r_ApiDesigntimeArtifacts"
+        },
         {
           "name": "CustomTags",
           "target": "com.sap.hci.api.CustomTag",
@@ -5507,12 +5771,25 @@
           "nullable": false
         },
         {
+          "name": "OverallStatus",
+          "type": "Edm.String",
+          "nullable": true
+        },
+        {
           "name": "ProcessingStatus",
           "type": "Edm.String",
           "nullable": true
         }
       ],
       "navigationProperties": [
+        {
+          "name": "BusinessDocumentNotes",
+          "target": "com.sap.hci.api.BusinessDocumentNote",
+          "collection": true,
+          "relationship": "com.sap.hci.api.r_BusinessDocumentNotes_2_r_OrphanedInterchange",
+          "fromRole": "r_OrphanedInterchange",
+          "toRole": "r_BusinessDocumentNotes"
+        },
         {
           "name": "BusinessDocumentPayloads",
           "target": "com.sap.hci.api.BusinessDocumentPayload",
@@ -7307,6 +7584,36 @@
       ]
     },
     {
+      "name": "com.sap.hci.api.ConnectorInstance_2_r_Specification",
+      "ends": [
+        {
+          "role": "ConnectorInstance",
+          "type": "com.sap.hci.api.ConnectorInstance",
+          "multiplicity": "1"
+        },
+        {
+          "role": "r_Specification",
+          "type": "com.sap.hci.api.ConnectorInstanceSpecification",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.hci.api.Connector_2_r_ConnectorInstances",
+      "ends": [
+        {
+          "role": "Connector",
+          "type": "com.sap.hci.api.Connector",
+          "multiplicity": "1"
+        },
+        {
+          "role": "r_ConnectorInstances",
+          "type": "com.sap.hci.api.ConnectorInstance",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
       "name": "com.sap.hci.api.DataStore_2_r_Entries",
       "ends": [
         {
@@ -7422,6 +7729,21 @@
         {
           "role": "r_Resources",
           "type": "com.sap.hci.api.Resource",
+          "multiplicity": "*"
+        }
+      ]
+    },
+    {
+      "name": "com.sap.hci.api.IntegrationPackage_2_r_ApiDesigntimeArtifacts",
+      "ends": [
+        {
+          "role": "IntegrationPackage",
+          "type": "com.sap.hci.api.IntegrationPackage",
+          "multiplicity": "1"
+        },
+        {
+          "role": "r_ApiDesigntimeArtifacts",
+          "type": "com.sap.hci.api.APIDesigntimeArtifact",
           "multiplicity": "*"
         }
       ]
@@ -8267,6 +8589,21 @@
       ]
     },
     {
+      "name": "com.sap.hci.api.r_BusinessDocumentNotes_2_r_OrphanedInterchange",
+      "ends": [
+        {
+          "role": "r_BusinessDocumentNotes",
+          "type": "com.sap.hci.api.BusinessDocumentNote",
+          "multiplicity": "*"
+        },
+        {
+          "role": "r_OrphanedInterchange",
+          "type": "com.sap.hci.api.OrphanedInterchange",
+          "multiplicity": "1"
+        }
+      ]
+    },
+    {
       "name": "com.sap.hci.api.r_BusinessDocumentPayload_2_r_BusinessDocumentProcessingEvent",
       "ends": [
         {
@@ -8494,6 +8831,25 @@
   ],
   "operations": [
     {
+      "name": "APIDesigntimeArtifactSaveAsVersion",
+      "kind": "FunctionImport",
+      "httpMethod": "POST",
+      "entitySet": "APIDesigntimeArtifacts",
+      "parameters": [
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": false
+        },
+        {
+          "name": "SaveAsVersion",
+          "type": "Edm.String",
+          "nullable": false
+        }
+      ],
+      "returnType": "com.sap.hci.api.APIDesigntimeArtifact"
+    },
+    {
       "name": "CancelMessageProcessingLog",
       "kind": "FunctionImport",
       "httpMethod": "POST",
@@ -8584,6 +8940,29 @@
           "name": "TgtId",
           "type": "Edm.String",
           "nullable": false
+        }
+      ],
+      "returnType": "Edm.String"
+    },
+    {
+      "name": "DeployAPIDesigntimeArtifact",
+      "kind": "FunctionImport",
+      "httpMethod": "POST",
+      "parameters": [
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": false
+        },
+        {
+          "name": "Version",
+          "type": "Edm.String",
+          "nullable": false
+        },
+        {
+          "name": "VirtualHost",
+          "type": "Edm.String",
+          "nullable": true
         }
       ],
       "returnType": "Edm.String"
@@ -8970,6 +9349,24 @@
       "returnType": "com.sap.hci.api.ValMap"
     },
     {
+      "name": "ValidateAPIDesigntimeArtifact",
+      "kind": "FunctionImport",
+      "httpMethod": "POST",
+      "parameters": [
+        {
+          "name": "Id",
+          "type": "Edm.String",
+          "nullable": false
+        },
+        {
+          "name": "Version",
+          "type": "Edm.String",
+          "nullable": false
+        }
+      ],
+      "returnType": "Edm.String"
+    },
+    {
       "name": "ValidateIntegrationDesigntimeArtifact",
       "kind": "FunctionImport",
       "httpMethod": "POST",
@@ -9167,6 +9564,7 @@
   ],
   "graph": {
     "reachable": [
+      "com.sap.hci.api.APIDesigntimeArtifact",
       "com.sap.hci.api.AccessPolicy",
       "com.sap.hci.api.AccessPolicyRuntimeAssignment",
       "com.sap.hci.api.AlternativePartner",
@@ -9192,6 +9590,9 @@
       "com.sap.hci.api.ChainCertificate",
       "com.sap.hci.api.CommunicationProtocolHeader",
       "com.sap.hci.api.Configuration",
+      "com.sap.hci.api.Connector",
+      "com.sap.hci.api.ConnectorInstance",
+      "com.sap.hci.api.ConnectorInstanceSpecification",
       "com.sap.hci.api.CustomObjects",
       "com.sap.hci.api.CustomParameter",
       "com.sap.hci.api.CustomTag",

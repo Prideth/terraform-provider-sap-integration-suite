@@ -123,7 +123,9 @@ These need no further research, only a run of the prepared tests:
   policies, MCP servers and the MCP Gateway, runtime profiles; Integration Cell runtime and
   virtual hosts. Channels: the Hub's API Management and Cloud Integration packages, the Client
   SDK on Maven Central, What's New for Integrations and APIs. The design for an API artifact
-  resource is in `docs/guides/current-api-management.md`.
+  resource is in `docs/guides/current-api-management.md`. Since November 2026 a tenant's
+  `$metadata` declares `APIDesigntimeArtifacts` with save, validate and deploy operations, not
+  documented so far; a package's API artifacts can be read through it, writes are untested.
 - Value mapping entries: SAP's entry functions dropped values and deleted nothing in tenant
   tests (2026-09-27). Revisit when SAP documents an update and a delete that work.
 - Capability activation for every Integration Suite capability.
