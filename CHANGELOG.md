@@ -9,7 +9,7 @@ contain breaking schema or lifecycle changes; each one is listed under
 "Breaking changes" together with the steps it needs. Patch releases (0.2.1)
 only fix defects in their minor release.
 
-## Unreleased (planned as 0.8.0)
+## 0.8.0 — 2026-11-07
 
 0.8.0 completes Security Content: CA-signed certificate chains for key pairs, PGP keys and the custom parameters of OAuth2 client
 credentials. All of them are unofficial: their requests are known only from
