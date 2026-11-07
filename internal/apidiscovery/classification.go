@@ -212,6 +212,8 @@ const (
 		"the operations belong to that consent flow."
 	reasonArchivingKPIs = "Statistics of the archiving runs; monitoring."
 	reasonDesignVersion = "Versioning is covered by the content resources through their version attribute."
+	reasonConnectors    = "In the $metadata since November 2026 and not documented. A tenant without connector configuration answers 404 " +
+		"(\"Connector configuration is not present on this tenant\"), so what it models is unknown."
 )
 
 var cloudIntegrationClassification = concat(
@@ -221,6 +223,13 @@ var cloudIntegrationClassification = concat(
 		candidate("UpdateDefaultValMap", "cloud_integration.value_mapping_entry", ""),
 		candidate("DeleteValMaps", "cloud_integration.value_mapping_entry", ""),
 		candidate("CustomTags", "cloud_integration.custom_tag_configuration", "Custom tag values of an integration package (IntegrationPackages/CustomTags)."),
+		candidate("APIDesigntimeArtifacts", "api_gateway.api_artifact", "In the $metadata since November 2026 and not documented. The list answers 501; IntegrationPackages('<id>')/APIDesigntimeArtifacts lists a package's API artifacts."),
+		candidate("APIDesigntimeArtifactSaveAsVersion", "api_gateway.api_artifact", "In the $metadata since November 2026; not documented and not tested."),
+		candidate("ValidateAPIDesigntimeArtifact", "api_gateway.api_artifact", "In the $metadata since November 2026; not documented and not tested."),
+		candidate("DeployAPIDesigntimeArtifact", "api_gateway.api_artifact_deployment", "In the $metadata since November 2026; not documented and not tested."),
+		excluded("Connectors", reasonConnectors),
+		excluded("ConnectorInstances", reasonConnectors),
+		excluded("specification", reasonConnectors),
 		excluded("Resources", "Single files inside design-time artifacts; the content resources manage the artifact as a whole ZIP, and editing files one by one would fight it."),
 		excluded("CopyIntegrationPackage", "Copies an SAP-provided package from the Discover catalog; a one-off action. A resource for copied standard packages is possible later."),
 		excluded("IntegrationDesigntimeLocks", reasonLocks),

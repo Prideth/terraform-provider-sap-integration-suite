@@ -282,7 +282,7 @@ terraform {
   required_providers {
     sapintegrationsuite = {
       source  = "Prideth/sap-integration-suite"
-      version = "~> 0.6.0"
+      version = "~> 0.8.0"
     }
   }
 }

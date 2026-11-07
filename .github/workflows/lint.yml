@@ -52,7 +52,7 @@ jobs:
         # Requirements section) and the current stable release, so a
         # regression against either floor is caught here rather than only
         # discovered by a practitioner running an older or newer Terraform.
-        terraform_version: ["1.11.0", "1.17.0"]
+        terraform_version: ["1.11.0", "1.17.1"]
     steps:
       - uses: actions/checkout@v7
 

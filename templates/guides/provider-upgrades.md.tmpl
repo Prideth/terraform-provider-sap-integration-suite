@@ -16,7 +16,7 @@ terraform {
   required_providers {
     sapintegrationsuite = {
       source  = "Prideth/sap-integration-suite"
-      version = "~> 0.7.0"
+      version = "~> 0.8.0"
     }
   }
 }
@@ -26,6 +26,23 @@ Upgrade one minor version at a time. Run `terraform init -upgrade`, then `terraf
 read the plan before applying: every change below that forces a replacement is marked. The
 complete list of changes is in the
 [CHANGELOG](https://github.com/Prideth/terraform-provider-sap-integration-suite/blob/master/CHANGELOG.md).
+
+## 0.7 to 0.8
+
+No state migration and no breaking change; 0.8 adds resources for certificate chains and PGP
+keys and manages the custom parameters of OAuth2 client credentials, all behind
+`enable_unofficial = true`.
+
+- Integration Assessment resources and data sources no longer need `enable_unofficial = true`.
+  A configuration that sets the switch only for them can drop it, unless it changes a link in
+  place: changing an application's vendor, an application instance's application or deployment
+  model, a technology's vendor or a technology instance's deployment model still needs the
+  switch, and the plan fails and names it otherwise. Nothing is replaced.
+- `certificate_signing_request` of `sapintegrationsuite_key_pair` is new and is read only with
+  `enable_unofficial = true`.
+- `sapintegrationsuite_oauth2_client_credential` warns in the plan of an update when SAP holds
+  custom parameters set in its UI, because such an update deletes them. To keep them, set
+  `custom_parameters`, which makes every later change replace the credential.
 
 ## 0.7.1 to 0.7.2
 
