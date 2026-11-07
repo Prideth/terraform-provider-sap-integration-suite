@@ -21,9 +21,10 @@ strictly apart:
 
 If you are looking for `sapintegrationsuite_api_artifact`, it does not exist, and the reason
 is SAP's API surface, not a gap in this provider's backlog. As of September 2026 SAP has not
-published a public API for any object in the current model. The rest of this guide explains
-how that was established, what each object is, and how to structure a Terraform setup around
-the parts that have to stay manual for now.
+published a public API for any object in the current model. Since November 2026 a tenant's
+`$metadata` declares requests for API artifacts, still without documentation (point 8 below).
+The rest of this guide explains how that was established, what each object is, and how to
+structure a Terraform setup around the parts that have to stay manual for now.
 
 ## Status by object
 
@@ -79,12 +80,17 @@ channel where a public API would show up:
    deployment, API policy, reusable API, proxy, transport and gateway. The only matches are the
    Classic API Portal APIs (including Transport and Virtual Host Request), the Edge Integration
    Cell's local APIs and Event Mesh.
-8. **A tenant's own `$metadata`.** The Cloud Integration OData service of a Cloud Foundry
-   tenant (131 entity sets in the committed snapshot) has no entity type for API artifacts,
-   MCP servers, virtual hosts or runtime profiles. Its `APIDefinitions` set holds the API
-   definition links of service endpoints, not API artifacts. The API discovery
-   (`cmd/apidiscovery`) compares that snapshot with a live tenant and reports any new entity
-   set, so an API artifact entity would surface there first.
+8. **A tenant's own `$metadata`.** In September 2026 the Cloud Integration OData service of a
+   Cloud Foundry tenant (131 entity sets) had no entity type for API artifacts, MCP servers,
+   virtual hosts or runtime profiles. Its `APIDefinitions` set holds the API definition links
+   of service endpoints, not API artifacts. The API discovery (`cmd/apidiscovery`) compares the
+   committed snapshot with a live tenant and reports any new entity set, and on 2026-11-07 it
+   reported `APIDesigntimeArtifacts`, with the operations `APIDesigntimeArtifactSaveAsVersion`,
+   `ValidateAPIDesigntimeArtifact` and `DeployAPIDesigntimeArtifact`. A read of the list answered
+   501; `IntegrationPackages('<id>')/APIDesigntimeArtifacts` listed a package's API artifact.
+   Writes were not tested, and no SAP documentation found so far names these requests, so the
+   provider has no resource for them. MCP servers, virtual hosts and runtime profiles still have
+   no entity type.
 9. **How the objects move today.** API artifacts and MCP servers are content of an integration
    package: a package export lists them as artifacts of type `API`, and SAP's transport
    documentation moves them with the package (export and import, SAP Cloud Transport

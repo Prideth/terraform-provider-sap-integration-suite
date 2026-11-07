@@ -9,10 +9,47 @@ contain breaking schema or lifecycle changes; each one is listed under
 "Breaking changes" together with the steps it needs. Patch releases (0.2.1)
 only fix defects in their minor release.
 
-## Unreleased (planned as 0.8.0)
+## Unreleased (planned as 0.9.0)
 
-0.8.0 is planned to complete Security Content: CA-signed certificate chains
-for key pairs, PGP keys and the custom parameters of OAuth2 client
+0.9.0 is planned to manage the additional virtual hosts of Classic API
+Management.
+
+- `sapintegrationsuite_api_management_virtual_host` (partial): an
+  additional virtual host of Classic API Management on the tenant's default domain, `<alias>.<tenant domain>`. It
+  uses the requests SAP Help documents (`Configuration.svc/VirtualHostRequests`
+  with CREATE, UPDATE and DELETE) and reads the host from
+  `Management.svc/VirtualHosts`. A changed alias renames the host in place;
+  import takes the ID, the alias or the host name. Custom domains are not
+  managed yet; the resource refuses hosts that use them. The acceptance test
+  created, renamed, imported and deleted a host on a tenant.
+- Mutual TLS for that resource: `client_auth_enabled` and `trust_store` (a
+  truststore of the API portal or `ref://<certificate store reference>`)
+  make the host ask every caller for a client certificate, with the fields
+  SAP Help documents in *Configuring Mutual TLS for Default Domain Virtual
+  Host*. Switching it on or off changes the host in place; hosts without
+  mutual TLS still get the request without these fields. SAP Help shows no
+  body for switching off; `isClientAuthEnabled: false` did it on a tenant
+  and cleared the truststore. The acceptance test created a host with
+  mutual TLS, moved it to a certificate store reference, imported it and
+  switched client authentication off on a tenant.
+- `save_as_version` on `sapintegrationsuite_value_mapping`: gives the value
+  mapping a version number through
+  `ValueMappingDesigntimeArtifactSaveAsVersion`, which the Integration
+  Content API specification documents. SAP keeps one
+  version of a value mapping, so this relabels it, even to a lower number,
+  without touching the content; a changed value relabels in place instead of
+  replacing the value mapping. Content and name changes still replace the
+  value mapping, because SAP answers every update with 501 and the
+  specification has no update for value mappings either.
+- New provider block `api_management_self_service`: the key of a second
+  `apiportal-apiaccess` instance with the role
+  `APIManagement.SelfService.Administrator`, which SAP requires for virtual
+  hosts (the `api_management` key gets 403). `subaccount_subdomain` is taken
+  from the token URL unless set.
+
+## 0.8.0 — 2026-11-07
+
+0.8.0 completes Security Content: CA-signed certificate chains for key pairs, PGP keys and the custom parameters of OAuth2 client
 credentials. All of them are unofficial: their requests are known only from
 the tenant `$metadata`, not from SAP's documentation, so they need
 `enable_unofficial = true`. Each passed an acceptance test on a tenant.
@@ -88,47 +125,48 @@ longer need an opt-in switch.
   pair, which deletes the chain with the key.
 - The provider is built with current releases of its libraries, among them
   `hashicorp/hcl/v2` 2.25.0, `hashicorp/go-plugin` 1.8.0, `grpc` 1.84.0,
-  `zclconf/go-cty` 1.19.0 and `golang.org/x/net` 0.61.0. None of them
-  changes what the provider does; `govulncheck` reported nothing before or
-  after.
+  `zclconf/go-cty` 1.19.0 and `golang.org/x/net` 0.62.0. None of them
+  changes what the provider does. `golang.org/x/net` 0.62.0 fixes GO-2026-6860
+  and GO-2026-6866 in 0.61.0, which `govulncheck` reports as not called by the
+  provider.
+- The examples are checked with Terraform 1.17.1, the current release (was
+  1.17.0), next to Terraform 1.11.0.
+- The feature catalog and the Current API Management guide record what a
+  tenant's `$metadata` declares since November 2026: `APIDesigntimeArtifacts`
+  with `APIDesigntimeArtifactSaveAsVersion`, `ValidateAPIDesigntimeArtifact`
+  and `DeployAPIDesigntimeArtifact`. SAP's documentation does not name them.
+  A read of the list answered 501, and a package's API artifacts could be
+  listed through `IntegrationPackages('<id>')/APIDesigntimeArtifacts`. Writes
+  were not tested, so the provider has no resource for them, and API artifacts
+  stay `unsupported`. `Connectors` and `ConnectorInstances` are new as well
+  and answered 404 on a tenant without connector configuration.
 
-### Planned for 0.9.0: Classic virtual hosts
+### Known limitations
 
-These entries are on `feature/classic-virtual-hosts`, which builds on 0.8.0;
-they become the 0.9.0 section once 0.8.0 is released.
+- SAP has no request that removes a certificate chain from a key pair, so
+  destroying `sapintegrationsuite_key_pair_certificate_chain` leaves the chain
+  in place.
+- SAP takes OAuth2 custom parameters only when a credential is created. With
+  `custom_parameters` set, every change replaces the credential.
+- `sapintegrationsuite_pgp_public_key` and
+  `sapintegrationsuite_pgp_secret_key` cover the Cloud runtime only. Destroying
+  a public key leaves a key that has a secret part in place, because SAP
+  deletes both parts together.
 
-- `sapintegrationsuite_api_management_virtual_host` (partial): an
-  additional virtual host of Classic API Management on the tenant's default domain, `<alias>.<tenant domain>`. It
-  uses the requests SAP Help documents (`Configuration.svc/VirtualHostRequests`
-  with CREATE, UPDATE and DELETE) and reads the host from
-  `Management.svc/VirtualHosts`. A changed alias renames the host in place;
-  import takes the ID, the alias or the host name. Custom domains are not
-  managed yet; the resource refuses hosts that use them. The acceptance test
-  created, renamed, imported and deleted a host on a tenant.
-- Mutual TLS for that resource: `client_auth_enabled` and `trust_store` (a
-  truststore of the API portal or `ref://<certificate store reference>`)
-  make the host ask every caller for a client certificate, with the fields
-  SAP Help documents in *Configuring Mutual TLS for Default Domain Virtual
-  Host*. Switching it on or off changes the host in place; hosts without
-  mutual TLS still get the request without these fields. SAP Help shows no
-  body for switching off; `isClientAuthEnabled: false` did it on a tenant
-  and cleared the truststore. The acceptance test created a host with
-  mutual TLS, moved it to a certificate store reference, imported it and
-  switched client authentication off on a tenant.
-- `save_as_version` on `sapintegrationsuite_value_mapping`: gives the value
-  mapping a version number through
-  `ValueMappingDesigntimeArtifactSaveAsVersion`, which the Integration
-  Content API specification documents. SAP keeps one
-  version of a value mapping, so this relabels it, even to a lower number,
-  without touching the content; a changed value relabels in place instead of
-  replacing the value mapping. Content and name changes still replace the
-  value mapping, because SAP answers every update with 501 and the
-  specification has no update for value mappings either.
-- New provider block `api_management_self_service`: the key of a second
-  `apiportal-apiaccess` instance with the role
-  `APIManagement.SelfService.Administrator`, which SAP requires for virtual
-  hosts (the `api_management` key gets 403). `subaccount_subdomain` is taken
-  from the token URL unless set.
+### Upgrade notes
+
+No state migration and no breaking change.
+
+- A configuration that sets `enable_unofficial = true` only for Integration
+  Assessment can drop it, unless it changes a link in place: changing an
+  application's vendor, an application instance's application or deployment
+  model, a technology's vendor or a technology instance's deployment model
+  still needs the switch, and the plan fails and names it otherwise.
+- `certificate_signing_request` of `sapintegrationsuite_key_pair` is read only
+  with `enable_unofficial = true`. Without the switch it stays empty.
+- `sapintegrationsuite_oauth2_client_credential` warns in the plan of an update
+  when SAP holds custom parameters set in its UI, because such an update deletes
+  them. Replace the credential with `custom_parameters` set to keep them.
 
 ## 0.7.2 — 2026-10-24
 

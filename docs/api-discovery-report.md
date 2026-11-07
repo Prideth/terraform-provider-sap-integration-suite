@@ -22,7 +22,7 @@ SAP documentation, official SAP tooling, or a safe verification on a tenant
 
 | Service | Protocol | Snapshot | Entity sets | Operations | REST operations | Used | Candidates | Excluded |
 |---|---|---|---:|---:|---:|---:|---:|---:|
-| [cloud-integration](#cloud-integration) | OData V2 | 2026-10-03 | 131 | 35 | 0 | 52 | 22 | 92 |
+| [cloud-integration](#cloud-integration) | OData V2 | 2026-11-07 | 135 | 38 | 0 | 52 | 26 | 95 |
 | [classic-api-management](#classic-api-management) | OData V2 | 2026-09-27 | 61 | 1 | 0 | 8 | 18 | 36 |
 | [classic-api-management-transport](#classic-api-management-transport) | OpenAPI | none yet | | | | | | |
 | [classic-api-management-content-archive](#classic-api-management-content-archive) | OpenAPI | none yet | | | | | | |
@@ -41,10 +41,10 @@ Cloud Integration (Integration Content, Security Content, Partner Directory, mes
 - Evidence for the service root: SAP Help, Cloud Integration APIs: service root <tenant>/api/v1 of the API plan service key (SAP Business Accelerator Hub package CloudIntegrationAPI).
 - Acceptance suites: `SAP_INTEGRATION_SUITE_ACC_CLOUD_INTEGRATION`, `SAP_INTEGRATION_SUITE_ACC_SECURITY_CONTENT`, `SAP_INTEGRATION_SUITE_ACC_PARTNER_DIRECTORY`
 - Configuration: `SAP_INTEGRATION_SUITE_HOST`, `SAP_INTEGRATION_SUITE_TOKEN_URL`, `SAP_INTEGRATION_SUITE_CLIENT_ID`, `SAP_INTEGRATION_SUITE_CLIENT_SECRET`
-- Snapshot: `testdata/api-metadata/cloud-integration.json`, captured 2026-10-03 from live /$metadata
-- Contract: 131 entity sets, 0 singletons, 135 entity types, 3 complex types, 0 enum types, 35 operations; 138 types reachable from the entity sets and operations, 0 unreachable, 0 unresolved references
+- Snapshot: `testdata/api-metadata/cloud-integration.json`, captured 2026-11-07 from live /$metadata
+- Contract: 135 entity sets, 0 singletons, 139 entity types, 3 complex types, 0 enum types, 38 operations; 142 types reachable from the entity sets and operations, 0 unreachable, 0 unresolved references
 
-The service document lists 25 of the 131 entity sets. The other 106 are declared in `$metadata` only. The list does not decide whether a set can be addressed: the provider reads and writes several of them on a tenant (for example UserCredentials and StringParameters), while others answered 404 (PgpKeyrings). Only a tenant check settles it: APIDefinitions, AlternativePartners, AuthorizedUsers, B2BArchivingConfigurations, B2BArchivingKeyPerformanceIndicators, BinaryParameters, BuildAndDeployStatus, BusinessDocumentExtFields, BusinessDocumentNotes, BusinessDocumentPayloads, BusinessDocumentProcessingEvents, BusinessDocumentProtocolHeaders, BusinessDocumentRelations, BusinessDocuments, CertificateChainResources, CertificateResources, CertificateSigningRequests, ChainCertificates, CommunicationProtocolHeaders, Configurations, CustomObjects, CustomParameters, CustomTagConfigurations, CustomTags, DataStoreEntries, DataStores, DataTypeDesigntimeArtifacts, DefaultValMaps, DesignGuidelineExecutionResults, DesignGuidelines, EntryPoints, ErrorDetails, ExtendedFieldsConfigs, FaultMessageTypeDesigntimeArtifacts, FunctionalAcknowledgements, GenericIdempotentRepositoryEntries, HistoryKeystoreEntries, IdMapFromId2s, IdMapFromIds, IdMapToIds, IdempotentRepositoryEntries, IntegrationAdapterDesigntimeArtifacts, IntegrationConnections, IntegrationDesigntimeArtifacts, IntegrationDesigntimeLocks, IntegrationFlows, IntegrationPackages, IntegrationRuntimeArtifacts, JmsArtifacts, JmsBrokers, JmsMessages, JmsQueues, KeyPairGenerationRequests, KeyPairResources, KeyringRuntimeAssignment, KeystoreEntries, KeystoreResources, Keystores, Locks, MDIDeltaToken, MessageMappingDesigntimeArtifacts, MessageTypeDesigntimeArtifacts, MessagingMessages, MessagingQueues, NodeProfiles, NumberRanges, OAuth2AuthorizationCodes, OAuth2ClientCredentials, OrphanedInterchanges, Partners, PgpKeyEntries, PgpKeyEntryImportResults, PgpKeyPublicResources, PgpKeySecretResources, PgpKeyringPublicResources, PgpKeyringSecretResources, PgpKeyrings, PgpPublicKeyrings, PgpSecretKeyrings, PgpSubKeys, PgpUserIds, QueueStates, Queues, RSAKeyGenerationRequests, Resources, Roles, RuntimeArtifactErrorInformations, RuntimeSyncInfos, SSHKeyGenerationRequests, SSHKeyResources, ScriptCollectionDesigntimeArtifacts, SecureParameters, SecurityArtifacts, ServiceEndpoints, ServiceInterfaceDesigntimeArtifacts, StringParameters, TechnicalAcknowledgements, UserCredentialParameters, UserCredentials, ValMapSchema, ValMaps, ValueMappingDesigntimeArtifacts, Variables, WNNodes, XiDataStoreArtifacts, XiDataStores.
+The service document lists 25 of the 135 entity sets. The other 110 are declared in `$metadata` only. The list does not decide whether a set can be addressed: the provider reads and writes several of them on a tenant (for example UserCredentials and StringParameters), while others answered 404 (PgpKeyrings). Only a tenant check settles it: APIDefinitions, APIDesigntimeArtifacts, AlternativePartners, AuthorizedUsers, B2BArchivingConfigurations, B2BArchivingKeyPerformanceIndicators, BinaryParameters, BuildAndDeployStatus, BusinessDocumentExtFields, BusinessDocumentNotes, BusinessDocumentPayloads, BusinessDocumentProcessingEvents, BusinessDocumentProtocolHeaders, BusinessDocumentRelations, BusinessDocuments, CertificateChainResources, CertificateResources, CertificateSigningRequests, ChainCertificates, CommunicationProtocolHeaders, Configurations, ConnectorInstances, Connectors, CustomObjects, CustomParameters, CustomTagConfigurations, CustomTags, DataStoreEntries, DataStores, DataTypeDesigntimeArtifacts, DefaultValMaps, DesignGuidelineExecutionResults, DesignGuidelines, EntryPoints, ErrorDetails, ExtendedFieldsConfigs, FaultMessageTypeDesigntimeArtifacts, FunctionalAcknowledgements, GenericIdempotentRepositoryEntries, HistoryKeystoreEntries, IdMapFromId2s, IdMapFromIds, IdMapToIds, IdempotentRepositoryEntries, IntegrationAdapterDesigntimeArtifacts, IntegrationConnections, IntegrationDesigntimeArtifacts, IntegrationDesigntimeLocks, IntegrationFlows, IntegrationPackages, IntegrationRuntimeArtifacts, JmsArtifacts, JmsBrokers, JmsMessages, JmsQueues, KeyPairGenerationRequests, KeyPairResources, KeyringRuntimeAssignment, KeystoreEntries, KeystoreResources, Keystores, Locks, MDIDeltaToken, MessageMappingDesigntimeArtifacts, MessageTypeDesigntimeArtifacts, MessagingMessages, MessagingQueues, NodeProfiles, NumberRanges, OAuth2AuthorizationCodes, OAuth2ClientCredentials, OrphanedInterchanges, Partners, PgpKeyEntries, PgpKeyEntryImportResults, PgpKeyPublicResources, PgpKeySecretResources, PgpKeyringPublicResources, PgpKeyringSecretResources, PgpKeyrings, PgpPublicKeyrings, PgpSecretKeyrings, PgpSubKeys, PgpUserIds, QueueStates, Queues, RSAKeyGenerationRequests, Resources, Roles, RuntimeArtifactErrorInformations, RuntimeSyncInfos, SSHKeyGenerationRequests, SSHKeyResources, ScriptCollectionDesigntimeArtifacts, SecureParameters, SecurityArtifacts, ServiceEndpoints, ServiceInterfaceDesigntimeArtifacts, StringParameters, TechnicalAcknowledgements, UserCredentialParameters, UserCredentials, ValMapSchema, ValMaps, ValueMappingDesigntimeArtifacts, Variables, WNNodes, XiDataStoreArtifacts, XiDataStores, specification.
 
 ### Used by the provider (52)
 
@@ -103,10 +103,14 @@ The service document lists 25 of the 131 entity sets. The other 106 are declared
 | ScriptCollectionDesigntimeArtifactSaveAsVersion | operation | POST | `cloudintegration` |
 | ServiceInterfaceDesigntimeArtifactSaveAsVersion | operation | POST | `cloudintegration` |
 
-### Candidates (22)
+### Candidates (26)
 
 | Name | Kind | Catalog entry | Catalog status | Note |
 |---|---|---|---|---|
+| APIDesigntimeArtifacts | entity set | `api_gateway.api_artifact` | unsupported | In the $metadata since November 2026 and not documented. The list answers 501; IntegrationPackages('<id>')/APIDesigntimeArtifacts lists a package's API artifacts. |
+| APIDesigntimeArtifactSaveAsVersion | operation | `api_gateway.api_artifact` | unsupported | In the $metadata since November 2026; not documented and not tested. |
+| ValidateAPIDesigntimeArtifact | operation | `api_gateway.api_artifact` | unsupported | In the $metadata since November 2026; not documented and not tested. |
+| DeployAPIDesigntimeArtifact | operation | `api_gateway.api_artifact_deployment` | unsupported | In the $metadata since November 2026; not documented and not tested. |
 | ArchivingConfigurations | entity set | `cloud_integration.archiving` | unsupported | Tenant-wide archiving settings; a singleton needing a destructive gate in tests. |
 | B2BArchivingConfigurations | entity set | `cloud_integration.archiving` | unsupported | Archiving of B2B interchange payloads. |
 | activateArchivingConfiguration | operation | `cloud_integration.archiving` | unsupported |  |
@@ -130,7 +134,7 @@ The service document lists 25 of the 131 entity sets. The other 106 are declared
 | PgpSubKeys | entity set | `security.pgp_keyring` | unofficial |  |
 | PgpUserIds | entity set | `security.pgp_keyring` | unofficial |  |
 
-### Excluded (92)
+### Excluded (95)
 
 | Names | Reason | Catalog entry |
 |---|---|---|
@@ -138,6 +142,7 @@ The service document lists 25 of the 131 entity sets. The other 106 are declared
 | AuditLogs, ExternalLoggingEvents, LogFileArchives, LogFiles | Tenant log files and audit logs; read-only diagnostics. |  |
 | BusinessDocumentExtFields, BusinessDocumentNotes, BusinessDocumentPayloads, BusinessDocumentProcessingEvents, BusinessDocumentProtocolHeaders, BusinessDocumentRelations, BusinessDocuments, CommunicationProtocolHeaders, ErrorDetails, FunctionalAcknowledgements, OrphanedInterchanges, TechnicalAcknowledgements, massInterchangeProcess, singleInterchangeProcess | Trading Partner Management interchange monitoring and reprocessing; runtime data and support actions. |  |
 | CertificateSigningRequests | The provider reads a key pair's CSR through KeystoreEntries/SigningRequest; this set answered 404 on a tenant (2026-10-04). |  |
+| ConnectorInstances, Connectors, specification | In the $metadata since November 2026 and not documented. A tenant without connector configuration answers 404 ("Connector configuration is not present on this tenant"), so what it models is unknown. |  |
 | CustomObjects | Search field values of business document monitoring; runtime data. |  |
 | DataStoreEntries | Runtime messages written by flows; runtime data. | `cloud_integration.data_store_entry` |
 | DataStores | Created implicitly by a flow's Data Store Write step; runtime data. | `cloud_integration.data_store` |
